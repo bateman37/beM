@@ -3,6 +3,7 @@
 import { h } from './dom.js';
 import { store, PLAY_NAMES } from './store.js';
 import { SLOTS, deepCopy, ORDER_STATES, EDITABLE_STYLES } from '../match/index.js';
+import { defenseControls, DEF_STYLE_TITLES } from './defense-ui.js';
 import { styleLevelLabels, STYLE_DEFS, STYLE_GROUPS, STYLE_TITLES, MIDRANGE_OPTIONS, MIDRANGE_LABEL, FAMILY_NAMES, FAMILY_ORDER } from './styles.js';
 
 const optLabelShort = (id, m) => `${id}${m.ps[id].onCourt ? ' (en pista)' : ''}`;
@@ -11,7 +12,7 @@ const STATE_CLASS = { pendiente: 'warn', vigente: 'ok', consumida: 'ok', rechaza
 // Plan efectivo + órdenes de plan pendientes (lo que quedará vigente). El borrador parte de aquí.
 export function projectedPlan(m, team) {
   const plan = deepCopy(m.teams[team].plan);
-  plan.roles = { ...m.roleOf };
+  plan.roles = { ...m.roleOf }; plan.defRoles = { ...m.defRoleOf };
   for (const o of m.orders) {
     if (o.team !== team || o.kind !== 'plan' || o.state !== 'pendiente') continue;
     if (o.type === 'styles') for (const [k, v] of Object.entries(o.content.styles)) { if (o.liveFields.includes(`styles.${k}`)) { if (k === 'midrange') plan.midrange = v; else plan.styles[k] = v; } }
@@ -23,17 +24,26 @@ export function projectedPlan(m, team) {
     else if (o.type === 'director') plan.directorPriority = [...o.content.directorPriority];
     else if (o.type === 'disposition') plan.disposition = o.content.disposition;
     else if (o.type === 'roles') for (const [pid, code] of Object.entries(o.content.roles)) { if (o.liveFields.includes(`roles.${pid}`)) plan.roles[pid] = code; }
+    else if (o.type === 'defOrg') for (const f of ['defense', 'target', 'targetAlt', 'fallbackOrg']) { if (f in o.content) plan[f] = deepCopy(o.content[f]); }
+    else if (o.type === 'defHeight') plan.pressureHeight = o.content.pressureHeight;
+    else if (o.type === 'defStyles') for (const [k, v] of Object.entries(o.content.defStyles)) { if (o.liveFields.includes(`defStyles.${k}`)) plan.defStyles[k] = v; }
+    else if (o.type === 'defCoverage') { plan.navigation = o.content.navigation ?? null; plan.coverage = o.content.coverage; }
+    else if (o.type === 'defRoles') for (const [pid, code] of Object.entries(o.content.roles)) { if (o.liveFields.includes(`defRoles.${pid}`)) plan.defRoles[pid] = code; }
+    else if (o.type === 'defMarks') plan.marks = deepCopy(o.content.marks);
+    else if (o.type === 'defSpecial' && o.content.special !== 'ESPD01') { plan.specials = (plan.specials ?? []).filter((x) => x.id !== o.content.special); if (o.content.config) plan.specials.push({ id: o.content.special, ...deepCopy(o.content.config) }); }
   }
   return plan;
 }
 
 // Prioridad por ficha del catálogo: número 1–5 si está activa, null si no.
+const DEF_KEYS = ['defense', 'target', 'targetAlt', 'fallbackOrg', 'pressureHeight', 'coverage', 'navigation'];
+const defOf = (plan) => ({ ...Object.fromEntries(DEF_KEYS.map((k) => [k, plan[k] ?? null])), defStyles: { ...plan.defStyles }, marks: deepCopy(plan.marks ?? []), specials: deepCopy(plan.specials ?? []) });
 const prioMap = (plan, catalog) => Object.fromEntries(catalog.map((id) => [id, plan.playbook.find((b) => b.playId === id)?.priority ?? null]));
 
 export function newDraft(m, team) {
   const plan = projectedPlan(m, team);
   const cat = m.profile.activeCatalog.plays;
-  return { team, styles: Object.fromEntries(EDITABLE_STYLES.map((k) => [k, plan.styles[k]])), midrange: plan.midrange, disposition: plan.disposition, roles: { ...plan.roles }, priorities: prioMap(plan, cat), director: [...plan.directorPriority], lineup: m.projectedLineup(team), dirty: { styles: {}, midrange: false, disposition: false, roles: {}, priorities: {}, director: false, lineup: false } };
+  return { team, styles: Object.fromEntries(EDITABLE_STYLES.map((k) => [k, plan.styles[k]])), midrange: plan.midrange, disposition: plan.disposition, roles: { ...plan.roles }, priorities: prioMap(plan, cat), director: [...plan.directorPriority], lineup: m.projectedLineup(team), def: defOf(plan), defRoles: Object.fromEntries(m.teams[team].ids.map((id) => [id, plan.defRoles[id]])), dirty: { styles: {}, midrange: false, disposition: false, roles: {}, priorities: {}, director: false, lineup: false, def: false, defRoles: {} } };
 }
 // Lo que el usuario no ha tocado sigue al partido (p. ej. un relevo del entrenador básico); lo que sí tocó es su borrador.
 export function syncDraft(m, team, d) {
@@ -45,6 +55,8 @@ export function syncDraft(m, team, d) {
   for (const k of Object.keys(f.priorities)) if (!d.dirty.priorities[k]) d.priorities[k] = f.priorities[k];
   if (!d.dirty.director) d.director = f.director;
   if (!d.dirty.lineup) d.lineup = f.lineup;
+  if (!d.dirty.def) d.def = f.def;
+  for (const k of Object.keys(f.defRoles)) if (!d.dirty.defRoles[k]) d.defRoles[k] = f.defRoles[k];
   return d;
 }
 
@@ -62,6 +74,20 @@ export function draftSpecs(m, team, draft) {
   if (Object.keys(rd).length) specs.push({ type: 'roles', roles: rd });
   if (draft.director.join('|') !== base.directorPriority.join('|')) specs.push({ type: 'director', directorPriority: [...draft.director] });
   if (SLOTS.some((s) => draft.lineup[s] !== lineup[s])) specs.push({ type: 'lineup', assignment: { ...draft.lineup } });
+  // defensa (MOTOR-05): cada grupo viaja como su propia orden; el conjunto se valida junto
+  const bd = defOf(base); const dd = draft.def; const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+  if (['defense', 'target', 'targetAlt', 'fallbackOrg'].some((k) => !same(dd[k], bd[k]))) specs.push({ type: 'defOrg', defense: dd.defense, target: dd.target, targetAlt: dd.targetAlt, fallbackOrg: dd.fallbackOrg });
+  if (dd.pressureHeight !== bd.pressureHeight) specs.push({ type: 'defHeight', pressureHeight: dd.pressureHeight });
+  const ds = {}; for (const k of Object.keys(dd.defStyles)) if (dd.defStyles[k] !== bd.defStyles[k]) ds[k] = dd.defStyles[k];
+  if (Object.keys(ds).length) specs.push({ type: 'defStyles', defStyles: ds });
+  if (dd.coverage !== bd.coverage || (dd.navigation ?? null) !== (bd.navigation ?? null)) specs.push({ type: 'defCoverage', coverage: dd.coverage, navigation: dd.navigation ?? null });
+  const dr = {}; for (const [pid, code] of Object.entries(draft.defRoles)) if (code !== base.defRoles[pid]) dr[pid] = code;
+  if (Object.keys(dr).length) specs.push({ type: 'defRoles', roles: dr });
+  if (!same(dd.marks, bd.marks)) specs.push({ type: 'defMarks', marks: deepCopy(dd.marks) });
+  for (const id of ['ESPD02', 'ESPD03']) {
+    const a = dd.specials.find((x) => x.id === id); const b = bd.specials.find((x) => x.id === id);
+    if (!same(a ?? null, b ?? null)) { const { id: _i, ...config } = a ?? {}; specs.push({ type: 'defSpecial', special: id, config: a ? config : null }); }
+  }
   return specs;
 }
 export const hasChanges = (m, team, draft) => draftSpecs(m, team, draft).length > 0;
@@ -78,6 +104,13 @@ export function orderText(o) {
     case 'disposition': return `Disposición → ${c.disposition}`;
     case 'roles': return `Roles ofensivos: ${Object.entries(c.roles).map(([k, v]) => `${k} → ${v}`).join(' · ')}`;
     case 'director': return `Director y alternativas: ${c.directorPriority.join(' › ')}`;
+    case 'defOrg': return `Organización defensiva → ${c.defense}${c.target ? ` · objetivo ${c.target}` : ''}${c.targetAlt ? ` · alternativa ${c.targetAlt}` : ''}`;
+    case 'defHeight': return `Altura de presión → ${c.pressureHeight}`;
+    case 'defStyles': return `Estilos defensivos: ${Object.entries(c.defStyles).map(([k, v]) => `${DEF_STYLE_TITLES[k] ?? k} → ${v}`).join(' · ')}`;
+    case 'defCoverage': return `Cobertura → ${c.coverage}${c.navigation ? ` (${c.navigation})` : ''}`;
+    case 'defRoles': return `Roles defensivos: ${Object.entries(c.roles).map(([k, v]) => `${k} → ${v}`).join(' · ')}`;
+    case 'defMarks': return `Marcas: ${c.marks.length ? c.marks.map((x) => `${x.defender} → ${x.attacker ?? x.fn}`).join(' · ') : 'ninguna'}`;
+    case 'defSpecial': return c.special === 'ESPD01' ? `Falta táctica (${c.scope === 'current' ? 'posesión rival actual' : 'siguiente posesión rival'}${c.target && c.target !== 'holder' ? `, sobre ${c.target}` : ', sobre el poseedor'}${c.executor ? `, ejecutor ${c.executor}` : ''})` : `${c.special === 'ESPD02' ? 'Doble a jugador' : 'No abandonar tirador'}: ${c.config ? JSON.stringify(c.config) : 'retirada'}`;
     case 'delegate': return 'Devolver la gestión del quinteto al entrenador básico';
     case 'call': return `Llamada de ${c.playId} — ${PLAY_NAMES[c.playId] ?? ''} (${c.target === 'current' ? 'posesión actual' : 'siguiente posesión propia'})`;
     case 'substitution': return `Cambio: ${(c.swaps ?? []).map((s) => `sale ${s.out}, entra ${s.in}`).join('; ')}`;
@@ -91,9 +124,9 @@ export function orderMessage(o) {
   const r = o.reason ?? '';
   switch (o.state) {
     case 'pendiente': return o.type === 'timeout' || o.kind === 'lineup' ? `${o.type === 'timeout' ? 'Tiempo muerto' : 'Cambio'} ${r.startsWith('pendiente') ? r : `pendiente de oportunidad reglamentaria`}` : r.charAt(0).toUpperCase() + r.slice(1);
-    case 'vigente': return o.kind === 'call' ? r.charAt(0).toUpperCase() + r.slice(1) : `Vigente${o.activation ? ` desde ${periodWord(o.activation.period)}` : ''}`;
+    case 'vigente': return o.kind === 'call' || o.kind === 'special' ? r.charAt(0).toUpperCase() + r.slice(1) : `Vigente${o.activation ? ` desde ${periodWord(o.activation.period)}` : ''}`;
     case 'consumida': return r.charAt(0).toUpperCase() + r.slice(1);
-    case 'caducada': return o.kind === 'call' ? `Llamada caducada: ${r}` : `Caducada: ${r}`;
+    case 'caducada': return o.kind === 'call' ? `Llamada caducada: ${r}` : o.kind === 'special' ? `Falta táctica caducada: ${r}` : `Caducada: ${r}`;
     case 'rechazada': return `Cambio no aplicado: ${r}`;
     case 'cancelada': return 'Cancelada antes de aplicarse';
     case 'sustituida': return r.charAt(0).toUpperCase() + r.slice(1);
@@ -139,6 +172,12 @@ export function directionPanel(session, ui, rerender) {
     h('label', { class: 'row' }, h('span', { style: 'width:230px' }, 'Disposición'),
       h('select', { disabled: dis, onchange: (e) => { d.disposition = e.target.value; d.dirty.disposition = true; rerender(); } }, m.profile.activeCatalog.dispositions.map((x) => h('option', { value: x, selected: d.disposition === x }, `${x} · ${rep.dispositions[x].name}`)))),
     h('p', { class: 'small muted' }, 'La disposición y los roles entran en la próxima entrada de posesión o reorganización compatible; no recolocan a cinco jugadores en mitad de una ventaja ni cambian una ficha ya comprometida.'));
+  // defensa (MOTOR-05): mismos controles que la preparación, sobre el borrador
+  const rival = m.input.teams[1 - team];
+  const defense = h('div', {}, defenseControls(d.def, { profile: m.profile, players: tm.players, rivals: rival.players, disabled: dis, idPrefix: 'live', label: (id) => optLabelShort(id, m), refresh: rerender,
+    touch: (f) => { if (f.startsWith('role.')) d.dirty.defRoles[f.slice(5)] = true; else d.dirty.def = true; },
+    getRole: (pid) => d.defRoles[pid], setRole: (pid, code) => { d.defRoles[pid] = code; } }),
+    h('p', { class: 'small muted' }, 'Organización, roles y marcas entran en la próxima asignación o reorganización pertinente; los estilos, en la siguiente decisión defensiva aún no resuelta; la cobertura, en la siguiente interacción compatible; la altura, en el próximo avance rival. La configuración conjunta se valida junta: si algo es irrealizable no se aplica nada.'));
   // libro por familia: activar/desactivar y prioridad
   const book = h('div', {}, h('h3', {}, 'Libro: prioridades 1–5 (pueden repetirse)'),
     FAMILY_ORDER.map((f) => h('div', {}, h('strong', { class: 'small' }, FAMILY_NAMES[f]), h('div', { style: 'display:grid; gap:4px' }, Object.keys(d.priorities).filter((pid) => rep.plays[pid].family === f).map((pid) => h('label', { class: 'row' },
@@ -202,9 +241,9 @@ export function directionPanel(session, ui, rerender) {
         msg(o.state === 'rechazada' ? `Cambio no aplicado: ${o.reason}` : 'Cambio solicitado: pendiente de oportunidad reglamentaria (no entra durante juego vivo).', o.state === 'rechazada' ? 'errbox' : 'pill ok');
       } }, 'Pedir cambio')),
     h('div', { class: 'row', style: 'margin-top:6px' }, h('button', { class: 'btn secondary', disabled: dis || view.lineupControl.mode !== 'manual', onclick: () => { const o = session.submit({ type: 'delegate', domain: 'lineup' }); msg(o.state === 'rechazada' ? o.reason : 'El quinteto volverá al entrenador básico en la siguiente decisión delegada (sin cambios retroactivos).', 'pill ok'); } }, 'Devolver el quinteto al entrenador')),
-    callSection(session, ui, dis, msg));
+    callSection(session, ui, dis, msg), tacticalFoulSection(session, ui, dis, msg));
 
-  return h('div', { class: 'card' }, head, status, h('div', { class: 'grid2' }, h('div', {}, styles, book), h('div', {}, director, roles, lineup)), applyRow, h('hr', { style: 'border:0;border-top:1px solid var(--line);margin:14px 0' }), quick);
+  return h('div', { class: 'card' }, head, status, h('div', { class: 'grid2' }, h('div', {}, styles, book), h('div', {}, director, roles, lineup)), h('details', { open: ui.defOpen, ontoggle: (e) => { ui.defOpen = e.target.open; } }, h('summary', {}, h('strong', {}, 'Defensa'), ` — ${d.def.defense} · ${d.def.pressureHeight} · ${d.def.coverage}`), defense), applyRow, h('hr', { style: 'border:0;border-top:1px solid var(--line);margin:14px 0' }), quick);
 }
 
 function callSection(session, ui, dis, msg) {
@@ -226,4 +265,24 @@ function callSection(session, ui, dis, msg) {
         msg(o.state === 'rechazada' ? `Llamada no registrada: ${o.reason}` : `Llamada de ${c.playId} confirmada para ${c.target === 'current' ? 'la posesión actual' : 'la siguiente posesión propia'}: no garantiza que se inicie ni que se anote.`, o.state === 'rechazada' ? 'errbox' : 'pill ok');
       } }, 'Confirmar llamada')),
     h('p', { class: 'small muted' }, desc));
+}
+
+// ESPD01 · Falta táctica: orden puntual. No detiene el reloj; un ejecutor con acceso intenta la acción en una oportunidad pertinente de la
+// posesión rival declarada (puede no llegar ni encontrar oportunidad antes de que acabe el ámbito).
+function tacticalFoulSection(session, ui, dis, msg) {
+  const m = session.match; const team = session.managedTeam; const rivals = m.input.teams[1 - team].players; const mine = m.input.teams[team].players;
+  const c = ui.foul ??= { scope: 'next', target: 'holder', executor: '' };
+  const p = m.poss; const canCurrent = !!p && !p.done && p.team !== team && m.clock > 0;
+  if (c.scope === 'current' && !canCurrent) c.scope = 'next';
+  return h('div', {}, h('h3', {}, 'Falta táctica (ESPD01)'),
+    h('div', { class: 'row' },
+      h('label', {}, h('input', { type: 'radio', name: 'foul-scope', disabled: dis || !canCurrent, checked: c.scope === 'current', onchange: () => { c.scope = 'current'; msg(null); } }), ' Posesión rival actual'),
+      h('label', {}, h('input', { type: 'radio', name: 'foul-scope', disabled: dis, checked: c.scope === 'next', onchange: () => { c.scope = 'next'; msg(null); } }), ' Siguiente posesión rival'),
+      h('select', { disabled: dis, 'aria-label': 'objetivo de la falta táctica', onchange: (e) => { c.target = e.target.value; } }, h('option', { value: 'holder', selected: c.target === 'holder' }, 'El poseedor'), rivals.map((r) => h('option', { value: r.id, selected: c.target === r.id }, r.id))),
+      h('select', { disabled: dis, 'aria-label': 'ejecutor', onchange: (e) => { c.executor = e.target.value; } }, h('option', { value: '' }, 'Ejecutor: quien defiende al objetivo'), mine.map((r) => h('option', { value: r.id, selected: c.executor === r.id }, r.id))),
+      h('button', { class: 'btn secondary', disabled: dis, onclick: () => {
+        const o = session.submit({ type: 'defSpecial', special: 'ESPD01', scope: c.scope, target: c.target, executor: c.executor || null });
+        msg(o.state === 'rechazada' ? `Falta táctica no registrada: ${o.reason}` : 'Falta táctica solicitada: no detiene el reloj. Un ejecutor con acceso intentará el contacto en una oportunidad pertinente; puede no llegar o caducar al terminar la posesión.', o.state === 'rechazada' ? 'errbox' : 'pill ok');
+      } }, 'Pedir falta táctica')),
+    h('p', { class: 'small muted' }, 'La sanción depende del contacto representado (falta personal ordinaria o antideportiva con dos libres y posesión), nunca de preferir una falta barata. Aplica el perfil FIBA del proyecto (lectura propia: el PDF no es accesible desde el entorno).'));
 }

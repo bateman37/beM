@@ -3,7 +3,7 @@
 // frontera de avance que en el original. Las activaciones del historial sirven solo para comprobar, nunca se reaplican.
 // El archivo se trata como datos: no se evalúa ni se ejecuta nada de su contenido.
 import { createMatch, buildResult } from './index.js';
-import { validateInput, deepCopy, ENGINE_VERSION, EXPORT_SCHEMA, EXPORT_SCHEMA_MOTOR01, EXPORT_SCHEMA_MOTOR02 } from './data.js';
+import { validateInput, deepCopy, ENGINE_VERSION, EXPORT_SCHEMA, EXPORT_SCHEMA_MOTOR01, EXPORT_SCHEMA_MOTOR02, EXPORT_SCHEMA_MOTOR04 } from './data.js';
 import { projectBox } from './box.js';
 
 const COMMAND_KINDS = new Set(['submit', 'batch', 'cancel']);
@@ -19,7 +19,11 @@ export function validateReplayFile(file) {
     return out({ reproducible: false, legacy: true });
   }
   if (file.schema === EXPORT_SCHEMA_MOTOR02) {
-    problems.push(`formato ${EXPORT_SCHEMA_MOTOR02} de MOTOR-02/03: se puede consultar, pero no es reproducible con esta versión del motor (${file.meta?.engineVersion ?? 'versión desconocida'} ≠ ${ENGINE_VERSION}); el contenido operativo cambió en MOTOR-04`);
+    problems.push(`formato ${EXPORT_SCHEMA_MOTOR02} de MOTOR-02/03: se puede consultar, pero no es reproducible con esta versión del motor (${file.meta?.engineVersion ?? 'versión desconocida'} ≠ ${ENGINE_VERSION}); el contenido operativo cambió en MOTOR-04 y de nuevo en MOTOR-05`);
+    return out({ reproducible: false, legacy: true });
+  }
+  if (file.schema === EXPORT_SCHEMA_MOTOR04) {
+    problems.push(`formato ${EXPORT_SCHEMA_MOTOR04} de MOTOR-04: se puede consultar, pero no es reproducible con esta versión del motor (${file.meta?.engineVersion ?? 'versión desconocida'} ≠ ${ENGINE_VERSION}); la defensa pasó de marcas por posición a funciones y responsabilidades en MOTOR-05. El archivo se conserva sin cambios y no se le asigna el perfil nuevo`);
     return out({ reproducible: false, legacy: true });
   }
   if (file.schema !== EXPORT_SCHEMA) { problems.push(`formato no reconocido: ${String(file.schema)} (se espera ${EXPORT_SCHEMA})`); return out(); }

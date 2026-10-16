@@ -481,6 +481,10 @@ P.shootFreeThrows = function shootFreeThrows(shooter, n, f, ex) {
       stats: [{ k: 'ft', p: shooter, team: f.shotTeam, made }],
       effects: { pLibre: round(p, 5), entra: made, ultimo: last },
     });
+    if (last && f.retain) { // falta antideportiva: la posesión sigue en el equipo del lanzador (saque en ataque, reloj de ataque)
+      this.shotClock = shotClockAfterDefensiveStoppage(this.shotClock, this.profile.rules); this.poss.advanced = true; this.clockRunning = false;
+      this.cover('posesión conservada tras antideportiva'); return { cont: 'inboundAfterFoul' };
+    }
     if (last && made) { this.cover('último libre anotado'); this.endPossession('ftMade', { team: f.shotTeam }); return { end: 'ftMade' }; }
     if (last && !made) return this.afterMiss({ ...ex, team: f.shotTeam, actor: shooter }, 'freeThrow');
   }
@@ -553,6 +557,24 @@ P.reboundCommitments = function reboundCommitments(offT, ex, zone) {
 };
 P.commitTrace = function commitTrace(c) { return { nivel: c.level, objetivo: c.target, cargan: c.crash, balance: c.balance, referenciaNeutral: c.baseline, deficitDeBalance: c.deficit }; };
 
+// Quién cierra el rebote por la defensa: los defensores más cercanos al aro según su responsabilidad actual (función de zona o atacante que
+// cubren); quien está comprometido (ayuda, cambio, trampa, show, superado) queda fuera de posición. No restaura al mejor reboteador por
+// conveniencia ni suma una penalización de «mismatch»: el acceso ya lo expresa. Se conserva el número de participantes de la fila existente.
+P.defenseReboundParticipants = function defenseReboundParticipants(t, n) {
+  const ref = this.defRef(t); const org = this.drep().organizations[ref.org]; const committed = this.poss?.committed ?? new Set();
+  const TIER = { rim: 0, mid: 1, far: 2 }; const LINE = { back: 0, mid: 1, wing: 1, high: 1, front: 2, chase: 2 };
+  const tier = (id) => {
+    let base = 1;
+    if (ref.kind === 'individual') { const a = this.responsibilityOf(id); base = a ? TIER[this.rep().functions[ref.fnMap[a]].access] : 1; }
+    else { const f = ref.defFn[id]; base = f ? LINE[org.functions[f].line] : 1; }
+    return base + (committed.has(id) ? 2 : 0);
+  };
+  const on = this.onCourt(t).filter((id) => this.ps[id].available);
+  const ranked = [...on].sort((a, b) => tier(a) - tier(b) || this.reboundStrength(b) - this.reboundStrength(a) || (a < b ? -1 : 1));
+  this.note('rebote:cierre_defensivo', { cierran: ranked.slice(0, n), comprometidos: [...committed].filter((id) => on.includes(id)) });
+  return ranked.slice(0, n);
+};
+
 // ---------------------------------------------------------------- rebote
 P.afterMiss = function afterMiss(ex, zone) {
   const rb = this.profile.rebound;
@@ -562,7 +584,7 @@ P.afterMiss = function afterMiss(ex, zone) {
   const defSlots = ft ? rb.liveLastFreeThrowDefenseSlots : rb.defenseParticipantSlots;
   const commit = this.reboundCommitments(offT, ex, zone);
   const offP = commit.crash;
-  const defP = this.playersAtSlots(defT, defSlots);
+  const defP = ft ? this.playersAtSlots(defT, defSlots) : this.defenseReboundParticipants(defT, defSlots.length); // el cierre usa la referencia y los compromisos ACTUALES
   const strength = (pid) => this.reboundStrength(pid);
   const mean = (ids) => ids.reduce((s, id) => s + strength(id), 0) / ids.length;
   const RA = mean(offP); const RD = mean(defP);

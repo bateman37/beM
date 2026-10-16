@@ -3,6 +3,7 @@
 import { h, clear } from './dom.js';
 import { store, PLAY_NAMES, persist, prepProfile, loadDemoPlan } from './store.js';
 import { SLOTS, validateInput, createMatch, deepCopy } from '../match/index.js';
+import { defenseControls } from './defense-ui.js';
 import { STYLE_DEFS, STYLE_GROUPS, STYLE_TITLES, MIDRANGE_OPTIONS, FAMILY_NAMES, FAMILY_ORDER, STATUS_TEXT, styleLevelLabels } from './styles.js';
 
 export { STYLE_TITLES };
@@ -22,10 +23,10 @@ function compat(profile, edit) {
 export function renderPrep(root) {
   clear(root);
   const { edit } = store; const profile = prepProfile();
-  const legacy = !store.profile.repertoire;
+  const legacy = !store.profile.defense;
   root.append(h('h2', {}, 'Preparación del encuentro'));
-  if (legacy) root.append(h('div', { class: 'errbox' }, h('strong', { class: 'err' }, 'El perfil activo es anterior a MOTOR-04. '), 'Puedes preparar la entrada (se valida con el perfil de MOTOR-04), pero no se podrá jugar hasta activar la base de MOTOR-04 o una candidata explícita (Panel de ajustes › Inicio).'));
-  if (store.upgradeNotes?.length) root.append(h('p', { class: 'small muted' }, `Entrada guardada con una versión anterior: se añadieron explícitamente los campos nuevos de MOTOR-04 con su valor inicial (${store.upgradeNotes.join('; ')}).`));
+  if (legacy) root.append(h('div', { class: 'errbox' }, h('strong', { class: 'err' }, 'El perfil activo es anterior a MOTOR-05. '), 'Puedes preparar la entrada (se valida con el perfil de MOTOR-05), pero no se podrá jugar hasta activar la base de MOTOR-05 o una candidata explícita (Panel de ajustes › Inicio).'));
+  if (store.upgradeNotes?.length) root.append(h('p', { class: 'small muted' }, `Entrada guardada con una versión anterior: se añadieron explícitamente los campos nuevos con su valor inicial (${store.upgradeNotes.join('; ')}).`));
   root.append(h('div', { class: 'card' },
     h('div', { class: 'row' },
       h('label', {}, 'Semilla entera ', h('input', { type: 'number', class: 'wide', step: 1, min: 0, max: 4294967295, value: edit.seed, onchange: (e) => { const v = Number(e.target.value); edit.seed = Number.isInteger(v) ? v : edit.seed; e.target.value = edit.seed; persist(); } })),
@@ -112,9 +113,20 @@ function teamPrep(team, idx, profile, cm, root) {
       h('button', { class: 'btn secondary', onclick: () => { if (confirm('¿Cargar la copia de demostración de MOTOR-04 en este equipo? Sustituye su libro, disposición y media distancia por: DIS02, quince fichas a prioridad 3 y los estilos actuales. Es un escenario de cobertura, no una recomendación táctica.')) { loadDemoPlan(idx); ui.msg = `Plan de demostración MOTOR-04 cargado en ${team.id} (copia identificada; los planes guardados no se tocan salvo este).`; renderPrep(root); } } }, 'Cargar plan de demostración (15 fichas a prioridad 3)'),
       plan.demo ? h('span', { class: 'pill warn' }, 'plan de demostración de cobertura') : null));
 
+  // ---- defensa (MOTOR-05): organización, altura, cinco estilos, cobertura, roles, marcas y especiales
+  const rivalTeam = store.edit.teams[1 - idx];
+  const defense = h('details', { open: ui.open.has(`def:${idx}`), ontoggle: (e) => { const k = `def:${idx}`; if (e.target.open) ui.open.add(k); else ui.open.delete(k); } },
+    h('summary', {}, h('strong', {}, 'Defensa'), ` — ${plan.defense} · ${plan.pressureHeight} · ${plan.coverage}`),
+    h('div', { style: 'margin-top:8px' },
+      defenseControls(plan, { profile, players: team.players, rivals: rivalTeam.players, disabled: false, idPrefix: `def-${idx}`, refresh: again, touch: () => { persist(); },
+        label: (id) => `${id}${starterSet.has(id) ? ' ★' : ''}`,
+        getRole: (pid) => team.players.find((p) => p.id === pid).defensiveRole?.code, setRole: (pid, code) => { team.players.find((p) => p.id === pid).defensiveRole = { code, name: profile.fixtureContract.defensiveRoleDictionary[code] }; } }),
+      h('div', { class: 'row', style: 'margin-top:8px' },
+        h('button', { class: 'btn secondary', type: 'button', onclick: () => { const o = store.edit.teams[1 - idx].plan; for (const k of ['defense', 'target', 'targetAlt', 'fallbackOrg', 'pressureHeight', 'coverage', 'navigation']) o[k] = deepCopy(plan[k]); o.defStyles = deepCopy(plan.defStyles); o.marks = []; o.specials = []; ui.msg = `Defensa copiada a ${store.edit.teams[1 - idx].id} (sin marcas ni especiales: apuntan a jugadores del otro equipo). Es solo para pruebas; no es una recomendación de «mejor defensa».`; again(); } }, 'Copiar organización, altura, estilos y cobertura al otro equipo'))));
+
   return h('div', { class: 'card' }, h('h3', {}, `${team.id} — ${team.name}`),
-    h('p', { class: 'small muted' }, `Defensa ${plan.defense} individual, altura normal · cobertura ${plan.coverage} contener/drop (únicas disponibles hasta MOTOR-05).`),
     disposition,
+    defense,
     h('h3', {}, 'Quinteto inicial'), h('div', { style: 'display:grid; gap:4px' }, SLOTS.map(starterSel)),
     h('h3', {}, 'Director (prioridad entre jugadores activos y disponibles)'), dirList, addDir,
     roles, styles, book);

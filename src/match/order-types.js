@@ -38,6 +38,34 @@ export const ORDER_TYPES = {
     kind: 'plan', label: 'Roles ofensivos', scope: 'persistente hasta sustitución válida',
     boundary: 'próxima asignación de funciones (entrada o reorganización); no cambia capacidades ni una ficha ya comprometida',
   },
+  defOrg: {
+    kind: 'plan', label: 'Organización defensiva', scope: 'persistente hasta sustitución válida',
+    boundary: 'próxima asignación o reorganización pertinente (entrada de posesión); no recoloca a cinco jugadores en mitad de una ventaja',
+  },
+  defHeight: {
+    kind: 'plan', label: 'Altura de presión', scope: 'persistente hasta sustitución válida',
+    boundary: 'próximo avance de la posesión rival aún no resuelto',
+  },
+  defStyles: {
+    kind: 'plan', label: 'Estilos defensivos', scope: 'persistente hasta sustitución válida',
+    boundary: 'siguiente decisión defensiva aún no resuelta',
+  },
+  defCoverage: {
+    kind: 'plan', label: 'Cobertura de bloqueos', scope: 'persistente hasta sustitución válida',
+    boundary: 'siguiente interacción compatible; no cambia un cambio ya consumado',
+  },
+  defRoles: {
+    kind: 'plan', label: 'Roles defensivos', scope: 'persistente hasta sustitución válida',
+    boundary: 'próxima asignación de referencias (entrada o reorganización); no cambia capacidades',
+  },
+  defMarks: {
+    kind: 'plan', label: 'Marcas', scope: 'persistente hasta sustitución válida',
+    boundary: 'próxima asignación de referencias (entrada o reorganización)',
+  },
+  defSpecial: {
+    kind: 'plan', label: 'Instrucción especial defensiva', scope: 'según la instrucción: persistente (ESPD02/03) o una posesión rival (ESPD01)',
+    boundary: 'ESPD02/03: próxima asignación de referencias; ESPD01: próxima oportunidad pertinente de la posesión rival (no detiene el reloj)',
+  },
   delegate: {
     kind: 'plan', label: 'Devolver el quinteto al entrenador', scope: 'ámbito «quinteto»',
     boundary: 'siguiente decisión delegada de ese ámbito; no dispara cambios retroactivos',
@@ -60,6 +88,7 @@ export const ORDER_TYPES = {
   },
 };
 
+export const ENTRY_TYPES = new Set(['disposition', 'roles', 'defOrg', 'defRoles', 'defMarks']);
 export const EDITABLE_STYLES = ['organizedPace', 'transition', 'elaboration', 'finishPreference', 'freedom', 'offensiveRisk', 'afterShot'];
 
 // Qué puede observar la interfaz de cada estado (mensajes funcionales; no se muestran nombres de tablas ni fórmulas).

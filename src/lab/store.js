@@ -87,8 +87,8 @@ export function applyChanges(edit, changes) {
   for (const c of changes) byId[c.playerId].abilities[c.attr] = c.after;
   return changes.length;
 }
-// Perfil con el que se validan y preparan las entradas: el activo si es de MOTOR-04; si el activo es anterior, el de MOTOR-04 (el partido no se podrá jugar con él).
-export const prepProfile = () => (store.profile?.repertoire ? store.profile : store.baseNew);
+// Perfil con el que se validan y preparan las entradas: el activo si es de MOTOR-05; si el activo es anterior, el de MOTOR-05 (el partido no se podrá jugar con él).
+export const prepProfile = () => (store.profile?.defense ? store.profile : store.baseNew);
 
 // Copia de demostración MOTOR-04: misma plantilla, DIS02, estilos actuales y las quince fichas a prioridad 3. Escenario de cobertura.
 export function loadDemoPlan(teamIdx) {

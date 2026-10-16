@@ -45,6 +45,8 @@ P.planDurationWithExtra = function planDurationWithExtra(spec, cat, purpose, ext
 
 // ---------------------------------------------------------------- resolución con duración compuesta
 P.resolveAttempt = function resolveAttempt(ex) {
+  const tf = this.tacticalFoul(ex); // ESPD01: la orden vigente puede producir un contacto antes de resolver la acción
+  if (tf) return tf;
   const w = this.categoryWeights(ex);
   const items = ['turnover', 'defensiveNonShootingFoul', 'shootingFoul', 'fieldShot', 'looseBall', 'offensiveFoul', 'ballViolation'].filter((k) => w[k] > 0).map((k) => ({ key: k, w: w[k] }));
   const cat = this.pick(items, 'categoría').key;
@@ -155,6 +157,7 @@ P.reorganize = function reorganize(poss, reason, playId, { toDisposition = null 
   const tenths = this.sampleDuration(d, 'reorganización', { factor: f, limit: this.limit() - Math.round(this.profile.durationSeconds.organizedShot[0] * f * 10) });
   const t = this.consume(tenths, 'organized');
   poss.disorganized = false; poss.reorgCount = (poss.reorgCount ?? 0) + 1;
+  this.resetCurrent(); // reorganización pertinente: la defensa se reorganiza (cambios y ayudas ya no están activos)
   if (playId) (poss.excludePlays ??= new Set()).add(playId);
   if (toDisposition) poss.disposition = toDisposition;
   this.activatePlanOrders(this.period, { entry: true }); // frontera de reorganización compatible: entran disposición y roles pendientes
@@ -306,6 +309,7 @@ P.runPlay = function runPlay(poss, entry, dir, lq) {
   if (cov && cov.exchanged) CD = this.cdWith(entry, { primary: cov.D2, screenMarker: cov.D1 }); // tras el cambio, la calidad del bloqueo se evalúa con los defensores intercambiados
   let kctx = nativeQuality ? cvk.k : 0;
   // decisiones de estilo de esta interacción: negar o facilitar ayuda, presión al balón, intentar robo (una vez cada una)
+  const double = this.applyDouble(ex); // ESPD02: reutiliza el compromiso de dos; no se duplica con COB04
   const intent = this.defenseIntent(ex);
   const cvDef = this.profile.opportunity.coverageContainment;
   const kd = ex.exec === 'dribble' && ex.pressureClose === false && !cvk.spaceFromCoverage ? cvDef.handlerPullupQualityLogit : 0; // distancia concedida: mismo espacio que el drop
@@ -313,6 +317,7 @@ P.runPlay = function runPlay(poss, entry, dir, lq) {
   // ayuda en salidas interiores y lectura de la ventana libre
   const help = this.tryHelp(ex, lq.L, lq.q);
   kctx += help.K;
+  ex.defTrace = { ...intent, ...(double ? { especial: double } : {}), ...(help.helper ? { ayuda: { ayudante: help.helper, deja: help.abandoned, llega: help.arrives, relevo: help.relief, relevoLlega: help.reliefArrives } } : {}), ...(help.blocked ? { ayudaBloqueadaPorNoAbandonar: help.blocked } : {}) };
   if (help.helper) {
     ex.helper = help.helper; ex.helpArrived = help.arrives; ex.helpTrace = { deja: help.abandoned, relevo: help.relief, relevoLlega: help.reliefArrives };
     const covered = help.relief && help.reliefArrives ? help.relief : null; // el relevo cubre lo abandonado; si no llega, se concede
@@ -341,12 +346,12 @@ P.runPlay = function runPlay(poss, entry, dir, lq) {
     const CDx = ex.defMix ? this.mixDuelCD(entry, ex) : CD;
     q = ex.window ? this.qualityOf(ex, CA, 0, kctx, false) : this.qualityOf(ex, CA, CDx, kctx, true);
   } else if (ex.qual === 'TAR05' && !ex.window && ex.defend) {
-    q = this.qualityOf(ex, this.taskValue('TAR05', 'attack', { post: ex.actor }), this.taskValue('TAR05', 'defense', { postMarker: ex.defend }), 0, true);
+    q = this.qualityOf(ex, this.taskValue('TAR05', 'attack', { post: ex.actor }), ex.defMix ? this.mixedValue(ex, (id) => this.taskValue('TAR05', 'defense', { postMarker: id })) : this.taskValue('TAR05', 'defense', { postMarker: ex.defend }), 0, true);
   } else {
     // el actor recibe tras un pase adicional, una descarga o una recepción: calidad por desmarque (TAR03) frente a su marcador
     const ca = this.taskValue('TAR03', 'attack', { receiver: ex.actor });
-    if (ex.window || !ex.defend) q = this.qualityOf(ex, ca, 0, 0, false);
-    else q = this.qualityOf(ex, ca, this.taskValue('TAR03', 'defense', { receiverMarker: ex.defend }), 0, true);
+    if (ex.window || !ex.defend) q = this.qualityOf(ex, ca, 0, kd, false);
+    else q = this.qualityOf(ex, ca, ex.defMix ? this.mixedValue(ex, (id) => this.taskValue('TAR03', 'defense', { receiverMarker: id })) : this.taskValue('TAR03', 'defense', { receiverMarker: ex.defend }), kd, true);
   }
   ex.quality = q;
   if (ex.window) { ex.opportunity = 'ESP06'; this.cover('ESP06 recepción liberada'); }
@@ -511,6 +516,8 @@ P.playTrace = function playTrace(ex) {
     if (ex.decidedBy) t.decidePor = { jugador: ex.decidedBy, ...ex.decisionLq };
     if (ex.negada) t.negacionPrevia = ex.negada.de;
     if (ex.cutRecord) t.corte = ex.cutRecord;
+    if (ex.cobertura) t.cobertura = ex.cobertura;
+    if (ex.defTrace && Object.keys(ex.defTrace).length) t.defensa = ex.defTrace;
   }
   return t;
 };
@@ -559,6 +566,7 @@ P.advancePhase = function advancePhase(poss) {
 P.settlePossession = function settlePossession(poss, r) {
   poss.done = true; poss.endKind = r.end ?? null;
   this.expireCallsFor(poss);
+  this.expireSpecialOrdersFor(poss);
   return r;
 };
 
@@ -569,6 +577,7 @@ P.possessionUnit = function possessionUnit() {
   const poss = this.poss;
   this.activatePlanOrders(this.period, { entry: poss.units === 0 }); // disposición y roles solo entran en la entrada de posesión o en una reorganización
   this.activateCalls(poss);
+  this.activateSpecialOrders(poss);
   poss.units += 1;
   if (poss.units > 64) throw new Error('límite técnico de acciones por posesión alcanzado');
   let r = null;

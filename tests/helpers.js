@@ -42,3 +42,22 @@ export function stepUntil(m, pred, max = 5000) {
   throw new Error('stepUntil: tope alcanzado');
 }
 export function newMatch(seed = 20261016, opts = {}) { return createMatch(inputFor(seed), data.profile, { detail: 'full', ...opts }); }
+
+// MOTOR-05: entrada con la configuración defensiva de un equipo (el rival conserva ORG01/COB01). `over` se aplica sobre el plan.
+export function defInputFor(seed, team, over = {}) {
+  const input = inputFor(seed);
+  const plan = input.teams[team].plan;
+  for (const [k, v] of Object.entries(over)) plan[k] = k === 'defStyles' ? { ...plan.defStyles, ...v } : v;
+  return input;
+}
+// Partido completo con órdenes registradas en fronteras fijas (cada `at` es un número de paso): reproducible y sin esperas.
+export function playWithOrders(input, schedule = [], opts = {}) {
+  const m = createMatch(input, data.profile, { detail: 'full', ...opts });
+  const pending = [...schedule].sort((a, b) => a.at - b.at);
+  const results = [];
+  while (m.status !== 'finished' && m.status !== 'error') {
+    while (pending.length && pending[0].at <= m.stepSeq) { const s = pending.shift(); results.push(m.submit(s.spec)); }
+    if (!m.step()) break;
+  }
+  return { m, orders: results };
+}

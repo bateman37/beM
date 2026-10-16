@@ -43,22 +43,25 @@ P.resolveEffectiveOrg = function resolveEffectiveOrg(t) {
   const avail = (pid) => pid && this.ps[pid]?.onCourt && this.ps[pid].available && this.pl[pid].teamIdx === 1 - t;
   if (avail(plan.target)) return { org: intent, intent, objective: plan.target, alternate: false, reason: null };
   if (avail(plan.targetAlt)) return { org: intent, intent, objective: plan.targetAlt, alternate: false, reason: 'objetivo principal fuera de pista: alternativa individual designada' };
-  const fb = plan.fallbackOrg ?? this.dcfg().specials.boxAndOneDefaultFallback;
+  const dflt = this.dcfg().specials.boxAndOneDefaultFallback; // alternativa preconfigurada del perfil (ORG02); el plan puede declarar otra
+  const fb = plan.fallbackOrg ?? dflt;
   return { org: fb, intent, objective: null, alternate: true, reason: 'ningún objetivo designado en pista: alternativa declarada del plan' };
 };
 
 // Se evalúa al empezar cada posesión (frontera pertinente): emite un hecho solo si la organización efectiva cambia.
 P.refreshEffectiveOrg = function refreshEffectiveOrg(t) {
   const s = this.def[t]; const e = this.resolveEffectiveOrg(t);
-  const prev = s.eff;
-  const changed = !prev || prev.org !== e.org || prev.objective !== e.objective;
+  const first = !s.logged; const prev = s.logged;
+  const changed = first || prev.org !== e.org || prev.objective !== e.objective;
   s.eff = e;
-  if (changed && (prev || e.org !== this.defPlan(t).defense || e.objective)) {
+  const plain = first && e.org === e.intent && !e.alternate && this.drep().organizations[e.org].kind !== 'boxAndOne';
+  if (changed && !plain) {
     const names = this.drep().organizations;
     s.shifts.push({ possession: this.poss?.id ?? null, org: e.org });
     this.emit('defense', { team: 1 - t, intent: { origen: 'organización defensiva efectiva', defiende: this.teams[t].id, intencion: e.intent, efectiva: e.org, nombreEfectiva: names[e.org].name, objetivo: e.objective, alternativa: e.alternate, motivo: e.reason ?? (prev && prev.alternate ? 'el objetivo vuelve y la intención sigue vigente' : null) }, effects: { sinCambioDeReloj: true } });
     this.cover(e.alternate ? 'alternativa de box and one' : 'organización efectiva');
   }
+  if (changed) s.logged = { org: e.org, objective: e.objective, alternate: e.alternate };
   return e;
 };
 
@@ -125,7 +128,7 @@ P.validMarks = function validMarks(t, fnMap) {
 
 // Calcula la referencia de la defensa del equipo `t` frente al ataque actual.
 P.computeReference = function computeReference(t) {
-  const s = this.def[t]; const e = s.eff ?? this.refreshEffectiveOrg(t);
+  const s = this.def[t]; const e = s.eff ?? (s.eff = this.resolveEffectiveOrg(t));
   const rep = this.drep(); const org = rep.organizations[e.org];
   const offT = 1 - t;
   const fnMap = this.attackFunctions(offT);
@@ -194,6 +197,7 @@ P.defRef = function defRef(t) {
 P.defenderFor = function defenderFor(attPid) {
   const t = 1 - this.pl[attPid].teamIdx;
   const ref = this.defRef(t);
+  if (this.poss?.openAtt?.has(attPid) && !this.poss.cur?.[attPid]) return null; // abandonado sin relevo: abierto
   const cur = this.poss?.cur?.[attPid];
   if (cur && this.ps[cur]?.onCourt && this.ps[cur].available) return cur;
   return ref.assign[attPid] ?? null;
@@ -242,18 +246,19 @@ P.reliefFor = function reliefFor(attPid) {
   }
   const me = this.defenderFor(attPid);
   const dedicatedPid = ref.kind === 'boxAndOne' ? ref.fnOwner[this.drep().organizations[ref.org].chaser] : null;
-  return dedupe(list).filter((id) => id !== me && id !== dedicatedPid && !committed.has(id));
+  const prot = this.protectedAttackers(t); // ESPD03: nadie abandona al tirador protegido
+  return dedupe(list).filter((id) => id !== me && id !== dedicatedPid && !committed.has(id) && !(prot.has(this.responsibilityOf(id))));
 };
 
 // Un cambio persiste en la posesión hasta una modificación pertinente (reorganización, nueva posesión o recuperación real).
 P.setCurrent = function setCurrent(attPid, defPid) { const p = this.poss; (p.cur ??= {})[attPid] = defPid; };
-P.resetCurrent = function resetCurrent() { if (this.poss) { this.poss.cur = {}; } };
+P.resetCurrent = function resetCurrent() { if (this.poss) { this.poss.cur = {}; this.poss.openAtt = new Set(); this.poss.trapBy = null; this.poss.coverage = null; } };
 P.commit = function commit(defPid, kind) { (this.poss.committed ??= new Set()).add(defPid); (this.poss.commitKinds ??= {})[defPid] = kind; };
 
 // Resumen para la interfaz y el registro.
 P.defenseView = function defenseView(t) {
   const s = this.def[t]; const plan = this.defPlan(t);
-  const ref = this.defRef(t);
+  const ref = this.tracker ? this.tracker.quiet(() => this.defRef(t)) : this.defRef(t); // consulta de interfaz: no registra filas ni altera el diagnóstico
   return { plan: { org: plan.defense, coverage: plan.coverage, height: plan.pressureHeight, styles: { ...plan.defStyles }, marks: (plan.marks ?? []).map((m) => ({ ...m })), target: plan.target, targetAlt: plan.targetAlt, fallbackOrg: plan.fallbackOrg, navigation: plan.navigation, specials: (plan.specials ?? []).map((x) => ({ ...x })) },
     effective: s.eff ?? this.resolveEffectiveOrg(t), roles: Object.fromEntries(this.onCourt(t).map((id) => [id, this.defRoleOf[id]])), assign: { ...ref.assign }, fnOwner: { ...ref.fnOwner }, open: [...ref.open] };
 };

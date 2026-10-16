@@ -11,6 +11,7 @@ export function renderCoverage(root) {
       h('p', {}, `${store.profile.id} — `, h('span', { class: 'pill warn' }, store.profile.status)),
       h('p', {}, `Extensión de MOTOR-02: ${store.extension.seedExtensionId} — `, h('span', { class: 'pill warn' }, store.extension.status), ` · recuperación por tiempo muerto ${store.extension.timeOutRecoveryEnergyPoints} (semilla de desarrollo, no una frecuencia real ni una norma FIBA) · cupos ${store.extension.timeOuts.firstHalf}/${store.extension.timeOuts.secondHalf}/${store.extension.timeOuts.perOvertime} (lectura propia de FIBA 2026 v1.1, sin contrastar con el PDF)`),
       h('p', {}, `Extensión de MOTOR-04: ${store.extension4.seedExtensionId} — `, h('span', { class: 'pill warn' }, store.extension4.status), ' · cifras SEM del anexo A del prompt (estilos, media distancia, roles, variantes, rebote/balance) y contenido declarativo del repertorio; sustituye explícitamente el efecto abstracto de carga y amplía el catálogo activo.'),
+      h('p', {}, `Extensión de MOTOR-05: ${store.extension5.seedExtensionId} — `, h('span', { class: 'pill warn' }, store.extension5.status), ' · cifras SEM del anexo A (estilos defensivos, adecuación, presión, coberturas, especiales) y contenido declarativo de organizaciones, funciones, responsabilidades y roles (lectura de Claude, a revisar); amplía el catálogo activo de defensas y coberturas.'),
       h('p', { class: 'small muted' }, store.profile.scope),
       h('p', { class: 'small' }, `Procedencia: ${store.profile.provenance.author}, ${store.profile.provenance.date}. ${store.profile.provenance.newSeeds}`),
       cat ? h('p', { class: 'small' }, 'SHA-256 perfil: ', h('code', {}, f['data/match/motor01-seed-profile.json']?.sha256), ' · fichas: ', h('code', {}, f['data/fixtures/reference-players-MOTOR01.csv']?.sha256), ' · extensión MOTOR-02: ', h('code', {}, f['data/match/motor02-seed-extension.json']?.sha256)) : null,
@@ -19,7 +20,7 @@ export function renderCoverage(root) {
       h('div', { class: 'card' }, h('h3', {}, 'Activo en esta entrega'), h('ul', {}, Object.entries(a).map(([k, v]) => h('li', {}, h('strong', {}, `${k}: `), Array.isArray(v) ? v.join(', ') : v)))),
       h('div', { class: 'card' }, h('h3', {}, 'Pendiente (cobertura restante, no implementada o neutral)'), h('ul', {}, COVERAGE.pendientes.map((p) => h('li', {}, p))))));
   const t = COVERAGE.tabla;
-  root.append(h('div', { class: 'card' }, h('h3', {}, 'Cobertura de MOTOR-04'),
+  root.append(h('div', { class: 'card' }, h('h3', {}, 'Cobertura de MOTOR-05'),
     h('div', { class: 'grid2' },
       h('div', {}, h('h3', {}, 'Implementado y comprobado (pruebas automáticas)'), h('ul', {}, t.comprobado.map((x) => h('li', {}, x)))),
       h('div', {}, h('h3', {}, 'Implementado, pendiente de revisión manual de Dennis'), h('ul', {}, t.pendienteRevisionManual.map((x) => h('li', {}, x))),

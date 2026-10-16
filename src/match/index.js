@@ -6,48 +6,58 @@ import './plays.js';
 import './actions.js';
 import './flow.js';
 import './defense-actions.js';
+import './defense-specials.js';
 import './orders.js';
 import { projectBox, teamTotals } from './box.js';
-import { deepCopy, validateInput, buildMatchInput, parsePlayersCsv, validateProfileAndFixtures, applyExtension, validateExtension, upgradeInput, ENGINE_VERSION, EXPORT_SCHEMA, EXPORT_SCHEMA_MOTOR01, EXPORT_SCHEMA_MOTOR02, MIDRANGE_POLICIES, ATTRS, SLOTS } from './data.js';
+import { deepCopy, validateInput, buildMatchInput, parsePlayersCsv, validateProfileAndFixtures, applyExtension, validateExtension, upgradeInput, ENGINE_VERSION, EXPORT_SCHEMA, EXPORT_SCHEMA_MOTOR01, EXPORT_SCHEMA_MOTOR02, EXPORT_SCHEMA_MOTOR04, MIDRANGE_POLICIES, ATTRS, SLOTS } from './data.js';
 import { ORDER_TYPES, ORDER_STATES, TERMINAL_STATES, EDITABLE_STYLES } from './order-types.js';
 
-export { ENGINE_VERSION, EXPORT_SCHEMA, EXPORT_SCHEMA_MOTOR01, EXPORT_SCHEMA_MOTOR02, MIDRANGE_POLICIES, upgradeInput, ATTRS, SLOTS, validateInput, buildMatchInput, parsePlayersCsv, validateProfileAndFixtures, applyExtension, validateExtension, projectBox, teamTotals, deepCopy, ORDER_TYPES, ORDER_STATES, TERMINAL_STATES, EDITABLE_STYLES };
+export { ENGINE_VERSION, EXPORT_SCHEMA, EXPORT_SCHEMA_MOTOR01, EXPORT_SCHEMA_MOTOR02, EXPORT_SCHEMA_MOTOR04, MIDRANGE_POLICIES, upgradeInput, ATTRS, SLOTS, validateInput, buildMatchInput, parsePlayersCsv, validateProfileAndFixtures, applyExtension, validateExtension, projectBox, teamTotals, deepCopy, ORDER_TYPES, ORDER_STATES, TERMINAL_STATES, EDITABLE_STYLES };
 
 export const COVERAGE = {
   activos: {
-    equipos: 'EQ01 y EQ02 (doce jugadores por equipo)', disposiciones: 'DIS01–DIS06 (5 abiertos, 4+1, 3+2, Horns, 1–4 alto, 1–4 bajo)', defensa: 'ORG01', cobertura: 'COB01',
+    equipos: 'EQ01 y EQ02 (doce jugadores por equipo)', disposiciones: 'DIS01–DIS06 (5 abiertos, 4+1, 3+2, Horns, 1–4 alto, 1–4 bajo)',
+    defensa: 'ORG01–ORG06 (individual, zonas 2–3, 3–2, 1–3–1, 1–2–2 y box and one con objetivo, alternativa y ORG02 por ausencia)',
+    cobertura: 'COB01–COB04 (contener/drop con navegación por encima o por debajo, cambiar, show y atrapar) en las fichas de bloqueo directo',
+    alturasDePresion: ['normal (avance existente)', 'tres cuartos', 'total (interacción de avance con demora, superación, pérdida o contacto; violación de 8 s)'],
+    estilosDefensivos: ['ayudas', 'presión al balón', 'defensa de receptores', 'riesgo de robo', 'protección del tiro (5 niveles cada uno)'],
+    rolesDefensivos: 'doce roles defensivos (orientan asignación y ayuda; no tocan capacidades)',
+    especialesDefensivas: ['ESPD01 falta táctica (orden puntual; sanción ordinaria o antideportiva administrada)', 'ESPD02 doble a jugador (compromiso de dos compartido con COB04)', 'ESPD03 no abandonar tirador'],
     estilos: ['ritmo del ataque organizado', 'transición', 'elaboración', 'prioridad de finalización', 'libertad', 'riesgo ofensivo', 'después del tiro'], mediaDistancia: ['evitar', 'aceptar si está liberada', 'buscar con jugadores adecuados'],
     roles: 'quince roles ofensivos (orientan candidatos; no tocan capacidades)',
     fichas: ['POS01–POS15 (bloqueo directo ×4, mano a mano ×2, indirecto ×2, pase y corte ×2, poste ×3, aclarado ×2)'],
     continuaciones: ['CONT01–CONT09'],
     recursos: ['ESP01', 'ESP02', 'ESP06', 'ESP12', 'ESP13', 'ESP15', 'ESP16', 'ESP17'],
-    estados: ['energía', 'carga', 'recuperación'],
+    estados: ['energía', 'carga (incluida la carga por encargo defensivo)', 'recuperación'],
     modalidades: ['simulado total', 'por cuartos (con prórrogas)', 'por tiempo a x2/x4/x8/x16 con pausa'],
-    ordenes: ['estilos (siete) y media distancia', 'prioridades del libro y activar/desactivar fichas', 'disposición', 'roles ofensivos', 'director y alternativas', 'llamada de ficha (posesión actual o siguiente)', 'sustitución individual', 'cambio de quinteto (conjunto atómico)', 'devolver el quinteto al entrenador básico', 'tiempo muerto manual'],
-    registro: ['JSON ampliado (órdenes, comandos, ciclo de vida, disposición, funciones, decisión del receptor, encargos de rebote)', 'reproducción desde JSON de esta versión'],
+    ordenes: ['estilos ofensivos (siete) y media distancia', 'prioridades del libro y activar/desactivar fichas', 'disposición', 'roles ofensivos', 'director y alternativas', 'llamada de ficha', 'organización defensiva (objetivo y alternativa)', 'altura de presión', 'estilos defensivos', 'cobertura y navegación', 'roles defensivos', 'marcas', 'doble a jugador y no abandonar', 'falta táctica', 'sustitución individual', 'cambio de quinteto (conjunto atómico)', 'devolver el quinteto al entrenador básico', 'tiempo muerto manual'],
+    registro: ['JSON ampliado (órdenes, comandos, ciclo de vida, disposición, funciones, referencias y responsabilidad defensiva, coberturas, ayudas con relevo, organización efectiva)', 'reproducción desde JSON de esta versión'],
   },
   // Tabla breve de cobertura (estados distintos: no equivalen a «validado» ni «calibrado»)
   tabla: {
     comprobado: [
-      'Catálogo completo (siete estilos, seis disposiciones, quince fichas, nueve continuaciones, quince roles) con referencias válidas',
-      'Elegibilidad antes de preferencia, prioridades compartidas, masa familiar invariante ante duplicados y llamadas',
-      'Asignación de funciones por disposición sin participantes incompatibles; propietarios de capacidad distintos (director, lector posterior)',
-      'POS03 abre, POS04 decide el receptor corto, POS10 exige negación, POS13 exige dos funciones interiores distintas',
-      'Estilos con efecto causal en pesos/encargos sin tocar la conversión del mismo tiro; encargos de rebote y coste de balance',
-      'Continuidad, reorganización con coste de tiempo, reloj limitado sin doble cobro; filas del panel con consumidor real',
-      'Exportación y reproducción dentro de la versión; equivalencia entre modalidades',
+      'Catálogo defensivo (6 organizaciones, 5×5 estilos, 3 alturas, 4 coberturas, 12 roles, 3 especiales) con referencias y realizabilidad',
+      'Responsabilidades zonales distintas ante la misma amenaza; sin referencias sin acceso ni cinco marcas rígidas',
+      'Marcas manuales, adecuación funcional y estabilidad; la posición nominal ni prohíbe ni penaliza',
+      'Cambio conserva responsables; show compromete y recupera; trampa deja una opción detrás y no duplica el especial',
+      'Ayuda libera una responsabilidad y admite relevo; no abandonar limita al ayudante; el perseguidor dedicado no ayuda',
+      'Objetivo ausente: alternativa individual u ORG02; retorno solo si la intención sigue vigente',
+      'Presión alta con exposición, tiempo y carga reales; presión superada conserva el retorno; violación de 8 s',
+      'Falta táctica con ejecutor y acceso, clasificación real, caducidad y sanción administrada',
+      'Exportación y reproducción dentro de la versión; rechazo explícito de los formatos anteriores',
     ],
     pendienteRevisionManual: [
-      'Recorrido de la interfaz de preparación, libro por familia, dirección en vivo y panel (recorrido automatizado en Chromium hecho si consta en la documentación técnica; revisión de Dennis pendiente)',
-      'Sensación de juego de cada disposición y de cada ficha (SEM, sin calibrar)',
+      'Recorrido de la interfaz de defensa (preparación y dirección en vivo) y su sensación de juego (SEM, sin calibrar)',
+      'Contenido declarativo de organizaciones, funciones y responsabilidades (lectura de Claude de los apartados 4–10)',
     ],
     noImplementado: [
-      ['Zonas, otras coberturas, alturas de presión y roles defensivos completos', 'MOTOR-05'], ['Catálogo completo de transición ESP01–ESP20 y saques tácticos', 'MOTOR-06'],
-      ['Forma, momentos, Consistencia y Presión', 'MOTOR-07'], ['Memoria defensiva y adaptación estratégica', 'MOTOR-08'], ['Cierre reglamentario extraordinario', 'MOTOR-09'],
+      ['Presiones zonales específicas (2–2–1, 1–2–1–1), orientación a mano dominante, planes automáticos', 'MOTOR-06 en adelante'],
+      ['Catálogo completo de transición ESP01–ESP20, saques tácticos y defensas de saque (DEF08)', 'MOTOR-06'],
+      ['Forma, momentos, Consistencia y Presión', 'MOTOR-07'], ['Memoria defensiva y adaptación estratégica (DEF09)', 'MOTOR-08'], ['Cierre reglamentario extraordinario (otras sanciones especiales)', 'MOTOR-09'],
     ],
   },
   pendientes: [
-    'Zonas y otras coberturas; defensas, marcas, dobles y roles defensivos (MOTOR-05)',
+    'Presiones zonales específicas y orientación a mano dominante (entregas posteriores)',
     'Catálogo completo de transición y saques tácticos (MOTOR-06): se conservan las oportunidades espontáneas existentes',
     'Forma, momento, Consistencia y Presión (entrada neutral; MOTOR-07)',
     'Memoria rival y entrenador estratégico completo (MOTOR-08): la repetición de una ficha no tiene castigo automático',

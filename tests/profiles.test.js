@@ -4,7 +4,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
-import { data, inputFor, newMatch, demoInputFor } from './helpers.js';
+import { data, inputFor, newMatch, demoInputFor, defInputFor, playWithOrders } from './helpers.js';
 import { buildRows, uncoveredLeaves, assertProfileComplete, ConfigError, indexRows } from '../src/profiles/rows.js';
 import { validateProfile } from '../src/profiles/validate.js';
 import { resolveOverrides, diffEffective, bulkPreview, bulkApply, normalizeProposal } from '../src/profiles/model.js';
@@ -45,7 +45,16 @@ test('el motor consulta de verdad las filas declaradas «consumidas» (salvo las
   // dos encuentros completos: el libro conservado y el plan de demostración (quince fichas), que recorre las tareas de poste y apertura
   const read = (res) => res.events.flatMap((e) => (e.params ?? []).map((i) => res.diagnostics.paramTable[i]));
   const res = runMatch(inputFor(20261016), base, { detail: 'full' });
-  const seen = new Set([...read(res), ...read(runMatch(demoInputFor(20261016), base, { detail: 'full' }))]);
+  // MOTOR-05: configuraciones defensivas que recorren zonas, perseguidor, alturas, las cuatro coberturas y las tres instrucciones especiales
+  const foulOrders = [8, 40, 70, 100, 130, 160, 190, 220, 250, 280].map((at, i) => ({ at, spec: { team: 0, type: 'defSpecial', special: 'ESPD01', ...(i ? { scope: 'current' } : {}), target: 'holder' } })); // la primera usa el ámbito por defecto del perfil
+  const defRuns = [
+    playWithOrders(defInputFor(20261016, 0, { defense: 'ORG04', coverage: 'COB02', pressureHeight: 'three_quarters' }), foulOrders).m,
+    playWithOrders(defInputFor(20261016, 0, { defense: 'ORG06', target: 'EQ02-J01', targetAlt: 'EQ02-J04', coverage: 'COB04', pressureHeight: 'full', specials: [{ id: 'ESPD02', principal: 'EQ02-J01', alternate: null, activation: 'reception', executor: null, executorAlt: null }, { id: 'ESPD03', protected: 'EQ02-J04' }] })).m,
+    playWithOrders(defInputFor(20261017, 0, { defense: 'ORG05', coverage: 'COB03' })).m,
+    playWithOrders(defInputFor(20261018, 0, { coverage: 'COB01', navigation: 'under' })).m,
+    playWithOrders(defInputFor(20261016, 0, { coverage: 'COB02' })).m,
+  ].map((m) => buildResult(m));
+  const seen = new Set([...read(res), ...read(runMatch(demoInputFor(20261016), base, { detail: 'full' })), ...defRuns.flatMap(read)]);
   // Solo se leen al construir el encuentro/resultado, en prórroga o con órdenes manuales; se comprueban aparte donde procede.
   const CONDITIONAL = /^(rng\.|activeCatalog\.|rules\.(profile|overtimeSeconds|overtimeFoulsCarryFromPeriod)$|motor02\.|energy\.overtimeIntervalRecovery$|selection\.safeReceiverWeights\.|rotation\.(minimumStintSeconds|replacementUtilityTolerance|criticalReplacementTolerance|foulProtectionTolerance)$|rules\.freeThrowsForOrdinaryBonus$|rebound\.(lastFreeThrowOffensiveP0|liveLastFreeThrow(Offense|Defense)Slots)$|selection\.midrangePolicy\.|selection\.newVariantPreference\.unknownRoleFunctionWeight$|block\.blockedLooseControlDefenseProbability$)/;
   const unread = rows.filter((r) => r.coverage === 'consumido' && !seen.has(r.id) && !CONDITIONAL.test(r.id));

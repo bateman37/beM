@@ -128,7 +128,7 @@ export function buildMatchInput(profile, allPlayers, { seed } = {}) {
 // Defensa del plan (MOTOR-05): organización, cobertura, altura, cinco estilos, marcas, objetivo y especiales persistentes.
 // Una configuración conjunta irrealizable se rechaza entera con su motivo; nada se corrige en silencio.
 export const DEFENSE_STYLE_KEYS = ['help', 'pressure', 'receivers', 'steal', 'protection'];
-function validateDefensePlan(plan, team, rival, profile, tp, add) {
+export function validateDefensePlan(plan, team, rival, profile, tp, add) {
   const cat = profile.activeCatalog; const rep = profile.defenseRepertoire;
   if (!(cat.defenses ?? []).includes(plan.defense)) add(`${tp}.plan.defense`, `organización ${plan.defense} fuera del catálogo activo`);
   if (!(cat.coverage ?? []).includes(plan.coverage)) add(`${tp}.plan.coverage`, `cobertura ${plan.coverage} fuera del catálogo activo`);

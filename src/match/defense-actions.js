@@ -84,7 +84,7 @@ P.defenseIntent = function defenseIntent(ex) {
   if (ex.exec === 'pass' && ex.defend && ex.actor !== ex.holder) {
     const p = oddsAdjust(refs.receiverDenialChoiceP0, d.styles.receiverDenialChoiceOddsRatio[lv.receivers - 1]);
     const deny = this.bernoulli(p, 'defensa:negar');
-    ex.denier = deny ? ex.defend : null; ex.noDenial = !deny;
+    ex.denier = deny ? (ex.icpt ?? ex.defend) : null; ex.noDenial = !deny;
     trace.receptor = deny ? 'niega la recepción' : 'facilita la ayuda';
   }
   if (ex.exec === 'dribble' && ex.defend) {
@@ -119,6 +119,8 @@ P.beginCoverage = function beginCoverage(entry, poss) {
   const nav = plan.navigation ?? d.coverage.referenceNavigation[cob];
   info.navegacion = nav;
   if (!pair.D1 || !pair.D2 || pair.D1 === pair.D2) { info.limitada = 'falta la pareja funcional de defensores para la cobertura'; this.cover('cobertura no ejecutable'); return { info, pair, cob, none: true }; }
+  const protectedScreener = this.protectedAttackers(t).has(pair.screener);
+  if ((cob === 'COB03' || cob === 'COB04') && protectedScreener) { info.limitada = `${cob === 'COB04' ? 'Trampa' : 'Show'} no ejecutada: sin ayudante compatible con no abandonar`; this.cover('cobertura limitada por no abandonar'); return { info, pair, cob, none: true }; }
   if (cob === 'COB04' && poss.trapBy && poss.trapBy !== 'COB04') { info.limitada = 'ya hay un compromiso de dos activo (no se duplica la trampa)'; return { info, pair, cob, none: true }; }
   const { D1, D2 } = pair; const o = this.profile.opportunity; const refs = d.choiceReferences;
   const c = { info, pair, cob, nav, D1, D2, handlerExit: {}, screenerExit: {}, kHandler: 0, kRoller: 0, mix: null };
@@ -151,6 +153,7 @@ P.beginCoverage = function beginCoverage(entry, poss) {
     const rc = this.reliefFor(pair.screener).filter((id) => id !== D1 && id !== D2);
     c.rotation = rc.length ? [...rc].sort((a, b) => this.taskValue('TAR09', 'attack', { helper: b }) - this.taskValue('TAR09', 'attack', { helper: a }) || (a < b ? -1 : 1))[0] : null;
     if (c.rotation) { const p = hp(this, o.helpExecutionP0, this.taskValue('TAR09', 'attack', { helper: c.rotation }) - this.taskValue('TAR09', 'defense', { receiver: pair.screener })); c.rotates = this.bernoulli(p, 'COB04:rotación_llega'); info.rotacion = { defensor: c.rotation, llega: c.rotates, p: round(p, 4) }; }
+    this.abandon(pair.screener, c.rotates ? c.rotation : null); // el bloqueador queda con relevo o abierto para la siguiente opción
     this.cover('COB04 trampa');
   }
   poss.coverage = c;
@@ -197,6 +200,7 @@ P.dutyFor = function dutyFor(ex) {
   const duty = {}; const d = this.dcfg(); const poss = this.poss;
   const c = poss?.coverage;
   if (c && !c.none && ex.cobertura) { const f = d.coverage.committedActorLoad[c.cob]; for (const id of [c.D1, c.D2]) if (id) duty[id] = Math.max(duty[id] ?? 1, f); }
+  if (ex.especial?.id === 'ESPD02' && ex.defMix) { const f = d.coverage.committedActorLoad.COB04; for (const id of [ex.defMix.primary, ex.defMix.second]) duty[id] = Math.max(duty[id] ?? 1, f); } // mismo compromiso de dos: una sola carga
   return duty;
 };
 

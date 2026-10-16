@@ -352,7 +352,8 @@ test('10. una llamada a POS13 se consume al inicio efectivo (tras reorganizar a 
   while (call.state !== 'consumida' && call.state !== 'caducada' && m.step()) { /* hasta resolver la llamada */ }
   assert.equal(call.state, 'consumida', call.reason);
   const started = m.events.find((e) => e.orders?.some((l) => l.id === call.id));
-  assert.equal(started.intent.origen, 'POS13'); assert.equal(started.intent.procedencia, 'llamada');
+  assert.equal(call.execution.play, 'POS13'); // la ficha comenzó; su primer hecho puede ser la ficha o su negación (ESP15)
+  assert.ok(started.intent.origen === 'POS13' ? started.intent.procedencia === 'llamada' : started.intent.origen === 'ESP15');
   const reorg = m.events.filter((e) => e.possessionId === call.bound && e.type === 'reorganization' && e.intent.disposicion === 'DIS03');
   assert.equal(reorg.length, 1, 'el inicio efectivo llegó tras la reorganización compatible, que consumió su tiempo');
   assert.ok(reorg[0].seq < m.events.indexOf(started) + 1);
