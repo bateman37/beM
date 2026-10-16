@@ -1,0 +1,2189 @@
+{
+ "seedExtensionId": "SEM-MOTOR04-20261016",
+ "status": "SEM: provisional, no calibrado",
+ "basedOn": "SEM-MOTOR01-20261016",
+ "origin": "docs/prompts/MOTOR-04-ataque-posicional.md (anexo A): cifras SEM propuestas por ChatGPT; contenido declarativo del repertorio (anexo B) y funciones por disposición: lectura de Claude, a revisar por Dennis",
+ "additions": {
+  "selection.transitionAttemptOddsRatio": [
+   0.5,
+   0.75,
+   1,
+   1.35,
+   1.75
+  ],
+  "selection.elaborationContinuationWeightFactor": [
+   0.55,
+   0.75,
+   1,
+   1.3,
+   1.65
+  ],
+  "selection.offensiveRiskPreferenceTilt": [
+   -2,
+   -1,
+   0,
+   1,
+   2
+  ],
+  "selection.midrangePolicy": {
+   "avoidWeight": 0.3,
+   "openOnlyComfortableWeight": 1,
+   "openOnlyOtherWeight": 0.4,
+   "suitablePlayerBase": 0.65,
+   "suitablePlayerAbilitySlope": 0.7
+  },
+  "selection.rolePreference": {
+   "favoredFunctionWeight": 1.25,
+   "otherFunctionWeight": 1
+  },
+  "selection.newVariantPreference": {
+   "eligibleVariantBaseWeight": 1,
+   "unknownRoleFunctionWeight": 1
+  },
+  "rebound.offensiveReboundAssignmentTarget": [
+   1,
+   1,
+   2,
+   3,
+   4
+  ],
+  "rebound.balance": {
+   "unreadyReturnerOpportunityOddsRatio": 1.2,
+   "preserveNeutralBaselineAssignmentsWhenCompatible": true
+  },
+  "repertoire": {
+   "accessBySlot": {
+    "PG": "far",
+    "SG": "far",
+    "SF": "far",
+    "PF": "mid",
+    "C": "rim"
+   },
+   "functions": {
+    "top": {
+     "label": "Cabecera (director)",
+     "sector": "central",
+     "access": "far",
+     "ability": "PG"
+    },
+    "wing": {
+     "label": "Ala exterior (lateral)",
+     "sector": "lateral",
+     "access": "far",
+     "ability": "SF"
+    },
+    "corner": {
+     "label": "Esquina exterior",
+     "sector": "esquina",
+     "access": "far",
+     "ability": "SG"
+    },
+    "elbow": {
+     "label": "Apoyo alto en codo",
+     "sector": "alto",
+     "access": "mid",
+     "ability": "PF"
+    },
+    "highInside": {
+     "label": "Interior alto",
+     "sector": "alto",
+     "access": "mid",
+     "ability": "PF"
+    },
+    "lowInside": {
+     "label": "Interior bajo",
+     "sector": "bajo",
+     "access": "rim",
+     "ability": "C"
+    },
+    "inside": {
+     "label": "Interior",
+     "sector": "interior",
+     "access": "rim",
+     "ability": "C"
+    },
+    "block": {
+     "label": "Bloque bajo",
+     "sector": "bajo",
+     "access": "rim",
+     "ability": "C"
+    }
+   },
+   "dispositions": {
+    "DIS01": {
+     "name": "5 abiertos",
+     "description": "Director y cuatro referencias exteriores, sin ocupación interior fija obligatoria.",
+     "functions": [
+      "top",
+      "wing",
+      "wing",
+      "corner",
+      "corner"
+     ]
+    },
+    "DIS02": {
+     "name": "4 abiertos y 1 interior",
+     "description": "Director, tres referencias exteriores y una interior.",
+     "functions": [
+      "top",
+      "wing",
+      "wing",
+      "corner",
+      "inside"
+     ]
+    },
+    "DIS03": {
+     "name": "3 abiertos y 2 interiores",
+     "description": "Director, dos referencias exteriores y dos funciones interiores compatibles, alta/baja cuando proceda.",
+     "functions": [
+      "top",
+      "wing",
+      "wing",
+      "highInside",
+      "lowInside"
+     ]
+    },
+    "DIS04": {
+     "name": "Horns",
+     "description": "Director arriba, dos apoyos altos en codos y dos referencias exteriores de esquina.",
+     "functions": [
+      "top",
+      "elbow",
+      "elbow",
+      "corner",
+      "corner"
+     ]
+    },
+    "DIS05": {
+     "name": "1–4 alto",
+     "description": "Director arriba y cuatro referencias de entrada alta: apoyos y salidas laterales compatibles.",
+     "functions": [
+      "top",
+      "elbow",
+      "elbow",
+      "wing",
+      "wing"
+     ]
+    },
+    "DIS06": {
+     "name": "1–4 bajo",
+     "description": "Director arriba y cuatro referencias bajas que permiten salidas, cortes y espacio superior.",
+     "functions": [
+      "top",
+      "block",
+      "block",
+      "corner",
+      "corner"
+     ]
+    }
+   },
+   "offensiveRoles": {
+    "O01": {
+     "favors": [
+      "director",
+      "passer",
+      "decidingReceiver"
+     ]
+    },
+    "O02": {
+     "favors": [
+      "handler",
+      "finisher"
+     ]
+    },
+    "O03": {
+     "favors": [
+      "postReceiver"
+     ]
+    },
+    "O04": {
+     "favors": [
+      "outsideSupport",
+      "safety",
+      "altDirector"
+     ]
+    },
+    "O05": {
+     "favors": [
+      "screener",
+      "continuationReceiver"
+     ]
+    },
+    "O06": {
+     "favors": [
+      "cutter",
+      "rimReceiver"
+     ]
+    },
+    "O07": {
+     "favors": [
+      "handler"
+     ]
+    },
+    "O08": {
+     "favors": [
+      "secondaryDecider",
+      "decidingReceiver",
+      "passer",
+      "altDirector"
+     ]
+    },
+    "O09": {
+     "favors": [
+      "outsideFinisher"
+     ]
+    },
+    "O10": {
+     "favors": [
+      "screenerOpens",
+      "outsideSupport"
+     ]
+    },
+    "O11": {
+     "favors": [
+      "highReceiver",
+      "passFromHigh"
+     ]
+    },
+    "O12": {
+     "favors": [
+      "director",
+      "passer",
+      "safety"
+     ]
+    },
+    "O13": {
+     "favors": [
+      "penetrator",
+      "recoveryAttacker"
+     ]
+    },
+    "O14": {
+     "favors": [
+      "catchShooter"
+     ]
+    },
+    "O15": {
+     "favors": [
+      "movingReceiver",
+      "catchShooter"
+     ]
+    }
+   },
+   "continuations": {
+    "CONT01": "Continuación al aro",
+    "CONT02": "Apertura exterior",
+    "CONT03": "Recepción corta con lectura",
+    "CONT04": "Penetración y descarga",
+    "CONT05": "Pase adicional o inversión",
+    "CONT06": "Corte ante ayuda o negación",
+    "CONT07": "Rechazo de primera opción",
+    "CONT08": "Salida segura",
+    "CONT09": "Reorganización"
+   },
+   "plays": {
+    "POS01": {
+     "name": "Bloqueo directo central con continuación",
+     "family": "pick_and_roll",
+     "sector": "central",
+     "natural": [
+      "DIS01",
+      "DIS02",
+      "DIS04"
+     ],
+     "coverage": true,
+     "intent": "Crear separación central y amenaza del continuador hacia aro.",
+     "roles": {
+      "handler": {
+       "src": "director",
+       "tags": [
+        "handler",
+        "penetrator"
+       ]
+      },
+      "screener": {
+       "src": "pool",
+       "fn": "any",
+       "slotGroup": "screener",
+       "tags": [
+        "screener",
+        "continuationReceiver"
+       ]
+      },
+      "receiver": {
+       "src": "pool",
+       "fn": [
+        "wing",
+        "corner",
+        "elbow",
+        "highInside"
+       ],
+       "slotGroup": "receiver",
+       "tags": [
+        "catchShooter",
+        "outsideFinisher",
+        "outsideSupport"
+       ]
+      }
+     },
+     "screen": {
+      "role": "screener",
+      "tech": "TEC09"
+     },
+     "exits": [
+      {
+       "role": "handler",
+       "zones": [
+        "rim",
+        "inside",
+        "midrange",
+        "three"
+       ],
+       "exec": "dribble",
+       "defend": "primary",
+       "icpt": "primary",
+       "moved": [
+        "midrange",
+        "three"
+       ],
+       "pen": [
+        "rim",
+        "inside"
+       ],
+       "pullupK": [
+        "midrange",
+        "three"
+       ]
+      },
+      {
+       "role": "screener",
+       "zones": [
+        "rim",
+        "inside"
+       ],
+       "exec": "pass",
+       "from": "handler",
+       "defend": "screenMarker",
+       "icpt": "screenMarker",
+       "label": "CONT01",
+       "rollerK": true
+      },
+      {
+       "role": "receiver",
+       "zones": [
+        "three",
+        "midrange"
+       ],
+       "exec": "pass",
+       "from": "handler",
+       "defend": "receiverMarker",
+       "icpt": "receiverMarker",
+       "label": "CONT05"
+      }
+     ],
+     "options": [
+      "Tiro/penetración del manejador",
+      "CONT01 hacia aro",
+      "CONT05 al receptor",
+      "CONT04/CONT05 ante ayuda"
+     ],
+     "safety": [
+      "CONT08",
+      "CONT09",
+      "CONT07"
+     ]
+    },
+    "POS02": {
+     "name": "Bloqueo directo lateral con continuación",
+     "family": "pick_and_roll",
+     "sector": "lateral",
+     "natural": [
+      "DIS01",
+      "DIS02",
+      "DIS03",
+      "DIS05"
+     ],
+     "recipeFrom": "POS01",
+     "coverage": true,
+     "intent": "Atacar la relación lateral y generar continuación o ayuda desde ese lado.",
+     "requires": {
+      "functions": [
+       {
+        "any": [
+         "wing"
+        ],
+        "min": 1
+       }
+      ]
+     },
+     "roles": {
+      "handler": {
+       "src": "director",
+       "tags": [
+        "handler",
+        "penetrator"
+       ]
+      },
+      "screener": {
+       "src": "pool",
+       "fn": "any",
+       "slotGroup": "screener",
+       "tags": [
+        "screener",
+        "continuationReceiver"
+       ]
+      },
+      "receiver": {
+       "src": "pool",
+       "fn": [
+        "wing",
+        "corner"
+       ],
+       "slotGroup": "receiver",
+       "tags": [
+        "catchShooter",
+        "outsideFinisher",
+        "outsideSupport"
+       ],
+       "opt": true
+      },
+      "short": {
+       "src": "pool",
+       "fn": [
+        "wing",
+        "elbow",
+        "highInside"
+       ],
+       "slotGroup": "receiver",
+       "tags": [
+        "secondaryDecider",
+        "highReceiver"
+       ],
+       "opt": true
+      }
+     },
+     "screen": {
+      "role": "screener",
+      "tech": "TEC09"
+     },
+     "exits": [
+      {
+       "role": "handler",
+       "zones": [
+        "rim",
+        "inside",
+        "midrange",
+        "three"
+       ],
+       "exec": "dribble",
+       "defend": "primary",
+       "icpt": "primary",
+       "moved": [
+        "midrange",
+        "three"
+       ],
+       "pen": [
+        "rim",
+        "inside"
+       ],
+       "pullupK": [
+        "midrange",
+        "three"
+       ]
+      },
+      {
+       "role": "screener",
+       "zones": [
+        "rim",
+        "inside"
+       ],
+       "exec": "pass",
+       "from": "handler",
+       "defend": "screenMarker",
+       "icpt": "screenMarker",
+       "label": "CONT01",
+       "rollerK": true
+      },
+      {
+       "role": "receiver",
+       "zones": [
+        "three"
+       ],
+       "exec": "pass",
+       "from": "handler",
+       "defend": "receiverMarker",
+       "icpt": "receiverMarker",
+       "label": "CONT05"
+      },
+      {
+       "role": "short",
+       "zones": [
+        "reception"
+       ],
+       "exec": "pass",
+       "from": "handler",
+       "defend": "shortMarker",
+       "icpt": "shortMarker",
+       "label": "CONT03",
+       "stage": "short"
+      }
+     ],
+     "stages": {
+      "short": {
+       "decider": "short",
+       "exits": [
+        {
+         "role": "short",
+         "zones": [
+          "midrange",
+          "three"
+         ],
+         "exec": "pass",
+         "from": "handler",
+         "defend": "shortMarker",
+         "icpt": "shortMarker",
+         "moved": []
+        },
+        {
+         "role": "short",
+         "zones": [
+          "rim",
+          "inside"
+         ],
+         "exec": "dribble",
+         "defend": "shortMarker",
+         "icpt": "shortMarker",
+         "pen": [
+          "rim",
+          "inside"
+         ]
+        },
+        {
+         "role": "screener",
+         "zones": [
+          "rim",
+          "inside"
+         ],
+         "exec": "pass",
+         "from": "short",
+         "defend": "screenMarker",
+         "icpt": "screenMarker",
+         "label": "CONT01"
+        },
+        {
+         "role": "receiver",
+         "zones": [
+          "three"
+         ],
+         "exec": "pass",
+         "from": "short",
+         "defend": "receiverMarker",
+         "icpt": "receiverMarker",
+         "label": "CONT05"
+        }
+       ]
+      }
+     },
+     "options": [
+      "Ataque del manejador",
+      "CONT01",
+      "CONT03 recepción intermedia",
+      "CONT04 hacia receptor liberado"
+     ],
+     "safety": [
+      "CONT07",
+      "CONT08",
+      "CONT09"
+     ]
+    },
+    "POS03": {
+     "name": "Bloqueo directo central con apertura",
+     "family": "pick_and_roll",
+     "sector": "central",
+     "natural": [
+      "DIS01",
+      "DIS02",
+      "DIS04",
+      "DIS05"
+     ],
+     "recipeFrom": "POS01",
+     "coverage": true,
+     "intent": "Combinar ataque del balón y recepción exterior tras la pantalla.",
+     "roles": {
+      "handler": {
+       "src": "director",
+       "tags": [
+        "handler",
+        "penetrator"
+       ]
+      },
+      "screener": {
+       "src": "pool",
+       "fn": "any",
+       "slotGroup": "screener",
+       "tags": [
+        "screenerOpens",
+        "outsideSupport",
+        "screener"
+       ]
+      },
+      "receiver": {
+       "src": "pool",
+       "fn": [
+        "wing",
+        "corner",
+        "elbow",
+        "highInside"
+       ],
+       "slotGroup": "receiver",
+       "tags": [
+        "catchShooter",
+        "outsideFinisher",
+        "outsideSupport"
+       ],
+       "opt": true
+      }
+     },
+     "screen": {
+      "role": "screener",
+      "tech": "TEC09"
+     },
+     "exits": [
+      {
+       "role": "handler",
+       "zones": [
+        "rim",
+        "inside",
+        "midrange",
+        "three"
+       ],
+       "exec": "dribble",
+       "defend": "primary",
+       "icpt": "primary",
+       "moved": [
+        "midrange",
+        "three"
+       ],
+       "pen": [
+        "rim",
+        "inside"
+       ],
+       "pullupK": [
+        "midrange",
+        "three"
+       ]
+      },
+      {
+       "role": "screener",
+       "zones": [
+        "reception"
+       ],
+       "exec": "pass",
+       "from": "handler",
+       "defend": "screenMarker",
+       "icpt": "screenMarker",
+       "label": "CONT02",
+       "stage": "open"
+      }
+     ],
+     "stages": {
+      "open": {
+       "decider": "screener",
+       "exits": [
+        {
+         "role": "screener",
+         "zones": [
+          "midrange",
+          "three"
+         ],
+         "exec": "pass",
+         "from": "handler",
+         "defend": "screenMarker",
+         "icpt": "screenMarker",
+         "moved": []
+        },
+        {
+         "role": "screener",
+         "zones": [
+          "rim",
+          "inside"
+         ],
+         "exec": "dribble",
+         "defend": "screenMarker",
+         "icpt": "screenMarker",
+         "pen": [
+          "rim",
+          "inside"
+         ]
+        },
+        {
+         "role": "receiver",
+         "zones": [
+          "three"
+         ],
+         "exec": "pass",
+         "from": "screener",
+         "defend": "receiverMarker",
+         "icpt": "receiverMarker",
+         "label": "CONT05"
+        }
+       ]
+      }
+     },
+     "options": [
+      "Ataque propio",
+      "CONT02 apertura al bloqueador",
+      "Ataque a la recuperación",
+      "CONT05 desde su recepción"
+     ],
+     "safety": [
+      "CONT08",
+      "CONT09"
+     ]
+    },
+    "POS04": {
+     "name": "Bloqueo directo lateral con recepción corta",
+     "family": "pick_and_roll",
+     "sector": "lateral",
+     "natural": [
+      "DIS01",
+      "DIS02",
+      "DIS03",
+      "DIS05"
+     ],
+     "recipeFrom": "POS01",
+     "coverage": true,
+     "intent": "Utilizar el compromiso defensivo sobre balón para crear una decisión intermedia.",
+     "requires": {
+      "functions": [
+       {
+        "any": [
+         "wing"
+        ],
+        "min": 1
+       }
+      ]
+     },
+     "roles": {
+      "handler": {
+       "src": "director",
+       "tags": [
+        "handler",
+        "penetrator"
+       ]
+      },
+      "screener": {
+       "src": "pool",
+       "fn": "any",
+       "slotGroup": "screener",
+       "tags": [
+        "screener",
+        "continuationReceiver"
+       ]
+      },
+      "short": {
+       "src": "pool",
+       "fn": [
+        "wing",
+        "elbow",
+        "highInside"
+       ],
+       "slotGroup": "receiver",
+       "tags": [
+        "secondaryDecider",
+        "highReceiver"
+       ]
+      },
+      "receiver": {
+       "src": "pool",
+       "fn": [
+        "wing",
+        "corner"
+       ],
+       "slotGroup": "receiver",
+       "tags": [
+        "catchShooter",
+        "outsideFinisher",
+        "outsideSupport"
+       ],
+       "opt": true
+      }
+     },
+     "screen": {
+      "role": "screener",
+      "tech": "TEC09"
+     },
+     "exits": [
+      {
+       "role": "handler",
+       "zones": [
+        "rim",
+        "inside",
+        "midrange",
+        "three"
+       ],
+       "exec": "dribble",
+       "defend": "primary",
+       "icpt": "primary",
+       "moved": [
+        "midrange",
+        "three"
+       ],
+       "pen": [
+        "rim",
+        "inside"
+       ],
+       "pullupK": [
+        "midrange",
+        "three"
+       ]
+      },
+      {
+       "role": "short",
+       "zones": [
+        "reception"
+       ],
+       "exec": "pass",
+       "from": "handler",
+       "defend": "shortMarker",
+       "icpt": "shortMarker",
+       "label": "CONT03",
+       "stage": "short"
+      }
+     ],
+     "stages": {
+      "short": {
+       "decider": "short",
+       "exits": [
+        {
+         "role": "short",
+         "zones": [
+          "midrange",
+          "three"
+         ],
+         "exec": "pass",
+         "from": "handler",
+         "defend": "shortMarker",
+         "icpt": "shortMarker",
+         "moved": []
+        },
+        {
+         "role": "short",
+         "zones": [
+          "rim",
+          "inside"
+         ],
+         "exec": "dribble",
+         "defend": "shortMarker",
+         "icpt": "shortMarker",
+         "pen": [
+          "rim",
+          "inside"
+         ]
+        },
+        {
+         "role": "screener",
+         "zones": [
+          "rim",
+          "inside"
+         ],
+         "exec": "pass",
+         "from": "short",
+         "defend": "screenMarker",
+         "icpt": "screenMarker",
+         "label": "CONT01"
+        },
+        {
+         "role": "receiver",
+         "zones": [
+          "three"
+         ],
+         "exec": "pass",
+         "from": "short",
+         "defend": "receiverMarker",
+         "icpt": "receiverMarker",
+         "label": "CONT05"
+        }
+       ]
+      }
+     },
+     "options": [
+      "CONT03",
+      "Finalización o pase a aro desde la recepción corta",
+      "CONT04/CONT05",
+      "Opción propia del manejador"
+     ],
+     "safety": [
+      "CONT08",
+      "CONT09"
+     ]
+    },
+    "POS05": {
+     "name": "Mano a mano desde cabecera",
+     "family": "handoff",
+     "sector": "central",
+     "natural": [
+      "DIS01",
+      "DIS02",
+      "DIS04",
+      "DIS05"
+     ],
+     "intent": "Crear recepción con continuidad de tiro o ataque desde la relación de entrega.",
+     "roles": {
+      "hub": {
+       "src": "pool",
+       "fn": "any",
+       "slotGroup": "hub",
+       "tags": [
+        "handler"
+       ]
+      },
+      "receiver": {
+       "src": "pool",
+       "fn": [
+        "wing",
+        "corner",
+        "elbow",
+        "highInside"
+       ],
+       "slotGroup": "receiver",
+       "tags": [
+        "movingReceiver",
+        "catchShooter"
+       ]
+      }
+     },
+     "initialPasserToHub": true,
+     "exits": [
+      {
+       "role": "receiver",
+       "zones": [
+        "rim",
+        "inside",
+        "midrange",
+        "three"
+       ],
+       "exec": "pass",
+       "from": "hub",
+       "defend": "receiverMarker",
+       "icpt": "receiverMarker",
+       "moved": [
+        "midrange",
+        "three"
+       ]
+      },
+      {
+       "role": "hub",
+       "zones": [
+        "midrange",
+        "three",
+        "rim"
+       ],
+       "exec": "dribble",
+       "defend": "hubMarker",
+       "icpt": "hubMarker",
+       "moved": [
+        "midrange",
+        "three"
+       ],
+       "pen": [
+        "rim"
+       ]
+      }
+     ],
+     "options": [
+      "Recibir y tirar",
+      "Atacar con balón",
+      "Devolver",
+      "Conservar el poseedor",
+      "CONT04/CONT05"
+     ],
+     "safety": [
+      "CONT08",
+      "CONT09"
+     ]
+    },
+    "POS06": {
+     "name": "Mano a mano desde ala",
+     "family": "handoff",
+     "sector": "lateral",
+     "natural": [
+      "DIS01",
+      "DIS02",
+      "DIS03",
+      "DIS05"
+     ],
+     "recipeFrom": "POS05",
+     "intent": "Crear una recepción o avance desde ala que comprometa seguimiento y ayudas pertinentes.",
+     "requires": {
+      "functions": [
+       {
+        "any": [
+         "wing"
+        ],
+        "min": 1
+       }
+      ]
+     },
+     "roles": {
+      "hub": {
+       "src": "pool",
+       "fn": [
+        "wing",
+        "corner"
+       ],
+       "slotGroup": "receiver",
+       "tags": [
+        "handler"
+       ]
+      },
+      "receiver": {
+       "src": "pool",
+       "fn": "any",
+       "slotGroup": "receiver",
+       "tags": [
+        "movingReceiver",
+        "catchShooter"
+       ]
+      }
+     },
+     "initialPasserToHub": true,
+     "exits": [
+      {
+       "role": "receiver",
+       "zones": [
+        "rim",
+        "inside",
+        "midrange",
+        "three"
+       ],
+       "exec": "pass",
+       "from": "hub",
+       "defend": "receiverMarker",
+       "icpt": "receiverMarker",
+       "moved": [
+        "midrange",
+        "three"
+       ]
+      },
+      {
+       "role": "hub",
+       "zones": [
+        "midrange",
+        "three",
+        "rim"
+       ],
+       "exec": "dribble",
+       "defend": "hubMarker",
+       "icpt": "hubMarker",
+       "moved": [
+        "midrange",
+        "three"
+       ],
+       "pen": [
+        "rim"
+       ]
+      }
+     ],
+     "options": [
+      "Tiro tras recepción",
+      "Penetración",
+      "Devolución o conservación",
+      "CONT04/CONT05"
+     ],
+     "safety": [
+      "CONT08",
+      "CONT09"
+     ]
+    },
+    "POS07": {
+     "name": "Indirecto descendente para recepción",
+     "family": "off_ball_screen",
+     "sector": "central",
+     "natural": [
+      "DIS01",
+      "DIS02",
+      "DIS04",
+      "DIS05"
+     ],
+     "intent": "Obtener recepción preparada del jugador liberado.",
+     "roles": {
+      "receiver": {
+       "src": "pool",
+       "fn": [
+        "wing",
+        "corner",
+        "elbow",
+        "highInside"
+       ],
+       "slotGroup": "receiver",
+       "tags": [
+        "movingReceiver",
+        "catchShooter"
+       ]
+      },
+      "screener": {
+       "src": "pool",
+       "fn": "any",
+       "slotGroup": "screener",
+       "tags": [
+        "screener"
+       ]
+      }
+     },
+     "screen": {
+      "role": "screener",
+      "tech": "TEC09"
+     },
+     "exits": [
+      {
+       "role": "receiver",
+       "zones": [
+        "rim",
+        "inside",
+        "midrange",
+        "three"
+       ],
+       "exec": "pass",
+       "from": "director",
+       "defend": "receiverMarker",
+       "icpt": "receiverMarker",
+       "moved": [
+        "midrange",
+        "three"
+       ]
+      },
+      {
+       "role": "screener",
+       "zones": [
+        "rim",
+        "inside"
+       ],
+       "exec": "pass",
+       "from": "director",
+       "defend": "screenMarker",
+       "icpt": "screenMarker"
+      }
+     ],
+     "denial": {
+      "cut": {
+       "role": "receiver",
+       "zone": "rim",
+       "label": "CONT06",
+       "from": "director",
+       "defend": "receiverMarker",
+       "icpt": "receiverMarker",
+       "tech": "TEC10"
+      }
+     },
+     "options": [
+      "Recepción para tiro o avance",
+      "CONT06 ante negación",
+      "Salida del bloqueador"
+     ],
+     "safety": [
+      "CONT05",
+      "CONT08",
+      "CONT09"
+     ]
+    },
+    "POS08": {
+     "name": "Indirecto hacia el exterior",
+     "family": "off_ball_screen",
+     "sector": "central",
+     "natural": [
+      "DIS01",
+      "DIS02",
+      "DIS04",
+      "DIS05"
+     ],
+     "recipeFrom": "POS07",
+     "intent": "Separar seguimiento y ofrecer envío a una referencia de tiro.",
+     "roles": {
+      "receiver": {
+       "src": "pool",
+       "fn": [
+        "wing",
+        "corner"
+       ],
+       "slotGroup": "receiver",
+       "tags": [
+        "movingReceiver",
+        "outsideFinisher",
+        "catchShooter"
+       ]
+      },
+      "screener": {
+       "src": "pool",
+       "fn": "any",
+       "slotGroup": "screener",
+       "tags": [
+        "screener"
+       ]
+      }
+     },
+     "screen": {
+      "role": "screener",
+      "tech": "TEC09"
+     },
+     "exits": [
+      {
+       "role": "receiver",
+       "zones": [
+        "three",
+        "midrange"
+       ],
+       "exec": "pass",
+       "from": "director",
+       "defend": "receiverMarker",
+       "icpt": "receiverMarker",
+       "moved": [
+        "midrange",
+        "three"
+       ]
+      },
+      {
+       "role": "receiver",
+       "zones": [
+        "rim"
+       ],
+       "exec": "pass",
+       "from": "director",
+       "defend": "receiverMarker",
+       "icpt": "receiverMarker",
+       "pen": [
+        "rim"
+       ],
+       "catchDrive": true
+      }
+     ],
+     "denial": {
+      "cut": {
+       "role": "receiver",
+       "zone": "rim",
+       "label": "CONT06",
+       "from": "director",
+       "defend": "receiverMarker",
+       "icpt": "receiverMarker",
+       "tech": "TEC10"
+      }
+     },
+     "options": [
+      "Tiro tras recepción",
+      "Atacar la recuperación",
+      "CONT06 si niegan la salida",
+      "CONT05 otra ventaja"
+     ],
+     "safety": [
+      "CONT05",
+      "CONT08",
+      "CONT09"
+     ]
+    },
+    "POS09": {
+     "name": "Pase y corte",
+     "family": "give_and_go",
+     "sector": "central",
+     "natural": [
+      "DIS01",
+      "DIS02",
+      "DIS03",
+      "DIS05"
+     ],
+     "intent": "Crear devolución o desplazar responsabilidad mediante el corte.",
+     "roles": {
+      "cutter": {
+       "src": "director",
+       "tags": [
+        "cutter",
+        "rimReceiver"
+       ]
+      },
+      "passer": {
+       "src": "pool",
+       "fn": "any",
+       "slotGroup": "receiver",
+       "tags": [
+        "secondaryDecider",
+        "passer",
+        "decidingReceiver"
+       ]
+      }
+     },
+     "markers": {
+      "receiverMarker": "passer"
+     },
+     "fixing": true,
+     "exits": [
+      {
+       "role": "cutter",
+       "zones": [
+        "rim",
+        "inside"
+       ],
+       "exec": "pass",
+       "from": "passer",
+       "defend": "cutterMarker",
+       "icpt": "cutterMarker"
+      },
+      {
+       "role": "passer",
+       "zones": [
+        "midrange",
+        "three"
+       ],
+       "exec": "pass",
+       "from": "director",
+       "defend": "receiverMarker",
+       "icpt": "receiverMarker"
+      }
+     ],
+     "options": [
+      "Devolución para finalizar",
+      "CONT05 al liberado",
+      "Mantener ataque si el corte solo fija"
+     ],
+     "safety": [
+      "CONT08",
+      "CONT09"
+     ]
+    },
+    "POS10": {
+     "name": "Puerta atrás ante negación",
+     "family": "give_and_go",
+     "sector": "central",
+     "natural": [
+      "DIS01",
+      "DIS02",
+      "DIS03",
+      "DIS04",
+      "DIS05",
+      "DIS06"
+     ],
+     "recipeFrom": "POS09",
+     "intent": "Aprovechar la responsabilidad adelantada del defensor.",
+     "requires": {
+      "context": "denial"
+     },
+     "roles": {
+      "cutter": {
+       "src": "denied",
+       "tags": [
+        "cutter",
+        "rimReceiver"
+       ]
+      },
+      "passer": {
+       "src": "director",
+       "tags": [
+        "passer"
+       ]
+      },
+      "support": {
+       "src": "pool",
+       "fn": [
+        "wing",
+        "corner"
+       ],
+       "slotGroup": "receiver",
+       "tags": [
+        "outsideSupport",
+        "catchShooter"
+       ],
+       "opt": true
+      }
+     },
+     "markers": {
+      "receiverMarker": "support"
+     },
+     "exits": [
+      {
+       "role": "cutter",
+       "zones": [
+        "rim",
+        "inside"
+       ],
+       "exec": "pass",
+       "from": "passer",
+       "defend": "cutterMarker",
+       "icpt": "cutterMarker",
+       "label": "CONT06"
+      },
+      {
+       "role": "support",
+       "zones": [
+        "three"
+       ],
+       "exec": "pass",
+       "from": "passer",
+       "defend": "receiverMarker",
+       "icpt": "receiverMarker",
+       "label": "CONT05"
+      }
+     ],
+     "options": [
+      "Recepción hacia aro",
+      "Pase a otra referencia si la ayuda responde",
+      "Continuidad si la línea se cierra"
+     ],
+     "safety": [
+      "CONT08",
+      "CONT09"
+     ]
+    },
+    "POS11": {
+     "name": "Poste bajo",
+     "family": "post",
+     "sector": "bajo",
+     "natural": [
+      "DIS02",
+      "DIS03",
+      "DIS06"
+     ],
+     "intent": "Ganar recepción y crear finalización o ventaja ante ayuda.",
+     "roles": {
+      "post": {
+       "src": "pool",
+       "fn": [
+        "lowInside",
+        "block",
+        "inside"
+       ],
+       "slotGroup": "post",
+       "tags": [
+        "postReceiver"
+       ]
+      },
+      "receiver": {
+       "src": "pool",
+       "fn": [
+        "wing",
+        "corner",
+        "elbow",
+        "highInside"
+       ],
+       "slotGroup": "receiver",
+       "tags": [
+        "catchShooter",
+        "outsideFinisher"
+       ]
+      }
+     },
+     "post": {
+      "role": "post",
+      "tech": "TEC11"
+     },
+     "exits": [
+      {
+       "role": "post",
+       "zones": [
+        "rim",
+        "inside",
+        "midrange"
+       ],
+       "exec": "pass",
+       "from": "director",
+       "defend": "postMarker",
+       "icpt": "postMarker"
+      },
+      {
+       "role": "receiver",
+       "zones": [
+        "three",
+        "midrange"
+       ],
+       "exec": "pass",
+       "from": "post",
+       "defend": "receiverMarker",
+       "icpt": "receiverMarker",
+       "label": "CONT05"
+      }
+     ],
+     "options": [
+      "Recurso de poste",
+      "Tiro según gesto",
+      "CONT04/CONT05 al liberado",
+      "CONT06 de compañero"
+     ],
+     "safety": [
+      "CONT08",
+      "CONT09"
+     ]
+    },
+    "POS12": {
+     "name": "Recepción alta para distribuir",
+     "family": "post",
+     "sector": "alto",
+     "natural": [
+      "DIS02",
+      "DIS03",
+      "DIS04",
+      "DIS05"
+     ],
+     "recipeFrom": "POS11",
+     "intent": "Crear otra opción desde una recepción que concentra atención defensiva.",
+     "roles": {
+      "post": {
+       "src": "pool",
+       "fn": [
+        "elbow",
+        "highInside",
+        "inside"
+       ],
+       "slotGroup": "post",
+       "tags": [
+        "highReceiver",
+        "passFromHigh"
+       ]
+      },
+      "cutter": {
+       "src": "pool",
+       "fn": "any",
+       "slotGroup": "receiver",
+       "tags": [
+        "cutter",
+        "rimReceiver"
+       ],
+       "opt": true
+      },
+      "receiver": {
+       "src": "pool",
+       "fn": [
+        "wing",
+        "corner"
+       ],
+       "slotGroup": "receiver",
+       "tags": [
+        "outsideFinisher",
+        "catchShooter"
+       ],
+       "opt": true
+      }
+     },
+     "post": {
+      "role": "post",
+      "tech": "TEC11"
+     },
+     "exits": [
+      {
+       "role": "post",
+       "zones": [
+        "reception"
+       ],
+       "exec": "pass",
+       "from": "director",
+       "defend": "postMarker",
+       "icpt": "postMarker",
+       "stage": "high"
+      }
+     ],
+     "stages": {
+      "high": {
+       "decider": "post",
+       "qual": "TAR05",
+       "exits": [
+        {
+         "role": "post",
+         "zones": [
+          "inside",
+          "midrange"
+         ],
+         "exec": "pass",
+         "from": "director",
+         "defend": "postMarker",
+         "icpt": "postMarker",
+         "qual": "TAR05"
+        },
+        {
+         "role": "cutter",
+         "zones": [
+          "rim",
+          "inside"
+         ],
+         "exec": "pass",
+         "from": "post",
+         "defend": "cutterMarker",
+         "icpt": "cutterMarker"
+        },
+        {
+         "role": "receiver",
+         "zones": [
+          "three"
+         ],
+         "exec": "pass",
+         "from": "post",
+         "defend": "receiverMarker",
+         "icpt": "receiverMarker",
+         "label": "CONT05"
+        }
+       ]
+      }
+     },
+     "options": [
+      "Pase al corte",
+      "CONT05 exterior",
+      "Tiro viable del receptor"
+     ],
+     "safety": [
+      "CONT08",
+      "CONT09"
+     ]
+    },
+    "POS13": {
+     "name": "Alto-bajo",
+     "family": "post",
+     "sector": "interior",
+     "natural": [
+      "DIS03"
+     ],
+     "recipeFrom": "POS11",
+     "intent": "Utilizar relación entre interiores para obtener recepción favorable o desplazar ayuda.",
+     "roles": {
+      "post": {
+       "src": "pool",
+       "fn": [
+        "highInside",
+        "elbow",
+        "inside"
+       ],
+       "slotGroup": "post",
+       "tags": [
+        "highReceiver",
+        "passFromHigh"
+       ]
+      },
+      "low": {
+       "src": "pool",
+       "fn": [
+        "lowInside",
+        "block",
+        "inside"
+       ],
+       "slotGroup": "post",
+       "tags": [
+        "postReceiver",
+        "continuationReceiver"
+       ]
+      },
+      "receiver": {
+       "src": "pool",
+       "fn": [
+        "wing",
+        "corner"
+       ],
+       "slotGroup": "receiver",
+       "tags": [
+        "outsideFinisher",
+        "catchShooter"
+       ],
+       "opt": true
+      }
+     },
+     "post": {
+      "role": "post",
+      "tech": "TEC11"
+     },
+     "exits": [
+      {
+       "role": "post",
+       "zones": [
+        "reception"
+       ],
+       "exec": "pass",
+       "from": "director",
+       "defend": "postMarker",
+       "icpt": "postMarker",
+       "stage": "highLow"
+      }
+     ],
+     "stages": {
+      "highLow": {
+       "decider": "post",
+       "exits": [
+        {
+         "role": "low",
+         "zones": [
+          "rim",
+          "inside"
+         ],
+         "exec": "pass",
+         "from": "post",
+         "defend": "lowMarker",
+         "icpt": "lowMarker",
+         "qual": "TAR05",
+         "label": "ALTO-BAJO"
+        },
+        {
+         "role": "post",
+         "zones": [
+          "inside",
+          "midrange"
+         ],
+         "exec": "pass",
+         "from": "director",
+         "defend": "postMarker",
+         "icpt": "postMarker",
+         "qual": "TAR05"
+        },
+        {
+         "role": "receiver",
+         "zones": [
+          "three"
+         ],
+         "exec": "pass",
+         "from": "post",
+         "defend": "receiverMarker",
+         "icpt": "receiverMarker",
+         "label": "CONT05"
+        }
+       ]
+      }
+     },
+     "options": [
+      "Pase alto-bajo",
+      "Tiro del receptor alto",
+      "CONT05",
+      "Corte o continuación si la ayuda desplaza responsabilidades"
+     ],
+     "safety": [
+      "CONT08",
+      "CONT09"
+     ]
+    },
+    "POS14": {
+     "name": "Aclarado desde cabecera",
+     "family": "isolation",
+     "sector": "central",
+     "natural": [
+      "DIS01",
+      "DIS02",
+      "DIS04",
+      "DIS05"
+     ],
+     "intent": "Crear desde el duelo y aprovechar la respuesta de ayudas.",
+     "roles": {
+      "handler": {
+       "src": "pool",
+       "fn": [
+        "wing",
+        "corner",
+        "elbow"
+       ],
+       "slotGroup": "isolationHandler",
+       "tags": [
+        "handler",
+        "penetrator",
+        "finisher"
+       ]
+      },
+      "receiver": {
+       "src": "pool",
+       "fn": [
+        "wing",
+        "corner",
+        "elbow",
+        "highInside"
+       ],
+       "slotGroup": "receiver",
+       "tags": [
+        "catchShooter",
+        "outsideFinisher"
+       ]
+      }
+     },
+     "exits": [
+      {
+       "role": "handler",
+       "zones": [
+        "rim",
+        "inside",
+        "midrange",
+        "three"
+       ],
+       "exec": "auto",
+       "defend": "primary",
+       "icpt": "primary",
+       "moved": [
+        "midrange",
+        "three"
+       ],
+       "pen": [
+        "rim",
+        "inside"
+       ]
+      },
+      {
+       "role": "receiver",
+       "zones": [
+        "three"
+       ],
+       "exec": "pass",
+       "from": "handler",
+       "defend": "receiverMarker",
+       "icpt": "receiverMarker",
+       "label": "CONT05"
+      }
+     ],
+     "options": [
+      "Tiro tras creación",
+      "Penetración",
+      "CONT04/CONT05",
+      "Conservación"
+     ],
+     "safety": [
+      "CONT08",
+      "CONT09"
+     ]
+    },
+    "POS15": {
+     "name": "Aclarado lateral",
+     "family": "isolation",
+     "sector": "lateral",
+     "natural": [
+      "DIS01",
+      "DIS02",
+      "DIS03",
+      "DIS05"
+     ],
+     "recipeFrom": "POS14",
+     "intent": "Atacar desde esa relación lateral y sus vías reales.",
+     "requires": {
+      "functions": [
+       {
+        "any": [
+         "wing"
+        ],
+        "min": 1
+       }
+      ]
+     },
+     "roles": {
+      "handler": {
+       "src": "pool",
+       "fn": [
+        "wing"
+       ],
+       "slotGroup": "isolationHandler",
+       "tags": [
+        "handler",
+        "penetrator",
+        "finisher"
+       ]
+      },
+      "receiver": {
+       "src": "pool",
+       "fn": [
+        "wing",
+        "corner"
+       ],
+       "slotGroup": "receiver",
+       "tags": [
+        "catchShooter",
+        "outsideFinisher"
+       ],
+       "opt": true
+      }
+     },
+     "exits": [
+      {
+       "role": "handler",
+       "zones": [
+        "rim",
+        "inside",
+        "midrange",
+        "three"
+       ],
+       "exec": "auto",
+       "defend": "primary",
+       "icpt": "primary",
+       "moved": [
+        "midrange",
+        "three"
+       ],
+       "pen": [
+        "rim",
+        "inside"
+       ]
+      },
+      {
+       "role": "receiver",
+       "zones": [
+        "three"
+       ],
+       "exec": "pass",
+       "from": "handler",
+       "defend": "receiverMarker",
+       "icpt": "receiverMarker",
+       "label": "CONT05"
+      }
+     ],
+     "options": [
+      "Penetración",
+      "Suspensión",
+      "CONT04/CONT05",
+      "CONT07"
+     ],
+     "safety": [
+      "CONT08",
+      "CONT09"
+     ]
+    }
+   }
+  },
+  "scenario.plans.0.midrange": "openOnly",
+  "scenario.plans.1.midrange": "openOnly",
+  "scenario.demoPlans": [
+   {
+    "teamId": "EQ01",
+    "disposition": "DIS02",
+    "defense": "ORG01",
+    "coverage": "COB01",
+    "pressureHeight": "normal",
+    "styles": {
+     "organizedPace": 3,
+     "finishPreference": 3,
+     "freedom": 3,
+     "transition": 3,
+     "elaboration": 3,
+     "offensiveRisk": 3,
+     "afterShot": 3
+    },
+    "starters": {
+     "PG": "EQ01-J01",
+     "SG": "EQ01-J03",
+     "SF": "EQ01-J06",
+     "PF": "EQ01-J08",
+     "C": "EQ01-J10"
+    },
+    "directorPriority": [
+     "EQ01-J01",
+     "EQ01-J12",
+     "EQ01-J06",
+     "EQ01-J02"
+    ],
+    "playbook": [
+     {
+      "playId": "POS01",
+      "priority": 3
+     },
+     {
+      "playId": "POS02",
+      "priority": 3
+     },
+     {
+      "playId": "POS03",
+      "priority": 3
+     },
+     {
+      "playId": "POS04",
+      "priority": 3
+     },
+     {
+      "playId": "POS05",
+      "priority": 3
+     },
+     {
+      "playId": "POS06",
+      "priority": 3
+     },
+     {
+      "playId": "POS07",
+      "priority": 3
+     },
+     {
+      "playId": "POS08",
+      "priority": 3
+     },
+     {
+      "playId": "POS09",
+      "priority": 3
+     },
+     {
+      "playId": "POS10",
+      "priority": 3
+     },
+     {
+      "playId": "POS11",
+      "priority": 3
+     },
+     {
+      "playId": "POS12",
+      "priority": 3
+     },
+     {
+      "playId": "POS13",
+      "priority": 3
+     },
+     {
+      "playId": "POS14",
+      "priority": 3
+     },
+     {
+      "playId": "POS15",
+      "priority": 3
+     }
+    ],
+    "initialTeamMoment": 0,
+    "demo": true,
+    "demoOf": "EQ01",
+    "midrange": "openOnly"
+   },
+   {
+    "teamId": "EQ02",
+    "disposition": "DIS02",
+    "defense": "ORG01",
+    "coverage": "COB01",
+    "pressureHeight": "normal",
+    "styles": {
+     "organizedPace": 3,
+     "finishPreference": 4,
+     "freedom": 3,
+     "transition": 3,
+     "elaboration": 3,
+     "offensiveRisk": 3,
+     "afterShot": 3
+    },
+    "starters": {
+     "PG": "EQ02-J01",
+     "SG": "EQ02-J04",
+     "SF": "EQ02-J05",
+     "PF": "EQ02-J08",
+     "C": "EQ02-J11"
+    },
+    "directorPriority": [
+     "EQ02-J01",
+     "EQ02-J12",
+     "EQ02-J06",
+     "EQ02-J02"
+    ],
+    "playbook": [
+     {
+      "playId": "POS01",
+      "priority": 3
+     },
+     {
+      "playId": "POS02",
+      "priority": 3
+     },
+     {
+      "playId": "POS03",
+      "priority": 3
+     },
+     {
+      "playId": "POS04",
+      "priority": 3
+     },
+     {
+      "playId": "POS05",
+      "priority": 3
+     },
+     {
+      "playId": "POS06",
+      "priority": 3
+     },
+     {
+      "playId": "POS07",
+      "priority": 3
+     },
+     {
+      "playId": "POS08",
+      "priority": 3
+     },
+     {
+      "playId": "POS09",
+      "priority": 3
+     },
+     {
+      "playId": "POS10",
+      "priority": 3
+     },
+     {
+      "playId": "POS11",
+      "priority": 3
+     },
+     {
+      "playId": "POS12",
+      "priority": 3
+     },
+     {
+      "playId": "POS13",
+      "priority": 3
+     },
+     {
+      "playId": "POS14",
+      "priority": 3
+     },
+     {
+      "playId": "POS15",
+      "priority": 3
+     }
+    ],
+    "initialTeamMoment": 0,
+    "demo": true,
+    "demoOf": "EQ02",
+    "midrange": "openOnly"
+   }
+  ]
+ },
+ "replacements": {
+  "activeCatalog.dispositions": [
+   "DIS01",
+   "DIS02",
+   "DIS03",
+   "DIS04",
+   "DIS05",
+   "DIS06"
+  ],
+  "activeCatalog.plays": [
+   "POS01",
+   "POS02",
+   "POS03",
+   "POS04",
+   "POS05",
+   "POS06",
+   "POS07",
+   "POS08",
+   "POS09",
+   "POS10",
+   "POS11",
+   "POS12",
+   "POS13",
+   "POS14",
+   "POS15"
+  ],
+  "activeCatalog.continuations": [
+   "CONT01",
+   "CONT02",
+   "CONT03",
+   "CONT04",
+   "CONT05",
+   "CONT06",
+   "CONT07",
+   "CONT08",
+   "CONT09"
+  ],
+  "activeCatalog.stylesEditable": [
+   "organizedPace",
+   "transition",
+   "elaboration",
+   "finishPreference",
+   "freedom",
+   "offensiveRisk",
+   "afterShot"
+  ],
+  "rebound.loadLogitByLevel": [
+   0,
+   0,
+   0,
+   0,
+   0
+  ]
+ },
+ "replacementNotes": {
+  "rebound.loadLogitByLevel": "Valores históricos [-0,6; -0,3; 0; 0,3; 0,6] retirados en la ruta nueva: ahora el efecto de «carga» lo producen los participantes y su acceso (anexo A, abstractLoadLogitWhenAssignmentAlreadyAccountsForLoad = 0). El perfil de MOTOR-03 conserva su versión.",
+  "activeCatalog.plays": "De seis fichas (POS01, 05, 07, 09, 11, 14) a quince.",
+  "activeCatalog.dispositions": "De DIS02 a DIS01–DIS06.",
+  "activeCatalog.continuations": "De CONT01/04/05/08/09 a CONT01–CONT09.",
+  "activeCatalog.stylesEditable": "De tres estilos editables a siete."
+ }
+}

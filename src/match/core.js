@@ -23,12 +23,14 @@ export class MatchCore {
     this.rng = createRng(this.input.seed, profile.rng);
     // `this.input` queda congelada (entrada efectiva exportable); el plan de trabajo se copia y puede cambiar por órdenes activas.
     this.teams = this.input.teams.map((t, i) => ({ idx: i, id: t.id, name: t.name, plan: deepCopy(t.plan), ids: t.players.map((p) => p.id) }));
+    this.roleOf = {}; // rol ofensivo vigente por jugador (MOTOR-04): parte del plan, cambia por órdenes en la frontera de entrada; no toca capacidades
     this.pl = {}; // jugadores (no se mutan durante la simulación)
     this.ps = {}; // estado dinámico por jugador
     this.input.teams.forEach((t, ti) => {
       for (const p of t.players) {
         Object.freeze(p.abilities);
         this.pl[p.id] = { ...p, teamIdx: ti, reach: this.reachOf(p) };
+        this.roleOf[p.id] = p.offensiveRole.code;
         this.ps[p.id] = {
           energy: p.state.energy, fouls: p.state.fouls ?? 0, available: p.state.available !== false,
           onCourt: false, slot: null, stintTenths: 0, benchTenths: 9999 * 10, locked: false,

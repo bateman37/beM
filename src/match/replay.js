@@ -3,7 +3,7 @@
 // frontera de avance que en el original. Las activaciones del historial sirven solo para comprobar, nunca se reaplican.
 // El archivo se trata como datos: no se evalúa ni se ejecuta nada de su contenido.
 import { createMatch, buildResult } from './index.js';
-import { validateInput, deepCopy, ENGINE_VERSION, EXPORT_SCHEMA, EXPORT_SCHEMA_MOTOR01 } from './data.js';
+import { validateInput, deepCopy, ENGINE_VERSION, EXPORT_SCHEMA, EXPORT_SCHEMA_MOTOR01, EXPORT_SCHEMA_MOTOR02 } from './data.js';
 import { projectBox } from './box.js';
 
 const COMMAND_KINDS = new Set(['submit', 'batch', 'cancel']);
@@ -16,6 +16,10 @@ export function validateReplayFile(file) {
   if (!file || typeof file !== 'object' || Array.isArray(file)) { problems.push('el archivo no es un encuentro exportado (se esperaba un objeto JSON)'); return out(); }
   if (file.schema === EXPORT_SCHEMA_MOTOR01) {
     problems.push(`formato ${EXPORT_SCHEMA_MOTOR01} de MOTOR-01: se puede consultar, pero no es reproducible con esta versión del motor (${file.meta?.engineVersion ?? 'versión desconocida'} ≠ ${ENGINE_VERSION})`);
+    return out({ reproducible: false, legacy: true });
+  }
+  if (file.schema === EXPORT_SCHEMA_MOTOR02) {
+    problems.push(`formato ${EXPORT_SCHEMA_MOTOR02} de MOTOR-02/03: se puede consultar, pero no es reproducible con esta versión del motor (${file.meta?.engineVersion ?? 'versión desconocida'} ≠ ${ENGINE_VERSION}); el contenido operativo cambió en MOTOR-04`);
     return out({ reproducible: false, legacy: true });
   }
   if (file.schema !== EXPORT_SCHEMA) { problems.push(`formato no reconocido: ${String(file.schema)} (se espera ${EXPORT_SCHEMA})`); return out(); }

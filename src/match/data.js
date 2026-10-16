@@ -9,9 +9,11 @@ export const ATTRS = [
 ];
 export const SLOTS = ['PG', 'SG', 'SF', 'PF', 'C'];
 export const ZONES = ['rim', 'inside', 'midrange', 'three'];
-export const ENGINE_VERSION = 'beM-motor-0.3.0-MOTOR03';
-export const INPUT_SCHEMA = 'beM-match-input/1';
-export const EXPORT_SCHEMA = 'beM-match-export/2';
+export const ENGINE_VERSION = 'beM-motor-0.4.0-MOTOR04';
+export const INPUT_SCHEMA = 'beM-match-input/2';
+export const EXPORT_SCHEMA = 'beM-match-export/3';
+export const EXPORT_SCHEMA_MOTOR02 = 'beM-match-export/2';
+export const MIDRANGE_POLICIES = ['avoid', 'openOnly', 'seek'];
 export const EXPORT_SCHEMA_MOTOR01 = 'beM-match-export/1';
 
 const num = (v) => Number(v);
@@ -60,6 +62,19 @@ export function applyExtension(profile, ...exts) {
     if (problems.length) throw new Error(`Extensión de perfil no válida: ${problems.join('; ')}`);
     eff.extensions.push({ id: ext.seedExtensionId, status: ext.status, basedOn: ext.basedOn });
     ids.push(ext.seedExtensionId);
+    const replaced = [];
+    if (ext.replacements) {
+      // Sustituciones EXPLÍCITAS y trazables (MOTOR-04): el campo debe existir; el valor anterior queda registrado en la identidad.
+      for (const [path, value] of Object.entries(ext.replacements)) {
+        const keys = path.split('.');
+        let o = eff;
+        for (const k of keys.slice(0, -1)) o = o[k];
+        const last = keys[keys.length - 1];
+        replaced.push({ path, before: deepCopy(o[last]), note: ext.replacementNotes?.[path] ?? null });
+        o[last] = deepCopy(value);
+      }
+      eff.extensions[eff.extensions.length - 1].replaced = replaced;
+    }
     if (ext.additions) {
       for (const [path, value] of Object.entries(ext.additions)) {
         const keys = path.split('.');
@@ -80,6 +95,10 @@ export function validateExtension(profile, ext) {
   if (ext.basedOn !== profile.id) out.push(`la extensión se basa en ${ext.basedOn}, no en ${profile.id}`);
   if (ext.additions) {
     if (!ext.additions || typeof ext.additions !== 'object' || !Object.keys(ext.additions).length) out.push('additions vacías');
+    for (const path of Object.keys(ext.replacements ?? {})) {
+      let o = profile;
+      for (const k of path.split('.')) { if (o == null || typeof o !== 'object' || !(k in o)) { out.push(`replacements: no existe ${path}`); o = undefined; break; } o = o[k]; }
+    }
     return out;
   }
   if (!(ext.timeOutRecoveryEnergyPoints >= 0)) out.push('timeOutRecoveryEnergyPoints');
@@ -159,18 +178,21 @@ export function validateInput(input, profile) {
     else plan.directorPriority.forEach((id, i) => { if (!ids.has(id)) add(`${tp}.plan.directorPriority[${i}]`, `el jugador ${id} no pertenece al equipo`); });
     const seen = new Set();
     (plan.playbook ?? []).forEach((b, i) => {
-      if (!playIds.includes(b.playId)) add(`${tp}.plan.playbook[${i}].playId`, `ficha ${b.playId} no activa en MOTOR-01`);
+      if (!playIds.includes(b.playId)) add(`${tp}.plan.playbook[${i}].playId`, `ficha ${b.playId} fuera del catálogo activo`);
       if (seen.has(b.playId)) add(`${tp}.plan.playbook[${i}].playId`, `ficha ${b.playId} repetida`);
       seen.add(b.playId);
       if (!Number.isInteger(b.priority) || b.priority < 1 || b.priority > 5) add(`${tp}.plan.playbook[${i}].priority`, 'la prioridad es un entero 1-5');
     });
-    for (const id of playIds) if (!seen.has(id)) add(`${tp}.plan.playbook`, `falta la ficha ${id}`);
+    // MOTOR-04: el libro lista solo las fichas ACTIVAS; una ficha ausente está desactivada (no se borra su definición global).
     for (const f of ['disposition', 'defense', 'coverage']) {
       if (!plan[f]) add(`${tp}.plan.${f}`, 'falta');
     }
-    if (plan.disposition !== 'DIS02') add(`${tp}.plan.disposition`, 'solo DIS02 está activa en MOTOR-01');
-    if (plan.defense !== 'ORG01') add(`${tp}.plan.defense`, 'solo ORG01 está activa en MOTOR-01');
-    if (plan.coverage !== 'COB01') add(`${tp}.plan.coverage`, 'solo COB01 está activa en MOTOR-01');
+    if (plan.disposition && !(profile.activeCatalog.dispositions ?? []).includes(plan.disposition)) add(`${tp}.plan.disposition`, `disposición ${plan.disposition} fuera del catálogo activo`);
+    if (!MIDRANGE_POLICIES.includes(plan.midrange)) add(`${tp}.plan.midrange`, `la media distancia es una de: ${MIDRANGE_POLICIES.join(', ')}`);
+    if (plan.defense !== 'ORG01') add(`${tp}.plan.defense`, 'solo ORG01 está activa hasta MOTOR-05');
+    if (plan.coverage !== 'COB01') add(`${tp}.plan.coverage`, 'solo COB01 está activa hasta MOTOR-05');
+    const roleDict = profile.fixtureContract.offensiveRoleDictionary;
+    t.players.forEach((p, pi) => { if (!roleDict[p.offensiveRole?.code]) add(`${tp}.players[${pi}](${p.id}).offensiveRole`, `rol ofensivo ${p.offensiveRole?.code ?? 'ausente'} fuera del catálogo`); });
   });
   if (input.teams[0].id === input.teams[1].id) add('teams', 'los dos equipos no pueden ser el mismo');
   return errs;
@@ -227,4 +249,17 @@ export function validateProfileAndFixtures(profile, allPlayers) {
     for (const id of plan.directorPriority) if (!mids.has(id)) add(`scenario.${plan.teamId}.directorPriority`, `${id} no existe`);
   }
   return errs;
+}
+
+// Migración EXPLÍCITA de una entrada editada con una versión anterior: añade solo los campos nuevos de MOTOR-04 con su valor SEM inicial
+// (media distancia «aceptar si está liberada»). Devuelve { input, added } para informar; no cambia ningún otro valor.
+export function upgradeInput(input, profile) {
+  const out = deepCopy(input); const added = [];
+  const mid = profile.scenario?.plans?.[0]?.midrange ?? 'openOnly';
+  for (const t of out.teams ?? []) {
+    if (t.plan && !t.plan.midrange) { t.plan.midrange = mid; added.push(`${t.id}: media distancia = ${mid}`); }
+    for (const k of Object.keys(profile.scenario.plans[0].styles)) if (t.plan?.styles && t.plan.styles[k] == null) { t.plan.styles[k] = profile.scenario.plans[0].styles[k]; added.push(`${t.id}: estilo ${k}`); }
+  }
+  out.schema = INPUT_SCHEMA;
+  return { input: out, added };
 }

@@ -10,7 +10,9 @@ export function clockText(tenths) {
 export function describeEvent(ev, { name, teamName }) {
   const n = (id) => (id ? name(id) : '—');
   const e = ev.effects ?? {}; const i = ev.intent ?? {}; const p = ev.participants ?? {};
-  const origin = i.origen ? ` (${i.origen}${i.continuacion ? `, ${[].concat(i.continuacion).join('+')}` : ''})` : '';
+  const decide = i.decidePor ? `; decide ${n(i.decidePor.jugador)} tras recibir` : '';
+  const nega = i.negacionPrevia ? '; tras negarse la primera opción' : '';
+  const origin = i.origen ? ` (${i.origen}${i.continuacion ? `, ${[].concat(i.continuacion).join('+')}` : ''}${decide}${nega})` : '';
   switch (ev.type) {
     case 'tipoff': return `Salto inicial: gana ${e.gana}. La flecha apunta a ${e.flechaApunta === 0 ? 'el primer equipo' : 'el segundo equipo'}.`;
     case 'period_start': return `Comienza el periodo ${ev.period}. Saca ${teamName(ev.team)} (${i.origen}).`;
@@ -18,7 +20,7 @@ export function describeEvent(ev, { name, teamName }) {
     case 'interval': return `Intervalo (${i.origen}); recuperación +${e.recuperacion} de energía.`;
     case 'inbound': return e && i.relojEnMarcha ? `Saque con reloj en marcha para ${teamName(ev.team)}.` : `Saque de ${teamName(ev.team)} con reloj parado.`;
     case 'advance': return `${teamName(ev.team)} avanza el balón a pista de ataque.`;
-    case 'reorganization': return `${teamName(ev.team)} reorganiza (${i.motivo}).`;
+    case 'reorganization': return i.disposicion ? `${teamName(ev.team)} se reorganiza a ${i.disposicion} (${i.motivo}).` : `${teamName(ev.team)} reorganiza (${i.motivo}).`;
     case 'timeout': return `Tiempo muerto de ${teamName(ev.team)} (${e.ventana}). Le quedan ${e.restantesBloque} en este bloque; todos los jugadores disponibles recuperan +${e.recuperacionEnergia} de energía.`;
     case 'substitution': return `Cambio en ${teamName(ev.team)}: entra ${n(p.entra)}, sale ${n(p.sale)} (${i.motivo}).`;
     case 'foul': return `Falta de ${n(p.infractor)} sobre ${n(p.sobre)} (${e.causaTirosLibres}). Faltas: ${e.faltasPersonales}${e.excluido ? ', excluido' : ''}.`;

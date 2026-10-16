@@ -30,6 +30,14 @@ export const ORDER_TYPES = {
     kind: 'plan', label: 'Director y alternativas', scope: 'persistente hasta sustitución válida',
     boundary: 'siguiente asignación compatible; no cambia quién ejecutó un pase anterior',
   },
+  disposition: {
+    kind: 'plan', label: 'Disposición', scope: 'persistente hasta sustitución válida',
+    boundary: 'próxima entrada de posesión o reorganización compatible; no recoloca a cinco jugadores en mitad de una ventaja',
+  },
+  roles: {
+    kind: 'plan', label: 'Roles ofensivos', scope: 'persistente hasta sustitución válida',
+    boundary: 'próxima asignación de funciones (entrada o reorganización); no cambia capacidades ni una ficha ya comprometida',
+  },
   delegate: {
     kind: 'plan', label: 'Devolver el quinteto al entrenador', scope: 'ámbito «quinteto»',
     boundary: 'siguiente decisión delegada de ese ámbito; no dispara cambios retroactivos',
@@ -52,7 +60,7 @@ export const ORDER_TYPES = {
   },
 };
 
-export const EDITABLE_STYLES = ['organizedPace', 'finishPreference', 'freedom'];
+export const EDITABLE_STYLES = ['organizedPace', 'transition', 'elaboration', 'finishPreference', 'freedom', 'offensiveRisk', 'afterShot'];
 
 // Qué puede observar la interfaz de cada estado (mensajes funcionales; no se muestran nombres de tablas ni fórmulas).
 export const STATE_HELP = {

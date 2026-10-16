@@ -3,12 +3,14 @@
 import { clamp, sigmoid, logit, round } from './mathx.js';
 import { SLOTS, ZONES } from './data.js';
 import { MatchCore } from './core.js';
-import { PLAY_SPEC, fit } from './plays.js';
+import { fit } from './plays.js';
 import { vocationFactor } from './formulas.js';
 import { toTenths, periodLengthTenths, isOvertime, foulPeriodKey } from './rules.js';
 
 const P = MatchCore.prototype;
 const ZONE_TEC = { three: 'TEC01', midrange: 'TEC02', inside: 'TEC03', rim: 'TEC04' };
+// p' = f·p / (1 − p + f·p); los extremos 0 y 1 se conservan.
+export const oddsAdjust = (p, f) => (p <= 0 || p >= 1 || f === 1 ? p : (f * p) / (1 - p + f * p));
 
 // ---------------------------------------------------------------- tiempo en varias partes dentro de un hecho
 P.consumeParts = function consumeParts(parts) {
@@ -53,7 +55,7 @@ P.resolveAttempt = function resolveAttempt(ex) {
   const t = this.consumeParts(plan.parts);
   const base = {
     t, team: ex.team,
-    intent: { origen: ex.origin, continuacion: ex.chain?.length ? ex.chain : (ex.label ?? null), oportunidad: ex.opportunity ?? null, zona: ex.zone, calidad: ex.quality?.cls ?? null, categoria: cat, ejecucion: ex.exec, ...this.directorTrace() },
+    intent: { origen: ex.origin, continuacion: ex.chain?.length ? ex.chain : (ex.label ?? null), oportunidad: ex.opportunity ?? null, zona: ex.zone, calidad: ex.quality?.cls ?? null, categoria: cat, ejecucion: ex.exec, ...this.directorTrace(), ...this.playTrace(ex) },
     participants: this.participantsOf(ex),
   };
   switch (cat) {
@@ -69,20 +71,48 @@ P.resolveAttempt = function resolveAttempt(ex) {
 };
 
 // ---------------------------------------------------------------- salidas (jugador, zona): pesos de entrenador, preferencia y valor
-P.scoreExits = function scoreExits(team, exits, shotWeights) {
-  // coach: pesos de salida de la ficha * estilo * reparto entre los actores de esa zona (abilityFit y vocación)
+// qctx: cómo se estimará la calidad previa de cada salida (solo para la instrucción de media distancia):
+//   { ca, cd, k } calidad nativa de la ficha · 'TAR03' / 'TAR02' calidad por desmarque o manejo del propio actor.
+P.scoreExits = function scoreExits(team, exits, shotWeights, qctx = null) {
+  // las salidas de recepción (CONT02/CONT03) agregan las salidas finales de su etapa: la decisión posterior es del receptor
+  const flat = [];
+  for (const e of exits) { if (e.members) flat.push(...e.members); else flat.push(e); }
   const byZone = {};
-  for (const e of exits) {
+  for (const e of flat) {
     const share = fit(this.profile, this.eff(e.actor, ZONE_TEC[e.zone])) * vocationFactor(this.profile, this.pl[e.actor].finishingVocation);
     e._share = share; (byZone[e.zone] ??= []).push(e);
   }
-  for (const e of exits) {
+  for (const e of flat) {
     const tot = byZone[e.zone].reduce((s, x) => s + x._share, 0);
     e.coach = shotWeights ? (shotWeights[e.zone] ?? 0) * this.zoneStyleMult(team, e.zone) * (e._share / tot) : null;
     e.pref = this.prefWeight(e);
     e.adapt = this.estimateValue(e);
+    if (e.zone === 'midrange') e.mid = this.midrangeFactor(team, e, this.pComfortableFor(e, e.via ? (e.qual ?? 'TAR03') : qctx));
+  }
+  for (const e of exits) {
+    if (!e.members) continue;
+    e.coach = shotWeights ? e.members.reduce((s, x) => s + x.coach, 0) : null;
+    e.pref = e.members.reduce((s, x) => s + x.pref, 0);
+    e.adapt = e.members.reduce((s, x) => s + x.adapt, 0);
+    const tot = e.members.reduce((s, x) => s + x.pref, 0) || 1;
+    e.riskEst = e.members.reduce((s, x) => s + (x.pref / tot) * (x.riskEst ?? 0), 0);
+    const midW = e.members.filter((x) => x.mid != null);
+    e.mid = midW.length ? e.members.reduce((s, x) => s + (x.pref / tot) * (x.mid ?? 1), 0) : null;
   }
   return exits;
+};
+// Probabilidad de calidad previa cómoda de una salida de media distancia (esperanza: la calidad real se sortea después de elegir).
+P.pComfortableFor = function pComfortableFor(e, qctx) {
+  if (e.window || !e.defend) return this.qualityDistribution(0, 0, 0, false).p.comfortable;
+  if (qctx && typeof qctx === 'object') return this.qualityDistribution(qctx.ca, qctx.cd, qctx.k ?? 0, true).p.comfortable;
+  const task = qctx === 'TAR02' || qctx === 'TAR05' ? qctx : 'TAR03';
+  const ca = task === 'TAR02' ? this.taskValue('TAR02', 'attack', { handler: e.actor }) : task === 'TAR05' ? this.taskValue('TAR05', 'attack', { post: e.actor }) : this.taskValue('TAR03', 'attack', { receiver: e.actor });
+  const cd = task === 'TAR02' ? this.taskValue('TAR02', 'defense', { primary: e.defend }) : task === 'TAR05' ? this.taskValue('TAR05', 'defense', { postMarker: e.defend }) : this.taskValue('TAR03', 'defense', { receiverMarker: e.defend });
+  return this.qualityDistribution(ca, cd, 0, true).p.comfortable;
+};
+// Elemento del mezclador a partir de una salida (peso de entrenador, preferencia, valor y los ajustes de estilo de una sola aplicación).
+P.exitItem = function exitItem(x, keySuffix = '') {
+  return { key: x.key + keySuffix, coach: x.coach, pref: x.pref, adapt: x.adapt, exit: x, risk: x.riskEst, mid: x.mid, cont: !!x.label || !!x.members };
 };
 
 // ---------------------------------------------------------------- calidad, ayuda y pases adicionales sobre una salida
@@ -136,7 +166,8 @@ P.acceptance = function acceptance(team, decider, techValue) {
 };
 
 // ---------------------------------------------------------------- reorganización (CONT09)
-P.reorganize = function reorganize(poss, reason, playId) {
+// También sirve para pasar a una disposición compatible (MOTOR-04): mismo coste real de tiempo y mismo hecho registrado.
+P.reorganize = function reorganize(poss, reason, playId, { toDisposition = null } = {}) {
   const f = this.profile.selection.organizedDurationFactor[this.styleOf(poss.team).organizedPace - 1];
   const d = this.profile.durationSeconds.reorganization;
   const min = Math.round(d[0] * f * 10) + Math.round(this.profile.durationSeconds.organizedShot[0] * f * 10);
@@ -145,12 +176,28 @@ P.reorganize = function reorganize(poss, reason, playId) {
   const t = this.consume(tenths, 'organized');
   poss.disorganized = false; poss.reorgCount = (poss.reorgCount ?? 0) + 1;
   if (playId) (poss.excludePlays ??= new Set()).add(playId);
-  this.cover('CONT09 reorganización');
-  this.emit('reorganization', { t, team: poss.team, intent: { origen: 'CONT09', motivo: reason, fichaAbandonada: playId ?? null }, effects: { reorganizaciones: poss.reorgCount } });
+  if (toDisposition) poss.disposition = toDisposition;
+  this.activatePlanOrders(this.period, { entry: true }); // frontera de reorganización compatible: entran disposición y roles pendientes
+  this.cover(toDisposition ? 'reorganización a otra disposición' : 'CONT09 reorganización');
+  this.emit('reorganization', { t, team: poss.team, intent: { origen: toDisposition ? 'cambio de disposición' : 'CONT09', motivo: reason, fichaAbandonada: playId ?? null, ...(toDisposition ? { disposicion: toDisposition } : {}) }, effects: { reorganizaciones: poss.reorgCount } });
   return true;
 };
 
 // ---------------------------------------------------------------- juego organizado
+// Salidas de primer nivel de una ficha. Una salida de recepción (CONT02/CONT03/alto-bajo) agrega las salidas finales de su etapa;
+// la decisión posterior se toma, con su propia lectura, cuando el receptor ya tiene el balón.
+P.exitsFor = function exitsFor(entry) {
+  const spec = entry.spec;
+  const exits = this.buildExits(entry.team ?? this.poss.team, entry.playId, entry.roles, entry.def);
+  const out = [];
+  for (const x of exits) {
+    if (!x.stage) { out.push(x); continue; }
+    x.members = this.buildExits(this.poss.team, entry.playId, entry.roles, entry.def, spec.stages[x.stage].exits, true).map((m) => ({ ...m, via: x.stage }));
+    if (x.members.length) out.push(x);
+  }
+  return out;
+};
+
 P.organizedAction = function organizedAction(poss) {
   const team = poss.team;
   const f = this.profile.selection.organizedDurationFactor[this.styleOf(team).organizedPace - 1];
@@ -159,47 +206,122 @@ P.organizedAction = function organizedAction(poss) {
   if (poss.oreb) { const r = this.afterOffensiveRebound(poss); if (r) { this.noteCall(this.callFor(poss), 'opción directa previa: continuación tras rebote ofensivo'); return r; } }
   const dir = this.pickDirector(team);
   poss.director = dir;
-  const el = this.eligiblePlays(team, dir.id, poss.excludePlays);
   const call = this.callFor(poss);
+  const el = this.eligiblePlays(team, dir.id, poss.excludePlays, poss, call ? [call.content.playId] : []);
   if (!el.length) { this.noteCall(call, 'sin ficha elegible: recurso sencillo'); return this.simpleResource(poss, { origin: 'ESP15', denied: null }); }
-  const { L, q } = this.libertyAndReading(team, dir.id);
-  const coach = this.coachPlayDistribution(el);
+  const lq = this.libertyAndReading(team, dir.id);
+  const { L, q } = lq;
+  const coach = this.coachPlayDistribution(el.filter((e) => !e.called));
   if (call) {
     // Orden manual específica: la ficha llamada recibe todo el peso del libro si es realizable. La lectura del director
     // (libertad) y la negación posterior siguen actuando; no se fuerza un inicio ni un desenlace.
-    if (el.some((e) => e.playId === call.content.playId)) { this.resumeCall(call); for (const k of Object.keys(coach)) coach[k] = k === call.content.playId ? 1 : 0; }
+    if (el.some((e) => e.playId === call.content.playId)) { this.resumeCall(call); for (const e of el) coach[e.playId] = e.playId === call.content.playId ? 1 : 0; }
     else this.suspendCall(call, `${call.content.playId} no realizable (sin participante compatible o ya negada en esta posesión)`);
   }
   for (const e of el) {
-    e.exits = this.scoreExits(team, this.buildExits(team, e.playId, e.roles, e.def), e.play.shotWeights);
+    e.team = team;
+    e.q = this.playQuality(e);
+    e.exits = this.scoreExits(team, this.exitsFor(e), e.play.shotWeights, { ca: e.q.CA, cd: e.q.CD, k: 0 });
     const ct = e.exits.reduce((s, x) => s + x.coach, 0) || 1;
     e.pref = e.exits.reduce((s, x) => s + (x.coach / ct) * x.pref, 0);
     e.adapt = e.exits.reduce((s, x) => s + (x.coach / ct) * x.adapt, 0);
-    e.coach = coach[e.playId];
+    e.coach = coach[e.playId] ?? 0;
+    if (e.called && !(call && call.content.playId === e.playId)) e.coach = 0;
+    if (e.called) { e.pref = 0; e.adapt = 0; } // una ficha no activa en el libro solo existe por la llamada: no entra por autonomía
   }
-  const mixed = this.mixIntention(el.map((e) => ({ key: e.playId, coach: e.coach, pref: e.pref, adapt: e.adapt, entry: e })), { L, q }, 'ficha');
+  const mixed = this.mixIntention(el.map((e) => ({ key: e.playId, coach: e.coach, pref: e.pref, adapt: e.adapt, entry: e })), lq, 'ficha');
   const chosen = this.pick(mixed, 'ficha:selección');
   const entry = chosen.entry;
   if (call && entry.playId !== call.content.playId && el.some((e) => e.playId === call.content.playId)) this.noteCall(call, 'la lectura del director eligió otra ficha');
+  poss.selection = { ficha: entry.playId, decide: dir.id, L: round(L, 4), q: round(q, 4), pEntrenador: round(entry.coach, 4), pFinal: round(chosen.w, 4), prioridad: entry.priority };
+  if (entry.reorgTo && !this.reorganize(poss, `ficha ${entry.playId} necesita la disposición ${entry.reorgTo}`, null, { toDisposition: entry.reorgTo })) {
+    // no cabe la reorganización (no debería ocurrir: se comprobó al evaluar): la llamada sigue esperando dentro de su ámbito
+    this.noteCall(call, `${entry.playId} necesitaba reorganizar y no hay tiempo`);
+    return this.simpleResource(poss, { origin: 'ESP15', denied: null });
+  }
+  poss.fromCall = !!(call && call.content.playId === entry.playId);
   this.consumeCall(poss, entry.playId);
   poss.playStarted = true;
   this.cover(entry.playId);
-  return this.runPlay(poss, entry, dir, { L, q });
+  return this.runPlay(poss, entry, dir, lq);
+};
+
+// Decisión del receptor tras una recepción (CONT02, CONT03, alto-bajo…): con SU Visión, Decisiones, Iniciativa y libertad.
+// El director inicial no presta su lectura ni el receptor hereda el pase del base: cada elemento usa al actor real.
+P.receiverDecision = function receiverDecision(ex, entry) {
+  const st = entry.spec.stages[ex.stage];
+  const decider = entry.roles[st.decider];
+  const dq = this.libertyAndReading(ex.team, decider);
+  const members = this.buildExits(ex.team, entry.playId, entry.roles, entry.def, st.exits, true).map((m) => ({ ...m, via: ex.stage }));
+  const scored = this.scoreExits(ex.team, members, null);
+  const label = `decisión:${entry.playId}:${ex.stage}`;
+  const picked = this.pick(this.mixIntention(scored.map((x) => this.exitItem(x)), dq, label), label).exit;
+  const first = ex.label;
+  Object.assign(ex, picked, { team: ex.team, stage: null });
+  delete ex.members; delete ex.via;
+  ex.chain = [first, picked.label].filter(Boolean);
+  ex.extraPasses = 1 + (picked.exec === 'pass' && picked.passer === decider ? 1 : 0); // recepción real + pase posterior, si lo hay
+  ex.decidedBy = decider; ex.decisionLq = { L: round(dq.L, 4), q: round(dq.q, 4) };
+  this.cover(first);
+  return ex;
+};
+
+// Ladder de respuestas ante una recepción negada: CONT06 (corte ante negación) y CONT07 (rechazo de la primera opción), cada una
+// con la aceptación de oportunidad inmediata ya existente. Devuelve el resultado de la resolución, o null para seguir con CONT09/CONT08.
+P.denialAlternative = function denialAlternative(poss, entry, ex, lq) {
+  if (ex.afterDenial) return null;
+  const team = ex.team; const spec = entry.spec;
+  const retry = (alt, label) => {
+    const q2 = alt.exec === 'dribble' && !alt.passer
+      ? this.qualityOf(alt, this.taskValue('TAR02', 'attack', { handler: alt.actor }), alt.defend ? this.taskValue('TAR02', 'defense', { primary: alt.defend }) : 0, 0, !!alt.defend)
+      : this.qualityOf(alt, this.taskValue('TAR03', 'attack', { receiver: alt.actor }), alt.defend ? this.taskValue('TAR03', 'defense', { receiverMarker: alt.defend }) : 0, 0, !!alt.defend);
+    Object.assign(ex, alt, { team, quality: q2, afterDenial: true, window: false });
+    delete ex.members;
+    ex.chain = [...(ex.chain ?? []).filter((c) => c !== label), label];
+    ex.extraPasses = (ex.extraPasses ?? 0) + (alt.exec === 'pass' ? 1 : 0);
+    if (q2.cls === 'forced') return null; // vuelve a negarse: ya no hay otra alternativa
+    return this.resolveAttempt(ex);
+  };
+  const first = { actor: ex.actor, zone: ex.zone, role: ex.role };
+  const cut = spec.denial?.cut;
+  if (cut && ex.exec === 'pass' && ex.role === cut.role) {
+    const [cx] = this.buildExits(team, entry.playId, entry.roles, entry.def, [{ role: cut.role, zones: [cut.zone], exec: 'pass', from: cut.from, defend: cut.defend, icpt: cut.icpt, label: cut.label }], true);
+    if (cx && this.bernoulli(this.acceptance(team, ex.holder, this.eff(cx.actor, cut.tech)), 'CONT06:aceptación')) {
+      this.cover('CONT06 corte ante negación');
+      ex.negada = { de: first };
+      return retry(cx, cut.label);
+    }
+  }
+  // CONT07: otra vía de la misma ficha, conocida y real (distinta del actor y rol negados)
+  const alts = this.exitsFor(entry).flatMap((x) => (x.members ?? [x])).filter((x) => x.role !== first.role && x.actor !== first.actor && x.zone !== 'reception');
+  if (alts.length) {
+    const best = Math.max(...alts.map((x) => this.eff(x.actor, ZONE_TEC[x.zone])));
+    if (this.bernoulli(this.acceptance(team, ex.holder, best), 'CONT07:aceptación')) {
+      const sc = this.scoreExits(team, alts.map((m) => ({ ...m, via: m.via ?? 'alt' })), null);
+      const label = `rechazo:${entry.playId}`;
+      const pk = this.pick(this.mixIntention(sc.map((x) => this.exitItem(x)), lq, label), label).exit;
+      this.cover('CONT07 rechazo de primera opción');
+      ex.negada = { de: first };
+      return retry({ ...pk, label: 'CONT07', via: undefined }, 'CONT07');
+    }
+  }
+  return null;
 };
 
 P.runPlay = function runPlay(poss, entry, dir, lq) {
   const team = poss.team;
-  const { CA, CD } = this.playQuality(entry);
+  const { CA, CD } = entry.q ?? this.playQuality(entry);
   // salida (jugador, zona)
-  const mixed = this.mixIntention(entry.exits.map((x) => ({ key: x.key + '|' + x.zone, coach: x.coach, pref: x.pref, adapt: x.adapt, exit: x })), lq, `salida:${entry.playId}`);
+  const mixed = this.mixIntention(entry.exits.map((x) => this.exitItem(x)), lq, `salida:${entry.playId}`);
   const ex = { ...this.pick(mixed, 'salida').exit };
-  Object.assign(ex, { team, origin: entry.playId, kind: 'organized', roles: entry.roles });
-  const spec = PLAY_SPEC[entry.playId];
-  const extra = {};
+  delete ex.members;
+  Object.assign(ex, { team, origin: entry.playId, kind: 'organized', roles: entry.roles, family: entry.family, sector: entry.spec.sector });
+  if (entry.spec.fixing && ex.role !== 'cutter') ex.cutRecord = { cortador: entry.roles.cutter, recibe: false }; // el corte fijó sin recibir: utilidad resuelta, no una recepción
+  let nativeQuality = true;
+  if (ex.stage) { this.receiverDecision(ex, entry); nativeQuality = false; }
   // ayuda en salidas interiores y lectura de la ventana libre
   const help = this.tryHelp(ex, lq.L, lq.q);
   let kctx = help.K;
-  let nativeQuality = true;
   if (help.helper) {
     ex.helper = help.helper; ex.helpArrived = help.arrives;
     if (help.abandoned === ex.actor) {
@@ -208,17 +330,17 @@ P.runPlay = function runPlay(poss, entry, dir, lq) {
       const tech = this.recipeObj({ [ZONE_TEC.three]: 1 }, help.abandoned);
       const pAcc = this.acceptance(team, ex.holder, tech);
       if (this.bernoulli(pAcc, 'CONT04:aceptación')) {
-        const cand = ['three', 'midrange', 'rim'].map((zone) => ({ actor: help.abandoned, zone, exec: 'pass', passer: ex.holder, icpt: null, defend: null, moved: false, offContact: null, holder: ex.holder, role: 'abierto', key: `abierto:${zone}` }));
-        const sc = this.scoreExits(team, cand, null);
-        const pickd = this.pick(this.mixIntention(sc.map((x) => ({ key: x.zone, coach: null, pref: x.pref, adapt: x.adapt, exit: x })), lq, 'salida:descarga'), 'salida:descarga').exit;
+        const cand = ['three', 'midrange', 'rim'].map((zone) => ({ actor: help.abandoned, zone, exec: 'pass', passer: ex.holder, icpt: null, defend: null, moved: false, offContact: null, holder: ex.holder, role: 'abierto', key: `abierto:${zone}`, qual: null, stage: null }));
+        const sc = this.scoreExits(team, cand, null, 'TAR03');
+        const pickd = this.pick(this.mixIntention(sc.map((x) => this.exitItem(x)), lq, 'salida:descarga'), 'salida:descarga').exit;
         Object.assign(ex, pickd, { window: true, label: 'CONT04', helper: help.helper, helpArrived: help.arrives, helpWindow: 'descarga' });
-        ex.chain = ['CONT04']; ex.extraPasses = 1; nativeQuality = false; kctx = 0;
+        ex.chain = [...(ex.chain ?? []), 'CONT04']; ex.extraPasses = (ex.extraPasses ?? 0) + 1; nativeQuality = false; kctx = 0;
         this.cover('CONT04 descarga');
       }
     }
   }
-  // cobertura COB01
-  if (nativeQuality && entry.playId === 'POS01') {
+  // cobertura COB01 (contención drop del bloqueo directo): solo en las fichas que la declaran y con calidad nativa
+  if (nativeQuality && entry.spec.coverage) {
     const cv = this.profile.opportunity.coverageContainment;
     if (ex.pullup) kctx += cv.handlerPullupQualityLogit;
     if (ex.roller) kctx += cv.rollerQualityLogit;
@@ -230,17 +352,22 @@ P.runPlay = function runPlay(poss, entry, dir, lq) {
   let q;
   if (nativeQuality) {
     q = ex.window ? this.qualityOf(ex, CA, 0, kctx, false) : this.qualityOf(ex, CA, CD, kctx, true);
+  } else if (ex.qual === 'TAR05' && !ex.window && ex.defend) {
+    q = this.qualityOf(ex, this.taskValue('TAR05', 'attack', { post: ex.actor }), this.taskValue('TAR05', 'defense', { postMarker: ex.defend }), 0, true);
   } else {
-    // el actor recibe tras un pase adicional o una descarga: calidad por desmarque (TAR03) frente a su marcador
+    // el actor recibe tras un pase adicional, una descarga o una recepción: calidad por desmarque (TAR03) frente a su marcador
     const ca = this.taskValue('TAR03', 'attack', { receiver: ex.actor });
     if (ex.window || !ex.defend) q = this.qualityOf(ex, ca, 0, 0, false);
     else q = this.qualityOf(ex, ca, this.taskValue('TAR03', 'defense', { receiverMarker: ex.defend }), 0, true);
   }
   ex.quality = q;
   if (ex.window) { ex.opportunity = 'ESP06'; this.cover('ESP06 recepción liberada'); }
-  // negación (calidad forzada): reorganizar (CONT09) o recurso sencillo
+  // negación (calidad forzada): corte / rechazo, reorganizar (CONT09) o recurso sencillo
   if (q.cls === 'forced' && !ex.window) {
     this.cover('sistema negado');
+    if (ex.exec === 'pass' && ex.actor !== ex.holder) (poss.denials ??= []).push({ ficha: entry.playId, actor: ex.actor, holder: ex.holder });
+    const alt = this.denialAlternative(poss, entry, ex, lq);
+    if (alt) return alt;
     const pr = this.profile.continuation.reorganizeIfDeniedProbability;
     const f = this.profile.selection.organizedDurationFactor[this.styleOf(team).organizedPace - 1];
     const d = this.profile.durationSeconds;
@@ -253,25 +380,28 @@ P.runPlay = function runPlay(poss, entry, dir, lq) {
   return this.resolveAttempt(ex);
 };
 
-// Pase adicional: el actor pasa a otro compañero y la salida pasa a ser la de este.
+// Pase adicional: el actor pasa a otro compañero y la salida pasa a ser la de este. La elaboración (estilo) multiplica el peso de
+// continuar frente a aceptar la finalización: p' = f·p / (1 − p + f·p) (la misma probabilidad base del perfil; nivel 3 = sin cambio).
 P.extraPassChain = function extraPassChain(ex, lq, entry) {
   const cp = this.profile.continuation; const d = this.profile.durationSeconds;
   const f = this.profile.selection.organizedDurationFactor[this.styleOf(ex.team).organizedPace - 1];
+  const ef = this.profile.selection.elaborationContinuationWeightFactor[this.styleOf(ex.team).elaboration - 1];
   ex.chain = ex.chain ?? []; ex.extraPasses = ex.extraPasses ?? 0;
+  const pCont = oddsAdjust(cp.extraPassProbability, ef);
   for (let guard = 0; guard < cp.maxExtraPasses; guard++) {
     const need = Math.round(d.organizedShot[0] * f * 10) + (ex.extraPasses + 1) * Math.round(d.continuation[0] * 10) + 1;
     if (this.limit() <= need) return;
     const touched = new Set([ex.actor, ex.passer, ex.holder]);
     const cands = this.onCourt(ex.team).filter((id) => !touched.has(id) && this.ps[id].available);
     if (!cands.length) return;
-    if (!this.bernoulli(cp.extraPassProbability, 'CONT05:pase_adicional')) return;
+    if (!this.bernoulli(pCont, 'CONT05:pase_adicional')) return;
     // receptor entre los compañeros disponibles; mezcla de preferencias/valor (sin libro: es una decisión de jugador)
     const pairs = [];
     for (const id of cands) for (const zone of ZONES) {
-      pairs.push({ actor: id, zone, exec: 'pass', passer: ex.actor, icpt: this.markerOf(id), defend: this.markerOf(id), moved: false, offContact: null, holder: ex.actor, role: 'adicional', key: `${id}:${zone}` });
+      pairs.push({ actor: id, zone, exec: 'pass', passer: ex.actor, icpt: this.markerOf(id), defend: this.markerOf(id), moved: false, offContact: null, holder: ex.actor, role: 'adicional', key: `${id}:${zone}`, qual: null, stage: null });
     }
-    const sc = this.scoreExits(ex.team, pairs, null);
-    const pk = this.pick(this.mixIntention(sc.map((x) => ({ key: x.key, coach: null, pref: x.pref, adapt: x.adapt, exit: x })), lq, 'salida:pase_adicional'), 'salida:pase_adicional').exit;
+    const sc = this.scoreExits(ex.team, pairs, null, 'TAR03');
+    const pk = this.pick(this.mixIntention(sc.map((x) => this.exitItem(x)), lq, 'salida:pase_adicional'), 'salida:pase_adicional').exit;
     Object.assign(ex, pk, { label: 'CONT05', window: false });
     ex.extraPasses += 1; ex.chain.push('CONT05'); ex.helper = undefined;
     this.cover('CONT05 pase adicional');
@@ -294,9 +424,9 @@ P.simpleResource = function simpleResource(poss, { origin, denied, safety = null
   for (const zone of ['rim', 'midrange', 'three']) {
     exits.push({ key: `${zone}`, role: 'recurso', actor: holder, zone, exec: passer ? 'pass' : 'dribble', passer, icpt: marker, defend: marker, moved: !passer && zone !== 'rim', offContact: zone === 'rim' ? { pid: holder, tech: 'TEC07', kind: 'penetración' } : null, holder: passer ?? holder });
   }
-  const sc = this.scoreExits(team, exits, null);
+  const sc = this.scoreExits(team, exits, null, 'TAR02');
   const lq = this.libertyAndReading(team, holder);
-  const ex = { ...this.pick(this.mixIntention(sc.map((x) => ({ key: x.key, coach: null, pref: x.pref, adapt: x.adapt, exit: x })), lq, `salida:${origin}`), `salida:${origin}`).exit };
+  const ex = { ...this.pick(this.mixIntention(sc.map((x) => this.exitItem(x)), lq, `salida:${origin}`), `salida:${origin}`).exit };
   Object.assign(ex, { team, origin, kind: 'organized', roles: { director: holder }, deniedPlay: denied ?? null });
   if (passer) { ex.chain = ['CONT08']; ex.extraPasses = 1; }
   const ca = this.taskValue('TAR02', 'attack', { handler: holder });
@@ -312,10 +442,17 @@ P.transitionPhase = function transitionPhase(poss) {
   const team = poss.team; const sel = this.profile.selection.direct;
   const carrier = poss.carrier;
   const steal = poss.origin === 'robo';
-  const pAttempt = steal ? sel.attemptAfterLiveSteal : sel.attemptAfterDefensiveRebound;
+  // estilo de transición: factor sobre los odds del intento, solo si el origen y la ventaja representada ya lo permiten
+  const tr = this.profile.selection.transitionAttemptOddsRatio[this.styleOf(team).transition - 1];
+  const pAttempt = oddsAdjust(steal ? sel.attemptAfterLiveSteal : sel.attemptAfterDefensiveRebound, tr);
   const attempt = this.bernoulli(pAttempt, 'transición:intento');
   if (!attempt) { this.note('transición:no_intentada', {}); return null; }
-  const unopposed = this.bernoulli(steal ? sel.unopposedChanceAfterSteal : sel.unopposedChanceAfterRebound, 'transición:sin_oposición');
+  // la carga de rebote rival que deja sin retorno listo a su equipo mejora los odds de la ventaja de la carrera (1,2 por referencia)
+  const deficit = poss.deficit ?? 0;
+  const unreadyRatio = this.profile.rebound.balance.unreadyReturnerOpportunityOddsRatio ** deficit;
+  const pUnopposed = oddsAdjust(steal ? sel.unopposedChanceAfterSteal : sel.unopposedChanceAfterRebound, unreadyRatio);
+  if (deficit) this.note('transición:retorno', { referenciasDeBalanceQueFaltan: deficit, factorOdds: round(unreadyRatio, 4), pSinOposicion: round(pUnopposed, 4) });
+  const unopposed = this.bernoulli(pUnopposed, 'transición:sin_oposición');
   let defender = null;
   if (!unopposed) {
     const defs = this.onCourt(1 - team).map((id) => ({ key: id, w: Math.max(sel.defenderArrivalMinimumWeight, this.weightedSum(id, sel.defenderArrival)) }));
@@ -331,7 +468,7 @@ P.transitionPhase = function transitionPhase(poss) {
   const sc = this.scoreExits(team, exits, null);
   for (const x of sc) x.pref *= fit(this.profile, this.taskValue('TAR02', 'attack', { handler: x.actor }));
   const lq = this.libertyAndReading(team, carrier);
-  const ex = { ...this.pick(this.mixIntention(sc.map((x) => ({ key: x.key, coach: null, pref: x.pref, adapt: x.adapt, exit: x })), lq, 'salida:transición'), 'salida:transición').exit };
+  const ex = { ...this.pick(this.mixIntention(sc.map((x) => this.exitItem(x)), lq, 'salida:transición'), 'salida:transición').exit };
   const label = ex.zone === 'rim' ? 'ESP01' : 'ESP02';
   const pAcc = this.acceptance(team, carrier, this.eff(ex.actor, ZONE_TEC[ex.zone]));
   if (!this.bernoulli(pAcc, `${label}:aceptación`)) { this.note('transición:rechazada', { opcion: label }); return null; }
@@ -354,7 +491,7 @@ P.afterOffensiveRebound = function afterOffensiveRebound(poss) {
   }
   const sc = this.scoreExits(team, exits, null);
   const lq = this.libertyAndReading(team, captor);
-  const ex = { ...this.pick(this.mixIntention(sc.map((x) => ({ key: x.key, coach: null, pref: x.pref, adapt: x.adapt, exit: x })), lq, 'salida:rebote_ofensivo'), 'salida:rebote_ofensivo').exit };
+  const ex = { ...this.pick(this.mixIntention(sc.map((x) => this.exitItem(x)), lq, 'salida:rebote_ofensivo'), 'salida:rebote_ofensivo').exit };
   const pAcc = this.acceptance(team, captor, this.eff(ex.actor, ZONE_TEC[ex.zone]));
   if (!this.bernoulli(pAcc, `${ex.esp}:aceptación`)) {
     this.note('rebote_ofensivo:rechazada', { opcion: ex.esp });
@@ -371,6 +508,24 @@ P.afterOffensiveRebound = function afterOffensiveRebound(poss) {
   return this.resolveAttempt(ex);
 };
 
+// Trazas de la estructura del ataque (MOTOR-04): procedencia, disposición y funciones efectivas (una vez por layout), decisión del
+// receptor, negación observada y tipo de salida. Solo describe lo calculado; no decide nada.
+P.playTrace = function playTrace(ex) {
+  const poss = this.poss; const t = {};
+  if (!poss) return t;
+  const isPlay = /^POS\d\d$/.test(ex.origin ?? '');
+  t.procedencia = isPlay ? (poss.fromCall ? 'llamada' : 'libro/autonomía') : 'recurso directo';
+  if (isPlay) {
+    t.familia = ex.family ?? null; t.sector = ex.sector ?? null;
+    if (poss.selection && poss.selection.ficha === ex.origin && !poss.selection.logged) { t.seleccion = poss.selection; poss.selection.logged = true; }
+    if (poss.layout && !poss.layoutLogged) { t.disposicion = poss.layout.dis; t.funciones = { ...poss.layout.map }; poss.layoutLogged = true; }
+    if (ex.decidedBy) t.decidePor = { jugador: ex.decidedBy, ...ex.decisionLq };
+    if (ex.negada) t.negacionPrevia = ex.negada.de;
+    if (ex.cutRecord) t.corte = ex.cutRecord;
+  }
+  return t;
+};
+
 // Quién decide efectivamente cuando no es el director principal (alternativa o primer disponible).
 P.directorTrace = function directorTrace() {
   const d = this.poss?.director;
@@ -380,7 +535,7 @@ P.directorTrace = function directorTrace() {
 // ---------------------------------------------------------------- posesión completa, por unidades
 P.startPossession = function startPossession(spec) {
   this.possSeq += 1;
-  this.poss = { id: `P${String(this.possSeq).padStart(3, '0')}`, seq: this.possSeq, team: spec.team, entry: spec.entry, origin: spec.origin ?? null, carrier: spec.carrier ?? null, carrierPid: spec.carrier ?? null, advanced: spec.entry === 'deadFront', disorganized: false, reorgCount: 0, done: false, units: 0, playStarted: false, transitionDone: false, pendingFT: null };
+  this.poss = { id: `P${String(this.possSeq).padStart(3, '0')}`, seq: this.possSeq, team: spec.team, entry: spec.entry, origin: spec.origin ?? null, carrier: spec.carrier ?? null, carrierPid: spec.carrier ?? null, advanced: spec.entry === 'deadFront', disorganized: false, reorgCount: 0, done: false, units: 0, playStarted: false, transitionDone: false, pendingFT: null, deficit: spec.deficit ?? 0, denials: [], disposition: null, layout: null };
   this.shotClock = spec.shotClock; this.shotClockOn = true;
 };
 
@@ -419,7 +574,7 @@ P.settlePossession = function settlePossession(poss, r) {
 P.possessionUnit = function possessionUnit() {
   if (!this.poss || this.poss.done) this.startPossession(this.nextPoss);
   const poss = this.poss;
-  this.activatePlanOrders();
+  this.activatePlanOrders(this.period, { entry: poss.units === 0 }); // disposición y roles solo entran en la entrada de posesión o en una reorganización
   this.activateCalls(poss);
   poss.units += 1;
   if (poss.units > 64) throw new Error('límite técnico de acciones por posesión alcanzado');
