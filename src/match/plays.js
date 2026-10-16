@@ -84,12 +84,11 @@ P.actorWeight = function actorWeight(pid, role, play, finisher) {
 const fnOk = (fn, allowed) => allowed === 'any' || allowed.includes(fn);
 
 // Candidatos de una función de la ficha: jugadores en pista, disponibles, no tomados, cuya función de disposición es admitida.
-// Las posiciones recomendadas (`participantSlots`) se prefieren si hay alguno; no son una prohibición (si no hay, valen todos).
+// V03 (MOTOR-05): la posición nominal (`participantSlots`) es solo una RECOMENDACIÓN visible (bookCompatibility / interfaz). Ya no filtra
+// candidatos por niveles: decide el ajuste funcional (abilityFit de la receta de la función) y el sesgo de rol; un candidato competente
+// no se degrada sistemáticamente por su posición.
 P.roleCandidates = function roleCandidates(team, def, layout, taken) {
-  let c = this.onCourt(team).filter((id) => this.ps[id].available && !taken.has(id) && fnOk(layout.map[id], def.fn));
-  const rec = def.slotGroup ? this.profile.participantSlots[def.slotGroup] : null;
-  if (rec) { const r = c.filter((id) => rec.includes(this.slotOf(id))); if (r.length) c = r; }
-  return c;
+  return this.onCourt(team).filter((id) => this.ps[id].available && !taken.has(id) && fnOk(layout.map[id], def.fn));
 };
 
 // ¿Se pueden ocupar a la vez todas las funciones obligatorias? Emparejamiento (sin sorteos). `fixed` = jugadores ya tomados.
@@ -142,6 +141,8 @@ P.assignRoles = function assignRoles(team, playId, director, layout, poss, { dry
       if (keep.length) cands = keep;
     }
     if (!cands.length) { if (def.opt) continue; return { fail: `falta una función «${role}»` }; }
+    const rec = def.slotGroup ? this.profile.participantSlots[def.slotGroup] : null; // recomendación visible (V03): se registra, no filtra
+    if (rec) this.note(`recomendación:${playId}:${role}`, { posicionesRecomendadas: rec, candidatos: cands.map((id) => ({ id, posicion: this.slotOf(id), recomendado: rec.includes(this.slotOf(id)) })) });
     const items = cands.map((id) => ({ key: id, w: this.actorWeight(id, role, play, true) * this.roleBias(id, def.tags ?? []) }));
     const chosen = cands.length === 1 ? items[0] : this.pick(items, `rol:${playId}:${role}`);
     roles[role] = chosen.key; taken.add(chosen.key);
