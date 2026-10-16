@@ -3,6 +3,12 @@ import { buildMatchInput, createMatch } from '../src/match/index.js';
 
 export const data = loadData();
 export const inputFor = (seed) => buildMatchInput(data.profile, data.players, { seed });
+// Entrada con el plan de demostración de MOTOR-04 (quince fichas a prioridad 3, DIS02 salvo que se indique): escenario de cobertura.
+export function demoInputFor(seed, disposition = 'DIS02') {
+  const input = inputFor(seed);
+  input.teams.forEach((t, i) => { const demo = data.profile.scenario.demoPlans[i]; t.plan = JSON.parse(JSON.stringify({ ...t.plan, playbook: demo.playbook, disposition, midrange: demo.midrange })); });
+  return input;
+}
 // `calc` (detalle calculado) y `params` (filas consultadas) son diagnóstico: no forman parte del deporte.
 export const stripCalc = (events) => events.map(({ calc, params, ...rest }) => rest);
 

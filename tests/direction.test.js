@@ -51,8 +51,9 @@ test('2. la última orden válida del mismo ámbito sustituye a la pendiente; un
   assert.equal(m.rng.count, rng0); assert.equal(JSON.stringify(m.events), ev0, 'registrar órdenes no consume azar ni toca hechos');
   m.step();
   assert.equal(b.state, 'vigente'); assert.equal(m.teams[0].plan.styles.freedom, 1); assert.equal(m.teams[0].plan.styles.organizedPace, 4);
-  // estilo no editable: se rechaza con explicación (no es un campo cosmético)
-  assert.match(m.submit({ team: 0, type: 'styles', styles: { offensiveRisk: 5 } }).reason, /no es editable/);
+  // un estilo inexistente se rechaza con explicación; desde MOTOR-04 los siete estilos son editables
+  assert.match(m.submit({ team: 0, type: 'styles', styles: { estiloInventado: 5 } }).reason, /no es un estilo editable/);
+  assert.equal(m.submit({ team: 0, type: 'styles', styles: { offensiveRisk: 5 } }).state, 'pendiente');
   // conjunto con un miembro inválido: ninguno se activa
   const lineupDup = { PG: 'EQ01-J02', SG: 'EQ01-J02', SF: 'EQ01-J06', PF: 'EQ01-J08', C: 'EQ01-J10' };
   const batch = m.submitBatch([{ team: 0, type: 'styles', styles: { freedom: 2 } }, { team: 0, type: 'lineup', assignment: lineupDup }], 'prueba');
@@ -81,7 +82,7 @@ test('3. una llamada se consume cuando la ficha comienza; caduca con motivo si s
   // fixture controlado: la ficha llamada no es realizable (sin participante compatible) → caduca con motivo, sin guion
   const f = newMatch(20261018); f.step(); f.step();
   const team = f.nextPoss.team; const real = f.assignRoles;
-  f.assignRoles = function (t, playId, dir) { return t === team && playId === 'POS11' ? null : real.call(this, t, playId, dir); };
+  f.assignRoles = function (t, playId, dir, ...rest) { return t === team && playId === 'POS11' ? { fail: 'fixture: sin participante compatible' } : real.call(this, t, playId, dir, ...rest); };
   const c2 = f.submit({ team, type: 'call', playId: 'POS11', target: 'next' });
   stepUntil(f, () => c2.state === 'caducada');
   assert.ok(c2.history.some((x) => x.state === 'suspendida' && /no realizable/.test(x.reason)), 'pasó por «suspendida por condición»: declarada pero no aplicable ahora');

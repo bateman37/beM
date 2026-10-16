@@ -4,7 +4,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
-import { data, inputFor, newMatch } from './helpers.js';
+import { data, inputFor, newMatch, demoInputFor } from './helpers.js';
 import { buildRows, uncoveredLeaves, assertProfileComplete, ConfigError, indexRows } from '../src/profiles/rows.js';
 import { validateProfile } from '../src/profiles/validate.js';
 import { resolveOverrides, diffEffective, bulkPreview, bulkApply, normalizeProposal } from '../src/profiles/model.js';
@@ -42,10 +42,12 @@ test('consumo real: una fila requerida ausente es un error de configuración, no
 
 test('el motor consulta de verdad las filas declaradas «consumidas» (salvo las condicionales explicadas) y no las que declara sin mecanismo', () => {
   const rows = buildRows(base);
+  // dos encuentros completos: el libro conservado y el plan de demostración (quince fichas), que recorre las tareas de poste y apertura
+  const read = (res) => res.events.flatMap((e) => (e.params ?? []).map((i) => res.diagnostics.paramTable[i]));
   const res = runMatch(inputFor(20261016), base, { detail: 'full' });
-  const seen = new Set(res.events.flatMap((e) => (e.params ?? []).map((i) => res.diagnostics.paramTable[i])));
+  const seen = new Set([...read(res), ...read(runMatch(demoInputFor(20261016), base, { detail: 'full' }))]);
   // Solo se leen al construir el encuentro/resultado, en prórroga o con órdenes manuales; se comprueban aparte donde procede.
-  const CONDITIONAL = /^(rng\.|activeCatalog\.|rules\.(profile|overtimeSeconds|overtimeFoulsCarryFromPeriod)$|motor02\.|energy\.overtimeIntervalRecovery$|selection\.safeReceiverWeights\.|rotation\.(minimumStintSeconds|replacementUtilityTolerance|criticalReplacementTolerance|foulProtectionTolerance)$|rules\.freeThrowsForOrdinaryBonus$)/;
+  const CONDITIONAL = /^(rng\.|activeCatalog\.|rules\.(profile|overtimeSeconds|overtimeFoulsCarryFromPeriod)$|motor02\.|energy\.overtimeIntervalRecovery$|selection\.safeReceiverWeights\.|rotation\.(minimumStintSeconds|replacementUtilityTolerance|criticalReplacementTolerance|foulProtectionTolerance)$|rules\.freeThrowsForOrdinaryBonus$|rebound\.(lastFreeThrowOffensiveP0|liveLastFreeThrow(Offense|Defense)Slots)$|selection\.midrangePolicy\.|selection\.newVariantPreference\.unknownRoleFunctionWeight$|block\.blockedLooseControlDefenseProbability$)/;
   const unread = rows.filter((r) => r.coverage === 'consumido' && !seen.has(r.id) && !CONDITIONAL.test(r.id));
   assert.deepEqual(unread.map((r) => r.id), []);
   assert.deepEqual(rows.filter((r) => r.coverage !== 'consumido' && seen.has(r.id)).map((r) => r.id), []);
@@ -165,8 +167,10 @@ test('causalidad: editar una fila llega al mecanismo consumidor (probabilidad de
   assert.ok(mean(e1) < mean(e0));
 });
 
-test('equivalencia deportiva: la base conectada al panel reproduce el partido de referencia anterior a MOTOR-03', () => {
-  const ref = JSON.parse(readFileSync(new URL('./fixtures/baseline-motor02.json', import.meta.url), 'utf8'))['20261016'];
+// MOTOR-04 cambia el contenido operativo (repertorio, estilos, disposiciones): el partido de referencia de MOTOR-02/03 (94–89) deja de ser comparable y
+// se sustituye por el de la versión actual. Lo que protege esta prueba es que la base conectada al panel no altera el deporte.
+test('equivalencia deportiva: la base conectada al panel reproduce el partido de referencia de la versión (MOTOR-04)', () => {
+  const ref = JSON.parse(readFileSync(new URL('./fixtures/baseline-motor04.json', import.meta.url), 'utf8'))['20261016'];
   const res = runMatch(inputFor(20261016), base, { detail: 'full' });
   assert.deepEqual(res.score, ref.score);
   assert.equal(createHash('sha256').update(JSON.stringify(sportsProjection(res))).digest('hex'), ref.sha256);

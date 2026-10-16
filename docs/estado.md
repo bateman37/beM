@@ -1,6 +1,6 @@
 # Estado del proyecto
 
-Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANGELOG.md)). Última actualización: 2026-10-16, entrega MOTOR-02.
+Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANGELOG.md)). Última actualización: 2026-10-16, entrega MOTOR-04.
 
 ## Qué hay realmente en el repositorio
 
@@ -9,12 +9,19 @@ Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANG
 - **Copia original congelada** del funcional unificado y **exportado completo vigente** generado: ver [`historico/`](historico/README.md) y [`exportados/`](exportados/README.md).
 - **Utilidades documentales** en `scripts/docs/` (Python 3, librería estándar).
 
+## MOTOR-04 (ejecutado, pendiente de Dennis)
+
+- **Existe**: siete estilos y media distancia con efecto, DIS01–DIS06, quince roles, libro de quince fichas por familia con nueve continuaciones, decisión del receptor, negación (CONT06/CONT07), encargos de rebote y balance, panel › Repertorio, candidata explícita desde perfiles anteriores y órdenes de disposición y roles. 63 pruebas y cuatro partidos completos de cierre. Ver [`tecnico/motor04.md`](tecnico/motor04.md) y [recorrido manual](prompts/MOTOR-04-recorrido-manual.md).
+- **Provisional**: cifras del anexo A (SEM) y contenido declarativo del repertorio (lectura de Claude, V01); nada calibrado. **Cambia los resultados** respecto a MOTOR-02/03.
+- **Comprobado por Claude**: pruebas automáticas y recorrido en Chromium. **Pendiente de Dennis**: todo el recorrido manual y V01/V03/V05/V09. **No ejecutado**: Node 24, otros navegadores.
+- Siguiente: lo que ordene Dennis (MOTOR-05 no iniciado: zonas, coberturas y roles defensivos).
+
 ## MOTOR-03 (ejecutado, pendiente de Dennis)
 
 - **Existe**: pestaña «Panel de ajustes» (diccionario, tabla maestra, mesa por preguntas, vistas, catálogo 81 + 4, perfiles con herencia, validación, publicación/activación, comparador y intercambio JSON), perfil base protegido V0 y persistencia local. 53 pruebas. Ver [`tecnico/motor03.md`](tecnico/motor03.md) y [recorrido manual](prompts/MOTOR-03-recorrido-manual.md).
 - **Provisional**: todo sigue SEM; las 384 filas no tienen referencia ni evaluación; 22 filas están declaradas sin mecanismo (solo lectura); la asignación a los 81 grupos es propuesta de Claude.
 - **Comprobado por Claude**: pruebas automáticas, equivalencia con el partido de referencia anterior (semilla 20261016, 94–89) y recorrido completo en Chromium. **Pendiente de Dennis**: todo el recorrido manual. **No ejecutado**: Node 24, otros navegadores.
-- Siguiente: lo que ordene Dennis (MOTOR-04 no iniciado). Continuidad obligatoria: cada entrega posterior añade al mismo diccionario sus filas, validaciones, consumidores y cobertura.
+- Siguiente: lo que ordene Dennis. Continuidad obligatoria: cada entrega posterior añade al mismo diccionario sus filas, validaciones, consumidores y cobertura.
 
 ## MOTOR-02 (integrado en `main`)
 

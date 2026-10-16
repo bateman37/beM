@@ -15,6 +15,7 @@ Directorio de los encargos a Claude Code. **El texto original de un prompt ejecu
 | MOTOR-01 | Primer partido completo y laboratorio inicial | [`MOTOR-01-primer-partido-completo.md`](MOTOR-01-primer-partido-completo.md) | Integrado en `main`; Dennis comunicó (en el prompt de MOTOR-02) arranque local y recorrido manual correctos | 2026-10-16 (intento 1) | — |
 | MOTOR-02 | Tres modalidades y dirección manual del partido | [`MOTOR-02-modos-y-direccion.md`](MOTOR-02-modos-y-direccion.md) | Integrado en `main` (Dennis comunicó la integración; sin auditoría de su código por parte de ChatGPT) | 2026-10-16 (intento 1) | — |
 | MOTOR-03 | Panel administrable, perfiles y comparación de ajustes | [`MOTOR-03-panel-y-perfiles.md`](MOTOR-03-panel-y-perfiles.md) · [recorrido manual](MOTOR-03-recorrido-manual.md) | Ejecutado, **pendiente de revisión de Dennis** | 2026-10-16 (intento 1) | — |
+| MOTOR-04 | Ataque posicional completo: siete estilos, seis disposiciones, roles, libro de quince fichas y nueve continuaciones | [`MOTOR-04-ataque-posicional.md`](MOTOR-04-ataque-posicional.md) · [recorrido manual](MOTOR-04-recorrido-manual.md) | Ejecutado, **pendiente de revisión de Dennis** | 2026-10-16 (intento 1) | — |
 
 ## Fichas de ejecución
 
@@ -99,3 +100,17 @@ Comprobación local de enlaces: hecha por Claude. Presentación en GitHub: no co
 | Comprobaciones realizadas | `npm test` (53), `npm run data:check`, equivalencia deportiva con la referencia previa, recorrido de interfaz con Chromium automatizado (flujo completo). |
 | Limitaciones | PDF FIBA no accesible; asignación fila→grupo y entregas previstas son propuesta de Claude; consumo de cuota no medible; Node 22. |
 | Pendientes | [Recorrido manual](MOTOR-03-recorrido-manual.md) y validación de Dennis; decisión de fusión. MOTOR-04 no iniciado. |
+
+### MOTOR-04
+
+| Campo | Valor |
+|---|---|
+| Objetivo | Ataque posicional completo sobre el motor común: siete estilos y media distancia, DIS01–DIS06, roles ofensivos, director, libro por familias con POS01–POS15 y CONT01–CONT09, rebote/balance con coste y panel/perfiles/registro/reproducción ampliados. |
+| Medio de entrada del texto | Archivo `.md` adjunto (`9fe5ba53-beM-PROMPT-MOTOR-04-ATAQUE-POSICIONAL-COMPLETO.md`; prefijo añadido por la subida). Copia archivada íntegra (con anexos): [`MOTOR-04-ataque-posicional.md`](MOTOR-04-ataque-posicional.md). |
+| Fecha real de ejecución | 2026-10-16 · intento 1 |
+| Rama | `claude/busy-edison-b1fmnc` (rama designada por el entorno; el trabajo se hizo en `feature/MOTOR-04-ataque-posicional` y se integra fast-forward en ella). Parte de MOTOR-03. |
+| PR | Ver la PR abierta contra `main` (sin fusionar); el enlace consta en la respuesta final de la entrega. |
+| Resultado breve | Quince fichas y nueve continuaciones ejecutables por operaciones reutilizadas; seis disposiciones como funciones; siete estilos con efecto causal; encargos de rebote y balance; filas, perfiles, registro y reproducción ampliados. |
+| Comprobaciones realizadas | `npm test` (63 pruebas, 10 nuevas), `npm run data:check`, cuatro partidos completos de cierre, recorrido de interfaz con Chromium automatizado. No ejecutado: Node 24, otros navegadores. |
+| Limitaciones | Todo SEM (anexo A) y contenido declarativo de lectura de Claude (V01); sin zonas ni roles defensivos, ESP completo, Forma, memoria ni cierre extraordinario. |
+| Pendientes | Validación de Dennis y confirmación de V01/V03/V05/V09 ([`../tecnico/motor04.md`](../tecnico/motor04.md)). |
