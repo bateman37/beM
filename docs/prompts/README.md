@@ -12,6 +12,7 @@ Directorio de los encargos a Claude Code. **El texto original de un prompt ejecu
 | ID | Objetivo | Texto | Estado | Última ejecución | Continuaciones |
 |---|---|---|---|---|---|
 | DOC-001 | Organización documental de beM y normas de trabajo | [`DOC-001-organizacion-documental-y-normas.md`](DOC-001-organizacion-documental-y-normas.md) | Ejecutado, **pendiente de revisión de Dennis** | 2026-10-16 (intento 1) | — |
+| MOTOR-01 | Primer partido completo y laboratorio inicial | [`MOTOR-01-primer-partido-completo.md`](MOTOR-01-primer-partido-completo.md) | Ejecutado, **pendiente de revisión de Dennis** | 2026-10-16 (intento 1) | — |
 
 ## Fichas de ejecución
 
@@ -48,3 +49,19 @@ Estado de cada paso: **pendiente de Dennis** (ninguno confirmado por Dennis).
 | Abrir el estado del proyecto. | El diseño documentado no aparece confundido con implementación o calibración terminadas. | [`../estado.md`](../estado.md) |
 
 Comprobación local de enlaces: hecha por Claude. Presentación en GitHub: no comprobada desde el entorno de ejecución.
+
+
+### MOTOR-01
+
+| Campo | Valor |
+|---|---|
+| Objetivo | Aplicación ejecutable: dos plantillas editables, preparación, simulación completa por acontecimientos con acta, relato, detalle y descarga JSON. |
+| Medio de entrada del texto | Archivo `.md` adjunto (`d97d48e2-beM-PROMPT-MOTOR-01-PRIMER-PARTIDO-COMPLETO.md`; prefijo añadido por la subida). La copia archivada es idéntica. |
+| Fecha real de ejecución | 2026-10-16 · intento 1 |
+| Revisión de partida | `a8786f2` (DOC-001). |
+| Rama | `claude/busy-edison-b1fmnc` (rama designada por el entorno; el prompt proponía `feature/MOTOR-01-primer-partido-completo`). |
+| PR | Ver la PR abierta contra `main` (sin fusionar). |
+| Resultado breve | Núcleo en `src/match/`, laboratorio en `src/lab/`, datos cargados de los anexos con hash, 23 pruebas. Detalle técnico: [`../tecnico/motor01.md`](../tecnico/motor01.md). |
+| Comprobaciones realizadas | `npm test` (23 correctas: datos, tres semillas, reproducibilidad, independencia de la presentación, reglas críticas), `npm run data:check`, recorrido de la interfaz con Chromium automatizado. Un barrido de desarrollo de 60 semillas sin fallos (no parte de la entrega). |
+| Limitaciones | PDF FIBA no accesible (403): ver T01–T16 en la documentación técnica. Node 22 (no 24). Coeficientes provisionales sin calibrar. Consumo de cuota no medible desde el entorno. |
+| Pendientes | Validación de Dennis, [recorrido manual](MOTOR-01-recorrido-manual.md), decisión de fusión. MOTOR-02 no iniciado. |
