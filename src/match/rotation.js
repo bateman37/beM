@@ -51,12 +51,16 @@ P.substitute = function substitute(team, slot, outId, inId, reason, ctx = {}) {
   const offPosition = !this.pl[inId].positions.includes(slot);
   this.cover('sustitución');
   if (ctx.order) this.linkOrder(ctx.order, 'sustitución ejecutada');
-  return this.emit('substitution', {
+  // La decisión delegada se registra como solicitud automática (no se reinyecta al reproducir: se regenera y se contrasta).
+  const auto = ctx.order ? null : this.makeOrder({ team, type: 'substitution', issuer: 'auto', swaps: [{ out: outId, in: inId }], motivo: reason });
+  const ev = this.emit('substitution', {
     team,
     intent: ctx.order ? { origen: 'orden manual', motivo: reason, solicitud: ctx.order } : { origen: 'relevo', motivo: reason },
     participants: { sale: outId, entra: inId, posicion: slot },
     effects: { fueraDePosicionNominal: offPosition, ventana: ctx.window ?? null, energiaSale: round(outS.energy, 2), energiaEntra: round(inS.energy, 2), foulsSale: outS.fouls },
   });
+  if (auto) { auto.execution = { eventIds: [ev.id], window: ctx.window ?? null }; auto.scope = { kind: 'delegada' }; this.setState(auto, 'consumida', `entrenador básico: ${reason}`); }
+  return ev;
 };
 
 // Ventana legal de sustitución (balón muerto con reloj parado, o intervalo de periodo).

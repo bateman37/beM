@@ -6,9 +6,10 @@ import './actions.js';
 import './flow.js';
 import './orders.js';
 import { projectBox, teamTotals } from './box.js';
-import { deepCopy, validateInput, buildMatchInput, parsePlayersCsv, validateProfileAndFixtures, ENGINE_VERSION, EXPORT_SCHEMA, ATTRS, SLOTS } from './data.js';
+import { deepCopy, validateInput, buildMatchInput, parsePlayersCsv, validateProfileAndFixtures, applyExtension, validateExtension, ENGINE_VERSION, EXPORT_SCHEMA, EXPORT_SCHEMA_MOTOR01, ATTRS, SLOTS } from './data.js';
+import { ORDER_TYPES, ORDER_STATES, TERMINAL_STATES, EDITABLE_STYLES } from './order-types.js';
 
-export { ENGINE_VERSION, EXPORT_SCHEMA, ATTRS, SLOTS, validateInput, buildMatchInput, parsePlayersCsv, validateProfileAndFixtures, projectBox, teamTotals, deepCopy };
+export { ENGINE_VERSION, EXPORT_SCHEMA, EXPORT_SCHEMA_MOTOR01, ATTRS, SLOTS, validateInput, buildMatchInput, parsePlayersCsv, validateProfileAndFixtures, applyExtension, validateExtension, projectBox, teamTotals, deepCopy, ORDER_TYPES, ORDER_STATES, TERMINAL_STATES, EDITABLE_STYLES };
 
 export const COVERAGE = {
   activos: {
@@ -18,17 +19,23 @@ export const COVERAGE = {
     continuaciones: ['CONT01', 'CONT04', 'CONT05', 'CONT08', 'CONT09'],
     recursos: ['ESP01', 'ESP02', 'ESP06', 'ESP12', 'ESP13', 'ESP15', 'ESP16', 'ESP17'],
     estados: ['energía', 'carga', 'recuperación'],
+    // MOTOR-02
+    modalidades: ['simulado total', 'por cuartos (con prórrogas)', 'por tiempo a x2/x4/x8/x16 con pausa'],
+    ordenes: ['estilos', 'prioridades del libro', 'director y alternativas', 'llamada de ficha (posesión actual o siguiente)', 'sustitución individual', 'cambio de quinteto (conjunto atómico)', 'devolver el quinteto al entrenador básico', 'tiempo muerto manual'],
+    registro: ['JSON ampliado (órdenes, comandos, ciclo de vida)', 'reproducción desde JSON de esta versión'],
   },
   pendientes: [
-    'Resto del repertorio y disposiciones', 'Zonas y otras coberturas', 'Forma, momento, Consistencia y Presión (entrada neutral)',
-    'Memoria rival', 'Dirección manual durante el partido y otros modos (MOTOR-02)', 'Panel completo',
-    'Atribución exhaustiva del acta y estadísticas avanzadas (MOTOR-09)', 'Generador y lotes',
+    'Resto del repertorio y disposiciones', 'Zonas y otras coberturas', 'Forma, momento, Consistencia y Presión (entrada neutral; la pausa no atenúa el momento hasta MOTOR-07)',
+    'Memoria rival', 'Panel completo y perfiles editables (MOTOR-03)', 'Defensas, marcas, dobles y roles individuales editables (MOTOR-05/08)',
+    'Políticas completas del entrenador, incluidos tiempos muertos automáticos (MOTOR-08)', 'Cierre reglamentario extraordinario (MOTOR-09)',
+    'Atribución exhaustiva del acta y estadísticas avanzadas (MOTOR-09)', 'Generador y lotes', 'Guardado de carreras y persistencia entre sesiones',
     'Estilos transición, elaboración, riesgo ofensivo y tras tiro: valor declarado, sin control',
     'Perfil final completo de los 81 grupos (este perfil es SEM provisional, no calibrado)',
   ],
 };
 
 // Crea un encuentro. input: salida de buildMatchInput (se copia y se congela). profile: perfil SEM.
+// opts.direction = { managedTeam, mode } es metadato de presentación/dirección (se exporta; no decide el deporte).
 export function createMatch(input, profile, opts = {}) {
   const errs = validateInput(input, profile);
   if (errs.length) { const e = new Error(`Entrada no válida: ${errs.map((x) => `${x.path}: ${x.message}`).join('; ')}`); e.validation = errs; throw e; }
@@ -38,7 +45,7 @@ export function createMatch(input, profile, opts = {}) {
 // Ejecuta hasta terminar. `yieldEvery` opcional: función async llamada tras cada posesión (cesión de ejecución).
 export function runMatch(input, profile, opts = {}) {
   const m = createMatch(input, profile, opts);
-  while (m.step()) { /* una posesión por paso */ }
+  while (m.step()) { /* una frontera por paso */ }
   return buildResult(m);
 }
 export async function runMatchAsync(input, profile, opts = {}, onProgress) {
@@ -48,11 +55,16 @@ export async function runMatchAsync(input, profile, opts = {}, onProgress) {
   return buildResult(m);
 }
 
-export function buildResult(m) {
+export function buildResult(m, extra = {}) {
   const box = projectBox(m.events, m.lineupTable, m.input);
   const teams = m.teams.map((t) => ({ id: t.id, name: t.name }));
+  const complete = m.status === 'finished';
   return {
     schema: EXPORT_SCHEMA,
+    identity: {
+      formatVersion: EXPORT_SCHEMA, engineVersion: ENGINE_VERSION, rulesProfile: m.profile.rules.profile,
+      contentProfile: m.profile.id, extensions: m.profile.extensions ?? [], effectiveProfileId: m.profile.effectiveId ?? m.profile.id,
+    },
     meta: m.meta(),
     status: m.status,
     errors: m.errors,
@@ -64,15 +76,22 @@ export function buildResult(m) {
     score: [...m.score],
     periodScores: m.periodScores.map((p) => ({ period: p.period, points: [...p.points] })),
     box,
+    direction: m.opts.direction ?? null,
+    commands: m.commands,
+    orders: m.orders,
+    result: { complete, status: m.status, stepCount: m.stepSeq, incompleteReason: complete ? null : (m.status === 'error' ? 'error de ejecución' : 'encuentro no terminado en el momento de la exportación') },
+    presentation: extra.presentation ?? null,
     diagnostics: {
       detail: m.opts.detail,
       eventCount: m.events.length,
       possessions: m.possSeq,
+      steps: m.stepSeq,
       sportingDraws: m.rng.count,
       coverageObserved: { ...m.coverageObserved },
       finalEnergy: Object.fromEntries(Object.entries(m.ps).map(([id, s]) => [id, Math.round(s.energy * 100) / 100])),
       finalFouls: Object.fromEntries(Object.entries(m.ps).map(([id, s]) => [id, s.fouls])),
       teamFoulsByPeriod: m.teamFouls,
+      timeouts: m.timeouts.map((l) => ({ used: { ...l.used }, finalWindow: l.final })),
     },
     coverage: COVERAGE,
   };

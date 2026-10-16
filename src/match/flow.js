@@ -474,10 +474,10 @@ P.queueWindowFirst = function queueWindowFirst(w) { this.windowSeq += 1; this.pe
 // ---------------------------------------------------------------- periodos y partido
 P.beginPeriod = function beginPeriod(period) {
   const rules = this.profile.rules; const e = this.profile.energy;
-  this.activatePlanOrders(period); // plan preparado para este periodo: entra en su frontera de inicio
   this.poss = null;
   this.period = period; this.clock = periodLengthTenths(period, rules);
   this.periodScores.push({ period, points: [0, 0] });
+  this.activatePlanOrders(period); // plan preparado para este periodo: entra en su frontera de inicio
   if (period > 1) {
     const amount = period === 3 ? e.halftimeRecovery : isOvertime(period, rules) ? e.overtimeIntervalRecovery : e.quarterRecovery;
     this.recoverAll(amount);

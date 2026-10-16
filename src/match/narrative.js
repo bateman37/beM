@@ -19,6 +19,7 @@ export function describeEvent(ev, { name, teamName }) {
     case 'inbound': return e && i.relojEnMarcha ? `Saque con reloj en marcha para ${teamName(ev.team)}.` : `Saque de ${teamName(ev.team)} con reloj parado.`;
     case 'advance': return `${teamName(ev.team)} avanza el balón a pista de ataque.`;
     case 'reorganization': return `${teamName(ev.team)} reorganiza (${i.motivo}).`;
+    case 'timeout': return `Tiempo muerto de ${teamName(ev.team)} (${e.ventana}). Le quedan ${e.restantesBloque} en este bloque; todos los jugadores disponibles recuperan +${e.recuperacionEnergia} de energía.`;
     case 'substitution': return `Cambio en ${teamName(ev.team)}: entra ${n(p.entra)}, sale ${n(p.sale)} (${i.motivo}).`;
     case 'foul': return `Falta de ${n(p.infractor)} sobre ${n(p.sobre)} (${e.causaTirosLibres}). Faltas: ${e.faltasPersonales}${e.excluido ? ', excluido' : ''}.`;
     case 'free_throw': return `Tiro libre ${i.serie} de ${n(p.lanzador)}: ${e.entra ? 'anotado' : 'fallado'}.`;

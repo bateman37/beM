@@ -239,6 +239,8 @@ export class MatchCore {
       engineVersion: ENGINE_VERSION,
       profileId: this.profile.id,
       profileStatus: this.profile.status,
+      effectiveProfileId: this.profile.effectiveId ?? this.profile.id,
+      profileExtensions: this.profile.extensions ?? [],
       rulesProfile: this.profile.rules.profile,
       rng: { algorithm: this.rng.algorithm, initialSeed: this.rng.initialSeed, zeroSeedReplaced: this.rng.zeroSeedReplaced, draws: this.rng.count },
     };
