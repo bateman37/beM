@@ -2,6 +2,13 @@
 
 Registro breve de entregas. Una entrada por entrega; las más recientes primero.
 
+## MOTOR-06 — Transición, decisiones espontáneas y saques — 2026-10-16
+
+- Catálogo ESP01–ESP20 como capa de clasificación sobre un único flujo de oportunidades (llamada, recurso autónomo y decisión directa comparten ejecución; sin cuotas ni sorteos por ESP), transición con continuidad y urgencia, seis saques ofensivos (SaqB01–03, SaqF01–03) y seis respuestas (DSaqB01–03, DSaqF01–03) con plazo único de 5 s y tres relojes distintos, y llamada puntual de saque.
+- Cierre de salvedades de MOTOR-05: POS05/06 con pase inicial real, POS14 con director candidato, coberturas en entregas e indirectos, decisión única de robo, disruptiva y flagrante como categorías distintas.
+- Extensión `SEM-MOTOR06-20261016` (anexo A literal verificado por `npm run data:check`), filas con consumidor, órdenes de saque, interfaz de saques, diagnóstico con numerador y denominador, JSON `beM-match-export/5` (el `export/4` se rechaza).
+- **Cambia los resultados** (referencia `20261016`: 70–100 → 82–97). 20 pruebas nuevas. Documentación: [`docs/tecnico/motor06.md`](docs/tecnico/motor06.md), [recorrido manual](docs/prompts/MOTOR-06-recorrido-manual.md). Pendiente de validación de Dennis.
+
 ## MOTOR-05 — Defensa completa y cierre de salvedades de MOTOR-04 — 2026-10-16
 
 - Seis organizaciones (individual, zonas 2–3/3–2/1–3–1/1–2–2 y box and one) como **funciones y responsabilidades** (referencia frente a responsabilidad actual), cinco estilos defensivos con efecto en elecciones y encargos, tres alturas de presión (avance presionado, violación de 8 s), cuatro coberturas con persistencia del cambio, doce roles, marcas, ayudas con relevo y las tres especiales (falta táctica con sanción antideportiva administrada, doble a jugador, no abandonar tirador); box and one con objetivo, alternativa individual y ORG02 por ausencia.

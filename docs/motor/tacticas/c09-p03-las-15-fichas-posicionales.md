@@ -118,6 +118,8 @@ La calidad del director inicial no sustituye Visión, Decisiones o Pase del rece
 
 La conservación por el poseedor es una alternativa del contenido ya previsto, no otra familia. La principal del tiro y la preparación se deciden por el gesto final.
 
+**Cambio aceptado (prompt MOTOR-06, §2.2).** El poseedor de la entrega es el futuro hub: si todavía no tiene el balón, **debe existir el envío previo** del que realmente lo tiene (habitualmente el director) al hub, con emisor y receptor reales, duración y exposición sin duplicaciones (no hay una segunda probabilidad completa de pérdida ni asistencia automática). Si el balón ya está en el hub no se añade otro pase ficticio. Lo mismo vale para POS06.
+
 <a id="src-md07-l0827"></a>
 
 #### 9.7.7. POS06 — Mano a mano desde ala
@@ -288,6 +290,8 @@ Dos interiores también pueden congestionar opciones. La ficha no concede simult
 | Registro | Inicio deliberado, oposición, creación y salida. |
 
 Una acción directa sin ficha no se etiqueta automáticamente como POS14. Esta ficha exige que la intención organizada de aclarado haya comenzado realmente.
+
+**Cambio aceptado (prompt MOTOR-06, §2.2).** El director es candidato válido a aislador, igual que otro jugador que cumpla la función, sin prioridad por identidad ni obligación de aislarse. Si aísla el poseedor/director no se pasa el balón a sí mismo; si aísla otro, el director le envía el balón.
 
 <a id="src-md07-l0962"></a>
 

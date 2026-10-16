@@ -139,6 +139,8 @@ Se distinguen creación del acontecimiento, clasificación y administración. Al
 
 La conducta antideportiva no se deduce automáticamente de poca Concentración o bajo Rendimiento bajo presión. Su generación, si entra, requiere un criterio explícito fuera de esa equivalencia.
 
+**Corrección localizada (prompt MOTOR-06, §8.2–8.3).** En la edición FIBA 2026 las faltas **disruptiva** y **flagrante** son categorías distintas (Arts. 37–38): interrumpir una transición o el reloj con un contacto innecesario (falta táctica ESPD01) es disruptiva, no una «antideportiva» genérica heredada. La descalificación se cuenta por categoría (Arts. 38.2.3 y 41.4: dos flagrantes, dos técnicas de categoría 1 o una de cada); **dos disruptivas no descalifican por sí solas**. El número de libres «según el hecho y el acto de tiro» y el lugar y reloj de la reanudación (Arts. 37.2/38.2/17.2.7/29.2.6) quedan como lectura propia hasta contrastar el texto exacto (el PDF no es accesible desde el entorno); los supuestos extraordinarios completos siguen en MOTOR-09.
+
 <a id="src-md03-l0738"></a>
 
 #### 18.2.3. Disponibilidad y salud

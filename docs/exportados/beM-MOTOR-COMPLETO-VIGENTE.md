@@ -12,7 +12,7 @@ Este documento reúne el diseño por materias. Para utilizarlo no es necesario r
 
 La experiencia buscada es un partido completo de baloncesto, con jugadores diferentes y decisiones tácticas reconocibles. El cálculo avanza por acontecimientos pertinentes dentro de posesiones, conserva un contexto activo pequeño y reutiliza operaciones compartidas. El primer resultado deportivo que debe demostrarse es el partido completo con motor, tácticas, capacidades, dirección, administración y estadísticas conectados.
 
-> **Exportado generado: no editar a mano.** Reconstruido con `python3 scripts/docs/build_engine_docs.py` a partir de las secciones de [`docs/motor/`](../motor/README.md), en el orden de [`manifest.json`](../motor/manifest.json). La referencia congelada de la importación es [`unificado-original.md`](../historico/motor/unificado-original.md) (SHA-256 `df05edda480c7da556ba6a24009bedcd0a7f96c25e54f57c983951e63fc01fdd`). Revisión de composición: `DOC-001-r1`. Huella SHA-256 del contenido compuesto (sin esta nota): `27cb74e6c6c2abf2e1f58f09c1d1dfd878fb8de434ca344f006b0b3e9789fcf4`. Los índices de este archivo se generan a partir de los encabezados; el índice original se conserva solo en la copia histórica. Diseño definido no equivale a implementado, validado ni calibrado.
+> **Exportado generado: no editar a mano.** Reconstruido con `python3 scripts/docs/build_engine_docs.py` a partir de las secciones de [`docs/motor/`](../motor/README.md), en el orden de [`manifest.json`](../motor/manifest.json). La referencia congelada de la importación es [`unificado-original.md`](../historico/motor/unificado-original.md) (SHA-256 `df05edda480c7da556ba6a24009bedcd0a7f96c25e54f57c983951e63fc01fdd`). Revisión de composición: `DOC-001-r1`. Huella SHA-256 del contenido compuesto (sin esta nota): `a6e742c6df626c11727a6c16ddb7c3915359a55652de69388bc9fda6c1e26c22`. Los índices de este archivo se generan a partir de los encabezados; el índice original se conserva solo en la copia histórica. Diseño definido no equivale a implementado, validado ni calibrado.
 
 ## Índice general
 
@@ -3532,6 +3532,8 @@ La calidad del director inicial no sustituye Visión, Decisiones o Pase del rece
 
 La conservación por el poseedor es una alternativa del contenido ya previsto, no otra familia. La principal del tiro y la preparación se deciden por el gesto final.
 
+**Cambio aceptado (prompt MOTOR-06, §2.2).** El poseedor de la entrega es el futuro hub: si todavía no tiene el balón, **debe existir el envío previo** del que realmente lo tiene (habitualmente el director) al hub, con emisor y receptor reales, duración y exposición sin duplicaciones (no hay una segunda probabilidad completa de pérdida ni asistencia automática). Si el balón ya está en el hub no se añade otro pase ficticio. Lo mismo vale para POS06.
+
 <a id="src-md07-l0827"></a>
 
 #### 9.7.7. POS06 — Mano a mano desde ala
@@ -3702,6 +3704,8 @@ Dos interiores también pueden congestionar opciones. La ficha no concede simult
 | Registro | Inicio deliberado, oposición, creación y salida. |
 
 Una acción directa sin ficha no se etiqueta automáticamente como POS14. Esta ficha exige que la intención organizada de aclarado haya comenzado realmente.
+
+**Cambio aceptado (prompt MOTOR-06, §2.2).** El director es candidato válido a aislador, igual que otro jugador que cumpla la función, sin prioridad por identidad ni obligación de aislarse. Si aísla el poseedor/director no se pasa el balón a sí mismo; si aísla otro, el director le envía el balón.
 
 <a id="src-md07-l0962"></a>
 
@@ -6709,6 +6713,8 @@ Una capacidad puede influir en provocar un error o llegar mal a una intervenció
 Se distinguen creación del acontecimiento, clasificación y administración. Algunos hechos raros utilizan condiciones y frecuencias de referencia propias, sin añadir habilidades como Pasos, Técnica o Disciplina al catálogo.
 
 La conducta antideportiva no se deduce automáticamente de poca Concentración o bajo Rendimiento bajo presión. Su generación, si entra, requiere un criterio explícito fuera de esa equivalencia.
+
+**Corrección localizada (prompt MOTOR-06, §8.2–8.3).** En la edición FIBA 2026 las faltas **disruptiva** y **flagrante** son categorías distintas (Arts. 37–38): interrumpir una transición o el reloj con un contacto innecesario (falta táctica ESPD01) es disruptiva, no una «antideportiva» genérica heredada. La descalificación se cuenta por categoría (Arts. 38.2.3 y 41.4: dos flagrantes, dos técnicas de categoría 1 o una de cada); **dos disruptivas no descalifican por sí solas**. El número de libres «según el hecho y el acto de tiro» y el lugar y reloj de la reanudación (Arts. 37.2/38.2/17.2.7/29.2.6) quedan como lectura propia hasta contrastar el texto exacto (el PDF no es accesible desde el entorno); los supuestos extraordinarios completos siguen en MOTOR-09.
 
 <a id="src-md03-l0738"></a>
 

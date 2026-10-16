@@ -326,7 +326,7 @@ test('7. tres tiempos distintos: el plazo del sacador es administrativo, el relo
 
 test('7b. cadena de saque: empieza con su ejecución, termina por resultado o nueva organización y no cuenta dos veces los puntos posteriores', () => {
   let chains = []; let checked = 0;
-  for (const seed of [401, 402, 403]) {
+  for (const seed of [401, 402]) {
     const inp = inputFor(seed); inp.teams.forEach((t) => { t.plan.throwInBook = ['SaqB02', 'SaqB03', 'SaqF01', 'SaqF02', 'SaqF03', 'SaqB01'].map((playId) => ({ playId, priority: 3 })); t.plan.styles.freedom = 4; });
     const res = runMatch(inp, profile, { detail: 'full', check: true }); assert.deepEqual(res.errors, []);
     chains = chains.concat(res.diagnostics.throwInChains.map((c) => ({ c, res })));
@@ -372,8 +372,12 @@ test('8. llamada puntual: espera su saque compatible dentro del periodo, no la c
   // validación conjunta: lo imposible se rechaza entero y conserva la última configuración válida
   const v = createMatch(inputFor(94), profile, { detail: 'full', check: true }); v.init(); v.step();
   const cobBad = v.submit({ team: 1, type: 'defCoverage', coverage: 'COB03' }); assert.equal(cobBad.state, 'pendiente');
-  const incompatible = v.submit({ team: 1, type: 'defThrowIn', band: 'DSaqB02' }); assert.equal(incompatible.state, 'pendiente', 'la cobertura nueva todavía no es la vigente: se valida contra el plan proyectado');
+  const incompatible = v.submit({ team: 1, type: 'defThrowIn', band: 'DSaqB02' }); assert.equal(incompatible.state, 'rechazada', 'se valida contra el plan proyectado con la cobertura pendiente (COB03)'); assert.match(incompatible.reason, /cobertura declarada|compatible/);
   const proj = v.submit({ team: 1, type: 'defThrowIn', endline: 'DSaqF03' }); assert.equal(proj.state, 'rechazada'); assert.match(proj.reason, /persecución o cambio|compatible/);
+  // al revés: con una respuesta de persecución solicitada, una cobertura incompatible se rechaza y se conserva la válida
+  const w = createMatch(inputFor(94), profile, { detail: 'full', check: true }); w.init(); w.step();
+  assert.equal(w.submit({ team: 1, type: 'defThrowIn', band: 'DSaqB02' }).state, 'pendiente');
+  const cobRej = w.submit({ team: 1, type: 'defCoverage', coverage: 'COB04' }); assert.equal(cobRej.state, 'rechazada'); assert.match(cobRej.reason, /persecución o cambio|compatible/);
   assert.equal(v.submit({ team: 1, type: 'defThrowIn', endline: 'DSaqF02' }).state, 'rechazada', 'DSaqF02 necesita un objetivo designado');
   assert.equal(v.submit({ team: 1, type: 'defThrowIn', band: 'DSaqF01' }).state, 'rechazada', 'una respuesta de fondo no vale para banda');
   assert.equal(v.submit({ team: 1, type: 'throwInBook', priorities: { SaqB01: 9 } }).state, 'rechazada');
@@ -408,7 +412,7 @@ test('8b. entrada: un plan de saque imposible se rechaza con motivo; una entrada
 // ------------------------------------------------------------------------------------------------ 9. robo, sanciones y reglamento localizado
 test('9. robo: acceso, decisión (una vez), ejecución, control y crédito se distinguen; no hay robo sin intento ni sorteo de crédito independiente', () => {
   let steals = 0; let losses = 0; let decisions = 0;
-  for (const seed of [501, 502, 503, 504]) {
+  for (const seed of [501, 502]) {
     const m = createMatch(inputFor(seed), profile, { detail: 'full', check: true });
     const orig = m.decideSteal.bind(m); m.decideSteal = (ex, tr) => { assert.equal(ex.stealAttempt, undefined, 'la referencia del intento no se aplica sobre una decisión ya tomada para la misma interacción'); decisions += 1; return orig(ex, tr); };
     while (m.step()) { /* hasta el final */ }

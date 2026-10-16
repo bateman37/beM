@@ -145,7 +145,10 @@ P.projectDefensePlan = function projectDefensePlan(team, orders) {
 };
 P.checkDefensePlan = function checkDefensePlan(team, orders) {
   const errs = [];
-  const plan = this.projectDefensePlan(team, orders);
+  // la configuración conjunta incluye las solicitudes de plan del equipo aún pendientes (p. ej. una cobertura nueva no deja incompatible una respuesta de saque ya solicitada)
+  const PROJ = new Set(['defOrg', 'defHeight', 'defStyles', 'defCoverage', 'defMarks', 'defSpecial', 'throwInBook', 'throwInServers', 'defThrowIn']);
+  const pend = this.orders.filter((x) => x.team === team && x.kind === 'plan' && x.state === 'pendiente' && PROJ.has(x.type) && !orders.includes(x) && !(x.type === 'defSpecial' && x.content.special === 'ESPD01'));
+  const plan = this.projectDefensePlan(team, [...pend, ...orders]);
   const add = (path, message) => errs.push(`${path.replace(/^plan\./, '')}: ${message}`);
   validateDefensePlan(plan, this.input.teams[team], this.input.teams[1 - team], this.profile, 'plan', add);
   validateThrowPlan(plan, this.input.teams[team], this.input.teams[1 - team], this.profile, 'plan', add); // una cobertura nueva no deja incompatible la respuesta de saque vigente

@@ -1,6 +1,6 @@
 # Estado del proyecto
 
-Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANGELOG.md)). Última actualización: 2026-10-16, entrega MOTOR-05.
+Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANGELOG.md)). Última actualización: 2026-10-16, entrega MOTOR-06.
 
 ## Qué hay realmente en el repositorio
 
@@ -8,6 +8,13 @@ Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANG
 - **Diseño funcional del motor y del primer laboratorio**, organizado por temas en [`motor/`](motor/README.md) (34 capítulos). Es **especificación**: está *definida*, no implementada.
 - **Copia original congelada** del funcional unificado y **exportado completo vigente** generado: ver [`historico/`](historico/README.md) y [`exportados/`](exportados/README.md).
 - **Utilidades documentales** en `scripts/docs/` (Python 3, librería estándar).
+
+## MOTOR-06 (ejecutado, pendiente de Dennis)
+
+- **Existe**: catálogo ESP01–ESP20 sobre un único flujo de oportunidades (llamada, recurso autónomo y decisión directa con la misma ejecución), transición con continuidad, seis saques ofensivos y seis respuestas defensivas con sacador fuera de pista, plazo de 5 s y tres relojes separados, llamada puntual de saque, pase inicial real en POS05/06, director como aislador en POS14, coberturas en entregas e indirectos, decisión única de robo y categorías disruptiva/flagrante. `export/5`, diagnóstico con numerador y denominador. 20 pruebas nuevas y cinco partidos completos de cierre. Ver [`tecnico/motor06.md`](tecnico/motor06.md) y [recorrido manual](prompts/MOTOR-06-recorrido-manual.md).
+- **Provisional**: cifras del anexo A (SEM), contenido declarativo (lectura de Claude) y lecturas FIBA propias (PDF no accesible, 403); nada calibrado. **Cambia los resultados** (referencia `20261016`: 70–100 → 82–97); `export/4` se rechaza sin reproducirse.
+- **Comprobado por Claude**: pruebas automáticas y recorrido en Chromium. **Pendiente de Dennis**: todo el recorrido manual y las decisiones de `motor06.md`. **No ejecutado**: Node 24, otros navegadores.
+- Siguiente: lo que ordene Dennis (MOTOR-07: Forma y momentos; no iniciado).
 
 ## MOTOR-05 (ejecutado, pendiente de Dennis)
 
