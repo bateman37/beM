@@ -5,6 +5,7 @@
 // excepción conocida se detecta como «hoja sin clasificar» (comprobación de cobertura).
 import { getAt, pathKey } from './util.js';
 import { MOTOR07_FAMILIES, MOTOR07_EXEMPT } from './rows-motor07.js';
+import { MOTOR08_FAMILIES, MOTOR08_EXEMPT } from './rows-motor08.js';
 
 export const CLASSES = {
   balance: 'Parámetro de balance',
@@ -418,13 +419,15 @@ export const FAMILIES = [
   fam({ path: 'motor02.{k}', dom: { k: ['timeOutRecoveryRecipients', 'timeOutRecoveryApplication', 'momentDynamics'] }, type: 'text', unit: 'política', cls: 'invariante', coverage: 'sin_consumidor', grp: 'ACT12', views: ['estados'], mech: null,
     label: (m) => ({ timeOutRecoveryRecipients: 'Quién recupera con un tiempo muerto', timeOutRecoveryApplication: 'Cuándo se aplica la recuperación', momentDynamics: 'Dinámica de momento' }[m.k]), desc: () => 'Política declarada; el comportamiento está codificado y no se consulta como dato.', effect: () => 'Solo lectura. La dinámica de momento la implementa MOTOR-07 (filas `moment.*`, `teamMoment.*`, `episodes.*`).' }),  // ------------------------------------------------------------------ MOTOR-07: Forma, presión, momentos, T, episodios y conexiones (SEM-MOTOR07)
   ...MOTOR07_FAMILIES,
+  // ------------------------------------------------------------------ MOTOR-08: entrenador automático y memoria defensiva (SEM-MOTOR08)
+  ...MOTOR08_FAMILIES,
 ];
 
 // Hojas del perfil que NO son filas: identidad, procedencia y estructura de contenido, no magnitudes calibrables (§4.1).
 export const EXEMPT_LEAF = [
   /^id$/, /^status$/, /^scope$/, /^effectiveId$/, /^provenance\./, /^deferred/, /^scenario\./, /^fixtureContract\./, /^attributeOrder/, /^attributeDictionary/,
   /^extensions\./, /^motor02\.(seedExtensionId|status|basedOn|origin)$/, /^profileRef\./, /^plays\.\d+\.(id|family|roles|continuations)/, /^tasks\.[^.]+\.(attack|defense)\.\d+\.[01]$/, /^plays\.\d+\.(qualityAttack|qualityDefense)\.\d+\.[01]$/,
-  /^rotation\.foulProtection\.\d+\.period$/, ...MOTOR07_EXEMPT, /^repertoire\./, /^defenseRepertoire\./, /^spontaneousRepertoire\./, /^throwInRepertoire\./,
+  /^rotation\.foulProtection\.\d+\.period$/, ...MOTOR07_EXEMPT, ...MOTOR08_EXEMPT, /^repertoire\./, /^defenseRepertoire\./, /^spontaneousRepertoire\./, /^throwInRepertoire\./,
 ];
 
 // Excepciones explicadas: valores del código que NO se convierten en filas (§4.1).
@@ -479,7 +482,7 @@ export function buildRows(profile, { presentation = null } = {}) {
     if (seen.has(id)) throw new Error(`diccionario: fila duplicada ${id}`);
     const row = {
       id, path: base.path, family: f.path, type, pair: f.pair ?? null, elem: f.elem ?? null, order: resolveVal(f.order, m) ?? null, elems: f.elems ?? null,
-      unit: resolveVal(f.unit, m), cls, label: f.label(m, A), desc: f.desc(m, A), effect: f.effect(m, A), note: v.note ?? null,
+      unit: resolveVal(f.unit, m), cls, label: f.label(m, A, profile), desc: f.desc(m, A, profile), effect: f.effect(m, A, profile), note: v.note ?? null,
       grp: f.grp, views: f.views, mech: resolveVal(f.mech, m) ?? null, group: f.group ? f.group(m) : null, sum: f.sum ?? null, ext: f.ext ?? 'SEM-MOTOR01/02',
       coverage, locked: !!f.locked, required: !!base.required, missing: !!base.missing, value: base.missing ? undefined : getAt(profile, base.path), params: { ...m, ...extra },
       editable: (cls === 'balance' || cls === 'contenido') && coverage === 'consumido' && !f.locked,
@@ -514,6 +517,15 @@ export function buildRows(profile, { presentation = null } = {}) {
       if (f.node === 'array') { if (e.missing) { push(f, { path: e.path, required: true, missing: true }, e.m, {}); continue; } push(f, { path: e.path, required: true }, e.m, {}); continue; }
       if (!isLeaf(e.node) && !e.missing) continue; // nodo intermedio ya cubierto por comodines posteriores
       push(f, { path: e.path, required: Object.values(f.dom ?? {}).length > 0 || !/\{/.test(f.path), id: f.plays ? `plays.${e.m.play}.shotWeights.${e.m.zone}` : undefined, missing: e.missing }, e.m, {});
+    }
+  }
+  // MOTOR-08: las filas históricas de rotación sustituidas por la tabla de políticas se conservan (solo lectura) y se identifica el cambio
+  if (profile.coach?.supersedes) {
+    const sup = profile.coach.supersedes;
+    for (const r of rows) {
+      const hit = sup[r.id] ?? (r.id.startsWith('rotation.foulProtection.') ? sup['rotation.foulProtection'] : null);
+      if (!hit) continue;
+      r.coverage = 'sin_consumidor'; r.editable = false; r.note = `Fila histórica sustituida en MOTOR-08 por ${hit}; se conserva sin mecanismo que la consulte.`;
     }
   }
   if (presentation) {

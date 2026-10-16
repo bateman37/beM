@@ -3,11 +3,11 @@
 // frontera de avance que en el original. Las activaciones del historial sirven solo para comprobar, nunca se reaplican.
 // El archivo se trata como datos: no se evalúa ni se ejecuta nada de su contenido.
 import { createMatch, buildResult } from './index.js';
-import { validateInput, deepCopy, ENGINE_VERSION, EXPORT_SCHEMA, EXPORT_SCHEMA_MOTOR01, EXPORT_SCHEMA_MOTOR02, EXPORT_SCHEMA_MOTOR04, EXPORT_SCHEMA_MOTOR05, EXPORT_SCHEMA_MOTOR06 } from './data.js';
+import { validateInput, deepCopy, ENGINE_VERSION, EXPORT_SCHEMA, EXPORT_SCHEMA_MOTOR01, EXPORT_SCHEMA_MOTOR02, EXPORT_SCHEMA_MOTOR04, EXPORT_SCHEMA_MOTOR05, EXPORT_SCHEMA_MOTOR06, EXPORT_SCHEMA_MOTOR07 } from './data.js';
 import { projectBox } from './box.js';
 
 const COMMAND_KINDS = new Set(['submit', 'batch', 'cancel']);
-const REQUIRED_PROFILE_KEYS = ['id', 'rng', 'rules', 'selection', 'opportunity', 'outcomes', 'tasks', 'plays', 'shots', 'energy', 'rotation', 'durationSeconds', 'activeCatalog', 'attributeOrder', 'form', 'pressure', 'moment', 'teamMoment', 'episodes', 'stateTasks', 'episodeCatalog'];
+const REQUIRED_PROFILE_KEYS = ['id', 'rng', 'rules', 'selection', 'opportunity', 'outcomes', 'tasks', 'plays', 'shots', 'energy', 'rotation', 'durationSeconds', 'activeCatalog', 'attributeOrder', 'form', 'pressure', 'moment', 'teamMoment', 'episodes', 'stateTasks', 'episodeCatalog', 'coach', 'memory'];
 
 // Valida formato, versiones y referencias ANTES de ejecutar nada. Devuelve { ok, reproducible, legacy, problems }.
 export function validateReplayFile(file) {
@@ -32,6 +32,10 @@ export function validateReplayFile(file) {
   }
   if (file.schema === EXPORT_SCHEMA_MOTOR06) {
     problems.push(`formato ${EXPORT_SCHEMA_MOTOR06} de MOTOR-06: se puede consultar, pero no es reproducible con esta versión del motor (${file.meta?.engineVersion ?? 'versión desconocida'} ≠ ${ENGINE_VERSION}); MOTOR-07 añade la entrada de Forma, momentos, T e importancia, la presión, los episodios y nuevas conexiones de capacidades, de modo que el mismo archivo no produce el mismo partido. El archivo se conserva sin cambios y no se le asigna el perfil nuevo`);
+    return out({ reproducible: false, legacy: true });
+  }
+  if (file.schema === EXPORT_SCHEMA_MOTOR07) {
+    problems.push(`formato ${EXPORT_SCHEMA_MOTOR07} de MOTOR-07: se puede consultar, pero no es reproducible con esta versión del motor (${file.meta?.engineVersion ?? 'versión desconocida'} ≠ ${ENGINE_VERSION}); MOTOR-08 añade el entrenador automático con política y delegación por áreas, el plan de participación, la memoria defensiva y corrige entregas, saques y la falta disruptiva, de modo que el mismo archivo no produce el mismo partido. El archivo se conserva sin cambios y no se le asigna el perfil nuevo`);
     return out({ reproducible: false, legacy: true });
   }
   if (file.schema !== EXPORT_SCHEMA) { problems.push(`formato no reconocido: ${String(file.schema)} (se espera ${EXPORT_SCHEMA})`); return out(); }
@@ -62,6 +66,8 @@ export function sportsProjection(res) {
     box: projectBox(res.events, res.lineups, res.input),
     orders: res.orders, commands: res.commands,
     states: res.diagnostics?.states ?? null, episodes: res.diagnostics?.episodes ?? null, // MOTOR-07: estados y timestamps comprometidos y episodios (reproducibles)
+    coach: (res.diagnostics?.coach?.decisions ?? null)?.map((d) => ({ ...d, version: d.version ? { ...d.version, versionDeLaBiblioteca: undefined } : d.version })), // la etiqueta de biblioteca es procedencia del perfil, no un hecho deportivo
+     memory: res.diagnostics?.memory ?? null, // MOTOR-08: decisiones del entrenador y memoria (se regeneran y se contrastan; no se reinyectan)
     status: res.status, steps: res.result?.stepCount ?? res.diagnostics?.steps,
   };
 }

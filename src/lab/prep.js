@@ -2,9 +2,10 @@
 // instrucción de media distancia y libro de quince fichas por familia con su ficha legible y su compatibilidad con el quinteto.
 import { h, clear } from './dom.js';
 import { store, PLAY_NAMES, persist, prepProfile, loadDemoPlan } from './store.js';
-import { SLOTS, validateInput, createMatch, deepCopy } from '../match/index.js';
+import { SLOTS, validateInput, createMatch, deepCopy, defaultParticipationPlan } from '../match/index.js';
 import { defenseControls } from './defense-ui.js';
 import { throwInControls } from './throwin-ui.js';
+import { coachPrepControls } from './coach-ui.js';
 import { STYLE_DEFS, STYLE_GROUPS, STYLE_TITLES, MIDRANGE_OPTIONS, FAMILY_NAMES, FAMILY_ORDER, STATUS_TEXT, styleLevelLabels } from './styles.js';
 
 export { STYLE_TITLES };
@@ -24,9 +25,9 @@ function compat(profile, edit) {
 export function renderPrep(root) {
   clear(root);
   const { edit } = store; const profile = prepProfile();
-  const legacy = !store.profile.moment;
+  const legacy = !store.profile.moment || !store.profile.coach;
   root.append(h('h2', {}, 'Preparación del encuentro'));
-  if (legacy) root.append(h('div', { class: 'errbox' }, h('strong', { class: 'err' }, 'El perfil activo es anterior a MOTOR-07. '), 'Puedes preparar la entrada (se valida con el perfil de MOTOR-07), pero no se podrá jugar hasta activar la base de MOTOR-07 o una candidata explícita (Panel de ajustes › Inicio).'));
+  if (legacy) root.append(h('div', { class: 'errbox' }, h('strong', { class: 'err' }, 'El perfil activo es anterior a MOTOR-08. '), 'Puedes preparar la entrada (se valida con el perfil de MOTOR-08), pero no se podrá jugar hasta activar la base de MOTOR-08 o una candidata explícita (Panel de ajustes › Inicio).'));
   if (store.upgradeNotes?.length) root.append(h('p', { class: 'small muted' }, `Entrada guardada con una versión anterior: se añadieron explícitamente los campos nuevos con su valor inicial (${store.upgradeNotes.join('; ')}).`));
   root.append(h('div', { class: 'card' },
     h('div', { class: 'row' },
@@ -50,7 +51,9 @@ function teamPrep(team, idx, profile, cm, root) {
       const nid = e.target.value; const old = plan.starters[slot];
       const other = SLOTS.find((s) => s !== slot && plan.starters[s] === nid);
       if (other) plan.starters[other] = old; // intercambio: un jugador no ocupa dos posiciones
-      plan.starters[slot] = nid; again();
+      plan.starters[slot] = nid;
+      if (plan.participation) plan.participation = defaultParticipationPlan(profile, team.players, plan); // MOTOR-08: cambian los titulares, se recarga la precarga SEM (revisable)
+      again();
     } }, team.players.map((p) => h('option', { value: p.id, selected: p.id === plan.starters[slot] }, optLabel(p)))));
   const dirList = h('ol', {}, plan.directorPriority.map((id, i) => h('li', {}, id, ' ',
     h('button', { class: 'link small', disabled: i === 0, onclick: () => { [plan.directorPriority[i - 1], plan.directorPriority[i]] = [plan.directorPriority[i], plan.directorPriority[i - 1]]; again(); } }, '↑'), ' ',
@@ -134,7 +137,13 @@ function teamPrep(team, idx, profile, cm, root) {
       getServer: (k, f) => plan.throwInServers[k][f], setServer: (k, f, v) => { plan.throwInServers[k][f] = v; if (f === 'preferred' && v && plan.throwInServers[k].alternate === v) plan.throwInServers[k].alternate = null; },
       getDef: (f) => plan.throwInDefense[f], setDef: (f, v) => { plan.throwInDefense[f] = v; } })));
 
+  // ---- entrenador automático (MOTOR-08): política, ámbitos delegados y plan de participación
+  const coachUi = plan.coach ? coachPrepControls({ team, plan, profile, starterSet, refresh: again }) : null;
+  const coach = coachUi ? h('details', { open: ui.open.has(`coach:${idx}`), ontoggle: (e) => { const k = `coach:${idx}`; if (e.target.open) ui.open.add(k); else ui.open.delete(k); } },
+    h('summary', {}, h('strong', {}, 'Entrenador'), ` — ${coachUi.summary}`), coachUi.node) : null;
+
   return h('div', { class: 'card' }, h('h3', {}, `${team.id} — ${team.name}`),
+    coach,
     disposition,
     defense,
     throwIns,

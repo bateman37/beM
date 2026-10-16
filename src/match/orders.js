@@ -35,6 +35,7 @@ P.setState = function setState(o, state, reason, extra = {}) {
   o.state = state; o.reason = reason ?? null;
   const f = this.frontier();
   o.history.push({ state, reason: reason ?? null, step: this.stepSeq, enPaso: this.inStep, period: this.period, clock: this.clock, possession: this.poss && !this.poss.done ? this.poss.id : null, lastEvent: f.lastEvent, ...extra });
+  if (o.decisionId) this.coachOrderState(o, state, reason); // MOTOR-08: el ciclo de una orden automática actualiza su decisión
 };
 // Razón de espera: se registra solo cuando cambia, para no llenar el historial.
 P.setWait = function setWait(o, reason) {
@@ -70,6 +71,7 @@ P.validateOrder = function validateOrder(o) {
   if (this.status === 'created') return fail('el partido no ha comenzado: edita la preparación');
   if (this.status === 'finished') return fail('el partido ha terminado');
   if (this.status === 'error') return fail('el partido terminó con error');
+  if (o.content.lockUntil != null && !['period', 'change'].includes(o.content.lockUntil)) return fail('la duración del control manual es «hasta final de cuarto» o «hasta cambiarla»');
   return this[`validate_${o.type}`](o);
 };
 
@@ -254,6 +256,16 @@ P.validate_throwInCall = function validate_throwInCall(o) {
   return ok();
 };
 
+// Delegación por áreas (MOTOR-08): rotaciones, ajustes tácticos, gestión de faltas, tiempos muertos y finales; política de referencia opcional.
+P.validate_coachDelegation = function validate_coachDelegation(o) {
+  const c = o.content; const areas = c.areas ?? {}; const known = this.profile.coach.areas;
+  const keys = Object.keys(areas);
+  if (!keys.length && !c.policy && !c.releaseLocks) return fail('indica al menos un ámbito, una política o liberar el control manual');
+  for (const k of keys) { if (!known.includes(k)) return fail(`«${k}» no es un ámbito delegable (${known.join(', ')})`); if (typeof areas[k] !== 'boolean') return fail(`${k}: delegar es verdadero o falso`); }
+  if (c.policy != null && !(this.profile.activeCatalog.coachPolicies ?? []).includes(c.policy)) return fail(`la política ${c.policy} no está en el catálogo activo`);
+  o.scope = this.planScope(); o.liveFields = [...keys.map((k) => `delegation.${k}`), ...(c.policy ? ['coachPolicy'] : []), ...(c.releaseLocks ? ['coachLocks'] : [])];
+  return ok();
+};
 P.validate_delegate = function validate_delegate(o) {
   if (o.content.domain !== 'lineup') return fail('solo se puede devolver el ámbito «quinteto» al entrenador básico en esta entrega');
   o.scope = this.planScope(); o.liveFields = ['lineupControl'];
@@ -332,9 +344,11 @@ P.validate_timeout = function validate_timeout(o) {
   const cfg = this.cfg?.timeOuts;
   if (!cfg) return fail('el perfil no incluye la extensión de MOTOR-02 (tiempos muertos)');
   if (this.periodBreak != null || this.periodStartPending) return fail('entre periodos no se piden tiempos muertos: el intervalo ya es una parada');
-  if (this.orders.some((x) => x.type === 'timeout' && x.team === o.team && x.state === 'pendiente')) return fail('ya hay un tiempo muerto solicitado y pendiente');
+  if (this.orders.some((x) => x.type === 'timeout' && x.team === o.team && x.state === 'pendiente' && (x.issuer !== 'auto' || o.issuer === 'auto'))) return fail('ya hay un tiempo muerto solicitado y pendiente');
   const al = this.timeoutStatus(o.team);
   if (al.effective <= 0) return fail(`sin tiempos muertos disponibles (${al.reason ?? 'cupo agotado'})`);
+  // MOTOR-08: la petición manual prevalece sobre la automática pendiente del mismo equipo (una sola pausa, la de Dennis)
+  if (o.issuer !== 'auto') for (const x of this.orders) if (x.type === 'timeout' && x.team === o.team && x.state === 'pendiente' && x.issuer === 'auto') this.setState(x, 'cancelada', 'prevalece el tiempo muerto pedido manualmente');
   o.scope = { kind: 'ventana', window: 'tiempo muerto' };
   return ok();
 };
@@ -454,6 +468,13 @@ P.applyPlanOrder = function applyPlanOrder(o) {
   else if (o.type === 'defMarks') { plan.marks = deepCopy(o.content.marks); this.defPlanVer[o.team] += 1; }
   else if (o.type === 'defSpecial') { const sp = (plan.specials ?? []).filter((x) => x.id !== o.content.special); if (o.content.config) sp.push({ id: o.content.special, ...deepCopy(o.content.config) }); plan.specials = sp; this.defPlanVer[o.team] += 1; }
   else if (o.type === 'delegate') this.lineupControl[o.team] = { mode: 'auto', cause: 'devuelto al entrenador', orderId: o.id };
+  else if (o.type === 'coachDelegation') {
+    const st = this.coachState[o.team];
+    for (const [k, v] of Object.entries(o.content.areas ?? {})) if (o.liveFields.includes(`delegation.${k}`)) st.delegation[k] = v;
+    if (o.content.policy && o.liveFields.includes('coachPolicy')) st.policy = o.content.policy;
+    // devolver los ajustes al entrenador libera explícitamente el control manual de los campos del plan (no cambia hechos anteriores)
+    if (o.content.releaseLocks) for (const x of this.orders) if (x.team === o.team && x.issuer === 'manual' && x.kind === 'plan' && x !== o) x.lockReleased = true;
+  }
   o.activation = { step: this.stepSeq, period: this.period, clock: this.clock, possession: this.poss && !this.poss.done ? this.poss.id : null, lastEvent: this.events.length ? this.events[this.events.length - 1].id : null };
   this.supersedeActive(o);
   this.setState(o, 'vigente', o.scope.kind === 'periodo' ? `vigente desde el inicio del ${ordinal(o.scope.targetPeriod)} periodo` : 'vigente desde la elección actual');
@@ -511,10 +532,12 @@ P.grantTimeouts = function grantTimeouts(w) {
   const granted = [];
   const pend = this.orders.filter((o) => o.type === 'timeout' && o.state === 'pendiente' && w.timeoutTeams.includes(o.team));
   for (const o of pend) {
+    if (o.issuer === 'auto') { const v = this.coachTimeoutStillValid(o); if (!v.ok) { this.setState(o, 'cancelada', `${v.reason}: no se gasta el recurso`); continue; } } // MOTOR-08: se revalida al llegar la ventana
     const al = timeoutAllowance(this.timeouts[o.team], this.period, this.clock, cfg, this.profile.rules);
     if (al.effective <= 0) { this.setState(o, 'caducada', `no se pudo conceder: ${al.reason ?? 'cupo agotado'}`); continue; }
     const block = chargeTimeout(this.timeouts[o.team], this.period, this.clock, cfg, this.profile.rules);
     const pts = this.cfg.timeOutRecoveryEnergyPoints;
+    this.coachState[o.team].lastTimeout = { sport: this.sportT / 10, reason: o.content.cause ?? 'manual' }; // enfriamiento y reserva de la política
     this.recoverAll(pts); // una vez por tiempo muerto concedido, a todos los disponibles de ambos equipos
     this.pauseMarker('timeout', `tiempo muerto de ${this.teams[o.team].id}`); // MOTOR-07 (EPI06): atenuación de momento y T, una vez, distinta de la energía
     this.clockRunning = false;
@@ -522,7 +545,7 @@ P.grantTimeouts = function grantTimeouts(w) {
     this.pendingLinks.push({ id: o.id, role: 'tiempo muerto concedido' });
     const ev = this.emit('timeout', {
       team: o.team,
-      intent: { origen: 'solicitud manual', solicitud: o.id, motivo: o.content.reason ?? null },
+      intent: { origen: o.issuer === 'auto' ? 'solicitud del entrenador automático' : 'solicitud manual', solicitud: o.id, motivo: o.content.reason ?? null, ...(o.decisionId ? { decision: o.decisionId } : {}) },
       effects: { ventana: w.reason, bloque: block, restantesBloque: after.remaining, duracionReglamentariaSegundos: cfg.durationSeconds, recuperacionEnergia: pts, destinatarios: 'todos los jugadores disponibles de ambos equipos' },
     });
     this.cover('tiempo muerto');
@@ -599,7 +622,8 @@ P.describeOrder = function describeOrder(o) {
     case 'throwInServers': return `Sacadores: ${['band', 'endline'].filter((k) => c[k]).map((k) => `${k === 'band' ? 'banda' : 'fondo'} ${c[k].preferred ?? 'política'}${c[k].alternate ? ` / alternativo ${c[k].alternate}` : ''}`).join(' · ')}`;
     case 'defThrowIn': return `Respuesta de saque: ${['band', 'endline'].filter((k) => c[k]).map((k) => `${k === 'band' ? 'banda' : 'fondo'} ${c[k]}`).join(' · ')}${'target' in c ? ` · objetivo ${c.target ?? 'ninguno'}` : ''}`;
     case 'throwInCall': return `Llamar ${c.playId} (próximo saque compatible propio, periodo ${o.scope?.period ?? '—'})`;
-    case 'delegate': return 'Devolver la gestión del quinteto al entrenador básico';
+    case 'delegate': return 'Devolver la gestión del quinteto al entrenador';
+    case 'coachDelegation': return `Delegación: ${Object.entries(c.areas ?? {}).map(([k, v]) => `${k} ${v ? 'sí' : 'no'}`).join(', ') || '—'}${c.policy ? ` · política ${c.policy}` : ''}${c.releaseLocks ? ' · libera el control manual de los ajustes' : ''}`;
     case 'call': return `Llamar ${c.playId} (${c.target === 'current' ? 'posesión actual' : 'siguiente posesión propia'})`;
     case 'substitution': return `Cambio: ${(c.swaps ?? []).map((s) => `sale ${s.out}, entra ${s.in}`).join('; ')}`;
     case 'lineup': return `Quinteto: ${SLOTS.map((s) => `${s} ${c.assignment?.[s] ?? c.target?.[s] ?? '—'}`).join(' · ')}`;

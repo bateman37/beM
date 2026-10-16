@@ -1,6 +1,6 @@
 {
   "description": "Catálogo de datos: identidad y estado de los materiales (MOTOR-01 cargados literalmente de los anexos del prompt; extensión de MOTOR-02 aparte, sin tocar el perfil original).",
-  "source": "docs/prompts/MOTOR-01-primer-partido-completo.md (Anexo A y Anexo B); docs/prompts/MOTOR-02-modos-y-direccion.md (apartado 8.4); docs/prompts/MOTOR-03-panel-y-perfiles.md (apartado 4.1); docs/prompts/MOTOR-04-ataque-posicional.md (anexo A); docs/prompts/MOTOR-05-defensa-completa.md (anexo A); docs/prompts/MOTOR-06-transicion-y-saques.md (anexo A)",
+  "source": "docs/prompts/MOTOR-01-primer-partido-completo.md (Anexo A y Anexo B); docs/prompts/MOTOR-02-modos-y-direccion.md (apartado 8.4); docs/prompts/MOTOR-03-panel-y-perfiles.md (apartado 4.1); docs/prompts/MOTOR-04-ataque-posicional.md (anexo A); docs/prompts/MOTOR-05-defensa-completa.md (anexo A); docs/prompts/MOTOR-06-transicion-y-saques.md (anexo A); docs/prompts/MOTOR-07-capacidades-y-estados.md (anexo A); docs/prompts/MOTOR-08-entrenador-y-memoria.md (apartados 6.1, 7.1, 10.2, 10.3 y 11.4)",
   "files": {
     "data/match/motor01-seed-profile.json": {
       "id": "SEM-MOTOR01-20261016",
@@ -48,6 +48,13 @@
       "sha256": "ce74a7ceafe2ef6e5ad43cdcc782b5568225594d7d2eba5c6cc17ece514e4043",
       "origin": "Anexo A del prompt de MOTOR-07 (cifras SEM, literales) + tablas declarativas de tareas con estados y episodios (lectura de Claude)",
       "state": "SEM provisional, no calibrado"
+    },
+    "data/match/motor08-seed-extension.json": {
+      "id": "SEM-MOTOR08-20261016",
+      "status": "SEM: provisional, no calibrado",
+      "sha256": "e73db9db5874bb06d5d215825b5ebdbff1f8a1130a0eca0cdd7594f2a9ac822b",
+      "origin": "Apartados 6.1, 7.1, 10.2, 10.3 y 11.4 del prompt de MOTOR-08 (cifras SEM literales, verificadas) + tablas declarativas de necesidades, causas de pausa, contextos de final, patrones y respuestas de memoria (concreción de Claude, a revisar por Dennis)",
+      "state": "SEM provisional, no calibrado; sustituye (sin borrar) las filas históricas rotation.* y añade el plan de participación y la política de cada equipo"
     },
     "data/match/motor04-seed-extension.json": {
       "id": "SEM-MOTOR04-20261016",

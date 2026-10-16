@@ -115,9 +115,9 @@ P.tacticalFoul = function tacticalFoul(ex) {
 // Hoy solo se produce la disruptiva (ESPD01); los contadores de las demás existen para que la regla no dependa de un único contador.
 P.sanctions = function sanctions(pid) { return ((this.sanc ??= {})[pid] ??= { disruptive: 0, flagrant: 0, technicalCat1: 0 }); };
 P.disqualifies = function disqualifies(pid) { const s = this.sanctions(pid); return s.flagrant >= 2 || s.technicalCat1 >= 2 || (s.flagrant >= 1 && s.technicalCat1 >= 1); };
-// Administración de la falta disruptiva: falta personal y de equipo, dos tiros libres y posesión para el equipo del lanzador con saque en pista de
-// ataque. Esa administración (número de libres «según el hecho y el acto de tiro», lugar y reloj de la reanudación: Arts. 37.2/38.2/17.2.7/29.2.6)
-// es una LECTURA PROPIA no contrastada con el texto exacto: ver DECISIÓN REQUERIDA en docs/tecnico/motor06.md.
+// Administración de la falta disruptiva (MOTOR-08 §12.1, resumen del encargo contrastado con OBR 2026 v1.1 arts. 37.2/38.2/17.2.7/29.2.6): falta personal y de equipo; lanza el jugador que
+// recibió la falta; sin acto de tiro, dos libres (con acto de tiro valdrían la canasta y un libre o dos/tres libres, pero ESPD01 se resuelve antes de la acción); después saque de su equipo en la
+// línea de pista delantera enfrente de la mesa con 14 s. No hay probabilidad artificial de disruptiva ni de flagrante: solo la produce un contacto representado.
 P.disruptiveAdmin = function disruptiveAdmin(committer, fouled, shotTeam) {
   const rules = this.profile.rules; const defTeam = 1 - shotTeam; const key = foulPeriodKey(this.period, rules);
   this.ps[committer].fouls += 1;
@@ -129,7 +129,7 @@ P.disruptiveAdmin = function disruptiveAdmin(committer, fouled, shotTeam) {
     team: shotTeam, intent: { origen: 'falta defensiva', tipo: 'disruptiva' },
     participants: { infractor: committer, sobre: fouled },
     stats: [{ k: 'foul', p: committer, team: defTeam, kind: 'disruptiva', teamFoul: true }],
-    effects: { faltasPersonales: this.ps[committer].fouls, faltasColectivasPeriodo: this.teamFouls[defTeam][key], tirosLibres: 2, categoria: 'disruptiva', disruptivasDelJugador: sc.disruptive, descalificado: dq, excluido: out || dq, causaTirosLibres: 'falta disruptiva: dos libres y posesión (administración sin contrastar con el texto exacto)' },
+    effects: { faltasPersonales: this.ps[committer].fouls, faltasColectivasPeriodo: this.teamFouls[defTeam][key], tirosLibres: 2, categoria: 'disruptiva', disruptivasDelJugador: sc.disruptive, descalificado: dq, excluido: out || dq, causaTirosLibres: 'falta disruptiva sin acto de tiro (arts. 37.2/38.2): dos libres para quien recibió la falta, después saque de penalización de su equipo en la línea de pista delantera enfrente de la mesa (art. 17.2.7) con 14 s (art. 29.2.6)', reglamento: 'OBR 2026 v1.1 arts. 37.2, 38.2, 17.2.7, 29.2.6 (resumen del encargo MOTOR-08; el PDF no se ha consultado desde el entorno)' },
   });
   this.cover('falta disruptiva');
   this.pendingFoul = { fouled, n: 2, shotTeam, shooting: false, shotMade: false, kind: 'falta disruptiva', retain: true };

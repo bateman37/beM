@@ -2,6 +2,15 @@
 
 Registro breve de entregas. Una entrada por entrega; las más recientes primero.
 
+## MOTOR-08 — Entrenador automático y memoria defensiva — 2026-10-16
+
+- Entrenador automático con tres políticas (ENTREF01–03, catorce parámetros literales del encargo) y cinco ámbitos delegables: rotaciones contextuales con estabilidad, librillo de faltas ordenado, tiempos muertos con causa, reserva y enfriamiento, ajustes tácticos y finales por tabla de contextos. Una sola utilidad 1–30 compartida con la sustitución; la exclusión reglamentaria no es delegable.
+- Memoria defensiva colectiva (máximo ocho patrones, clave semántica, decaimiento 2^(−n/7), saturación 4, descarte 0,25) con exposición registrada antes del acierto; reconocer no cambia ninguna probabilidad y las respuestas son órdenes de plan validadas en su frontera.
+- Contrato de información: el entrenador solo usa su vista permitida (sin datos rivales privados ni futuro). Órdenes manuales con bloqueo `lockUntil` y orden `coachDelegation`; una petición manual de tiempo muerto prevalece sobre la automática.
+- Salvedades de MOTOR-07: falta disruptiva (lanza quien la recibe, saque con 14 s exactos), COB04 en entregas con fallback declarado, recepción forzada de saques no garantizada, mapa acotado de MEN02/03/04.
+- Extensión `SEM-MOTOR08-20261016` (verificada por `npm run data:check`), perfil con filas `coach.*`/`memory.*`, vistas «Entrenador» y «Memoria», interfaz de preparación, tarjeta del partido y diagnóstico, `beM-match-input/6` y `beM-match-export/7` (el `export/6` se rechaza con motivo).
+- **Cambia los resultados** (referencia `20261016`: 83–97 → 88–110). 118 pruebas (12 nuevas). Documentación: [`docs/tecnico/motor08.md`](docs/tecnico/motor08.md), [recorrido manual](docs/prompts/MOTOR-08-recorrido-manual.md). Pendiente de validación de Dennis.
+
 ## MOTOR-07 — Capacidades, energía, Forma y momentos completos — 2026-10-16
 
 - Uso causal comprobado de las 32 capacidades (mapa y 32 sondas): nuevos consumidores de FIS01 (acceso de transición), MEN02/MEN03 (lectura del defensor real), MEN06 (amplitud de los momentos) y MEN07 (presión); energía selectiva sin cambios.

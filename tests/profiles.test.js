@@ -54,10 +54,14 @@ test('el motor consulta de verdad las filas declaradas «consumidas» (salvo las
     playWithOrders(defInputFor(20261018, 0, { coverage: 'COB01', navigation: 'under' })).m,
     playWithOrders(defInputFor(20261016, 0, { coverage: 'COB02' })).m,
   ].map((m) => buildResult(m));
-  const seen = new Set([...read(res), ...read(runMatch(demoInputFor(20261016), base, { detail: 'full' })), ...defRuns.flatMap(read)]);
+  // MOTOR-08: las tres políticas del entrenador (la cauta y la agresiva leen sus propias filas) y un libro de una sola ficha que repite el recurso ante la memoria
+  const polRun = (a, b, seed = 20261016) => { const i = inputFor(seed); i.teams[0].plan.coach.policy = a; i.teams[1].plan.coach.policy = b; return runMatch(i, base, { detail: 'full' }); };
+  const seen = new Set([...read(res), ...read(runMatch(demoInputFor(20261016), base, { detail: 'full' })), ...defRuns.flatMap(read), ...read(polRun('ENTREF01', 'ENTREF03')), ...read(polRun('ENTREF03', 'ENTREF01', 20261017))]);
   // Solo se leen al construir el encuentro/resultado, en prórroga o con órdenes manuales; se comprueban aparte donde procede.
+  // MOTOR-08: filas del entrenador/memoria que solo se leen en un contexto concreto (estado de prueba acotado, no espontáneo en estos partidos); su efecto se comprueba en motor08.test.js
+  const COACH_CONDITIONAL = /^(coach\.(areas$|endgame\.contexts\.\d+\.(defenseWhenLeadAtMost|needs\.)|foulBook\.\d+\.(priority|exception|preference)$|policies\.ENTREF0\d\.(adjustmentHold|fatigueUtilitySacrifice)$|rotation\.(criticalUtilitySacrifice$|needRecipes\.rebound\.|participation\.(pairs|starterMinutes|reliefMinutes)$)|timeouts\.contextualRest\.meanEnergyMax$)|memory\.patterns\.\d+\.(id|name|specific)$|memory\.responses\.\d+\.(id|concession|dimension|order|priority)$)/;
   const CONDITIONAL = /^(rng\.|activeCatalog\.|rules\.(profile|overtimeSeconds|overtimeFoulsCarryFromPeriod)$|motor02\.|energy\.overtimeIntervalRecovery$|selection\.safeReceiverWeights\.|rotation\.(minimumStintSeconds|replacementUtilityTolerance|criticalReplacementTolerance|foulProtectionTolerance)$|rules\.freeThrowsForOrdinaryBonus$|form\.range$|pressure\.importance\.(important|decisive)$|(moment|teamMoment)\.pauseAttenuation\.timeout$|moment\.categoryBoundaries$|initialStatePolicy\.|rebound\.(lastFreeThrowOffensiveP0|liveLastFreeThrow(Offense|Defense)Slots)$|selection\.midrangePolicy\.|selection\.newVariantPreference\.unknownRoleFunctionWeight$|block\.blockedLooseControlDefenseProbability$|defense\.specials\.boxAndOneDefaultFallback$|throwIns\.(defaultBandOffensivePlan|defaultEndlineOffensivePlan|pointCallScope)$)/; // MOTOR-06: las dos fichas precargadas solo se leen al migrar una entrada anterior y el ámbito de la llamada, al pedirla; la alternativa de box and one, solo si falta el objetivo
-  const unread = rows.filter((r) => r.coverage === 'consumido' && !seen.has(r.id) && !CONDITIONAL.test(r.id));
+  const unread = rows.filter((r) => r.coverage === 'consumido' && !seen.has(r.id) && !CONDITIONAL.test(r.id) && !COACH_CONDITIONAL.test(r.id));
   assert.deepEqual(unread.map((r) => r.id), []);
   assert.deepEqual(rows.filter((r) => r.coverage !== 'consumido' && seen.has(r.id)).map((r) => r.id), []);
   // la diagnosis enlaza las filas del perfil congelado: cada hecho con resolución lleva sus filas
@@ -180,8 +184,8 @@ test('causalidad: editar una fila llega al mecanismo consumidor (probabilidad de
 
 // MOTOR-04, MOTOR-05 y MOTOR-06 cambian el contenido operativo (repertorio, defensa por funciones, decisiones directas y saques): los partidos de referencia anteriores (94–89, 90–126) dejan de ser comparables y
 // se sustituye por el de la versión actual. Lo que protege esta prueba es que la base conectada al panel no altera el deporte.
-test('equivalencia deportiva: la base conectada al panel reproduce el partido de referencia de la versión (MOTOR-07)', () => {
-  const ref = JSON.parse(readFileSync(new URL('./fixtures/baseline-motor07.json', import.meta.url), 'utf8'))['20261016'];
+test('equivalencia deportiva: la base conectada al panel reproduce el partido de referencia de la versión (MOTOR-08)', () => {
+  const ref = JSON.parse(readFileSync(new URL('./fixtures/baseline-motor08.json', import.meta.url), 'utf8'))['20261016'];
   const res = runMatch(inputFor(20261016), base, { detail: 'full' });
   assert.deepEqual(res.score, ref.score);
   assert.equal(createHash('sha256').update(JSON.stringify(sportsProjection(res))).digest('hex'), ref.sha256);

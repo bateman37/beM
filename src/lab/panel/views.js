@@ -21,10 +21,10 @@ export function renderHome() {
   const mods = c.draft ? Object.keys(c.draft.overrides).length : 0;
   const dv = c.draft?.validation && L.validationIsCurrent(c.draft.id) ? c.draft.validation.summary : null;
   const evals = c.draft ? L.evaluationsFor(c.draft.id).length : 0;
-  const legacyCard = L.isLegacy(a.id) ? h('div', { class: 'errbox' }, h('strong', { class: 'err' }, 'El perfil activo es anterior a MOTOR-07. '), 'Conserva su identidad y no se migra en silencio: no puede jugar el motor actual (Forma, momentos, presión y episodios). ',
-    h('button', { class: 'btn', type: 'button', id: 'legacy-activate', onclick: () => { L.activate(L.baseId, 'activar la base de MOTOR-07'); window.dispatchEvent(new Event('beM:repaint')); repaint(); } }, 'Activar la base de MOTOR-07'), ' ',
-    h('button', { class: 'btn secondary', type: 'button', id: 'legacy-upgrade', onclick: () => { const r = L.upgradeCandidate(a.id); if (r.ok) { ps.editing = r.draft.id; ps.tab = 'perfiles'; } else alert(r.error); repaint(); } }, 'Crear candidata MOTOR-07 desde esta versión'),
-    h('p', { class: 'small muted' }, 'La candidata es un borrador sobre la base de MOTOR-07 con los valores que esta versión había cambiado (las filas sustituidas por la extensión no se trasladan). Hay que validarla y publicarla.')) : null;
+  const legacyCard = L.isLegacy(a.id) ? h('div', { class: 'errbox' }, h('strong', { class: 'err' }, 'El perfil activo es anterior a MOTOR-08. '), 'Conserva su identidad y no se migra en silencio: no puede jugar el motor actual (entrenador automático con políticas y delegación, memoria defensiva, plan de participación). ',
+    h('button', { class: 'btn', type: 'button', id: 'legacy-activate', onclick: () => { L.activate(L.baseId, 'activar la base de MOTOR-08'); window.dispatchEvent(new Event('beM:repaint')); repaint(); } }, 'Activar la base de MOTOR-08'), ' ',
+    h('button', { class: 'btn secondary', type: 'button', id: 'legacy-upgrade', onclick: () => { const r = L.upgradeCandidate(a.id); if (r.ok) { ps.editing = r.draft.id; ps.tab = 'perfiles'; } else alert(r.error); repaint(); } }, 'Crear candidata MOTOR-08 desde esta versión'),
+    h('p', { class: 'small muted' }, 'La candidata es un borrador sobre la base de MOTOR-08 con los valores que esta versión había cambiado (las filas sustituidas por la extensión no se trasladan). Hay que validarla y publicarla.')) : null;
   return h('div', {},
     legacyCard,
     h('div', { class: 'card' }, h('h3', { style: 'margin-top:0' }, 'Perfil activo para futuros partidos'),

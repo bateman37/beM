@@ -33,7 +33,7 @@ export class MatchCore {
         this.roleOf[p.id] = p.offensiveRole.code;
         this.ps[p.id] = {
           energy: p.state.energy, fouls: p.state.fouls ?? 0, available: p.state.available !== false,
-          onCourt: false, slot: null, stintTenths: 0, benchTenths: 9999 * 10, locked: false,
+          onCourt: false, slot: null, stintTenths: 0, benchTenths: 9999 * 10, locked: false, playedTenths: 0,
         };
       }
     });
@@ -59,6 +59,7 @@ export class MatchCore {
     this.initDirection();
     this.initDefense();
     this.initStates(); // MOTOR-07: Forma, momentos y T (estado deportivo recibido en la entrada)
+    this.initCoach(); // MOTOR-08: entrenador automático, delegación, decisiones y memoria defensiva
   }
 
   reachOf(p) {
@@ -183,7 +184,7 @@ export class MatchCore {
           // carga por encargo: el comprometido paga clamp(carga · factor) una sola vez por el intervalo (máximo, no producto)
           const l = this.duty?.[id] ? clamp(load * this.duty[id], e.loadBounds[0], e.loadBounds[1]) : load;
           s.energy = clamp(s.energy - e.costPerLiveMinute * mins * l * this.enduranceFactor(id), e.range[0], e.range[1]);
-          s.stintTenths += dur;
+          s.stintTenths += dur; s.playedTenths += dur;
         } else {
           s.energy = clamp(s.energy + e.benchRecoveryPerLiveMinute * mins, e.range[0], e.range[1]);
           s.benchTenths += dur;
@@ -224,6 +225,7 @@ export class MatchCore {
       score: [...this.score],
       draws: this.rng.drain(),
     };
+    this.coachObserveEvent?.(ev); // MOTOR-08: hechos observables del ataque (puntos) para la evidencia de racha
     this.chainHook?.(ev); // MOTOR-06: la cadena de saque abierta asocia el hecho y acumula la producción directa
     if (this.tracker) ev.params = this.tracker.drain();
     if (this.pendingLinks.length) { ev.orders = this.pendingLinks; this.pendingLinks = []; }

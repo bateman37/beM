@@ -230,6 +230,7 @@ P.episodesAfterShot = function episodesAfterShot(ex, { made, pBase, contact }) {
 P.episodeError = function episodeError(ex, kind) {
   const pid = ex.exec === 'pass' ? ex.passer : ex.actor;
   if (!pid) return;
+  this.coachFact('avoidableLoss', ex.team); // MOTOR-08: pérdida evitable = error representado (infracción o pérdida sin intento de intervención del defensor)
   this.episode('EPI02', { chain: `${this.poss?.id ?? 'sin-posesion'}:error:${pid}`, who: pid, evidence: { tipo: kind, intentoDeIntervencion: ex.stealAttempt ?? null, ejecucion: ex.exec } });
 };
 // EPI03: una reorganización por un problema real queda «pendiente» hasta que su tarea se resuelva (no cuenta por haberla ordenado).

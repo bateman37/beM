@@ -82,6 +82,10 @@ export const ORDER_TYPES = {
     kind: 'tcall', label: 'Llamada puntual de saque', scope: 'el siguiente saque compatible propio dentro del periodo actual (caduca al acabar el periodo)',
     boundary: 'inicio efectivo de la ficha; no lo consume un saque de otro origen incompatible',
   },
+  coachDelegation: {
+    kind: 'plan', label: 'Delegación al entrenador automático', scope: 'persistente hasta nueva delegación (por áreas: rotaciones, ajustes, faltas, tiempos muertos, finales)',
+    boundary: 'siguiente decisión del ámbito delegado; no anula una orden manual válida ni cambia un hecho anterior',
+  },
   delegate: {
     kind: 'plan', label: 'Devolver el quinteto al entrenador', scope: 'ámbito «quinteto»',
     boundary: 'siguiente decisión delegada de ese ámbito; no dispara cambios retroactivos',

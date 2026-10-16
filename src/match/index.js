@@ -10,17 +10,22 @@ import './defense-specials.js';
 import './spontaneous.js';
 import './throwin.js';
 import './states.js';
+import './coach.js';
+import './memory.js';
 import './orders.js';
 import { projectBox, teamTotals } from './box.js';
-import { deepCopy, validateInput, buildMatchInput, parsePlayersCsv, validateProfileAndFixtures, applyExtension, validateExtension, upgradeInput, ENGINE_VERSION, EXPORT_SCHEMA, EXPORT_SCHEMA_MOTOR01, EXPORT_SCHEMA_MOTOR02, EXPORT_SCHEMA_MOTOR04, EXPORT_SCHEMA_MOTOR05, EXPORT_SCHEMA_MOTOR06, MIDRANGE_POLICIES, ATTRS, SLOTS } from './data.js';
+import { deepCopy, validateInput, buildMatchInput, parsePlayersCsv, validateProfileAndFixtures, applyExtension, validateExtension, upgradeInput, ENGINE_VERSION, EXPORT_SCHEMA, EXPORT_SCHEMA_MOTOR01, EXPORT_SCHEMA_MOTOR02, EXPORT_SCHEMA_MOTOR04, EXPORT_SCHEMA_MOTOR05, EXPORT_SCHEMA_MOTOR06, EXPORT_SCHEMA_MOTOR07, MIDRANGE_POLICIES, ATTRS, SLOTS } from './data.js';
 import { diagnosticQueries } from './diagnostics.js';
+import { coachCounts } from './coach.js';
 export { ownStateView, rivalPublicView, diagnosticView, publicStreak, SCOPE_TEXT } from './visibility.js';
 export { buildContrastScenario, CONTRAST_SCENARIOS } from './scenarios.js';
 export { momentCategory, CATEGORY_LABELS, perturbBinary, perturbCategories, pressureLossLogit, consistencySigmaAt } from './formulas.js';
 export { MOMENT_SCOPES } from './states.js';
+export { coachCounts, describeDecision, AREA_TEXT, ROTATION_TEXT, TIMEOUT_TEXT } from './coach.js';
+export { COACH_AREAS, defaultParticipationPlan, validateParticipation, endgameState, foulBookRow, utilityFor } from './coach-policy.js';
 import { ORDER_TYPES, ORDER_STATES, TERMINAL_STATES, EDITABLE_STYLES } from './order-types.js';
 
-export { ENGINE_VERSION, EXPORT_SCHEMA, EXPORT_SCHEMA_MOTOR01, EXPORT_SCHEMA_MOTOR02, EXPORT_SCHEMA_MOTOR04, EXPORT_SCHEMA_MOTOR05, EXPORT_SCHEMA_MOTOR06, MIDRANGE_POLICIES, upgradeInput, ATTRS, SLOTS, validateInput, buildMatchInput, parsePlayersCsv, validateProfileAndFixtures, applyExtension, validateExtension, projectBox, teamTotals, deepCopy, ORDER_TYPES, ORDER_STATES, TERMINAL_STATES, EDITABLE_STYLES };
+export { ENGINE_VERSION, EXPORT_SCHEMA, EXPORT_SCHEMA_MOTOR01, EXPORT_SCHEMA_MOTOR02, EXPORT_SCHEMA_MOTOR04, EXPORT_SCHEMA_MOTOR05, EXPORT_SCHEMA_MOTOR06, EXPORT_SCHEMA_MOTOR07, MIDRANGE_POLICIES, upgradeInput, ATTRS, SLOTS, validateInput, buildMatchInput, parsePlayersCsv, validateProfileAndFixtures, applyExtension, validateExtension, projectBox, teamTotals, deepCopy, ORDER_TYPES, ORDER_STATES, TERMINAL_STATES, EDITABLE_STYLES };
 
 export const COVERAGE = {
   activos: {
@@ -136,6 +141,9 @@ export function buildResult(m, extra = {}) {
       opportunities: m.oppLog, throwInChains: m.throwChains,
       // MOTOR-07: estados y episodios comprometidos (sin materializar nada al exportar); la evolución conserva intervalo deportivo y estado previo/posterior
       states: m.stateSnapshot(), stateLog: m.stateLog, episodes: m.episodeLog,
+      // MOTOR-08: decisiones del entrenador (observación → propuesta → autorización → ejecución), memoria defensiva y delegación efectiva; se regeneran al reproducir
+      coach: { decisions: m.decisions, counts: coachCounts(m.decisions, m.orders), delegation: m.coachState.map((s, i) => ({ equipo: m.teams[i].id, politica: s.policy, areas: { ...s.delegation } })), attacks: [...m.attackSeq] },
+      memory: { log: m.memLog, final: m.memorySnapshot() },
     },
     coverage: COVERAGE,
   };

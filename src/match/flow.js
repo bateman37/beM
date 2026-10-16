@@ -47,6 +47,7 @@ P.planDurationWithExtra = function planDurationWithExtra(spec, cat, purpose, ext
 P.resolveAttempt = function resolveAttempt(ex) {
   const tf = this.tacticalFoul(ex); // ESPD01: la orden vigente puede producir un contacto antes de resolver la acción
   if (tf) return tf;
+  this.memObserve(ex); // MOTOR-08: exposición y calidad observable de la oportunidad, registradas ANTES de conocer el acierto
   // Decisión de intervenir sobre el balón: una sola vez por interacción también en las rutas que no pasan por `defenseIntent` (transición, recursos sencillos,
   // balón recuperado). Sin decisión no hay robo atribuible (acceso → decisión → ejecución → control).
   if (ex.stealAttempt === undefined && ex.icpt && (ex.exec === 'dribble' || ex.exec === 'pass') && !ex.deferSteal) this.decideSteal(ex);
@@ -170,6 +171,7 @@ P.reorganize = function reorganize(poss, reason, playId, { toDisposition = null 
   const tenths = this.sampleDuration(d, 'reorganización', { factor: f, limit: this.limit() - Math.round(this.profile.durationSeconds.organizedShot[0] * f * 10) });
   const t = this.consume(tenths, 'organized');
   this.closeChain(poss, 'nueva organización');
+  if (/negada/.test(reason ?? '')) this.coachFact('denialReorganization', poss.team); // MOTOR-08: pérdida de organización identificable (hecho observable)
   poss.disorganized = false; poss.early = false; poss.reorgCount = (poss.reorgCount ?? 0) + 1;
   this.episodeReorganizationPending(poss, reason, poss.director?.id); // MOTOR-07 (EPI03): solo cuenta si la tarea posterior se resuelve sin pérdida
   this.resetCurrent(); // reorganización pertinente: la defensa se reorganiza (cambios y ayudas ya no están activos)
@@ -407,7 +409,7 @@ P.runPlay = function runPlay(poss, entry, dir, lq) {
   }
   // cobertura del bloqueo (COB01–COB04): dos defensores identificables, responsabilidad abandonada y compromiso real (MOTOR-05)
   poss.coverage = null;
-  const cov = entry.spec.coverage ? this.beginCoverage(entry, poss) : null;
+  const cov = entry.spec.coverage ? this.beginCoverage(entry, poss, { ex }) : null;
   const cvk = this.coverageForExit(ex, cov);
   if (cov && cov.exchanged) CD = this.cdWith(entry, cov.pair.spec.type === 'pnr' ? { primary: cov.D2, screenMarker: cov.D1 } : cov.pair.spec.type === 'handoff' ? { receiverMarker: cov.D1 } : { receiverMarker: cov.D2 }); // tras el cambio, la calidad se evalúa con los defensores intercambiados
   let kctx = nativeQuality ? cvk.k : 0;
@@ -636,6 +638,7 @@ P.startPossession = function startPossession(spec) {
   this.possSeq += 1;
   this.poss = { id: `P${String(this.possSeq).padStart(3, '0')}`, seq: this.possSeq, team: spec.team, entry: spec.entry, origin: spec.origin ?? null, carrier: spec.carrier ?? null, carrierPid: spec.carrier ?? null, advanced: spec.entry === 'deadFront', disorganized: false, reorgCount: 0, done: false, units: 0, playStarted: false, transitionDone: false, pendingFT: null, deficit: spec.deficit ?? 0, denials: [], disposition: null, layout: null };
   this.poss.cur = {}; this.poss.committed = new Set(); this.poss.commitKinds = {};
+  this.coachStartAttack(this.poss); // MOTOR-08: un ataque deportivo identificado (decaimiento de la memoria rival y evidencia de racha)
   this.poss.early = spec.entry === 'live' || !!spec.early; this.poss.recovery = null; this.poss.autonomous = false; this.poss.throwIn = spec.throwIn ?? null; this.poss.throwInOrigin = null;
   this.refreshEffectiveOrg(1 - spec.team); // organización defensiva efectiva en la frontera de entrada de la posesión
   this.shotClock = spec.shotClock; this.shotClockOn = true;
@@ -671,6 +674,8 @@ P.settlePossession = function settlePossession(poss, r) {
   poss.done = true; poss.endKind = r.end ?? null;
   this.expireCallsFor(poss);
   this.expireSpecialOrdersFor(poss);
+  const rec = this.attackRecord(poss.team, poss.id); if (rec) rec.done = true;
+  this.coachFrontier('final de posesión'); // MOTOR-08: frontera deportiva de revisión del entrenador (pausas, finales, riesgo y memoria)
   return r;
 };
 
@@ -734,10 +739,12 @@ P.processWindow = function processWindow() {
   const granted = this.grantTimeouts(w);
   if (granted.length) {
     this.queueWindowFirst({ reason: 'tiempo muerto', subs: true });
-    return { timeouts: granted.length };
+    // la pausa del visionado es presentación: solo la provoca un tiempo muerto pedido por Dennis; el del entrenador delegado se muestra en las decisiones
+    const manual = granted.filter((ev) => ev.intent?.origen === 'solicitud manual').length;
+    return { timeouts: manual, autoTimeouts: granted.length - manual };
   }
   if (w.subs) this.substitutionWindow(w.reason);
-  return { timeouts: 0 };
+  return { timeouts: 0, autoTimeouts: 0 };
 };
 P.queueWindowFirst = function queueWindowFirst(w) { this.windowSeq += 1; this.pendingWindows.unshift({ id: this.windowSeq, timeoutTeams: [], subs: false, ...w }); };
 
@@ -766,6 +773,7 @@ P.finishPeriodStart = function finishPeriodStart() {
   this.clockRunning = false;
   this.emit('period_start', { team, intent: { origen: period === 1 ? 'salto inicial' : 'posesión alterna (flecha)' }, effects: { flechaApunta: this.arrow } });
   this.nextPoss = { team, entry: 'inbound', shotClock: toTenths(rules.shotClockSeconds), throwIn: { kind: 'center', origin: period === 1 ? 'salto inicial' : 'posesión alterna (flecha)' } };
+  this.coachFrontier('inicio de periodo'); // MOTOR-08: frontera deportiva de revisión (inicio de periodo)
 };
 // Compatibilidad (MOTOR-01 y pruebas directas): empieza el periodo resolviendo de inmediato sus ventanas.
 P.startPeriod = function startPeriod(period) {
@@ -792,7 +800,7 @@ P.step = function step() {
   const info = { n: this.stepSeq, kind: null, timeouts: 0, firstEvent: ev0 };
   try {
     if (this.status === 'created') { this.init(); info.kind = 'inicio'; }
-    else if (this.pendingWindows.length) { info.kind = 'ventana'; info.timeouts = this.processWindow().timeouts; }
+    else if (this.pendingWindows.length) { info.kind = 'ventana'; const pw = this.processWindow(); info.timeouts = pw.timeouts; info.autoTimeouts = pw.autoTimeouts; }
     else if (this.periodStartPending) { this.finishPeriodStart(); info.kind = 'inicio de periodo'; }
     else if (this.periodBreak != null) { const p = this.periodBreak; this.periodBreak = null; this.beginPeriod(p); info.kind = 'comienzo de periodo'; }
     else if (this.clock <= 0 && (!this.poss || this.poss.done)) { this.closePeriod(); info.kind = 'final de periodo'; }
