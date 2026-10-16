@@ -23,7 +23,7 @@ test('serie de libres ligada a una falta de tiro: quinta falta, exclusión y sus
   m.ps['EQ02-J11'].fouls = 4;
   const ex = baseEx({ zone: 'three', defend: 'EQ02-J11', icpt: 'EQ02-J11' });
   const before = m.events.length;
-  m.foulAdmin('EQ02-J11', 'EQ01-J03', { shooting: true, ftCount: 3, shotTeam: 0, shotMade: false });
+  m.foulAdmin('EQ02-J11', 'EQ01-J03', { shooting: true, ftCount: 3, shotTeam: 0, shotMade: false, shotPoints: 3 });
   while (m.pendingWindows.length) m.processWindow(); // la ventana de la falta es una frontera propia (MOTOR-02), previa a los libres
   m.shootFreeThrows('EQ01-J03', 3, m.pendingFoul, ex);
   const evs = m.events.slice(before).filter((e) => ['foul', 'substitution', 'free_throw'].includes(e.type) || e.type === 'rebound');

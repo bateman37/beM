@@ -9,6 +9,7 @@ import { previewRow } from '../../profiles/preview.js';
 import { describeCoverage } from '../../profiles/validate.js';
 import { store } from '../store.js';
 import { canonical } from '../../profiles/util.js';
+import { validateMatrix } from '../../match/regs.js';
 
 const go = (tab, extra = {}) => { ps.tab = tab; Object.assign(ps, extra); repaint(); };
 const light = (state, label, detail) => h('div', { class: `light ${state}` }, h('strong', {}, label), h('div', { class: 'small' }, detail));
@@ -21,10 +22,10 @@ export function renderHome() {
   const mods = c.draft ? Object.keys(c.draft.overrides).length : 0;
   const dv = c.draft?.validation && L.validationIsCurrent(c.draft.id) ? c.draft.validation.summary : null;
   const evals = c.draft ? L.evaluationsFor(c.draft.id).length : 0;
-  const legacyCard = L.isLegacy(a.id) ? h('div', { class: 'errbox' }, h('strong', { class: 'err' }, 'El perfil activo es anterior a MOTOR-08. '), 'Conserva su identidad y no se migra en silencio: no puede jugar el motor actual (entrenador automático con políticas y delegación, memoria defensiva, plan de participación). ',
-    h('button', { class: 'btn', type: 'button', id: 'legacy-activate', onclick: () => { L.activate(L.baseId, 'activar la base de MOTOR-08'); window.dispatchEvent(new Event('beM:repaint')); repaint(); } }, 'Activar la base de MOTOR-08'), ' ',
-    h('button', { class: 'btn secondary', type: 'button', id: 'legacy-upgrade', onclick: () => { const r = L.upgradeCandidate(a.id); if (r.ok) { ps.editing = r.draft.id; ps.tab = 'perfiles'; } else alert(r.error); repaint(); } }, 'Crear candidata MOTOR-08 desde esta versión'),
-    h('p', { class: 'small muted' }, 'La candidata es un borrador sobre la base de MOTOR-08 con los valores que esta versión había cambiado (las filas sustituidas por la extensión no se trasladan). Hay que validarla y publicarla.')) : null;
+  const legacyCard = L.isLegacy(a.id) ? h('div', { class: 'errbox' }, h('strong', { class: 'err' }, 'El perfil activo es anterior a MOTOR-09. '), 'Conserva su identidad y no se migra en silencio: no puede jugar el motor actual (matriz reglamentaria con series y estado de contraste, acta completa, ruta B de la memoria). ',
+    h('button', { class: 'btn', type: 'button', id: 'legacy-activate', onclick: () => { L.activate(L.baseId, 'activar la base de MOTOR-09'); window.dispatchEvent(new Event('beM:repaint')); repaint(); } }, 'Activar la base de MOTOR-09'), ' ',
+    h('button', { class: 'btn secondary', type: 'button', id: 'legacy-upgrade', onclick: () => { const r = L.upgradeCandidate(a.id); if (r.ok) { ps.editing = r.draft.id; ps.tab = 'perfiles'; } else alert(r.error); repaint(); } }, 'Crear candidata MOTOR-09 desde esta versión'),
+    h('p', { class: 'small muted' }, 'La candidata es un borrador sobre la base de MOTOR-09 con los valores que esta versión había cambiado (las filas sustituidas por la extensión no se trasladan). Hay que validarla y publicarla.')) : null;
   return h('div', {},
     legacyCard,
     h('div', { class: 'card' }, h('h3', { style: 'margin-top:0' }, 'Perfil activo para futuros partidos'),
@@ -94,10 +95,34 @@ export function renderVistas() {
     h('p', { class: 'small muted' }, 'Los mismos datos de la tabla maestra, organizados por tema. Las áreas futuras muestran su ficha funcional y su estado pendiente, no controles inactivos.')));
   const rows = c.cRows.rows.filter((r) => r.views.includes(v));
   const groups = GROUPS.filter((g) => g.view === v);
+  if (v === 'reglamento') root.append(regulationCard(c.consult.effective));
+  if (v === 'estadistica') root.append(statsPolicyCard(c.consult.effective));
   root.append(h('div', { class: 'card' }, h('h3', { style: 'margin-top:0' }, `${VIEWS[v]}: grupos funcionales de este tema`),
     table(['ID', 'Responsabilidad', 'Filas activas', 'Cobertura', 'Entrega prevista'], groups.map((g) => { const n = c.cRows.rows.filter((r) => r.grp === g.id).length; return [g.id, g.resp, n, h('span', { class: `pill ${n ? 'ok' : 'warn'}` }, n ? 'parcial' : 'pendiente'), g.delivery]; }))));
   if (rows.length) { ps.filters.view = v; root.append(masterTable({ lockView: v, title: `Filas de «${VIEWS[v]}»` })); } else root.append(h('div', { class: 'card' }, h('p', { class: 'muted' }, 'Este tema no tiene todavía filas ejecutadas por el motor actual. Su ficha funcional está arriba; no se rellena con valores inventados ni con ceros.')));
   return root;
+}
+
+// MOTOR-09: matriz normativa (REG02–REG04) y política estadística (EST01–EST04). La norma (con su estado de contraste) se distingue de los ratios SEM de generación.
+const CONTRAST_PILL = { contrastada: 'ok', heredada: 'warn', provisional: 'warn', pendiente: 'bad' };
+function regulationCard(profile) {
+  const reg = profile.regulation;
+  if (!reg) return h('div', { class: 'card' }, h('p', { class: 'muted' }, 'Este perfil es anterior a MOTOR-09 y no contiene la matriz normativa. La candidata de MOTOR-09 se crea explícitamente desde Inicio; no se migra en silencio.'));
+  const issues = validateMatrix(profile);
+  return h('div', { class: 'card' }, h('h3', { style: 'margin-top:0' }, `Reglamento · ${reg.edition} · ${reg.version}`),
+    h('p', { class: 'small' }, 'Las constantes normativas (insignias de contraste) se distinguen de los ratios SEM de generación: una norma no se calibra, se contrasta con su fuente. Ninguna fila es lectura directa del PDF (acceso denegado, HTTP 403).'),
+    h('p', {}, 'Validación de la matriz: ', issues.length ? h('span', { class: 'pill bad' }, `${issues.length} incidencia(s)`) : h('span', { class: 'pill ok' }, 'coherente'), issues.length ? h('ul', {}, issues.map((i) => h('li', { class: 'small' }, `${i.rule}: ${i.message}`))) : null),
+    h('h4', {}, 'Fuentes'), table(['Id', 'Documento', 'Acceso real'], reg.sources.map((s) => [s.id, `${s.title} — ${s.use}`, s.access])),
+    h('h4', {}, `Matriz de consecuencias y cobertura (${reg.matrix.length} filas)`),
+    table(['Fila', 'Familia', 'Fuente y artículo', 'Contraste', 'Condición', 'Consecuencia', 'Cobertura', 'Punto de consumo', 'Verificación'], reg.matrix.map((r) => [r.id, r.family, `${r.source.doc} · ${r.source.article}${r.source.case ? ` · ${r.source.case}` : ''} (${r.source.reading})`, h('span', { class: `pill ${CONTRAST_PILL[r.contrast]}` }, r.contrast), r.when ? JSON.stringify(r.when) : '—', r.consequence ? JSON.stringify(r.consequence) : 'sin ejecución', `admin: ${r.coverage.admin} · exposición: ${r.coverage.exposure} · natural: ${r.coverage.natural}`, r.coverage.consume, r.coverage.verify])),
+    h('p', { class: 'small muted' }, 'Estados: contrastada (texto del encargo §4.3), heredada (lectura implementada en MOTOR-01 a MOTOR-08 sin contrastar), provisional (mecanismo con valor sin contrastar), pendiente (tipada, sin ejecución). Un perfil que contradiga FIBA necesita nombre e identidad propios.'));
+}
+function statsPolicyCard(profile) {
+  const sp = profile.statsPolicy;
+  if (!sp) return h('div', { class: 'card' }, h('p', { class: 'muted' }, 'Este perfil es anterior a MOTOR-09 y no declara política estadística.'));
+  return h('div', { class: 'card' }, h('h3', { style: 'margin-top:0' }, `Acta y créditos · ${sp.id}`), h('p', { class: 'small' }, sp.name, '. ', sp.basedOn),
+    table(['Familia', 'Lectura', 'Regla', 'Contraste'], sp.families.map((f) => [f.label, f.reading, f.rule, f.contrast])),
+    h('p', { class: 'small muted' }, `No representado por el hecho (se muestra «—», no 0): ${sp.unrepresented.join(', ')}. Fórmula de valoración: ${sp.valuation.formula}.`));
 }
 
 export function renderCatalog() {

@@ -1,6 +1,6 @@
 # Estado del proyecto
 
-Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANGELOG.md)). Última actualización: 2026-10-16, entrega MOTOR-08.
+Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANGELOG.md)). Última actualización: 2026-10-16, entrega MOTOR-09.
 
 ## Qué hay realmente en el repositorio
 
@@ -8,6 +8,15 @@ Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANG
 - **Diseño funcional del motor y del primer laboratorio**, organizado por temas en [`motor/`](motor/README.md) (34 capítulos). Es **especificación**: está *definida*, no implementada.
 - **Copia original congelada** del funcional unificado y **exportado completo vigente** generado: ver [`historico/`](historico/README.md) y [`exportados/`](exportados/README.md).
 - **Utilidades documentales** en `scripts/docs/` (Python 3, librería estándar).
+
+## MOTOR-09 (ejecutado, pendiente de Dennis)
+
+- **Existe**: matriz normativa REG de 19 filas con estado de contraste por fila (consumida por la administración de faltas defensivas, la disruptiva y la descalificación), series de libres como unidad causal, sanciones combinadas en cola, disponibilidad/terminación (casos preparados), acta completa desde los hechos (AS a canasta/libres, REC, TAP/TREC, FC/FR, más-menos por intervalos, VAL, DNP, sujetos colectivos, parciales), posesiones beM, finalizaciones F y dos particiones de puntos, conciliación de 33 comprobaciones, revisiones estadística/reglamentaria/técnica, casos de laboratorio preparados, informe de memoria con denominadores y **ruta B**, `export/8`. Ver [`tecnico/motor09.md`](tecnico/motor09.md) y [recorrido manual](prompts/MOTOR-09-recorrido-manual.md).
+- **Sin contrastar**: los PDF de FIBA (S09-01 a S09-04) devolvieron HTTP 403; ninguna fila es lectura directa. Técnicas/antideportivas, compensación de sanciones y art. 45 están **tipadas sin ejecución**; umbral de inferioridad y terminación administrativa son valores provisionales; la política de asistencias es convención beM sin auditar S09-03.
+- **Cambia los resultados**: referencia `20261016` 88–110 → 83–103 (ruta B); un fallo con falta de tiro ya no cuenta como intento de campo.
+- **Comprobado por Claude**: 131 pruebas (13 nuevas), `data:check`, cinco partidos de integración conciliados y recorrido en Chromium (panel Reglamento/Estadística, partido completo con acta y conciliación, cinco casos preparados, sin errores de consola). **Pendiente de Dennis**: todo el recorrido manual (también el de MOTOR-08). **No ejecutado**: Node 24, otros navegadores, contraste con los PDF.
+- **No implementado**: interferencia como familia propia, tiro en vuelo, técnicas/flagrantes generadas, inferioridad natural, continuación desde snapshot, MOTOR-10 (análisis, informes, mapas, on/off).
+- Siguiente: lo que ordene Dennis (MOTOR-10; no iniciado).
 
 ## MOTOR-08 (ejecutado, pendiente de Dennis)
 

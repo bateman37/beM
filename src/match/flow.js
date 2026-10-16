@@ -409,7 +409,9 @@ P.runPlay = function runPlay(poss, entry, dir, lq) {
   }
   // cobertura del bloqueo (COB01–COB04): dos defensores identificables, responsabilidad abandonada y compromiso real (MOTOR-05)
   poss.coverage = null;
-  const cov = entry.spec.coverage ? this.beginCoverage(entry, poss, { ex }) : null;
+  const prep = entry.spec.coverage ? this.preparedCoverage(entry, poss, ex) : null; // MOTOR-09: ruta B de la memoria (preparación dentro de la acción)
+  const cov = entry.spec.coverage ? this.beginCoverage(entry, poss, { ex, cob: prep?.cob ?? null }) : null;
+  if (prep) { ex.prepMemoria = { ...prep.trace, ejecutable: !!cov && !cov.none }; this.cover('ruta B: cobertura preparada por la memoria'); }
   const cvk = this.coverageForExit(ex, cov);
   if (cov && cov.exchanged) CD = this.cdWith(entry, cov.pair.spec.type === 'pnr' ? { primary: cov.D2, screenMarker: cov.D1 } : cov.pair.spec.type === 'handoff' ? { receiverMarker: cov.D1 } : { receiverMarker: cov.D2 }); // tras el cambio, la calidad se evalúa con los defensores intercambiados
   let kctx = nativeQuality ? cvk.k : 0;
@@ -619,6 +621,7 @@ P.playTrace = function playTrace(ex) {
     if (ex.cutRecord) t.corte = ex.cutRecord;
     if (ex.initialPass) t.entregaInicial = ex.initialPass;
     if (ex.cobertura) t.cobertura = ex.cobertura;
+    if (ex.prepMemoria) t.preparacionMemoria = ex.prepMemoria;
     if (ex.defTrace && Object.keys(ex.defTrace).length) t.defensa = ex.defTrace;
   } else {
     if (ex.defTrace && Object.keys(ex.defTrace).length) t.defensa = ex.defTrace;
@@ -638,6 +641,8 @@ P.startPossession = function startPossession(spec) {
   this.possSeq += 1;
   this.poss = { id: `P${String(this.possSeq).padStart(3, '0')}`, seq: this.possSeq, team: spec.team, entry: spec.entry, origin: spec.origin ?? null, carrier: spec.carrier ?? null, carrierPid: spec.carrier ?? null, advanced: spec.entry === 'deadFront', disorganized: false, reorgCount: 0, done: false, units: 0, playStarted: false, transitionDone: false, pendingFT: null, deficit: spec.deficit ?? 0, denials: [], disposition: null, layout: null };
   this.poss.cur = {}; this.poss.committed = new Set(); this.poss.commitKinds = {};
+  this.poss.log = { id: this.poss.id, team: spec.team, period: this.period, entry: spec.entry, origin: spec.origin ?? null, startSeq: this.eventSeq + 1, endSeq: null, endKind: null };
+  this.possLog.push(this.poss.log); // MOTOR-09
   this.coachStartAttack(this.poss); // MOTOR-08: un ataque deportivo identificado (decaimiento de la memoria rival y evidencia de racha)
   this.poss.early = spec.entry === 'live' || !!spec.early; this.poss.recovery = null; this.poss.autonomous = false; this.poss.throwIn = spec.throwIn ?? null; this.poss.throwInOrigin = null;
   this.refreshEffectiveOrg(1 - spec.team); // organización defensiva efectiva en la frontera de entrada de la posesión
@@ -672,6 +677,7 @@ P.advancePhase = function advancePhase(poss) {
 // Cierra la posesión: las llamadas de ficha ligadas a ella caducan con motivo.
 P.settlePossession = function settlePossession(poss, r) {
   poss.done = true; poss.endKind = r.end ?? null;
+  if (poss.log) { poss.log.endSeq = this.eventSeq; poss.log.endKind = r.end ?? null; } // MOTOR-09
   this.expireCallsFor(poss);
   this.expireSpecialOrdersFor(poss);
   const rec = this.attackRecord(poss.team, poss.id); if (rec) rec.done = true;

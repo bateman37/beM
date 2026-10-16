@@ -56,6 +56,13 @@
       "origin": "Apartados 6.1, 7.1, 10.2, 10.3 y 11.4 del prompt de MOTOR-08 (cifras SEM literales, verificadas) + tablas declarativas de necesidades, causas de pausa, contextos de final, patrones y respuestas de memoria (concreción de Claude, a revisar por Dennis)",
       "state": "SEM provisional, no calibrado; sustituye (sin borrar) las filas históricas rotation.* y añade el plan de participación y la política de cada equipo"
     },
+    "data/match/motor09-seed-extension.json": {
+      "id": "SEM-MOTOR09-20261016",
+      "status": "SEM: provisional, no calibrado (parámetros de generación y de memoria). La matriz normativa declara el estado de contraste de CADA fila: 'contrastada' (texto del encargo MOTOR-09 §4.3), 'heredada' (lectura ya implementada en MOTOR-01 a MOTOR-08, sin contrastar con el PDF), 'provisional' (mecanismo ejecutable con un valor sin contrastar) o 'pendiente' (tipada, sin ejecución).",
+      "sha256": "c6888424f4c6043b1b3ee86949d1c01e1a34c977e26cf1a6a6e82e8817b37a67",
+      "origin": "Encargo MOTOR-09 (§4 fuentes, §5 matriz, §12 política estadística, §16.3 ruta B): matriz normativa con estado de contraste por fila (los PDF de S09-01 a S09-04 no fueron accesibles) y política estadística beM",
+      "state": "SEM provisional en parámetros; matriz normativa con estados contrastada/heredada/provisional/pendiente"
+    },
     "data/match/motor04-seed-extension.json": {
       "id": "SEM-MOTOR04-20261016",
       "status": "SEM: provisional, no calibrado",

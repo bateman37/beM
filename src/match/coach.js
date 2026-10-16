@@ -220,7 +220,10 @@ P.coachMandatory = function coachMandatory(team, window, used) {
     const pool = this.benchPool(team, used);
     const scored = pool.map((id) => ({ id, u: this.slotUtility(id, slot), nom: this.pl[id].positions.includes(slot) ? 0 : 1 })).sort((a, b) => a.nom - b.nom || b.u - a.u || (a.id < b.id ? -1 : 1));
     // la posición nominal orienta: primero quien la ocupa; si nadie, el mejor ajuste funcional
-    const best = scored[0]; if (!best) continue;
+    const best = scored[0];
+    // MOTOR-09 (RG-D02): sin sustituto elegible no se mantiene a un excluido ni se inventa un sexto jugador: la inferioridad legal no está simulada por el motor natural
+    // y la ejecución se declara INVÁLIDA con diagnóstico (el caso se estudia con los casos preparados de laboratorio).
+    if (!best) throw new Error(`inferioridad no simulada: ${this.teams[team].id} no tiene un sustituto elegible para ${slot}; la ejecución no produce un acta final (RG-D02)`);
     used.add(best.id);
     const before = this.onCourt(team).slice();
     const d = this.decision(team, 'rotation', this.coachFrontierInfo('ventana', { ventana: window }), { rule: fb?.reason ?? 'FB100_REGLAMENTO', reason: 'sustitución obligatoria: jugador excluido o indisponible (administración reglamentaria, no delegable)', observations: { fila: fb?.id ?? null, preferencia: fb?.preference ?? null, excepcion: fb?.exception ?? null, saliente: out, faltas: this.ps[out].fouls, candidatos: scored.map((x) => ({ id: x.id, utilidad: round(x.u, 3), posicionNominal: x.nom === 0 })) }, proposal: { tipo: 'sustitución', sale: out, entra: best.id, posicion: slot }, participants: { antes: before }, utility: { escala: '1–30', entrante: round(best.u, 3) } });
@@ -421,7 +424,7 @@ P.coachRespond = function coachRespond(t, view, pr, { ignoreHold = false } = {})
 P.coachMemoryAdjust = function coachMemoryAdjust(t, view, fr) {
   const st = this.coachState[t]; const cfg = this.profile.coach; const pol = cfg.policies[st.policy];
   const props = memoryProposals(view, cfg, this.profile.memory);
-  for (const e of view.own.memory) if (e.evidence < pol.recognitionThreshold) { const en = this.memoryEntry(t, e.key); if (en) en.recognizedLogged = false; } // el episodio de reconocimiento termina al bajar la evidencia
+  for (const e of view.own.memory) if (e.evidence < pol.recognitionThreshold) { const en = this.memoryEntry(t, e.key); if (en) { en.recognizedLogged = false; en.episodeActive = false; } } // el episodio de reconocimiento termina al bajar la evidencia
   if (!props.length) return;
   let applied = 0; const maxDims = cfg.adjustments.maxPrincipalDimensionsPerReview; // una dimensión principal por revisión ordinaria
   for (const pr of props) {
@@ -432,7 +435,8 @@ P.coachMemoryAdjust = function coachMemoryAdjust(t, view, fr) {
     if (!this.coachOnce(`mem|${t}|${ver}`)) continue;
     const base = { patron: pr.key, evidencia: round(pr.evidence, 3), umbral: pr.threshold, cómodas: round(pr.comfortableShare, 3), especifico: pr.specific };
     const d = this.decision(t, 'adjustments', fr, { rule: `MEM03:${pr.pattern ?? pr.key}`, reason: `patrón reconocido: ${pr.patternName ?? pr.key}`, observations: base, memory: { clave: pr.key, evidencia: round(pr.evidence, 3) }, proposal: null });
-    this.memLogPush('reconocimiento', t, { clave: pr.key, evidencia: round(pr.evidence, 3), umbral: pr.threshold, cómodas: round(pr.comfortableShare, 3) });
+    if (ent0 && !ent0.episodeActive) { ent0.episodeActive = true; ent0.episodeSeq = (ent0.episodeSeq ?? 0) + 1; } // MOTOR-09: episodio de reconocimiento (cruce del umbral); las revisiones posteriores del mismo patrón no son patrones nuevos
+    this.memLogPush('reconocimiento', t, { clave: pr.key, evidencia: round(pr.evidence, 3), umbral: pr.threshold, cómodas: round(pr.comfortableShare, 3), episodio: ent0?.episodeSeq ?? null });
     if (pr.outcome !== 'candidatas') { this.dset(d, 'rechazada', `reconocido, sin respuesta autorizada/compatible: ${pr.causa}`); continue; }
     if (!st.delegation.adjustments) { this.dset(d, 'rechazada', 'reconocido; ámbito «ajustes tácticos» no delegado: queda como recomendación'); continue; }
     if (applied >= maxDims) { this.dset(d, 'cancelada', 'una dimensión principal por revisión ordinaria: se atiende otro patrón'); continue; }

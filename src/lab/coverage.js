@@ -15,6 +15,7 @@ export function renderCoverage(root) {
       h('p', {}, `Extensión de MOTOR-06: ${store.extension6.seedExtensionId} — `, h('span', { class: 'pill warn' }, store.extension6.status), ' · cifras SEM del anexo A (oportunidades, urgencia, saques) y contenido declarativo del catálogo ESP01–ESP20, seis fichas de saque y seis respuestas defensivas (lectura de Claude, a revisar); completa el catálogo espontáneo activo.'),
       h('p', {}, `Extensión de MOTOR-07: ${store.extension7.seedExtensionId} — `, h('span', { class: 'pill warn' }, store.extension7.status), ' · cifras SEM del anexo A (Forma, presión, momentos, T, episodios, conexiones de capacidades) y tablas declarativas de tareas con estados y episodios (lectura de Claude); nada está calibrado.'),
       h('p', {}, `Extensión de MOTOR-08: ${store.extension8.seedExtensionId} — `, h('span', { class: 'pill warn' }, store.extension8.status), ' · tres políticas de entrenador (ENTREF01–03, parámetros literales del encargo), librillo de faltas, contextos de final, memoria defensiva con ocho patrones y catálogo de respuestas, y plan de participación por equipo (precarga SEM revisable); nada está calibrado ni validado por Dennis.'),
+      h('p', {}, `Extensión de MOTOR-09: ${store.extension9.seedExtensionId} — `, h('span', { class: 'pill warn' }, store.extension9.status), ' · matriz normativa REG con estado de contraste por fila (los PDF de FIBA no fueron accesibles), política estadística beM versionada y ruta B de la memoria; nada calibrado ni contrastado con el PDF.'),
       h('p', { class: 'small muted' }, store.profile.scope),
       h('p', { class: 'small' }, `Procedencia: ${store.profile.provenance.author}, ${store.profile.provenance.date}. ${store.profile.provenance.newSeeds}`),
       cat ? h('p', { class: 'small' }, 'SHA-256 perfil: ', h('code', {}, f['data/match/motor01-seed-profile.json']?.sha256), ' · fichas: ', h('code', {}, f['data/fixtures/reference-players-MOTOR01.csv']?.sha256), ' · extensión MOTOR-02: ', h('code', {}, f['data/match/motor02-seed-extension.json']?.sha256)) : null,
@@ -23,7 +24,7 @@ export function renderCoverage(root) {
       h('div', { class: 'card' }, h('h3', {}, 'Activo en esta entrega'), h('ul', {}, Object.entries(a).map(([k, v]) => h('li', {}, h('strong', {}, `${k}: `), Array.isArray(v) ? v.join(', ') : v)))),
       h('div', { class: 'card' }, h('h3', {}, 'Pendiente (cobertura restante, no implementada o neutral)'), h('ul', {}, COVERAGE.pendientes.map((p) => h('li', {}, p))))));
   const t = COVERAGE.tabla;
-  root.append(h('div', { class: 'card' }, h('h3', {}, 'Cobertura de MOTOR-07'),
+  root.append(h('div', { class: 'card' }, h('h3', {}, 'Cobertura de MOTOR-09'),
     h('div', { class: 'grid2' },
       h('div', {}, h('h3', {}, 'Implementado y comprobado (pruebas automáticas)'), h('ul', {}, t.comprobado.map((x) => h('li', {}, x)))),
       h('div', {}, h('h3', {}, 'Implementado, pendiente de revisión manual de Dennis'), h('ul', {}, t.pendienteRevisionManual.map((x) => h('li', {}, x))),

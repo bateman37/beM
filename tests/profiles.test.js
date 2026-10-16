@@ -184,8 +184,8 @@ test('causalidad: editar una fila llega al mecanismo consumidor (probabilidad de
 
 // MOTOR-04, MOTOR-05 y MOTOR-06 cambian el contenido operativo (repertorio, defensa por funciones, decisiones directas y saques): los partidos de referencia anteriores (94–89, 90–126) dejan de ser comparables y
 // se sustituye por el de la versión actual. Lo que protege esta prueba es que la base conectada al panel no altera el deporte.
-test('equivalencia deportiva: la base conectada al panel reproduce el partido de referencia de la versión (MOTOR-08)', () => {
-  const ref = JSON.parse(readFileSync(new URL('./fixtures/baseline-motor08.json', import.meta.url), 'utf8'))['20261016'];
+test('equivalencia deportiva: la base conectada al panel reproduce el partido de referencia de la versión (MOTOR-09)', () => {
+  const ref = JSON.parse(readFileSync(new URL('./fixtures/baseline-motor09.json', import.meta.url), 'utf8'))['20261016'];
   const res = runMatch(inputFor(20261016), base, { detail: 'full' });
   assert.deepEqual(res.score, ref.score);
   assert.equal(createHash('sha256').update(JSON.stringify(sportsProjection(res))).digest('hex'), ref.sha256);

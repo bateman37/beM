@@ -10,9 +10,10 @@ export const ATTRS = [
 ];
 export const SLOTS = ['PG', 'SG', 'SF', 'PF', 'C'];
 export const ZONES = ['rim', 'inside', 'midrange', 'three'];
-export const ENGINE_VERSION = 'beM-motor-0.8.0-MOTOR08';
+export const ENGINE_VERSION = 'beM-motor-0.9.0-MOTOR09';
 export const INPUT_SCHEMA = 'beM-match-input/6';
-export const EXPORT_SCHEMA = 'beM-match-export/7';
+export const EXPORT_SCHEMA = 'beM-match-export/8';
+export const EXPORT_SCHEMA_MOTOR08 = 'beM-match-export/7';
 export const EXPORT_SCHEMA_MOTOR07 = 'beM-match-export/6';
 export const EXPORT_SCHEMA_MOTOR06 = 'beM-match-export/5';
 export const EXPORT_SCHEMA_MOTOR05 = 'beM-match-export/4';

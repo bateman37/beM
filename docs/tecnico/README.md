@@ -12,6 +12,7 @@ Cómo está **realmente implementado** el proyecto. Distingue lo documentado de 
 - **MOTOR-06** (transición, decisiones espontáneas ESP01–ESP20, saques de banda y fondo y cierre de salvedades de MOTOR-05): [`motor06.md`](motor06.md).
 - **MOTOR-07** (capacidades, energía, Forma, presión, momentos, T y episodios, con cierre acotado de salvedades de MOTOR-06): [`motor07.md`](motor07.md).
 - **MOTOR-08** (entrenador automático con tres políticas y delegación por áreas, memoria defensiva y cierre de las salvedades de MOTOR-07): [`motor08.md`](motor08.md).
+- **MOTOR-09** (reglamento, administración y acta: matriz normativa con estado de contraste por fila, series de libres, posesiones beM y finalizaciones F, acta completa, conciliación, revisiones, ruta B de la memoria y cierre de pendientes de MOTOR-08): [`motor09.md`](motor09.md).
 - **Utilidades documentales** (`scripts/docs/`): descritas en [`../exportados/README.md`](../exportados/README.md).
 
 ## Pendiente (no existe aún)
