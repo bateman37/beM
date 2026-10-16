@@ -18,27 +18,28 @@ export const PLAY_NAMES = {};
 
 // `profile` es el perfil EFECTIVO de la versión ACTIVA (MOTOR-03): lo que usarán los próximos encuentros. Los encuentros ya
 // iniciados llevan su propia copia congelada y no se ven afectados por activar otra versión.
-export const store = { baseProfile: null, extension: null, extension3: null, extension4: null, extension5: null, extension6: null, base: null, edit: null, labels: {}, catalog: null, last: null, persisted: false, library: null, matchRef: null,
+export const store = { baseProfile: null, extension: null, extension3: null, extension4: null, extension5: null, extension6: null, extension7: null, base: null, edit: null, labels: {}, catalog: null, last: null, scenario: null, persisted: false, library: null, matchRef: null,
   get profile() { return this.library ? this.library.activeVersion().effective : null; },
   get profileRef() { return this.library ? this.library.profileRef(this.library.activeId) : null; } };
 
 export async function loadAll() {
-  const [baseProfile, extension, extension3, extension4, extension5, extension6, csv, catalog] = await Promise.all([
+  const [baseProfile, extension, extension3, extension4, extension5, extension6, extension7, csv, catalog] = await Promise.all([
     fetch('/data/match/motor01-seed-profile.json').then((r) => r.json()),
     fetch('/data/match/motor02-seed-extension.json').then((r) => r.json()),
     fetch('/data/match/motor03-seed-extension.json').then((r) => r.json()),
     fetch('/data/match/motor04-seed-extension.json').then((r) => r.json()),
     fetch('/data/match/motor05-seed-extension.json').then((r) => r.json()),
     fetch('/data/match/motor06-seed-extension.json').then((r) => r.json()),
+    fetch('/data/match/motor07-seed-extension.json').then((r) => r.json()),
     fetch('/data/fixtures/reference-players-MOTOR01.csv').then((r) => r.text()),
     fetch('/data/catalog.json').then((r) => (r.ok ? r.json() : null)).catch(() => null),
   ]);
   const players = parsePlayersCsv(csv, baseProfile);
-  const profile = applyExtension(baseProfile, extension, extension3, extension4, extension5, extension6); // perfil efectivo base: el original no se sobrescribe
-  store.baseProfile = baseProfile; store.extension = extension; store.extension3 = extension3; store.extension4 = extension4; store.extension5 = extension5; store.extension6 = extension6; store.catalog = catalog;
+  const profile = applyExtension(baseProfile, extension, extension3, extension4, extension5, extension6, extension7); // perfil efectivo base: el original no se sobrescribe
+  store.baseProfile = baseProfile; store.extension = extension; store.extension3 = extension3; store.extension4 = extension4; store.extension5 = extension5; store.extension6 = extension6; store.extension7 = extension7; store.catalog = catalog;
   store.library = new ProfileLibrary({ storage: storage(), base: profile });
   store.labels = Object.fromEntries(profile.attributeDictionary.map((a) => [a.id, a.label]));
-  store.baseNew = profile; // perfil efectivo de MOTOR-06: siempre disponible para construir la entrada, aunque el activo sea anterior
+  store.baseNew = profile; // perfil efectivo de MOTOR-07: siempre disponible para construir la entrada, aunque el activo sea anterior
   for (const [id, p] of Object.entries(profile.repertoire.plays)) PLAY_NAMES[id] = p.name;
   store.base = buildMatchInput(profile, players);
   store.edit = restore() ?? deepCopy(store.base);
@@ -88,8 +89,8 @@ export function applyChanges(edit, changes) {
   for (const c of changes) byId[c.playerId].abilities[c.attr] = c.after;
   return changes.length;
 }
-// Perfil con el que se validan y preparan las entradas: el activo si es de MOTOR-06; si el activo es anterior, el de MOTOR-06 (el partido no se podrá jugar con él).
-export const prepProfile = () => (store.profile?.throwInRepertoire ? store.profile : store.baseNew);
+// Perfil con el que se validan y preparan las entradas: el activo si es de MOTOR-07; si el activo es anterior, el de MOTOR-07 (el partido no se podrá jugar con él).
+export const prepProfile = () => (store.profile?.moment ? store.profile : store.baseNew);
 
 // Copia de demostración MOTOR-04: misma plantilla, DIS02, estilos actuales y las quince fichas a prioridad 3. Escenario de cobertura.
 export function loadDemoPlan(teamIdx) {
@@ -103,3 +104,6 @@ export function loadDemoPlan(teamIdx) {
   return true;
 }
 export const playerById = (id) => store.edit.teams.flatMap((t) => t.players).find((p) => p.id === id);
+
+// Entrada que se congelará al preparar un encuentro: la COPIA de contraste activa (identificada, con sus cambios listados) o la entrada editada de Dennis.
+export const matchSource = () => store.scenario?.input ?? store.edit;

@@ -1,8 +1,8 @@
 // Previsualizaciones deterministas de mecanismo (MOTOR-03, §7.4). Reutilizan las funciones compartidas del motor
 // (src/match/formulas.js y mathx.js), con contexto fijo y visible, sin consumir azar deportivo ni tocar ninguna sesión.
 // Los ejemplos están etiquetados como EJEMPLOS: no son frecuencias medidas ni prometen puntos por partido.
-import { shotProbability, severityAt, normalizeWeights, abilityFit } from '../match/formulas.js';
-import { triangularFromU } from '../match/mathx.js';
+import { shotProbability, severityAt, normalizeWeights, abilityFit, perturbBinary, perturbCategories, consistencySigmaAt, pressureLossLogit } from '../match/formulas.js';
+import { triangularFromU, sigmoid, logit } from '../match/mathx.js';
 import { getAt } from './util.js';
 import { ZN } from './rows.js';
 
@@ -16,6 +16,7 @@ export function previewRow(row, profile) {
   if (id === 'selection.priorityWeights') return weightsPreview(profile);
   if (row.type === 'triangular') return durationPreview(row, profile);
   if (id === 'energy.severityNodes' || /^energy\.(costPerLiveMinute|enduranceSlope|baseEnduranceReference|default\w+TaskMax|freeThrowTaskMax)$/.test(id) || /^tasks\.\w+\.maxEnergyPenalty$/.test(id)) return severityPreview(profile);
+  if (/^(form|pressure|moment|teamMoment|episodes)\./.test(id) || /^missingTaskConnections\./.test(id)) return statesPreview(profile);
   if (/^selection\.abilityFit\./.test(id)) return fitPreview(profile);
   if (/^selection\.orientation/.test(id) || id === 'selection.organizedDurationFactor') return levelPreview(row);
   return null;
@@ -70,4 +71,23 @@ function fitPreview(profile) {
 
 function levelPreview(row) {
   return { title: 'Efecto por nivel de estilo', note: 'Multiplicador del peso de la opción según el nivel (1–5) elegido por el entrenador.', tables: [{ head: ['Nivel', 'Multiplicador'], rows: row.value.map((v, i) => [`${i + 1}`, f2(v, 3)]) }] };
+}
+
+// MOTOR-07: respuesta de Forma y presión, amplitud por Consistencia y perturbación final de probabilidades y distribuciones en contexto fijo.
+// Mismas funciones puras que el motor; sin azar. La media de la salida con Z y −Z es la probabilidad de referencia (neutralidad).
+function statesPreview(profile) {
+  const p0 = profile.shots.three.p0; const base = logit(p0); const al = profile.moment.probabilityAlphaByTask.shot;
+  const form = [-1, -0.5, 0, 0.5, 1].map((f) => { const x = profile.form.taskMaxLogit.shot * f; return [f2(f), f2(x, 3), pct(sigmoid(base + x))]; });
+  const press = [0.25, 0.6, 1].flatMap((P) => [1, 8, 16, 24, 30].map((c) => [f2(P), `${c}`, f2(-pressureLossLogit(profile, 'shot', P, c), 3), pct(sigmoid(base - pressureLossLogit(profile, 'shot', P, c)))]));
+  const cons = [1, 8, 16, 24, 30].map((c) => { const sg = consistencySigmaAt(profile, c); return [`${c}`, f2(sg, 3), f2(Math.sqrt(3) * sg, 3)]; });
+  const bin = [0.1, 0.35, 0.5, 0.75].flatMap((p) => [1, 0.5].map((Z) => { const up = perturbBinary(p, Z, al); const dn = perturbBinary(p, -Z, al); return [pct(p), f2(Z), pct(up, 2), pct(dn, 2), pct((up + dn) / 2, 2)]; }));
+  const dist = { 'cómoda (G)': 0.25, normal: 0.55, forzada: 0.2 }; const pu = perturbCategories(dist, ['cómoda (G)'], 1, profile.moment.probabilityAlphaByTask.coordination); const pd = perturbCategories(dist, ['cómoda (G)'], -1, profile.moment.probabilityAlphaByTask.coordination);
+  return { title: 'Forma, presión, Consistencia y perturbación final (estados de MOTOR-07)', note: 'EJEMPLOS deterministas con las mismas funciones del motor (tiro de triple de referencia, contexto fijo). No son frecuencias medidas ni prometen puntos por partido. La perturbación final tiene media cero: Z y −Z promedian la probabilidad de referencia.',
+    tables: [
+      { head: ['Forma', 'Ajuste (logit)', `Probabilidad (referencia ${pct(p0, 0)})`], rows: form },
+      { head: ['Exigencia P', 'MEN07', 'Pérdida (logit)', 'Probabilidad'], rows: press },
+      { head: ['Consistencia (MEN06)', 'Amplitud σ', 'Extremo de la innovación (√3·σ)'], rows: cons },
+      { head: ['Probabilidad p', 'Z', 'p con +Z', 'p con −Z', 'Media'], rows: bin },
+      { head: ['Distribución excluyente', 'Referencia', 'Z = +1', 'Z = −1', 'Media'], rows: Object.keys(dist).map((k) => [k, pct(dist[k], 2), pct(pu[k], 2), pct(pd[k], 2), pct((pu[k] + pd[k]) / 2, 2)]) },
+    ] };
 }

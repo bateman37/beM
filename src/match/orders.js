@@ -516,6 +516,7 @@ P.grantTimeouts = function grantTimeouts(w) {
     const block = chargeTimeout(this.timeouts[o.team], this.period, this.clock, cfg, this.profile.rules);
     const pts = this.cfg.timeOutRecoveryEnergyPoints;
     this.recoverAll(pts); // una vez por tiempo muerto concedido, a todos los disponibles de ambos equipos
+    this.pauseMarker('timeout', `tiempo muerto de ${this.teams[o.team].id}`); // MOTOR-07 (EPI06): atenuación de momento y T, una vez, distinta de la energía
     this.clockRunning = false;
     const after = timeoutAllowance(this.timeouts[o.team], this.period, this.clock, cfg, this.profile.rules);
     this.pendingLinks.push({ id: o.id, role: 'tiempo muerto concedido' });

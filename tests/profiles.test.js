@@ -11,7 +11,7 @@ import { resolveOverrides, diffEffective, bulkPreview, bulkApply, normalizePropo
 import { ProfileLibrary, MemoryStorage, STORAGE_KEY } from '../src/profiles/library.js';
 import { runComparison } from '../src/profiles/compare.js';
 import { contentHash, deepCopy } from '../src/profiles/util.js';
-import { shotProbability } from '../src/match/formulas.js';
+import { shotProbability, pressureLossLogit } from '../src/match/formulas.js';
 import { runMatch, createMatch, buildMatchInput } from '../src/match/index.js';
 import { sportsProjection } from '../src/match/replay.js';
 import { baseEx } from './helpers.js';
@@ -56,7 +56,7 @@ test('el motor consulta de verdad las filas declaradas «consumidas» (salvo las
   ].map((m) => buildResult(m));
   const seen = new Set([...read(res), ...read(runMatch(demoInputFor(20261016), base, { detail: 'full' })), ...defRuns.flatMap(read)]);
   // Solo se leen al construir el encuentro/resultado, en prórroga o con órdenes manuales; se comprueban aparte donde procede.
-  const CONDITIONAL = /^(rng\.|activeCatalog\.|rules\.(profile|overtimeSeconds|overtimeFoulsCarryFromPeriod)$|motor02\.|energy\.overtimeIntervalRecovery$|selection\.safeReceiverWeights\.|rotation\.(minimumStintSeconds|replacementUtilityTolerance|criticalReplacementTolerance|foulProtectionTolerance)$|rules\.freeThrowsForOrdinaryBonus$|rebound\.(lastFreeThrowOffensiveP0|liveLastFreeThrow(Offense|Defense)Slots)$|selection\.midrangePolicy\.|selection\.newVariantPreference\.unknownRoleFunctionWeight$|block\.blockedLooseControlDefenseProbability$|defense\.specials\.boxAndOneDefaultFallback$|throwIns\.(defaultBandOffensivePlan|defaultEndlineOffensivePlan|pointCallScope)$)/; // MOTOR-06: las dos fichas precargadas solo se leen al migrar una entrada anterior y el ámbito de la llamada, al pedirla; la alternativa de box and one, solo si falta el objetivo
+  const CONDITIONAL = /^(rng\.|activeCatalog\.|rules\.(profile|overtimeSeconds|overtimeFoulsCarryFromPeriod)$|motor02\.|energy\.overtimeIntervalRecovery$|selection\.safeReceiverWeights\.|rotation\.(minimumStintSeconds|replacementUtilityTolerance|criticalReplacementTolerance|foulProtectionTolerance)$|rules\.freeThrowsForOrdinaryBonus$|form\.range$|pressure\.importance\.(important|decisive)$|(moment|teamMoment)\.pauseAttenuation\.timeout$|moment\.categoryBoundaries$|initialStatePolicy\.|rebound\.(lastFreeThrowOffensiveP0|liveLastFreeThrow(Offense|Defense)Slots)$|selection\.midrangePolicy\.|selection\.newVariantPreference\.unknownRoleFunctionWeight$|block\.blockedLooseControlDefenseProbability$|defense\.specials\.boxAndOneDefaultFallback$|throwIns\.(defaultBandOffensivePlan|defaultEndlineOffensivePlan|pointCallScope)$)/; // MOTOR-06: las dos fichas precargadas solo se leen al migrar una entrada anterior y el ámbito de la llamada, al pedirla; la alternativa de box and one, solo si falta el objetivo
   const unread = rows.filter((r) => r.coverage === 'consumido' && !seen.has(r.id) && !CONDITIONAL.test(r.id));
   assert.deepEqual(unread.map((r) => r.id), []);
   assert.deepEqual(rows.filter((r) => r.coverage !== 'consumido' && seen.has(r.id)).map((r) => r.id), []);
@@ -166,8 +166,10 @@ test('causalidad: editar una fila llega al mecanismo consumidor (probabilidad de
   const cand = edit((p) => { p.shots.three.p0 = 0.45; });
   const pOf = (profile) => { const m = sh(profile); m.resolveShot(ex, { t: m.snap(), team: 0, intent: {}, participants: {} }, false); return m.events.at(-1).effects.pConversion; };
   const A = (() => { const m = sh(base); return m.shotAbility(ex); })();
-  assert.equal(pOf(base), Number(shotProbability(base, base.shots.three, A, null, 0).toFixed(5)));
-  assert.equal(pOf(cand), Number(shotProbability(cand, cand.shots.three, A, null, 0).toFixed(5)));
+  // MOTOR-07: con Forma y momentos neutrales (Z = 0) la única corrección determinista es la presión ordinaria sobre el tirador (MEN07 reduce la pérdida)
+  const lossOf = (profile) => pressureLossLogit(profile, 'shot', profile.pressure.importance.ordinary, sh(profile).eff(ex.actor, 'MEN07', 0));
+  assert.equal(pOf(base), Number(shotProbability(base, base.shots.three, A, null, -lossOf(base)).toFixed(5)));
+  assert.equal(pOf(cand), Number(shotProbability(cand, cand.shots.three, A, null, -lossOf(cand)).toFixed(5)));
   assert.ok(pOf(cand) > pOf(base));
   // gasto de energía: el mismo encuentro con el doble de gasto termina con menos energía
   const fast = edit((p) => { p.energy.costPerLiveMinute = 4; });
@@ -178,8 +180,8 @@ test('causalidad: editar una fila llega al mecanismo consumidor (probabilidad de
 
 // MOTOR-04, MOTOR-05 y MOTOR-06 cambian el contenido operativo (repertorio, defensa por funciones, decisiones directas y saques): los partidos de referencia anteriores (94–89, 90–126) dejan de ser comparables y
 // se sustituye por el de la versión actual. Lo que protege esta prueba es que la base conectada al panel no altera el deporte.
-test('equivalencia deportiva: la base conectada al panel reproduce el partido de referencia de la versión (MOTOR-06)', () => {
-  const ref = JSON.parse(readFileSync(new URL('./fixtures/baseline-motor06.json', import.meta.url), 'utf8'))['20261016'];
+test('equivalencia deportiva: la base conectada al panel reproduce el partido de referencia de la versión (MOTOR-07)', () => {
+  const ref = JSON.parse(readFileSync(new URL('./fixtures/baseline-motor07.json', import.meta.url), 'utf8'))['20261016'];
   const res = runMatch(inputFor(20261016), base, { detail: 'full' });
   assert.deepEqual(res.score, ref.score);
   assert.equal(createHash('sha256').update(JSON.stringify(sportsProjection(res))).digest('hex'), ref.sha256);

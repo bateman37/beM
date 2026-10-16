@@ -1,0 +1,264 @@
+{
+ "seedExtensionId": "SEM-MOTOR07-20261016",
+ "status": "SEM: provisional, no calibrado",
+ "basedOn": "SEM-MOTOR01-20261016",
+ "origin": "docs/prompts/MOTOR-07-capacidades-y-estados.md (anexo A): cifras SEM propuestas por ChatGPT, copiadas literalmente; las tablas declarativas `stateTasks` y `episodeCatalog` (qué tarea del motor usa qué ámbito, qué resultados forman el grupo favorable G y qué hecho representado prueba cada episodio) son lectura de Claude de las secciones 8–10 y del anexo B del encargo, a revisar por Dennis",
+ "additions": {
+  "form": {
+   "range": [
+    -1,
+    1
+   ],
+   "neutral": 0,
+   "taskMaxLogit": {
+    "shot": 0.35,
+    "offensiveControl": 0.2,
+    "defenseDispute": 0.2,
+    "coordination": 0.15
+   }
+  },
+  "pressure": {
+   "importance": {
+    "ordinary": 0.25,
+    "important": 0.6,
+    "decisive": 1
+   },
+   "latePeriodWindowSeconds": 300,
+   "closeMarginPoints": 12,
+   "periodTensionWeight": {
+    "Q1_Q2_Q3": 0.35,
+    "Q4_OT": 1
+   },
+   "taskMaxLogitLoss": {
+    "shot": 0.35,
+    "offensiveControl": 0.25,
+    "defenseDispute": 0.2,
+    "coordination": 0.2
+   },
+   "choiceMaximumDecisionPointsLost": 2,
+   "combinedFormPressureLogitBounds": [
+    -0.6,
+    0.4
+   ]
+  },
+  "moment": {
+   "range": [
+    -1,
+    1
+   ],
+   "neutral": 0,
+   "playingHalfLifeSeconds": 90,
+   "benchHalfLifeSeconds": 60,
+   "innovationSigmaLowConsistency": 0.45,
+   "innovationSigmaHighConsistency": 0.15,
+   "probabilityAlphaByTask": {
+    "shot": 0.2,
+    "offensiveControl": 0.18,
+    "defenseDispute": 0.18,
+    "coordination": 0.16
+   },
+   "individualCollectiveMixture": {
+    "individual": 0.7,
+    "team": 0.3
+   },
+   "opposedMomentMixture": {
+    "actor": 0.5,
+    "counterpart": 0.5
+   },
+   "pauseAttenuation": {
+    "timeout": 0.8,
+    "shortInterval": 0.65,
+    "halftime": 0.3
+   },
+   "categoryBoundaries": [
+    -0.7,
+    -0.25,
+    0.25,
+    0.7
+   ]
+  },
+  "teamMoment": {
+   "range": [
+    -1,
+    1
+   ],
+   "neutral": 0,
+   "halfLifeSeconds": 150,
+   "randomInnovationSigma": 0,
+   "directShotConversionContribution": 0,
+   "directChosenIndividualPassContribution": 0,
+   "pauseAttenuation": {
+    "timeout": 0.85,
+    "shortInterval": 0.7,
+    "halftime": 0.4
+   }
+  },
+  "episodes": {
+   "EPI01IndividualImpulse": 0.1,
+   "EPI02IndividualImpulse": -0.1,
+   "EPI03TeamImpulse": 0.08,
+   "EPI04TeamImpulse": 0.06,
+   "EPI05TeamImpulse": -0.08,
+   "difficultExecutionReferenceProbabilityMaximum": 0.25,
+   "deduplication": "one_equivalent_impulse_per_causal_chain_target_and_domain"
+  },
+  "missingTaskConnections": {
+   "longTravelAccessAttack": {
+    "FIS01": 0.45,
+    "FIS02": 0.25,
+    "MEN04": 0.15,
+    "TEC07": 0.15
+   },
+   "longTravelReturnDefense": {
+    "FIS01": 0.45,
+    "FIS02": 0.25,
+    "MEN04": 0.3
+   },
+   "defensiveOptionReading": {
+    "MEN02": 0.5,
+    "MEN03": 0.3,
+    "MEN04": 0.2
+   },
+   "physicalAccessMaxEnergyPenalty": 8
+  },
+  "initialStatePolicy": {
+   "form": 0,
+   "M_TIR": 0,
+   "M_OFE": 0,
+   "M_DEF": 0,
+   "T": 0
+  },
+  "stateTasks": {
+   "note": "Contenido declarativo (lectura de Claude, §10 del encargo). Cada tarea del motor que consulta Forma, presión o momentos se declara aquí una vez: su ámbito (alpha y límites del anexo A), el momento propio y el de la contraparte, si T es elegible y el grupo favorable G de sus resultados excluyentes. Una tarea que no figura aquí no usa estados.",
+   "tasks": {
+    "shotConversion": {
+     "label": "Conversión de un tiro de campo",
+     "scope": "shot",
+     "ownMoment": "M_TIR",
+     "counterMoment": "M_DEF",
+     "team": false,
+     "pressure": true,
+     "formCounterScope": "defenseDispute",
+     "kind": "binary",
+     "note": "Contraparte (defensor que disputa) solo si M-DEF no explicó ya la oportunidad de esa misma acción."
+    },
+    "freeThrow": {
+     "label": "Tiro libre",
+     "scope": "shot",
+     "ownMoment": "M_TIR",
+     "counterMoment": null,
+     "team": false,
+     "pressure": true,
+     "formCounterScope": null,
+     "kind": "binary",
+     "note": "Sin defensor ni contraparte ficticios."
+    },
+    "control": {
+     "label": "Control del balón: conservar, perder, falta o infracción",
+     "scope": "offensiveControl",
+     "ownMoment": "M_OFE",
+     "counterMoment": "M_DEF",
+     "team": false,
+     "pressure": true,
+     "formCounterScope": "defenseDispute",
+     "kind": "categorical",
+     "favorableOutcomes": [
+      "fieldShot",
+      "shootingFoul",
+      "defensiveNonShootingFoul"
+     ],
+     "note": "T excluido: el pase o bote individual ya elegido no recibe prima colectiva. G = el ataque conserva el balón; formCounterScope: defensa/disputa."
+    },
+    "opportunityQuality": {
+     "label": "Calidad previa de la oportunidad (coordinación)",
+     "scope": "coordination",
+     "ownMoment": "M_OFE",
+     "counterMoment": "M_DEF",
+     "team": true,
+     "pressure": true,
+     "formCounterScope": "defenseDispute",
+     "kind": "categorical",
+     "favorableClasses": [
+      "comfortable"
+     ],
+     "note": "Única tarea donde T es elegible: mejora la oportunidad, no el acierto posterior."
+    },
+    "block": {
+     "label": "Tapón",
+     "scope": "defenseDispute",
+     "ownMoment": "M_DEF",
+     "counterMoment": "M_TIR",
+     "team": false,
+     "pressure": true,
+     "formCounterScope": "shot",
+     "kind": "binary",
+     "note": "El tapón es una disputa del defensor; el tirador es la contraparte."
+    },
+    "rebound": {
+     "label": "Rebote: ataque frente a defensa",
+     "scope": "defenseDispute",
+     "ownMoment": "M_DEF",
+     "counterMoment": "M_DEF",
+     "team": false,
+     "pressure": false,
+     "formCounterScope": "defenseDispute",
+     "kind": "binary",
+     "note": "Disputa simétrica: sin presión ni T. La selección del captor no usa estados."
+    }
+   }
+  },
+  "episodeCatalog": {
+   "note": "Contenido declarativo (lectura de Claude, anexo B §15.3 y anexo A §14.5): para cada episodio, el hecho que el motor realmente representa y que lo prueba. Si el motor no produjo el hecho, no hay episodio.",
+   "episodes": {
+    "EPI01": {
+     "name": "Ejecución individual difícil y significativa",
+     "target": "M_TIR",
+     "sign": 1,
+     "impulseKey": "EPI01IndividualImpulse",
+     "evidence": "Tiro de campo anotado cuya probabilidad previa al momento era ≤ difficultExecutionReferenceProbabilityMaximum."
+    },
+    "EPI02": {
+     "name": "Error relevante de atención o ejecución",
+     "target": "M_OFE",
+     "sign": -1,
+     "impulseKey": "EPI02IndividualImpulse",
+     "evidence": "Infracción de balón, o pérdida del poseedor/pasador sin intento de intervención del defensor (contención): el error no procede de un duelo perdido."
+    },
+    "EPI03": {
+     "name": "Reorganización colectiva efectiva tras un problema real",
+     "target": "T",
+     "sign": 1,
+     "impulseKey": "EPI03TeamImpulse",
+     "evidence": "Reorganización (CONT09) tras una ficha negada, un rebote ofensivo o un balón recuperado sin ventaja, cuya continuación en la misma posesión llega a un tiro o a una falta recibida sin pérdida."
+    },
+    "EPI04": {
+     "name": "Intervención colectiva útil significativa",
+     "target": "T",
+     "sign": 1,
+     "impulseKey": "EPI04TeamImpulse",
+     "evidence": "Ayuda comprometida que llega y el tiro del rival falla."
+    },
+    "EPI05": {
+     "name": "Fallo compartido de coordinación",
+     "target": "T",
+     "sign": -1,
+     "impulseKey": "EPI05TeamImpulse",
+     "evidence": "Una ayuda deja libre al receptor abandonado porque el relevo no cubre o no llega (ventana libre creada por la defensa)."
+    },
+    "EPI06": {
+     "name": "Pausa deportiva pertinente",
+     "target": "pause",
+     "sign": 0,
+     "impulseKey": null,
+     "evidence": "Tiempo muerto concedido, intervalo de cuarto, descanso largo o intervalo de prórroga: atenuación una vez, sin impulso positivo."
+    }
+   }
+  }
+ },
+ "replacements": {
+  "motor02.momentDynamics": "implemented_MOTOR07: persistencia, variación acotada por Consistencia, impulsos de episodios y atenuación por pausas (SEM-MOTOR07-20261016)"
+ },
+ "replacementNotes": {
+  "motor02.momentDynamics": "MOTOR-02 declaraba «not_implemented_until_MOTOR07»; MOTOR-07 implementa la dinámica de momento."
+ }
+}

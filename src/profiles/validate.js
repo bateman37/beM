@@ -69,6 +69,12 @@ export function validateRowValue(row, v, ctx) {
     if (!out.length && v.some((n, i) => i > 0 && n[1] > v[i - 1][1] + TOL)) warn('monotonía', 'la gravedad debería no crecer al subir la energía; una curva creciente penaliza más a quien está más descansado');
     return out;
   }
+  if (t === 'thresholds') {
+    if (!Array.isArray(v) || !v.length || !v.every(finite)) { bad('forma', 'debe ser una lista creciente de números finitos'); return out; }
+    for (let i = 1; i < v.length; i++) if (!(v[i] > v[i - 1])) { bad('orden', 'las fronteras deben ser estrictamente crecientes'); break; }
+    if (v.some((x) => x < -1 || x > 1)) bad('dominio', 'las fronteras del momento están entre −1 y 1');
+    return out;
+  }
   if (t === 'slots') {
     if (!Array.isArray(v) || !v.length) { bad('vacía', 'debe incluir al menos una posición'); return out; }
     if (v.some((s) => !SLOTS.includes(s))) bad('catálogo', `solo se admiten posiciones del catálogo (${SLOTS.join(', ')})`);
@@ -102,6 +108,14 @@ function relationIssues(profile, add) {
   if (q && q.forced > q.normal) add('opportunity.qualityShotLogit.forced', 'aviso', 'orden-esperado', 'una calidad «forzada» no debería acertar más que la «normal»', q.forced);
   for (const [k, t] of Object.entries(profile.tasks ?? {})) if (finite(t.maxEnergyPenalty) && t.maxEnergyPenalty > 29) add(`tasks.${k}.maxEnergyPenalty`, 'aviso', 'dominio', 'un deterioro superior a 29 puntos sale de la escala de capacidades (1–30)', t.maxEnergyPenalty);
   if (finite(profile.selection?.candidateRead?.opponentAbilityEstimate)) { /* validado como referencia */ }
+  // MOTOR-07: composición de estados (alpha < 1, T sin aporte directo, presupuesto conjunto y episodios acotados)
+  const mo = profile.moment; const tm = profile.teamMoment; const pr = profile.pressure; const ep = profile.episodes;
+  for (const [k, a] of Object.entries(mo?.probabilityAlphaByTask ?? {})) if (finite(a) && !(a >= 0 && a < 1)) add(`moment.probabilityAlphaByTask.${k}`, 'error', 'alpha', 'alpha debe cumplir 0 ≤ alpha < 1: con alpha ≥ 1 la perturbación p + alpha·Z·min(p, 1−p) podría salir de [0, 1]', a);
+  if (mo && finite(mo.innovationSigmaLowConsistency) && finite(mo.innovationSigmaHighConsistency) && mo.innovationSigmaHighConsistency > mo.innovationSigmaLowConsistency) add('moment.innovationSigmaHighConsistency', 'aviso', 'orden-esperado', 'una Consistencia alta debería dar menos amplitud que una baja', mo.innovationSigmaHighConsistency);
+  for (const k of ['randomInnovationSigma', 'directShotConversionContribution', 'directChosenIndividualPassContribution']) if (tm && tm[k] !== 0) add(`teamMoment.${k}`, 'error', 'invariante-T', 'T no sortea ni aporta directamente a la conversión de un tiro ni a un pase individual ya elegido: debe ser 0', tm[k]);
+  const cb = pr?.combinedFormPressureLogitBounds;
+  if (Array.isArray(cb) && !(cb[0] <= 0 && cb[1] >= 0)) add('pressure.combinedFormPressureLogitBounds', 'error', 'rango', 'el presupuesto conjunto debe incluir el 0 (sin Forma ni presión no hay ajuste)', cb);
+  for (const [k, v] of Object.entries(ep ?? {})) if (/Impulse$/.test(k) && finite(v) && Math.abs(v) > 1) add(`episodes.${k}`, 'error', 'dominio', 'un impulso mayor que la escala completa del estado no es un impulso limitado', v);
 }
 
 // Validación completa de un perfil efectivo. `base`: perfil base protegido para comprobar reglamento/invariantes.

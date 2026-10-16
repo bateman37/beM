@@ -1,6 +1,6 @@
 // Fórmulas deportivas compartidas por el motor y por las previsualizaciones del panel (MOTOR-03, §4.2 y §7.4).
 // Una sola implementación: el panel dibuja ejemplos con estas mismas funciones, sin consumir azar ni tocar una sesión.
-import { sigmoid, logit, interpolate } from './mathx.js';
+import { sigmoid, logit, interpolate, a01 } from './mathx.js';
 
 // Probabilidad de un tiro: logit(p0) + sA·(A − N) [− sD·(D − N)] + K, con N la referencia de capacidad neutra del perfil.
 // A: capacidad ofensiva efectiva; D: defensiva efectiva (null si no hay oposición); K: ajuste logit (calidad, contacto, preparación).
@@ -31,3 +31,30 @@ export function abilityFit(profile, x) {
   const f = profile.selection.abilityFit;
   return Math.min(f.max, Math.max(f.min, 1 + f.slope * (x - profile.neutralAbility)));
 }
+
+// ---------------------------------------------------------------- estados deportivos (MOTOR-07): funciones puras compartidas con el panel
+// Binaria: p_m = p + alpha·Z·min(p, 1 − p). Con |Z| ≤ 1 y alpha < 1 la salida queda dentro de (0, 1) sin recortes artificiales.
+export const perturbBinary = (p, Z, alpha) => p + alpha * Z * Math.min(p, 1 - p);
+// Distribución excluyente: P_G = Σ p_j (j ∈ G); v_j = p_j(1 − P_G) en G y −p_j·P_G fuera (suma cero); p'_j = p_j + alpha·Z·v_j.
+export function perturbCategories(probs, favorable, Z, alpha) {
+  const fav = new Set(favorable);
+  const PG = Object.entries(probs).reduce((s, [k, p]) => s + (fav.has(k) ? p : 0), 0);
+  const out = {};
+  for (const [k, p] of Object.entries(probs)) out[k] = p + alpha * Z * (fav.has(k) ? p * (1 - PG) : -p * PG);
+  return out;
+}
+// Amplitud de la variación del momento con Consistencia c (MEN06): sigma(C) = alta − (alta − baja)·a(C), con a(C) = (C − 1)/29.
+export const consistencySigmaAt = (profile, c) => profile.moment.innovationSigmaLowConsistency - (profile.moment.innovationSigmaLowConsistency - profile.moment.innovationSigmaHighConsistency) * a01(c);
+// Pérdida de referencia por presión (logit) del ejecutante: k·P·(1 − a(MEN07)); MEN07 reduce la pérdida, no añade talento.
+export const pressureLossLogit = (profile, scope, P, men07) => profile.pressure.taskMaxLogitLoss[scope] * P * (1 - a01(men07));
+// Categoría cualitativa (0 = la más baja) según las cuatro fronteras declaradas.
+export function momentCategory(profile, v) {
+  const b = profile.moment.categoryBoundaries; let i = 0;
+  while (i < b.length && v >= b[i]) i += 1;
+  return i;
+}
+export const CATEGORY_LABELS = {
+  momento: ['Muy frío', 'Frío', 'Estable', 'Caliente', 'Muy caliente'],
+  forma: ['Muy mala', 'Mala', 'Normal', 'Buena', 'Muy buena'],
+  equipo: ['Muy desconectado', 'Desconectado', 'Neutral', 'Conectado', 'Muy conectado'],
+};

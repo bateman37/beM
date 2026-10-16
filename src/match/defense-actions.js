@@ -5,6 +5,7 @@
 import { MatchCore } from './core.js';
 import { clamp, sigmoid, logit, round } from './mathx.js';
 import { oddsAdjust } from './flow.js';
+import { abilityFit } from './formulas.js';
 
 const P = MatchCore.prototype;
 const ZONE_NEAR = new Set(['rim', 'mid']);
@@ -101,7 +102,13 @@ P.defenseIntent = function defenseIntent(ex) {
 // Un envío de saque la difiere (`deferSteal`): solo importa si el envío forzado llega a competir como pérdida.
 P.decideSteal = function decideSteal(ex, trace = {}) {
   const defT = 1 - ex.team; const d = this.dcfg(); const lv = this.defPlan(defT).defStyles; const refs = d.choiceReferences;
-  const p = oddsAdjust(refs.stealAttemptGivenAccessP0, d.styles.stealAttemptChoiceOddsRatio[lv.steal - 1]);
+  // MOTOR-07: el defensor decide intervenir leyendo las opciones existentes con SU Visión, Decisiones y Anticipación (nunca las del base); se usa el ajuste por
+  // capacidad ya vigente (selection.abilityFit) como un factor de odds, una sola vez. Con la referencia neutra el factor es 1.
+  const reader = ex.icpt ?? ex.defend;
+  const reading = reader ? this.defensiveReading(reader) : null;
+  const rf = reading == null ? 1 : abilityFit(this.profile, reading);
+  const p = oddsAdjust(refs.stealAttemptGivenAccessP0, d.styles.stealAttemptChoiceOddsRatio[lv.steal - 1] * rf);
+  if (reading != null) this.note('lectura_defensiva', { defensor: reader, lecturaEfectiva: round(reading, 3), factorDeOdds: round(rf, 4), nota: 'recetas MEN02/MEN03/MEN04 del defensor; la presión solo reduce la valoración de Decisiones' });
   ex.stealAttempt = this.bernoulli(p, 'defensa:robo'); ex.stealDecisionP = p;
   trace.robo = ex.stealAttempt ? 'intenta intervenir' : 'contiene';
   return trace;

@@ -18,6 +18,7 @@ Directorio de los encargos a Claude Code. **El texto original de un prompt ejecu
 | MOTOR-04 | Ataque posicional completo: siete estilos, seis disposiciones, roles, libro de quince fichas y nueve continuaciones | [`MOTOR-04-ataque-posicional.md`](MOTOR-04-ataque-posicional.md) · [recorrido manual](MOTOR-04-recorrido-manual.md) | Ejecutado, **pendiente de revisión de Dennis** | 2026-10-16 (intento 1) | — |
 | MOTOR-05 | Defensa completa: seis organizaciones, cinco estilos defensivos, tres alturas, cuatro coberturas, doce roles, tres especiales y cierre de salvedades de MOTOR-04 | [`MOTOR-05-defensa-completa.md`](MOTOR-05-defensa-completa.md) · [recorrido manual](MOTOR-05-recorrido-manual.md) | Ejecutado, **pendiente de revisión de Dennis** | 2026-10-16 (intento 1) | — |
 | MOTOR-06 | Transición, decisiones espontáneas ESP01–ESP20 y saques de banda y fondo (seis jugadas y seis respuestas), con cierre de salvedades de MOTOR-05 | [`MOTOR-06-transicion-y-saques.md`](MOTOR-06-transicion-y-saques.md) · [recorrido manual](MOTOR-06-recorrido-manual.md) | Ejecutado, **pendiente de revisión de Dennis** | 2026-10-16 (intento 1) | — |
+| MOTOR-07 | Capacidades, energía, Forma, presión, tres momentos, momento colectivo T y episodios EPI01–EPI06, con mapa causal de las 32 capacidades y cierre acotado de salvedades de MOTOR-06 | [`MOTOR-07-capacidades-y-estados.md`](MOTOR-07-capacidades-y-estados.md) · [recorrido manual](MOTOR-07-recorrido-manual.md) | Ejecutado, **pendiente de revisión de Dennis** | 2026-10-16 (intento 1) | — |
 
 ## Fichas de ejecución
 
@@ -144,3 +145,17 @@ Comprobación local de enlaces: hecha por Claude. Presentación en GitHub: no co
 | Comprobaciones realizadas | `npm test` (20 pruebas nuevas, parametrizadas y acotadas), `npm run data:check`, cinco partidos completos de cierre, recorrido de interfaz con Chromium automatizado. No ejecutado: Node 24, otros navegadores, contraste con el PDF FIBA (403, no accesible). |
 | Limitaciones | Todo SEM (anexo A) y contenido declarativo de lectura de Claude; lecturas FIBA propias (antideportiva/descalificante); el tiempo de sesión y la cuota no son medibles. |
 | Pendientes | Validación de Dennis ([recorrido manual](MOTOR-06-recorrido-manual.md)) y decisiones listadas en [`../tecnico/motor06.md`](../tecnico/motor06.md). |
+
+### MOTOR-07
+
+| Campo | Valor |
+|---|---|
+| Objetivo | Uso causal de las 32 capacidades, energía selectiva, Forma recibida y estable, presión (máximo de importancia y tensión con MEN07), tres momentos individuales con Consistencia y actualización perezosa, T colectivo sin conversión directa, episodios con evidencia, neutralidad de la salida final, escenarios de contraste, visibilidad propia/rival/diagnóstico y cierre acotado de salvedades de MOTOR-06. |
+| Medio de entrada del texto | Archivo `.md` adjunto (`beM-PROMPT-MOTOR-07-CAPACIDADES-Y-ESTADOS-COMPLETOS.md`; prefijo añadido por la subida). Copia archivada íntegra (con anexos): [`MOTOR-07-capacidades-y-estados.md`](MOTOR-07-capacidades-y-estados.md). |
+| Fecha real de ejecución | 2026-10-16 · intento 1 |
+| Rama | `claude/busy-edison-b1fmnc` (rama designada por el entorno), reiniciada desde `main` porque la PR #7 de MOTOR-06 ya estaba fusionada. |
+| PR | Ver la PR abierta contra `main` (sin fusionar); el enlace consta en la respuesta final de la entrega. |
+| Resultado breve | `SEM-MOTOR07` (anexo A literal), `states.js`, perturbación `p + α·Z·min(p, 1−p)` y vector de suma cero, nueve tareas enganchadas, episodios con deduplicación, pausas como marcadores, copias de contraste C00–C06, vistas, filas con consumidor, `export/6` y rechazo explícito de `export/5`. |
+| Comprobaciones realizadas | `npm test` (11 pruebas nuevas), `npm run data:check`, cinco partidos completos de cierre con invariantes, revisión independiente acotada del contenido declarativo de MOTOR-06, recorrido con Chromium automatizado. No ejecutado: Node 24, otros navegadores, contraste con el PDF FIBA (403). |
+| Limitaciones | Todo SEM (anexo A) y tablas declarativas de lectura de Claude; sin calibrar; Forma entre encuentros, temporada y memoria fuera de alcance; el tiempo de sesión y la cuota no son medibles. |
+| Pendientes | Validación de Dennis ([recorrido manual](MOTOR-07-recorrido-manual.md)) y las cuatro `DECISIÓN REQUERIDA` de [`../tecnico/motor07.md`](../tecnico/motor07.md). |

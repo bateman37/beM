@@ -2,6 +2,14 @@
 
 Registro breve de entregas. Una entrada por entrega; las más recientes primero.
 
+## MOTOR-07 — Capacidades, energía, Forma y momentos completos — 2026-10-16
+
+- Uso causal comprobado de las 32 capacidades (mapa y 32 sondas): nuevos consumidores de FIS01 (acceso de transición), MEN02/MEN03 (lectura del defensor real), MEN06 (amplitud de los momentos) y MEN07 (presión); energía selectiva sin cambios.
+- Forma recibida y estable, presión = máximo(importancia, tensión), tres momentos individuales con actualización perezosa en tiempo deportivo, T colectivo sin aporte directo a la conversión, pausas como marcadores y episodios EPI01–EPI06 con evidencia y deduplicación. Perturbación neutral `p + α·Z·min(p, 1−p)` y vector de suma cero sobre la salida final.
+- Extensión `SEM-MOTOR07-20261016` (anexo A literal verificado por `npm run data:check`), 644 filas con consumidor, entradas de estados e importancia, copias de contraste C00–C06, vistas propia/rival/diagnóstico, `beM-match-export/6` (el `export/5` se rechaza con motivo).
+- Salvedades de MOTOR-06 contrastadas de forma acotada: corregidos ESP15 y el envío forzado de saque; COB04 en entregas, libres de la disruptiva y etiquetas ESP quedan pendientes (ver `DECISIÓN REQUERIDA`).
+- **Cambia los resultados** (referencia `20261016`: 82–97 → 83–97). 106 pruebas (11 nuevas). Documentación: [`docs/tecnico/motor07.md`](docs/tecnico/motor07.md), [recorrido manual](docs/prompts/MOTOR-07-recorrido-manual.md). Pendiente de validación de Dennis.
+
 ## MOTOR-06 — Transición, decisiones espontáneas y saques — 2026-10-16
 
 - Catálogo ESP01–ESP20 como capa de clasificación sobre un único flujo de oportunidades (llamada, recurso autónomo y decisión directa comparten ejecución; sin cuotas ni sorteos por ESP), transición con continuidad y urgencia, seis saques ofensivos (SaqB01–03, SaqF01–03) y seis respuestas (DSaqB01–03, DSaqF01–03) con plazo único de 5 s y tres relojes distintos, y llamada puntual de saque.

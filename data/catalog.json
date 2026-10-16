@@ -42,6 +42,13 @@
       "origin": "Anexo A del prompt de MOTOR-06 (cifras SEM, literales) + contenido declarativo del catálogo ESP01–ESP20, seis fichas de saque y seis respuestas defensivas (anexos B y C): lectura de Claude, a revisar por Dennis",
       "state": "SEM provisional, no calibrado; completa el catálogo espontáneo activo y añade saques de banda y fondo"
     },
+    "data/match/motor07-seed-extension.json": {
+      "id": "SEM-MOTOR07-20261016",
+      "status": "SEM: provisional, no calibrado",
+      "sha256": "ce74a7ceafe2ef6e5ad43cdcc782b5568225594d7d2eba5c6cc17ece514e4043",
+      "origin": "Anexo A del prompt de MOTOR-07 (cifras SEM, literales) + tablas declarativas de tareas con estados y episodios (lectura de Claude)",
+      "state": "SEM provisional, no calibrado"
+    },
     "data/match/motor04-seed-extension.json": {
       "id": "SEM-MOTOR04-20261016",
       "status": "SEM: provisional, no calibrado",

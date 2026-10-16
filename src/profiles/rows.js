@@ -4,6 +4,7 @@
 // del perfil ni se inventa un valor para que la tabla parezca completa (§10.2). Lo que el perfil contiene y no es fila ni
 // excepción conocida se detecta como «hoja sin clasificar» (comprobación de cobertura).
 import { getAt, pathKey } from './util.js';
+import { MOTOR07_FAMILIES, MOTOR07_EXEMPT } from './rows-motor07.js';
 
 export const CLASSES = {
   balance: 'Parámetro de balance',
@@ -415,14 +416,15 @@ export const FAMILIES = [
     label: (m) => ({ durationSeconds: 'Duración del tiempo muerto', firstHalf: 'Tiempos muertos en la primera mitad', secondHalf: 'Tiempos muertos en la segunda mitad', perOvertime: 'Tiempos muertos por prórroga', finalWindowSeconds: 'Ventana final de los últimos segundos', maxInFinalWindow: 'Máximo de tiempos muertos en la ventana final' }[m.k]), desc: () => 'Cupo reglamentario (lectura propia de FIBA 2026 v1.1, sin contrastar con el PDF).', effect: () => 'Obligación reglamentaria: consultable, no editable.' }),
   fam({ path: 'motor02.timeOuts.carryOver', type: 'bool', unit: 'sí/no', cls: 'reglamento', coverage: 'sin_consumidor', grp: 'REG03', views: ['reglamento'], mech: null, label: () => 'Los tiempos muertos se arrastran', desc: () => 'Declarado «no»: cada bloque tiene su propio cupo. El motor lo asume por construcción.', effect: () => 'Obligación reglamentaria declarada.' }),
   fam({ path: 'motor02.{k}', dom: { k: ['timeOutRecoveryRecipients', 'timeOutRecoveryApplication', 'momentDynamics'] }, type: 'text', unit: 'política', cls: 'invariante', coverage: 'sin_consumidor', grp: 'ACT12', views: ['estados'], mech: null,
-    label: (m) => ({ timeOutRecoveryRecipients: 'Quién recupera con un tiempo muerto', timeOutRecoveryApplication: 'Cuándo se aplica la recuperación', momentDynamics: 'Dinámica de momento' }[m.k]), desc: () => 'Política declarada; el comportamiento está codificado y no se consulta como dato.', effect: () => 'Solo lectura. La dinámica de momento no está implementada hasta MOTOR-07.' }),
+    label: (m) => ({ timeOutRecoveryRecipients: 'Quién recupera con un tiempo muerto', timeOutRecoveryApplication: 'Cuándo se aplica la recuperación', momentDynamics: 'Dinámica de momento' }[m.k]), desc: () => 'Política declarada; el comportamiento está codificado y no se consulta como dato.', effect: () => 'Solo lectura. La dinámica de momento la implementa MOTOR-07 (filas `moment.*`, `teamMoment.*`, `episodes.*`).' }),  // ------------------------------------------------------------------ MOTOR-07: Forma, presión, momentos, T, episodios y conexiones (SEM-MOTOR07)
+  ...MOTOR07_FAMILIES,
 ];
 
 // Hojas del perfil que NO son filas: identidad, procedencia y estructura de contenido, no magnitudes calibrables (§4.1).
 export const EXEMPT_LEAF = [
   /^id$/, /^status$/, /^scope$/, /^effectiveId$/, /^provenance\./, /^deferred/, /^scenario\./, /^fixtureContract\./, /^attributeOrder/, /^attributeDictionary/,
   /^extensions\./, /^motor02\.(seedExtensionId|status|basedOn|origin)$/, /^profileRef\./, /^plays\.\d+\.(id|family|roles|continuations)/, /^tasks\.[^.]+\.(attack|defense)\.\d+\.[01]$/, /^plays\.\d+\.(qualityAttack|qualityDefense)\.\d+\.[01]$/,
-  /^rotation\.foulProtection\.\d+\.period$/, /^repertoire\./, /^defenseRepertoire\./, /^spontaneousRepertoire\./, /^throwInRepertoire\./,
+  /^rotation\.foulProtection\.\d+\.period$/, ...MOTOR07_EXEMPT, /^repertoire\./, /^defenseRepertoire\./, /^spontaneousRepertoire\./, /^throwInRepertoire\./,
 ];
 
 // Excepciones explicadas: valores del código que NO se convierten en filas (§4.1).

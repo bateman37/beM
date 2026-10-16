@@ -54,6 +54,7 @@ P.resolveAttempt = function resolveAttempt(ex) {
   const items = ['turnover', 'defensiveNonShootingFoul', 'shootingFoul', 'fieldShot', 'looseBall', 'offensiveFoul', 'ballViolation'].filter((k) => w[k] > 0).map((k) => ({ key: k, w: w[k] }));
   const cat = this.pick(items, 'categoría').key;
   ex.category = cat;
+  if (this.poss && ex.team === this.poss.team) this.episodeReorganizationSettled(this.poss, cat);
   const spec = this.durationKindFor(ex, cat);
   // Art. 16.2.5 (resumen contrastado del encargo MOTOR-06): recibir/controlar y lanzar necesita al menos 0,3 s; con menos solo caben las finalizaciones
   // directas previstas (palmeo/mate, exec «none»). Una recepción con lanzamiento no se comprime para caber: si no hay opción legal rige el límite.
@@ -170,6 +171,7 @@ P.reorganize = function reorganize(poss, reason, playId, { toDisposition = null 
   const t = this.consume(tenths, 'organized');
   this.closeChain(poss, 'nueva organización');
   poss.disorganized = false; poss.early = false; poss.reorgCount = (poss.reorgCount ?? 0) + 1;
+  this.episodeReorganizationPending(poss, reason, poss.director?.id); // MOTOR-07 (EPI03): solo cuenta si la tarea posterior se resuelve sin pérdida
   this.resetCurrent(); // reorganización pertinente: la defensa se reorganiza (cambios y ayudas ya no están activos)
   if (playId) (poss.excludePlays ??= new Set()).add(playId);
   if (toDisposition) poss.disposition = toDisposition;
@@ -362,7 +364,7 @@ P.interactionResolve = function interactionResolve(poss, ex, lq, team, entry, kc
     const covered = help.relief && help.reliefArrives ? help.relief : null; // el relevo cubre lo abandonado; si no llega, se concede
     if (help.abandoned === ex.actor) {
       if (covered) { ex.defend = covered; ex.icpt = covered; ex.helpWindow = 'relevo cubre al receptor'; }
-      else { ex.window = true; ex.defend = null; ex.icpt = null; ex.helpWindow = 'receptor libre'; }
+      else { ex.window = true; ex.defend = null; ex.icpt = null; ex.helpWindow = 'receptor libre'; ex.coordFailure = { tipo: 'la ayuda deja libre al receptor y el relevo no cubre o no llega', ayudante: help.helper, abandona: help.abandoned, relevo: help.relief ?? null, relevoLlega: !!help.reliefArrives }; }
     } else if (help.abandoned && help.abandoned !== ex.holder) {
       const tech = this.recipeObj({ [ZONE_TEC.three]: 1 }, help.abandoned);
       const pAcc = this.acceptance(team, ex.holder, tech);
@@ -373,6 +375,7 @@ P.interactionResolve = function interactionResolve(poss, ex, lq, team, entry, kc
         const pickd = this.pick(this.mixIntention(sc.map((x) => this.exitItem(x)), lq, 'salida:descarga'), 'salida:descarga').exit;
         Object.assign(ex, pickd, { window: !covered, label: 'CONT04', helper: help.helper, helpArrived: help.arrives, helpWindow: covered ? 'descarga con relevo' : 'descarga', denier: null, stealAttempt: undefined, pressureClose: undefined, noDenial: false, defMix: undefined });
         ex.chain = [...(ex.chain ?? []), 'CONT04']; ex.extraPasses = (ex.extraPasses ?? 0) + 1; nativeQuality = false; kctx = 0;
+        if (!covered) ex.coordFailure = { tipo: 'la ayuda concede la descarga libre al jugador abandonado', ayudante: help.helper, abandona: help.abandoned, relevo: help.relief ?? null, relevoLlega: !!help.reliefArrives };
         this.cover('CONT04 descarga');
       }
     }
@@ -495,7 +498,7 @@ P.simpleResource = function simpleResource(poss, { origin, denied, safety = null
   if (passer) { ex.chain = ['CONT08']; ex.extraPasses = 1; }
   const ca = this.taskValue('TAR02', 'attack', { handler: holder });
   const cd = this.taskValue('TAR02', 'defense', { primary: marker });
-  ex.quality = denied != null || origin === 'ESP15' ? { cls: 'forced', K: this.profile.opportunity.qualityShotLogit.forced, z: null } : this.qualityOf(ex, ca, cd, 0, true);
+  ex.quality = denied != null ? { cls: 'forced', K: this.profile.opportunity.qualityShotLogit.forced, z: null } : this.qualityOf(ex, ca, cd, 0, true);
   if (ex.quality.z === null) this.note('calidad', { clase: 'forzada por sistema negado', ficha: denied });
   this.cover(origin === 'ESP15' ? 'ESP15 sistema negado' : origin === 'ESP16' ? 'ESP16 final de posesión' : 'ESP17 última acción');
   return this.resolveAttempt(ex);
@@ -530,7 +533,9 @@ P.transitionPhase = function transitionPhase(poss) {
   }
   // un finalizador debe poder correr: se pondera por la receta de manejo/aceleración (TAR02)
   const sc = this.scoreExits(team, exits, null);
-  for (const x of sc) x.pref *= fit(this.profile, this.taskValue('TAR02', 'attack', { handler: x.actor }));
+  // MOTOR-07: quien termina una transición se pondera con la receta de recorrido largo (Velocidad, Aceleración, Anticipación y Manejo), que SUSTITUYE a la
+  // ponderación por manejo/aceleración (TAR02): Velocidad no se suma a una receta que ya contenía Aceleración y Manejo.
+  for (const x of sc) x.pref *= fit(this.profile, this.longTravelAccess(x.actor));
   const lq = this.libertyAndReading(team, carrier);
   const ex = { ...this.pick(this.mixIntention(sc.map((x) => this.exitItem(x)), lq, 'salida:transición'), 'salida:transición').exit };
   const label = ex.zone === 'rim' ? 'ESP01' : 'ESP02';
@@ -746,6 +751,7 @@ P.beginPeriod = function beginPeriod(period) {
   if (period > 1) {
     const amount = period === 3 ? e.halftimeRecovery : isOvertime(period, rules) ? e.overtimeIntervalRecovery : e.quarterRecovery;
     this.recoverAll(amount);
+    this.pauseMarker(period === 3 ? 'halftime' : 'shortInterval', period === 3 ? 'descanso largo' : isOvertime(period, rules) ? 'intervalo previo a prórroga' : 'intervalo de cuarto'); // MOTOR-07 (EPI06)
     this.emit('interval', { intent: { origen: period === 3 ? 'descanso largo' : isOvertime(period, rules) ? 'intervalo previo a prórroga' : 'intervalo de cuarto' }, effects: { recuperacion: amount } });
     this.queueWindow({ reason: 'intervalo', subs: true });
   }

@@ -9,9 +9,10 @@ export const ATTRS = [
 ];
 export const SLOTS = ['PG', 'SG', 'SF', 'PF', 'C'];
 export const ZONES = ['rim', 'inside', 'midrange', 'three'];
-export const ENGINE_VERSION = 'beM-motor-0.6.0-MOTOR06';
-export const INPUT_SCHEMA = 'beM-match-input/4';
-export const EXPORT_SCHEMA = 'beM-match-export/5';
+export const ENGINE_VERSION = 'beM-motor-0.7.0-MOTOR07';
+export const INPUT_SCHEMA = 'beM-match-input/5';
+export const EXPORT_SCHEMA = 'beM-match-export/6';
+export const EXPORT_SCHEMA_MOTOR06 = 'beM-match-export/5';
 export const EXPORT_SCHEMA_MOTOR05 = 'beM-match-export/4';
 export const EXPORT_SCHEMA_MOTOR04 = 'beM-match-export/3';
 export const EXPORT_SCHEMA_MOTOR02 = 'beM-match-export/2';
@@ -111,7 +112,7 @@ export function validateExtension(profile, ext, effective = profile) {
 }
 
 // Entrada de encuentro para los dos equipos del escenario del perfil.
-export function buildMatchInput(profile, allPlayers, { seed } = {}) {
+export function buildMatchInput(profile, allPlayers, { seed, importance } = {}) {
   const plans = profile.scenario.plans;
   const teams = plans.map((plan) => ({
     id: plan.teamId,
@@ -122,6 +123,7 @@ export function buildMatchInput(profile, allPlayers, { seed } = {}) {
   return {
     schema: INPUT_SCHEMA,
     seed: seed ?? profile.scenario.seed,
+    importance: importance ?? 'ordinary', // MOTOR-07: importancia del encuentro (entrada visible; no cambia por un resultado parcial)
     teams,
   };
 }
@@ -221,6 +223,7 @@ export function validateInput(input, profile) {
   const add = (path, message) => errs.push({ path, message });
   if (!input || typeof input !== 'object') { add('input', 'entrada ausente'); return errs; }
   if (!Number.isInteger(input.seed) || input.seed < 0 || input.seed > 4294967295) add('seed', 'la semilla debe ser un entero entre 0 y 4294967295');
+  if (profile.pressure && !Object.keys(profile.pressure.importance).includes(input.importance)) add('importance', `la importancia del encuentro es una de: ${Object.keys(profile.pressure.importance).join(', ')}`);
   if (!Array.isArray(input.teams) || input.teams.length !== 2) { add('teams', 'se necesitan exactamente dos equipos'); return errs; }
   const [lo, hi] = profile.abilityBounds;
   const styleKeys = Object.keys(profile.scenario.plans[0].styles);
@@ -240,6 +243,14 @@ export function validateInput(input, profile) {
       }
       const e = p.state?.energy;
       if (typeof e !== 'number' || !Number.isFinite(e) || e < 0 || e > 100) add(`${pp}.state.energy`, 'la energía inicial debe estar entre 0 y 100');
+      // MOTOR-07: Forma y los tres momentos individuales son entradas explícitas acotadas (nunca un valor por defecto oculto)
+      if (profile.form && profile.moment) {
+        const [fl, fh] = profile.form.range; const [ml, mh] = profile.moment.range;
+        for (const [k, lo, hi, name] of [['form', fl, fh, 'La Forma'], ['M_TIR', ml, mh, 'El momento M-TIR'], ['M_OFE', ml, mh, 'El momento M-OFE'], ['M_DEF', ml, mh, 'El momento M-DEF']]) {
+          const v = p.state?.[k];
+          if (typeof v !== 'number' || !Number.isFinite(v) || v < lo || v > hi) add(`${pp}.state.${k}`, `${name} inicial debe ser un número entre ${lo} y ${hi}`);
+        }
+      }
       if (!Array.isArray(p.positions) || p.positions.length === 0) add(`${pp}.positions`, 'sin posiciones');
       for (const f of ['heightCm', 'wingspanCm', 'weightKg', 'initiative', 'finishingVocation']) {
         if (typeof p[f] !== 'number' || !Number.isFinite(p[f])) add(`${pp}.${f}`, 'valor ausente o no numérico');
@@ -253,6 +264,10 @@ export function validateInput(input, profile) {
     });
     const plan = t.plan;
     if (!plan) { add(`${tp}.plan`, 'plan ausente'); return; }
+    if (profile.teamMoment) {
+      const [tl, th] = profile.teamMoment.range; const v = plan.initialTeamMoment;
+      if (typeof v !== 'number' || !Number.isFinite(v) || v < tl || v > th) add(`${tp}.plan.initialTeamMoment`, `el momento colectivo T inicial debe ser un número entre ${tl} y ${th}`);
+    }
     for (const k of styleKeys) {
       const v = plan.styles?.[k];
       if (!Number.isInteger(v) || v < 1 || v > 5) add(`${tp}.plan.styles.${k}`, 'los estilos son enteros 1-5');
@@ -361,6 +376,19 @@ export function upgradeInput(input, profile) {
       if (t.plan.throwInServers === undefined) { t.plan.throwInServers = { band: { preferred: null, alternate: null }, endline: { preferred: null, alternate: null } }; added.push(`${t.id}: sacadores de banda y fondo por política funcional`); }
       if (t.plan.throwInDefense === undefined) { t.plan.throwInDefense = { band: ti.defaultBandDefensiveResponse, endline: ti.defaultEndlineDefensiveResponse, target: null }; added.push(`${t.id}: respuestas defensivas de saque ${ti.defaultBandDefensiveResponse} y ${ti.defaultEndlineDefensiveResponse} (precarga explícita)`); }
       for (const p of t.players ?? []) if (!p.defensiveRole?.code) { const slot = SLOTS.find((s) => t.plan.starters?.[s] === p.id); const code = slot ? profile.defenseRepertoire.defaultRolesBySlot[slot] : null; if (code) { p.defensiveRole = { code, name: profile.fixtureContract.defensiveRoleDictionary[code] ?? null, preload: true }; added.push(`${t.id}: rol defensivo de ${p.id} precargado (${code}, editable)`); } }
+    }
+  }
+  // MOTOR-07: estados iniciales y importancia. Una entrada anterior se migra solo con valores EXPLÍCITOS de la política neutral del perfil (anotados);
+  // un campo ya presente no se toca. Un valor presente con otra escala no se interpreta por adivinación: la validación lo rechaza.
+  const pol = profile.initialStatePolicy;
+  if (pol) {
+    if (out.importance === undefined) { out.importance = 'ordinary'; added.push('importancia del encuentro = ordinary (política neutral explícita)'); }
+    for (const t of out.teams ?? []) {
+      if (t.plan && t.plan.initialTeamMoment === undefined) { t.plan.initialTeamMoment = pol.T; added.push(`${t.id}: T inicial = ${pol.T}`); }
+      for (const p of t.players ?? []) {
+        p.state = p.state ?? {};
+        for (const [k, key] of [['form', 'form'], ['M_TIR', 'M_TIR'], ['M_OFE', 'M_OFE'], ['M_DEF', 'M_DEF']]) if (p.state[k] === undefined) { p.state[k] = pol[key]; added.push(`${t.id}: ${p.id} ${k} inicial = ${pol[key]}`); }
+      }
     }
   }
   out.schema = INPUT_SCHEMA;

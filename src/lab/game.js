@@ -1,8 +1,8 @@
 // Pantalla «Partido» (MOTOR-02): preparar el encuentro, elegir modalidad y equipo dirigido, jugarlo (total, por cuartos o por tiempo),
 // dirigirlo con órdenes, ver acta y relato, descargar el JSON y reproducir un encuentro exportado.
 import { h, clear, fmt, table } from './dom.js';
-import { store, PLAY_NAMES } from './store.js';
-import { validateInput, deepCopy, teamTotals, SLOTS, diagnosticQueries } from '../match/index.js';
+import { store, PLAY_NAMES, matchSource } from './store.js';
+import { validateInput, deepCopy, teamTotals, SLOTS, diagnosticQueries, ownStateView, rivalPublicView, diagnosticView } from '../match/index.js';
 import { MatchSession, MODES, SESSION_STATES, PRESENTATION } from '../match/session.js';
 import { replayMatch, validateReplayFile } from '../match/replay.js';
 import { describeEvent, clockText } from '../match/narrative.js';
@@ -34,9 +34,9 @@ const rerender = () => { if (ui.root && document.getElementById('live')) { paint
 
 // ---------------------------------------------------------------- preparación
 function setupCard() {
-  const { edit, profile } = store;
+  const { profile } = store; const edit = matchSource(); // copia de contraste activa o entrada editada
   const errs = validateInput(edit, profile);
-  if (!profile.throwInRepertoire) errs.push({ path: 'perfil activo', message: 'es anterior a MOTOR-06: activa la base de MOTOR-06 o una candidata explícita en el Panel de ajustes' });
+  if (!profile.moment) errs.push({ path: 'perfil activo', message: 'es anterior a MOTOR-07: activa la base de MOTOR-07 o una candidata explícita en el Panel de ajustes' });
   const s = ui.session;
   const live = s && !['finalizado', 'error'].includes(s.state);
   return h('div', { class: 'card' },
@@ -51,6 +51,9 @@ function setupCard() {
       h('div', {},
         h('label', { class: 'row' }, 'Equipo dirigido manualmente ', h('select', { id: 'managed', onchange: (e) => { ui.managed = Number(e.target.value); } }, edit.teams.map((t, i) => h('option', { value: i, selected: ui.managed === i }, `${t.id} — ${t.name}`)))),
         h('p', { class: 'small muted' }, 'El rival utiliza la delegación básica ya disponible (relevo del entrenador básico). Esa delegación no es un entrenador completo: no toma tiempos muertos ni cambia estilos (MOTOR-08).'),
+        store.scenario ? h('p', { class: 'pill warn', id: 'scenario-badge' }, `Copia de contraste: ${store.scenario.scenario.id} · ${store.scenario.scenario.name} (${store.scenario.changes.length} cambios listados; tus fichas y planes no se tocan) `, h('button', { class: 'link', type: 'button', id: 'scenario-clear', onclick: () => { store.scenario = null; renderGame(ui.root); } }, 'quitar')) : null,
+        h('label', { class: 'row' }, 'Importancia del encuentro ', h('select', { id: 'importance', disabled: !!store.scenario, onchange: (e) => { store.edit.importance = e.target.value; renderGame(ui.root); } }, Object.keys(profile.pressure.importance).map((k) => h('option', { value: k, selected: edit.importance === k }, { ordinary: 'Ordinario', important: 'Importante', decisive: 'Decisivo' }[k])))),
+        h('p', { class: 'small muted' }, 'La importancia es una entrada visible: junto con la tensión de reloj y marcador forma la presión (el máximo de ambas, no su suma). No cambia por un resultado parcial.'),
         h('p', { class: 'small' }, `Semilla ${edit.seed} · ${edit.teams[0].id} vs ${edit.teams[1].id} · perfil ${store.library.activeId} «${store.library.activeVersion().label}» (${profile.effectiveId}) `, h('span', { class: 'pill warn' }, profile.status)))),
     errs.length ? h('div', { class: 'errbox' }, h('strong', { class: 'err' }, 'No se puede preparar: entrada no válida.'), h('ul', {}, errs.map((e) => h('li', {}, h('code', {}, e.path), ' — ', e.message)))) : null,
     ui.error ? h('div', { class: 'errbox' }, h('strong', { class: 'err' }, ui.error)) : null,
@@ -67,7 +70,7 @@ function prepare() {
   if (s0) s0.dispose(); // invalida callbacks y temporizadores del anterior
   ui.error = null; ui.draft = null; ui.msg = null; ui.compare = null; ui.call = null; ui.filter = 'all'; ui.limit = 150; ui.storyLimit = 18; ui.showBox = false;
   try {
-    const s = new MatchSession({ input: deepCopy(store.edit), profile: store.profile, profileRef: store.profileRef, mode: ui.mode, managedTeam: ui.managed, speed: ui.speed, scheduler: sched() });
+    const s = new MatchSession({ input: deepCopy(matchSource()), profile: store.profile, profileRef: store.profileRef, mode: ui.mode, managedTeam: ui.managed, speed: ui.speed, scheduler: sched() });
     store.matchRef = store.profileRef; // perfil congelado de este encuentro (se muestra en el panel)
     s.subscribe(onSession); ui.session = s;
   } catch (e) { ui.error = `No se pudo preparar el encuentro: ${e.message}`; ui.session = null; }
@@ -162,13 +165,23 @@ function reviewCard(s) {
 function teamCard(s, t) {
   const m = s.match; const tm = m.input.teams[t]; const mine = t === s.managedTeam;
   const showEnergy = mine; // la energía interna rival no se muestra en la vista ordinaria
-  const row = (id, slot) => { const p = m.ps[id]; return { cls: !p.available ? 'muted' : '', cells: [slot ?? '—', id, showEnergy ? fmt(p.energy, 0) : '·', p.fouls, p.available ? (slot ? 'en pista' : 'banquillo') : 'excluido'] }; };
+  // Vista PROPIA: energía (número y barra), Forma y momentos como categorías con su ámbito. Vista RIVAL: solo hechos públicos. No consume azar.
+  const own = mine ? ownStateView(m, t) : null; const byId = own ? Object.fromEntries(own.jugadores.map((p) => [p.id, p])) : {};
+  const bar = (e) => h('span', { class: 'bar', style: 'display:inline-block;width:46px;vertical-align:middle;margin-left:6px', title: `energía ${e}`, role: 'img', 'aria-label': `energía ${e} de 100` }, h('i', { style: `width:${e}%` }));
+  const row = (id, slot) => {
+    const p = m.ps[id]; const st = byId[id];
+    return { cls: !p.available ? 'muted' : '', cells: [slot ?? '—', id, showEnergy ? h('span', {}, fmt(p.energy, 0), bar(Math.round(p.energy))) : '·', st ? st.formaCategoria : '·',
+      st ? `${st.momentos.M_TIR.categoria} / ${st.momentos.M_OFE.categoria} / ${st.momentos.M_DEF.categoria}` : '·', p.fouls, p.available ? (slot ? 'en pista' : 'banquillo') : 'excluido'] };
+  };
   const onCourt = SLOTS.map((slot) => row(m.lineup[t][slot], slot));
   const bench = tm.players.filter((p) => !SLOTS.some((sl) => m.lineup[t][sl] === p.id)).map((p) => row(p.id, null));
   const before = m.periodBreak != null && m.period > 0;
+  const pub = mine ? null : rivalPublicView(m, t);
   return h('div', { class: 'card' }, h('h3', { style: 'margin-top:0' }, `${tm.id} — ${tm.name}${mine ? ' · dirigido' : ' · delegado'}`),
-    table(['Pos', 'Jugador', showEnergy ? `Energía${before ? ' (antes del descanso)' : ''}` : 'Energía', 'Faltas', 'Estado'], [...onCourt, ...bench], { numeric: [2, 3] }),
-    h('p', { class: 'small muted' }, `Faltas colectivas del periodo: ${m.teamFouls[t][Math.min(Math.max(m.period, 1), 4)] ?? 0}${showEnergy ? '' : ' · la energía interna del rival no se muestra'}.`));
+    table(['Pos', 'Jugador', showEnergy ? `Energía${before ? ' (antes del descanso)' : ''}` : 'Energía', 'Forma', 'Momento (tiro / ofensivo / defensivo)', 'Faltas', 'Estado'], [...onCourt, ...bench], { numeric: [2, 5] }),
+    own ? h('p', { class: 'small' }, h('strong', {}, 'Conexión del equipo: '), own.conexionDelEquipo.categoria, ' · ', h('span', { class: 'muted' }, 'La Forma se recibió al empezar y no cambia durante el partido; los momentos se muestran como categorías (proyección determinista, sin azar). No equivalen a porcentajes de tiro.')) : null,
+    pub?.racha ? h('p', { class: 'small' }, h('strong', {}, 'Racha pública: '), pub.racha.texto) : null,
+    h('p', { class: 'small muted' }, `Faltas colectivas del periodo: ${m.teamFouls[t][Math.min(Math.max(m.period, 1), 4)] ?? 0}${showEnergy ? '' : ' · la energía, la Forma y los momentos internos del rival no se muestran'}.`));
 }
 
 function planCard(s) {
@@ -277,7 +290,7 @@ function renderResult(root, res, { live = false, banner = null, refresh = paintR
       h('button', { class: 'btn secondary', id: 'download', onclick: () => download(res) }, 'Descargar encuentro (JSON)'),
       live ? [h('button', { class: 'btn secondary', onclick: () => recompute(res) }, 'Reproducir este encuentro (recalcular)'),
         ui.compare ? h('span', { class: `pill ${ui.compare.identical ? 'ok' : 'bad'}` }, ui.compare.identical ? 'Recálculo idéntico: mismos hechos, sorteos, acta y órdenes' : 'El recálculo difiere') : null] : null)));
-  root.append(h('div', { class: 'grid2' }, [0, 1].map((t) => boxCard(res, t))), lineupsCard(res), choicesCard(res), opportunitiesCard(res), finalStory(refresh, res, teamName));
+  root.append(h('div', { class: 'grid2' }, [0, 1].map((t) => boxCard(res, t))), lineupsCard(res), choicesCard(res), opportunitiesCard(res), statesDiagnosticCard(res), finalStory(refresh, res, teamName));
 }
 
 // Diagnóstico ampliable de oportunidades y saques (MOTOR-06): ejes separados (procedencia, contexto, calidad previa, resultado) con numerador
@@ -303,6 +316,20 @@ function opportunitiesCard(res) {
     h('p', { class: 'small' }, `Procedencia de los intentos: ${Object.entries(proc).map(([k, v]) => `${k} ${v}`).join(' · ') || '—'} · contexto: ${Object.entries(ctx).map(([k, v]) => `${k} ${v}`).join(' · ') || '—'}`),
     h('p', { class: 'small' }, `Situaciones etiquetadas: ${Object.entries(tags).sort().map(([k, v]) => `${k} ${v}`).join(' · ') || 'ninguna'}`),
     chains.length ? table(['Saque', 'Posesión', 'Ficha', 'Sacador', 'Respuesta', 'Intentos', 'Cierre', 'Puntos directos'], chains.map((c) => [c.id, c.possession, c.ficha, c.sacador, c.respuesta, c.intentos.map((x) => `${x.opcion}${x.negada ? ' (negada)' : ''}`).join(' → '), c.cierre ?? 'abierta', c.puntosDirectos])) : h('p', { class: 'small muted' }, 'Sin saques de banda o fondo con ficha en este encuentro.'));
+}
+
+// Estados y episodios (diagnóstico de LABORATORIO): números comprometidos y timestamps. No se entrega al decisor ni al entrenador automático.
+const CAT = (res, v) => { const b = res.profile.moment.categoryBoundaries; let i = 0; while (i < b.length && v >= b[i]) i += 1; return ['Muy frío', 'Frío', 'Estable', 'Caliente', 'Muy caliente'][i]; };
+function statesDiagnosticCard(res) {
+  const st = res.diagnostics.states; if (!st) return null;
+  const rows = Object.entries(st.jugadores).map(([id, p]) => [id, fmt(p.forma, 2), ...['M_TIR', 'M_OFE', 'M_DEF'].map((k) => `${fmt(p.momentos[k].valor, 3)} · ${CAT(res, p.momentos[k].valor)} (hasta ${fmt(p.momentos[k].actualizadoHasta, 0)} s)`), fmt(p.energia, 1)]);
+  const ep = res.diagnostics.episodes ?? [];
+  return h('details', { class: 'card' }, h('summary', {}, h('strong', {}, 'Estados y episodios (diagnóstico de laboratorio)')),
+    h('p', { class: 'small muted' }, `Importancia ${st.importancia} · reloj deportivo ${fmt(st.relojDeportivoSegundos, 0)} s de juego vivo. Valores comprometidos en su última frontera de actualización (la actualización es perezosa: un estado se procesa cuando una tarea o un episodio lo necesita). Es diagnóstico de laboratorio: no se filtra al entrenador automático.`),
+    table(['Equipo', 'T final', 'Actualizado hasta (s)'], st.equipos.map((t) => [t.id, fmt(t.T, 3), fmt(t.actualizadoHasta, 0)]), { numeric: [1, 2] }),
+    table(['Jugador', 'Forma', 'M-TIR', 'M-OFE', 'M-DEF', 'Energía'], rows),
+    h('p', { class: 'small' }, `Pausas deportivas: ${st.pausas.map((p) => `${p.tipo} (periodo ${p.periodo})`).join(' · ') || 'ninguna'}. Episodios: ${ep.length} registros.`),
+    ep.length ? table(['Episodio', 'Cadena', 'Destino', 'Magnitud', 'Estado', 'Evidencia'], ep.slice(0, 120).map((e) => [`${e.id} ${e.nombre}`, e.cadena, e.destino, `${e.signo > 0 ? '+' : e.signo < 0 ? '−' : ''}${fmt(e.magnitud ?? 0, 2)}`, e.estado, JSON.stringify(e.evidencia ?? e.tipoDePausa ?? '')])) : null);
 }
 
 function lineupsCard(res) {
