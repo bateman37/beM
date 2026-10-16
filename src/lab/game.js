@@ -36,7 +36,7 @@ const rerender = () => { if (ui.root && document.getElementById('live')) { paint
 function setupCard() {
   const { profile } = store; const edit = matchSource(); // copia de contraste activa o entrada editada
   const errs = validateInput(edit, profile);
-  if (!profile.moment) errs.push({ path: 'perfil activo', message: 'es anterior a MOTOR-07: activa la base de MOTOR-07 o una candidata explícita en el Panel de ajustes' });
+  if (!profile.moment || !profile.coach) errs.push({ path: 'perfil activo', message: 'es anterior a MOTOR-08: activa la base de MOTOR-08 o una candidata explícita en el Panel de ajustes' });
   const s = ui.session;
   const live = s && !['finalizado', 'error'].includes(s.state);
   return h('div', { class: 'card' },

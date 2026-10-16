@@ -1,0 +1,853 @@
+{
+ "seedExtensionId": "SEM-MOTOR08-20261016",
+ "status": "SEM: provisional, no calibrado",
+ "basedOn": "SEM-MOTOR01-20261016",
+ "origin": "docs/prompts/MOTOR-08-entrenador-y-memoria.md (§10 tabla de políticas y §10.3 datos comunes, §7.1 librillo, §9.1 contextos de final, §11.4 curva de memoria, §6.1 plan de participación 28/12): cifras SEM copiadas literalmente y verificadas por `npm run data:check`; el resto de umbrales (necesidades, paquete ordinario, causas de pausa, patrones y respuestas de memoria) son concreción de implementación de Claude, SEM, a revisar por Dennis",
+ "additions": {
+  "coach": {
+   "version": "ENT-MOTOR08-R1",
+   "supersedes": {
+    "rotation.reviewEnergy": "coach.policies.*.energyReview",
+    "rotation.benchReadyEnergy": "coach.policies.*.benchReadyEnergy",
+    "rotation.minimumStintSeconds": "coach.policies.*.minCourtStint",
+    "rotation.minimumBenchSeconds": "coach.policies.*.minBenchStint",
+    "rotation.maximumNormalStintSeconds": "coach.policies.*.maxOrdinaryStintReview",
+    "rotation.replacementUtilityTolerance": "coach.policies.*.fatigueUtilitySacrifice (ruta de fatiga) y replacementGain (ruta ordinaria)",
+    "rotation.longStintTolerance": "coach.policies.*.replacementGain (el tramo largo es una revisión ordinaria)",
+    "rotation.criticalEnergy": "coach.policies.*.criticalEnergyReview",
+    "rotation.criticalReplacementTolerance": "coach.rotation.criticalUtilitySacrifice",
+    "rotation.foulProtection": "coach.foulBook (librillo ordenado)",
+    "rotation.foulProtectionTolerance": "coach.policies.*.foulProtectionSacrifice"
+   },
+   "defaultPolicy": "ENTREF02",
+   "areas": [
+    "rotation",
+    "adjustments",
+    "fouls",
+    "timeouts",
+    "endgame"
+   ],
+   "defaultDelegation": {
+    "rotation": true,
+    "adjustments": true,
+    "fouls": true,
+    "timeouts": true,
+    "endgame": true
+   },
+   "policies": {
+    "ENTREF01": {
+     "name": "Cauta",
+     "description": "Prefiere seguridad contextual y protege recursos cuando la necesidad lo permite. No es una capacidad ni un nivel de inteligencia.",
+     "energyReview": 50,
+     "benchReadyEnergy": 70,
+     "minCourtStint": 360,
+     "minBenchStint": 120,
+     "maxOrdinaryStintReview": 480,
+     "replacementGain": 0.5,
+     "fatigueUtilitySacrifice": 1.5,
+     "foulProtectionSacrifice": 4,
+     "criticalEnergyReview": 10,
+     "adjustmentHold": 240,
+     "recognitionThreshold": 2.5,
+     "timeoutCooldown": 180,
+     "timeoutReserve": 1,
+     "closingWindow": 180
+    },
+    "ENTREF02": {
+     "name": "Equilibrada",
+     "description": "Combina riesgo, continuidad y recursos según el contexto. No es una capacidad ni un nivel de inteligencia.",
+     "energyReview": 45,
+     "benchReadyEnergy": 65,
+     "minCourtStint": 360,
+     "minBenchStint": 120,
+     "maxOrdinaryStintReview": 480,
+     "replacementGain": 1,
+     "fatigueUtilitySacrifice": 1,
+     "foulProtectionSacrifice": 3,
+     "criticalEnergyReview": 10,
+     "adjustmentHold": 180,
+     "recognitionThreshold": 2,
+     "timeoutCooldown": 120,
+     "timeoutReserve": 1,
+     "closingWindow": 180
+    },
+    "ENTREF03": {
+     "name": "Agresiva en decisiones",
+     "description": "Acepta antes determinados riesgos y ajustes cuando el contexto y su información los justifican. No impone presión máxima ni triples constantes.",
+     "energyReview": 40,
+     "benchReadyEnergy": 60,
+     "minCourtStint": 360,
+     "minBenchStint": 120,
+     "maxOrdinaryStintReview": 480,
+     "replacementGain": 1.5,
+     "fatigueUtilitySacrifice": 0.5,
+     "foulProtectionSacrifice": 2,
+     "criticalEnergyReview": 10,
+     "adjustmentHold": 120,
+     "recognitionThreshold": 1.5,
+     "timeoutCooldown": 90,
+     "timeoutReserve": 0,
+     "closingWindow": 180
+    }
+   },
+   "common": {
+    "runAlarm": {
+     "windowAttacks": 4,
+     "adverseMarginPoints": 8,
+     "comfortableOpportunities": 2,
+     "disorderIncidents": 2
+    },
+    "closeMarginPoints": 8,
+    "urgent": {
+     "deficitPoints": 12,
+     "seconds": 300
+    },
+    "fastAttack": {
+     "deficitPoints": 4,
+     "seconds": 90
+    },
+    "seekThree": {
+     "deficitPoints": 3,
+     "seconds": 30
+    }
+   },
+   "rotation": {
+    "recipeVersion": "ENT02-R1",
+    "ordinaryPackageMax": 2,
+    "criticalUtilitySacrifice": 3,
+    "partnerTieMargin": 0.25,
+    "needBlend": 0.5,
+    "participation": {
+     "pairs": 5,
+     "starterMinutes": 28,
+     "reliefMinutes": 12,
+     "reviewDeviationMinutes": 3
+    },
+    "needRecipes": {
+     "creation": {
+      "TEC04": 0.2,
+      "TEC06": 0.2,
+      "TEC07": 0.2,
+      "TEC10": 0.1,
+      "MEN02": 0.15,
+      "MEN03": 0.15
+     },
+     "threePoint": {
+      "TEC01": 0.6,
+      "TEC06": 0.2,
+      "TEC10": 0.2
+     },
+     "defense": {
+      "TEC12": 0.35,
+      "TEC13": 0.25,
+      "TEC16": 0.15,
+      "MEN04": 0.25
+     },
+     "rebound": {
+      "TEC17": 0.5,
+      "TEC18": 0.5
+     },
+     "passing": {
+      "TEC08": 0.4,
+      "TEC07": 0.3,
+      "MEN02": 0.15,
+      "MEN03": 0.15
+     },
+     "freeThrows": {
+      "TEC05": 1
+     }
+    }
+   },
+   "foulBook": [
+    {
+     "id": "FB100",
+     "priority": 100,
+     "label": "Exclusión o indisponibilidad reglamentaria",
+     "when": {
+      "unavailable": true
+     },
+     "preference": "remove",
+     "exception": "none",
+     "reason": "FB100_REGLAMENTO"
+    },
+    {
+     "id": "FB090",
+     "priority": 90,
+     "label": "Orden manual válida",
+     "when": {
+      "manualOrder": true
+     },
+     "preference": "obey_manual",
+     "exception": "administration_prevails",
+     "reason": "FB090_MANUAL"
+    },
+    {
+     "id": "FB070Q1",
+     "priority": 70,
+     "label": "Primer cuarto: dos faltas personales",
+     "when": {
+      "period": [
+       1
+      ],
+      "foulsMin": 2
+     },
+     "preference": "protect",
+     "exception": "urgency_or_utility_loss",
+     "reason": "FB070_Q1"
+    },
+    {
+     "id": "FB070Q2",
+     "priority": 70,
+     "label": "Segundo cuarto: tres faltas personales (proteger la segunda mitad)",
+     "when": {
+      "period": [
+       2
+      ],
+      "foulsMin": 3
+     },
+     "preference": "protect",
+     "exception": "urgency_or_utility_loss",
+     "reason": "FB070_Q2"
+    },
+    {
+     "id": "FB070Q3",
+     "priority": 70,
+     "label": "Tercer cuarto: cuatro faltas personales (proteger la participación final)",
+     "when": {
+      "period": [
+       3
+      ],
+      "foulsMin": 4
+     },
+     "preference": "protect",
+     "exception": "urgency_or_utility_loss",
+     "reason": "FB070_Q3"
+    },
+    {
+     "id": "FB060Q4",
+     "priority": 60,
+     "label": "Último cuarto con más de la ventana de cierre: cuatro faltas",
+     "when": {
+      "period": [
+       4
+      ],
+      "foulsMin": 4,
+      "closingWindow": "outside"
+     },
+     "preference": "reduce_risk_consider_relief",
+     "exception": "insufficient_relief_or_urgent",
+     "reason": "FB060_Q4"
+    },
+    {
+     "id": "FB080CLOSE",
+     "priority": 80,
+     "label": "Cierre disputado con cuatro faltas: comparar valor de cierre (puede mantenerse)",
+     "when": {
+      "periodLast": true,
+      "foulsMin": 4,
+      "closingWindow": "inside",
+      "marginAbsMax": 8
+     },
+     "preference": "compare_closing_value",
+     "exception": "absolute_eligibility_and_manual",
+     "reason": "FB080_CIERRE"
+    },
+    {
+     "id": "FB075URGENT",
+     "priority": 75,
+     "label": "Pierde por al menos 12 con 300 s o menos del último periodo: aceptar antes el riesgo de mantener una referencia",
+     "when": {
+      "periodLast": true,
+      "foulsMin": 4,
+      "secondsAtMost": 300,
+      "deficitMin": 12
+     },
+     "preference": "accept_risk_keep_reference",
+     "exception": "better_relief_for_task",
+     "reason": "FB075_URGENCIA"
+    }
+   ],
+   "foulProtection": {
+    "stealStyleLevelReduction": 1
+   },
+   "timeouts": {
+    "reasons": [
+     "prepareAction",
+     "runWithDisorder",
+     "repeatedDefensiveProblem",
+     "reorganize",
+     "contextualRest"
+    ],
+    "urgentReasons": [
+     "prepareAction",
+     "runWithDisorder"
+    ],
+    "prepareAction": {
+     "deficitMax": 3,
+     "secondsMax": 30
+    },
+    "repeatedDefensiveProblem": {
+     "minEvidence": 3
+    },
+    "contextualRest": {
+     "meanEnergyMax": 40,
+     "minPlayersAtOrBelowReview": 3
+    },
+    "reorganize": {
+     "mandatorySubstitutionsMin": 2,
+     "windowSeconds": 120
+    }
+   },
+   "adjustments": {
+    "maxPrincipalDimensionsPerReview": 1,
+    "styleLevelBounds": [
+     1,
+     5
+    ]
+   },
+   "endgame": {
+    "contexts": [
+     {
+      "id": "seekThree",
+      "label": "Buscar una opción de tres",
+      "priority": 90,
+      "offenseStyles": {
+       "finishPreference": 5,
+       "organizedPace": 4
+      },
+      "defenseStyles": {},
+      "defenseWhenLeadAtMost": 0,
+      "tacticalFoul": false,
+      "call": true,
+      "needs": {
+       "leading": [],
+       "trailing": [
+        "threePoint",
+        "creation"
+       ],
+       "tied": [
+        "threePoint",
+        "creation"
+       ]
+      }
+     },
+     {
+      "id": "fastAttack",
+      "label": "Ataque rápido por necesidad",
+      "priority": 80,
+      "offenseStyles": {
+       "organizedPace": 5,
+       "elaboration": 1,
+       "transition": 5
+      },
+      "defenseStyles": {},
+      "defenseWhenLeadAtMost": 0,
+      "tacticalFoul": true,
+      "call": false,
+      "needs": {
+       "leading": [],
+       "trailing": [
+        "creation",
+        "threePoint"
+       ],
+       "tied": [
+        "creation"
+       ]
+      }
+     },
+     {
+      "id": "urgent",
+      "label": "Necesidad urgente",
+      "priority": 70,
+      "offenseStyles": {
+       "organizedPace": 4,
+       "offensiveRisk": 4,
+       "elaboration": 2
+      },
+      "defenseStyles": {},
+      "defenseWhenLeadAtMost": 0,
+      "tacticalFoul": false,
+      "call": false,
+      "needs": {
+       "leading": [],
+       "trailing": [
+        "creation"
+       ],
+       "tied": [
+        "creation"
+       ]
+      }
+     },
+     {
+      "id": "closeContest",
+      "label": "Cierre disputado",
+      "priority": 60,
+      "offenseStyles": {},
+      "defenseStyles": {
+       "protection": 5
+      },
+      "defenseWhenLeadAtMost": 3,
+      "tacticalFoul": false,
+      "call": true,
+      "needs": {
+       "leading": [
+        "freeThrows",
+        "defense",
+        "passing"
+       ],
+       "trailing": [
+        "creation",
+        "freeThrows"
+       ],
+       "tied": [
+        "creation",
+        "defense"
+       ]
+      }
+     },
+     {
+      "id": "protectLead",
+      "label": "Proteger ventaja",
+      "priority": 50,
+      "offenseStyles": {
+       "organizedPace": 2,
+       "offensiveRisk": 2
+      },
+      "defenseStyles": {},
+      "defenseWhenLeadAtMost": 0,
+      "tacticalFoul": false,
+      "call": false,
+      "needs": {
+       "leading": [
+        "freeThrows",
+        "passing"
+       ],
+       "trailing": [],
+       "tied": []
+      }
+     }
+    ],
+    "stopClockWindows": [
+     {
+      "deficitMin": 1,
+      "secondsMax": 30
+     },
+     {
+      "deficitMin": 4,
+      "secondsMax": 60
+     }
+    ],
+    "lastAction": {
+     "secondsMax": 24,
+     "deficitMax": 3
+    }
+   }
+  },
+  "memory": {
+   "version": "MEM-MOTOR08-R1",
+   "capacity": 8,
+   "initialEvidence": 0,
+   "incrementPerExposure": 1,
+   "saturation": 4,
+   "halfLifeAttacks": 7,
+   "discardThreshold": 0.25,
+   "specificContextMaxActors": 4,
+   "replacement": {
+    "by": "lowestEffectiveEvidence",
+    "tieBreak": [
+     "oldestLastObservation",
+     "stableKey"
+    ]
+   },
+   "keys": {
+    "familyMap": {
+     "pick_and_roll": "pnr",
+     "handoff": "handoff",
+     "off_ball_screen": "offBallScreen",
+     "give_and_go": "giveAndGo",
+     "post": "post",
+     "isolation": "isolation"
+    },
+    "directFamily": "direct",
+    "helpDump": {
+     "family": "help",
+     "role": "dump",
+     "chainLabel": "CONT04"
+    },
+    "opportunity": {
+     "strongCauses": [
+      "receiverFree",
+      "helpWindow",
+      "coordinationFailure",
+      "coverageBeaten"
+     ],
+     "weakCauses": [
+      "distanceConceded"
+     ],
+     "weakNeedsQuality": "comfortable"
+    }
+   },
+   "recognition": {
+    "minComfortableShare": 0.5
+   },
+   "patterns": [
+    {
+     "id": "MEMP01",
+     "name": "Continuación repetida con ventaja",
+     "family": "pnr",
+     "role": "screener",
+     "specific": "actor"
+    },
+    {
+     "id": "MEMP02",
+     "name": "El director consigue tiros cómodos tras el directo",
+     "family": "pnr",
+     "role": "handler",
+     "specific": "actor"
+    },
+    {
+     "id": "MEMP03",
+     "name": "Pop o apertura que recibe libre repetidamente",
+     "family": "pnr",
+     "role": "receiver",
+     "specific": "actor"
+    },
+    {
+     "id": "MEMP04",
+     "name": "Recepción tras indirecto que produce tiro cómodo",
+     "family": "offBallScreen",
+     "role": "receiver",
+     "specific": "actor"
+    },
+    {
+     "id": "MEMP05",
+     "name": "El poste genera ventaja repetida",
+     "family": "post",
+     "role": "post",
+     "specific": "actor"
+    },
+    {
+     "id": "MEMP06",
+     "name": "Penetración y pase que explota siempre la misma ayuda",
+     "family": "help",
+     "role": "dump",
+     "specific": "helper"
+    }
+   ],
+   "responses": [
+    {
+     "id": "MEMR01a",
+     "pattern": "MEMP01",
+     "priority": 1,
+     "dimension": "coverage",
+     "order": {
+      "type": "defCoverage",
+      "coverage": "COB01"
+     },
+     "concession": "Puede dejar espacio al manejador; conserva quién llega a la continuación."
+    },
+    {
+     "id": "MEMR01b",
+     "pattern": "MEMP01",
+     "priority": 2,
+     "dimension": "help",
+     "order": {
+      "type": "defStylesDelta",
+      "key": "help",
+      "delta": 1
+     },
+     "concession": "Más ayudas adicionales: quien ayuda abandona una responsabilidad (puede conceder un tiro exterior)."
+    },
+    {
+     "id": "MEMR02a",
+     "pattern": "MEMP02",
+     "priority": 1,
+     "dimension": "coverage",
+     "order": {
+      "type": "defCoverage",
+      "coverage": "COB03"
+     },
+     "concession": "El continuador puede quedar disponible mientras el segundo defensor recupera."
+    },
+    {
+     "id": "MEMR02b",
+     "pattern": "MEMP02",
+     "priority": 2,
+     "dimension": "pressure",
+     "order": {
+      "type": "defStylesDelta",
+      "key": "pressure",
+      "delta": 1
+     },
+     "concession": "Más presión cercana: mayor exposición a pérdida y contacto y menos espacio concedido."
+    },
+    {
+     "id": "MEMR02c",
+     "pattern": "MEMP02",
+     "priority": 3,
+     "dimension": "coverage",
+     "order": {
+      "type": "defCoverage",
+      "coverage": "COB04"
+     },
+     "concession": "El pase de salida o la recepción corta pueden crear una ventaja detrás."
+    },
+    {
+     "id": "MEMR03a",
+     "pattern": "MEMP03",
+     "priority": 1,
+     "dimension": "coverage",
+     "order": {
+      "type": "defCoverage",
+      "coverage": "COB03"
+     },
+     "concession": "Prioriza la recuperación; el continuador puede quedar disponible mientras recupera."
+    },
+    {
+     "id": "MEMR03b",
+     "pattern": "MEMP03",
+     "priority": 2,
+     "dimension": "coverage",
+     "order": {
+      "type": "defCoverage",
+      "coverage": "COB02"
+     },
+     "concession": "Desajuste, sello o rebote posibles; el nuevo emparejamiento persiste."
+    },
+    {
+     "id": "MEMR04a",
+     "pattern": "MEMP04",
+     "priority": 1,
+     "dimension": "receivers",
+     "order": {
+      "type": "defStylesDelta",
+      "key": "receivers",
+      "delta": 1
+     },
+     "concession": "Negar la recepción puede conceder la puerta atrás y limita la ayuda."
+    },
+    {
+     "id": "MEMR04b",
+     "pattern": "MEMP04",
+     "priority": 2,
+     "dimension": "coverage",
+     "order": {
+      "type": "defCoverage",
+      "coverage": "COB02"
+     },
+     "concession": "Desajuste posible tras el cambio; solo si la cobertura es válida para el indirecto."
+    },
+    {
+     "id": "MEMR04c",
+     "pattern": "MEMP04",
+     "priority": 3,
+     "dimension": "coverage",
+     "order": {
+      "type": "defCoverage",
+      "coverage": "COB01",
+      "navigation": "over"
+     },
+     "concession": "Seguimiento por encima: puede conceder espacio al navegante si no supera la pantalla."
+    },
+    {
+     "id": "MEMR05a",
+     "pattern": "MEMP05",
+     "priority": 1,
+     "dimension": "help",
+     "order": {
+      "type": "defStylesDelta",
+      "key": "help",
+      "delta": 1
+     },
+     "concession": "Coste en el pase de salida: la ayuda abandona una responsabilidad."
+    },
+    {
+     "id": "MEMR05b",
+     "pattern": "MEMP05",
+     "priority": 2,
+     "dimension": "special",
+     "order": {
+      "type": "defSpecial",
+      "special": "ESPD02",
+      "config": {
+       "activation": "reception",
+       "principal": "$actor",
+       "alternate": null,
+       "executor": null,
+       "executorAlt": null
+      }
+     },
+     "concession": "Coste en el pase de salida y restricción de no abandonar al tirador protegido."
+    },
+    {
+     "id": "MEMR06a",
+     "pattern": "MEMP06",
+     "priority": 1,
+     "dimension": "help",
+     "order": {
+      "type": "defStylesDelta",
+      "key": "help",
+      "delta": -1
+     },
+     "concession": "Más responsabilidad del defensor inicial y más espacio concedido a la penetración."
+    },
+    {
+     "id": "MEMR06b",
+     "pattern": "MEMP06",
+     "priority": 2,
+     "dimension": "special",
+     "order": {
+      "type": "defSpecial",
+      "special": "ESPD03",
+      "config": {
+       "protected": "$abandoned"
+      }
+     },
+     "concession": "Menos recursos para contener la penetración: no se abandona al receptor protegido."
+    }
+   ],
+   "applicability": {
+    "specificComponentRequiresOnCourt": true,
+    "keepGeneralOnSubstitution": true,
+    "resetOnPeriodChange": false,
+    "resetOnTimeout": false,
+    "carryToNextMatch": false
+   }
+  },
+  "activeCatalog.coachPolicies": [
+   "ENTREF01",
+   "ENTREF02",
+   "ENTREF03"
+  ],
+  "activeCatalog.coachAreas": [
+   "rotation",
+   "adjustments",
+   "fouls",
+   "timeouts",
+   "endgame"
+  ],
+  "rules.penaltyThrowInShotClockSeconds": 14,
+  "defenseRepertoire.handoffDoubleTeam": {
+   "requires": "deliveryToReceiver",
+   "possessor": "receiver",
+   "doubleTeam": [
+    "receiverMarker",
+    "hubMarker"
+   ],
+   "abandons": "hub",
+   "fallback": "COB01",
+   "note": "COB04 en POS05/POS06 (§12.2 del encargo MOTOR-08): compromiso de dos sobre el poseedor real tras la entrega. Exige entrega al receptor y que quien entrega pueda quedar sin su defensor; si no, es incompatible y se usa la alternativa declarada. No añade bonificación ni robo automático."
+  },
+  "scenario.plans.0.coach": {
+   "policy": "ENTREF02",
+   "delegation": {
+    "rotation": true,
+    "adjustments": true,
+    "fouls": true,
+    "timeouts": true,
+    "endgame": true
+   }
+  },
+  "scenario.plans.0.participation": {
+   "source": "SEM-MOTOR08: precarga explícita (cinco parejas funcionales 28/12; revisable)",
+   "pairs": [
+    {
+     "slot": "PG",
+     "starter": "EQ01-J01",
+     "relief": "EQ01-J12",
+     "starterMinutes": 28,
+     "reliefMinutes": 12
+    },
+    {
+     "slot": "SG",
+     "starter": "EQ01-J03",
+     "relief": "EQ01-J05",
+     "starterMinutes": 28,
+     "reliefMinutes": 12
+    },
+    {
+     "slot": "SF",
+     "starter": "EQ01-J06",
+     "relief": "EQ01-J07",
+     "starterMinutes": 28,
+     "reliefMinutes": 12
+    },
+    {
+     "slot": "PF",
+     "starter": "EQ01-J08",
+     "relief": "EQ01-J09",
+     "starterMinutes": 28,
+     "reliefMinutes": 12
+    },
+    {
+     "slot": "C",
+     "starter": "EQ01-J10",
+     "relief": "EQ01-J11",
+     "starterMinutes": 28,
+     "reliefMinutes": 12
+    }
+   ],
+   "situational": [
+    "EQ01-J02",
+    "EQ01-J04"
+   ]
+  },
+  "scenario.plans.1.coach": {
+   "policy": "ENTREF02",
+   "delegation": {
+    "rotation": true,
+    "adjustments": true,
+    "fouls": true,
+    "timeouts": true,
+    "endgame": true
+   }
+  },
+  "scenario.plans.1.participation": {
+   "source": "SEM-MOTOR08: precarga explícita (cinco parejas funcionales 28/12; revisable)",
+   "pairs": [
+    {
+     "slot": "PG",
+     "starter": "EQ02-J01",
+     "relief": "EQ02-J12",
+     "starterMinutes": 28,
+     "reliefMinutes": 12
+    },
+    {
+     "slot": "SG",
+     "starter": "EQ02-J04",
+     "relief": "EQ02-J03",
+     "starterMinutes": 28,
+     "reliefMinutes": 12
+    },
+    {
+     "slot": "SF",
+     "starter": "EQ02-J05",
+     "relief": "EQ02-J07",
+     "starterMinutes": 28,
+     "reliefMinutes": 12
+    },
+    {
+     "slot": "PF",
+     "starter": "EQ02-J08",
+     "relief": "EQ02-J09",
+     "starterMinutes": 28,
+     "reliefMinutes": 12
+    },
+    {
+     "slot": "C",
+     "starter": "EQ02-J11",
+     "relief": "EQ02-J10",
+     "starterMinutes": 28,
+     "reliefMinutes": 12
+    }
+   ],
+   "situational": [
+    "EQ02-J02",
+    "EQ02-J06"
+   ]
+  }
+ },
+ "replacementNotes": {
+  "note": "MOTOR-08 no cambia el valor de las filas históricas `rotation.*`: las identifica como sustituidas por la tabla de políticas de entrenador y las conserva (solo lectura, sin mecanismo que las consulte). Las utilidades por posición (`rotation.slotAbilityWeights`, `rotation.utilityMaxEnergyPenalty`) siguen consumidas."
+ }
+}

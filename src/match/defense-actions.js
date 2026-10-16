@@ -107,7 +107,10 @@ P.decideSteal = function decideSteal(ex, trace = {}) {
   const reader = ex.icpt ?? ex.defend;
   const reading = reader ? this.defensiveReading(reader) : null;
   const rf = reading == null ? 1 : abilityFit(this.profile, reading);
-  const p = oddsAdjust(refs.stealAttemptGivenAccessP0, d.styles.stealAttemptChoiceOddsRatio[lv.steal - 1] * rf);
+  // MOTOR-08 (§7.2): un defensor con protección por faltas decide con el nivel de robo de la política reducido (menos intentos VOLUNTARIOS); no cambia la probabilidad de falta
+  let stealLevel = lv.steal; const prot = reader && this.coachState[defT].riskProtected.has(reader);
+  if (prot) { stealLevel = Math.max(1, lv.steal - this.profile.coach.foulProtection.stealStyleLevelReduction); trace.proteccionDeFaltas = { defensor: reader, nivelDeRobo: stealLevel, nivelDelEquipo: lv.steal }; }
+  const p = oddsAdjust(refs.stealAttemptGivenAccessP0, d.styles.stealAttemptChoiceOddsRatio[stealLevel - 1] * rf);
   if (reading != null) this.note('lectura_defensiva', { defensor: reader, lecturaEfectiva: round(reading, 3), factorDeOdds: round(rf, 4), nota: 'recetas MEN02/MEN03/MEN04 del defensor; la presión solo reduce la valoración de Decisiones' });
   ex.stealAttempt = this.bernoulli(p, 'defensa:robo'); ex.stealDecisionP = p;
   trace.robo = ex.stealAttempt ? 'intenta intervenir' : 'contiene';
@@ -120,6 +123,7 @@ P.decideSteal = function decideSteal(ex, trace = {}) {
 // MOTOR-06 (§2.3): la misma respuesta defensiva compartida sirve a bloqueos directos (todas las coberturas), entregas (seguimiento/contención,
 // cambio, compromiso de dos) y bloqueos indirectos (seguimiento/navegación y cambio). Una cobertura incompatible se declara; no se sustituye.
 const PNR_SPEC = { type: 'pnr', ball: 'handler', mover: 'screener', navigator: 'handler', screenerRole: 'screener', allowed: ['COB01', 'COB02', 'COB03', 'COB04'] };
+export const PNR_ALLOWED = PNR_SPEC.allowed;
 P.coverageSpec = function coverageSpec(entry) { const c = entry.spec.coverage; return !c ? null : c === true ? PNR_SPEC : c; };
 P.screenPair = function screenPair(entry) {
   const sp = this.coverageSpec(entry); const r = entry.roles; if (!sp || !r[sp.ball] || !r[sp.mover]) return null;
@@ -129,16 +133,24 @@ P.screenPair = function screenPair(entry) {
 const hp = (m, p, q) => sigmoid(logit(p) + m.profile.opportunity.helpDifferenceSensitivity * q);
 
 // Decide la cobertura de la interacción. Registra compromisos, cambios y recuperaciones reales en la posesión (`poss.cur`, `committed`).
-P.beginCoverage = function beginCoverage(entry, poss, { cob: forced = null } = {}) {
-  const t = 1 - poss.team; const plan = this.defPlan(t); const cob = forced ?? plan.coverage; const d = this.dcfg();
+P.beginCoverage = function beginCoverage(entry, poss, { cob: forced = null, ex = null } = {}) {
+  const t = 1 - poss.team; const plan = this.defPlan(t); let cob = forced ?? plan.coverage; const d = this.dcfg();
   const pair = this.screenPair(entry);
   const info = { cobertura: cob };
   if (!pair) return null;
   const nav = plan.navigation ?? d.coverage.referenceNavigation[cob];
   info.navegacion = nav;
   if (!pair.D1 || !pair.D2 || pair.D1 === pair.D2) { info.limitada = 'falta la pareja funcional de defensores para la cobertura'; this.cover('cobertura no ejecutable'); return { info, pair, cob, none: true }; }
+  // MOTOR-08 (§12.2): en una ENTREGA, COB04 es el compromiso de dos sobre el poseedor real tras entregar (el receptor): su marcador y el del que entrega. Exige entrega al receptor y
+  // que el que entrega pueda quedar sin su defensor; si no hay ese acceso, la respuesta es incompatible y se usa la alternativa declarada (no se inventa un doble ni un robo).
+  if (cob === 'COB04' && pair.spec.type === 'handoff') {
+    const hd = this.drep().handoffDoubleTeam; let why = null;
+    if (!(ex && ex.role === pair.spec.mover)) why = 'no hay entrega al receptor: el poseedor es quien la inicia y no hay un segundo defensor con acceso';
+    else if (this.protectedAttackers(t).has(pair.handler)) why = 'el que entrega está protegido por «no abandonar»: el segundo defensor no puede dejarlo';
+    if (why) { info.limitada = `COB04 incompatible en esta entrega (${why}): se usa la alternativa declarada ${hd.fallback}`; info.alternativaDeclarada = hd.fallback; cob = hd.fallback; info.cobertura = cob; this.cover('COB04 en entrega incompatible: alternativa declarada'); }
+  }
   const protectedScreener = this.protectedAttackers(t).has(pair.screener);
-  if ((cob === 'COB03' || cob === 'COB04') && protectedScreener) { info.limitada = `${cob === 'COB04' ? 'Trampa' : 'Show'} no ejecutada: sin ayudante compatible con no abandonar`; this.cover('cobertura limitada por no abandonar'); return { info, pair, cob, none: true }; }
+  if ((cob === 'COB03' || (cob === 'COB04' && pair.spec.type !== 'handoff')) && protectedScreener) { info.limitada = `${cob === 'COB04' ? 'Trampa' : 'Show'} no ejecutada: sin ayudante compatible con no abandonar`; this.cover('cobertura limitada por no abandonar'); return { info, pair, cob, none: true }; }
   if (cob === 'COB04' && poss.trapBy && poss.trapBy !== 'COB04') { info.limitada = 'ya hay un compromiso de dos activo (no se duplica la trampa)'; return { info, pair, cob, none: true }; }
   const { D1, D2 } = pair; const o = this.profile.opportunity; const refs = d.choiceReferences;
   if (!pair.spec.allowed.includes(cob)) { info.limitada = `${cob} no es una respuesta compatible con ${{ handoff: 'una entrega', indirect: 'un bloqueo indirecto', pnr: 'un bloqueo directo' }[pair.spec.type]}: se resuelve sin efecto de cobertura (no se sustituye por otra)`; this.cover('cobertura incompatible declarada'); return { info, pair, cob, none: true }; }
@@ -181,6 +193,16 @@ P.beginCoverage = function beginCoverage(entry, poss, { cob: forced = null } = {
     const p = hp(this, o.helpExecutionP0, this.taskValue('TAR09', 'attack', { helper: D2 }) - this.taskValue('TAR09', 'defense', { receiver: pair.screener }));
     c.recovers = this.bernoulli(p, 'COB03:recupera'); info.show = { recupera: c.recovers, p: round(p, 4) };
     this.cover(c.recovers ? 'COB03 recupera' : 'COB03 no recupera');
+  } else if (cob === 'COB04' && pair.spec.type === 'handoff') {
+    // doble sobre el receptor que toma la entrega: su marcador (principal) y el del que entrega (segundo); el que entrega queda con relevo o abierto
+    c.handoffDouble = true; c.mix = { primary: D2, second: D1, slot: 'receiverMarker' }; poss.trapBy = 'COB04';
+    this.commit(D2, 'trampa'); this.commit(D1, 'trampa');
+    const rc = this.reliefFor(pair.handler).filter((id) => id !== D1 && id !== D2);
+    c.rotation = rc.length ? [...rc].sort((a, b) => this.taskValue('TAR09', 'attack', { helper: b }) - this.taskValue('TAR09', 'attack', { helper: a }) || (a < b ? -1 : 1))[0] : null;
+    if (c.rotation) { const p = hp(this, o.helpExecutionP0, this.taskValue('TAR09', 'attack', { helper: c.rotation }) - this.taskValue('TAR09', 'defense', { receiver: pair.handler })); c.rotates = this.bernoulli(p, 'COB04:rotación_llega'); info.rotacion = { defensor: c.rotation, llega: c.rotates, p: round(p, 4) }; }
+    info.dobleSobre = pair.screener; info.abandona = pair.handler;
+    this.abandon(pair.handler, c.rotates ? c.rotation : null);
+    this.cover('COB04 doble sobre el poseedor tras la entrega');
   } else if (cob === 'COB04') {
     c.mix = { primary: D1, second: D2 }; poss.trapBy = 'COB04';
     this.commit(D1, 'trampa'); this.commit(D2, 'trampa');
@@ -216,6 +238,8 @@ P.coverageForExit = function coverageForExit(ex, c) {
   } else if (c.cob === 'COB03') {
     if (isScreener) { if (c.recovers) { ex.defend = c.D2; ex.icpt = c.D2; } else { ex.window = true; ex.helpWindow = 'continuador libre mientras el defensor recupera'; ex.defend = null; ex.icpt = null; } }
     if (isHandler && ex.pullup) { out.k += this.profile.opportunity.coverageContainment.handlerPullupQualityLogit; out.spaceFromCoverage = true; }
+  } else if (c.cob === 'COB04' && c.handoffDouble) {
+    if (isScreener) { ex.defMix = c.mix; ex.defend = c.mix.primary; ex.icpt = c.mix.primary; } // el receptor toma la entrega con dos defensores sobre él
   } else if (c.cob === 'COB04') {
     if (isHandler) { ex.defMix = c.mix; ex.defend = c.D1; ex.icpt = c.D1; }
     else if (isScreener) { if (c.rotation && c.rotates) { ex.defend = c.rotation; ex.icpt = c.rotation; } else { ex.window = true; ex.helpWindow = 'pase de salida: ventaja detrás de la trampa'; ex.defend = null; ex.icpt = null; } }
@@ -252,7 +276,8 @@ P.cdWith = function cdWith(entry, over) {
 };
 P.mixDuelCD = function mixDuelCD(entry, ex) {
   const m = this.dcfg().coverage.sameTaskTwoDefenderMixture;
-  return m.primary * this.cdWith(entry, { primary: ex.defMix.primary }) + m.second * this.cdWith(entry, { primary: ex.defMix.second });
+  const slot = ex.defMix.slot ?? 'primary'; // el compromiso de dos se aplica a la función defensiva que la ficha evalúa (bloqueo directo: primary; entrega: receiverMarker)
+  return m.primary * this.cdWith(entry, { [slot]: ex.defMix.primary }) + m.second * this.cdWith(entry, { [slot]: ex.defMix.second });
 };
 
 // ---------------------------------------------------------------- avance con presión (tres cuartos / total) y violación de 8 s

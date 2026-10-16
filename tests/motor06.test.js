@@ -31,7 +31,7 @@ test('1. POS05/06: el director entrega antes al poseedor (pase real, sin segunda
   const input = inputFor(41); input.teams.forEach((t) => { t.plan.playbook = [{ playId: 'POS05', priority: 1 }, { playId: 'POS06', priority: 1 }]; });
   const res = runMatch(input, profile, { detail: 'full', check: true });
   assert.deepEqual(res.errors, []);
-  const hand = outcomes(res).filter((e) => /^POS0[56]$/.test(e.intent.origen ?? ''));
+  const hand = outcomes(res).filter((e) => /^POS0[56]$/.test(e.intent.origen ?? '') && !e.intent.especial); // una falta táctica (ESPD01) del entrenador no es una entrega
   assert.ok(hand.length > 8);
   for (const e of hand) {
     const ip = e.intent.entregaInicial; assert.ok(ip, 'la entrega inicial consta');
@@ -56,12 +56,12 @@ test('1. POS05/06: el director entrega antes al poseedor (pase real, sin segunda
 });
 
 test('1b. coberturas de entregas e indirectos con responsables reales; lo incompatible se declara y no se sustituye', () => {
-  const run = (play, cob, answers) => {
+  const run = (play, cob, answers, exitRole = null) => {
     const m = scene({ seed: 17, over: (i) => i.teams[1].plan && (i.teams[1].plan.coverage = cob) });
     const dir = m.pickDirector(0); m.poss.director = dir; const lay = m.layoutOf(m.poss, dir.id);
     const el = m.eligiblePlays(0, dir.id, new Set(), m.poss, [play]); const entry = el.find((e) => e.playId === play); entry.team = 0;
     forceBern(m, answers);
-    const cov = m.beginCoverage(entry, m.poss);
+    const cov = m.beginCoverage(entry, m.poss, exitRole ? { ex: { role: exitRole } } : {}); // MOTOR-08: una entrega necesita conocer la salida (¿entregó al receptor?)
     return { m, entry, cov, lay };
   };
   // entrega: seguimiento (COB01) puede superarse o no; el que sigue es el defensor del receptor
@@ -72,8 +72,13 @@ test('1b. coberturas de entregas e indirectos con responsables reales; lo incomp
   r = run('POS05', 'COB02', [true]); assert.equal(r.cov.exchanged, true);
   assert.equal(r.m.poss.cur[r.entry.roles.hub], r.cov.D2); assert.equal(r.m.poss.cur[r.entry.roles.receiver], r.cov.D1);
   const exR = { role: 'receiver', defend: r.cov.D2, icpt: r.cov.D2 }; r.m.coverageForExit(exR, r.cov); assert.equal(exR.defend, r.cov.D1, 'tras el cambio el receptor lo defiende quien defendía al poseedor');
-  // compromiso de dos sobre el poseedor de la entrega (COB04): mezcla de dos defensores y un pase de salida con rotación o ventana
-  r = run('POS05', 'COB04', [true]); const exH = { role: 'hub', zone: 'three', exec: 'dribble' }; r.m.coverageForExit(exH, r.cov); assert.ok(exH.defMix, 'dos defensores en la misma tarea');
+  // MOTOR-08 (§12.2): COB04 en una entrega es el compromiso de dos sobre el POSEEDOR REAL tras entregar (el receptor): su marcador y el del que entrega; el que entrega queda con relevo o abierto
+  r = run('POS05', 'COB04', [true], 'receiver'); assert.equal(r.cov.cob, 'COB04'); assert.equal(r.cov.handoffDouble, true);
+  const exH = { role: 'receiver', zone: 'three', exec: 'pass' }; r.m.coverageForExit(exH, r.cov); assert.ok(exH.defMix, 'dos defensores en la misma tarea'); assert.equal(exH.defMix.primary, r.cov.D2); assert.equal(exH.defMix.second, r.cov.D1); assert.equal(exH.defMix.slot, 'receiverMarker');
+  assert.ok(r.cov.info.abandona === r.entry.roles.hub, 'el que entrega es la responsabilidad que queda con relevo o abierta');
+  // sin entrega al receptor (el poseedor es quien la inicia) no hay segundo defensor con acceso: incompatible, alternativa DECLARADA (COB01), sin inventar un doble
+  r = run('POS05', 'COB04', [true], 'hub'); assert.equal(r.cov.cob, 'COB01'); assert.match(r.cov.info.limitada, /COB04 incompatible en esta entrega.*alternativa declarada COB01/); assert.ok(!r.cov.handoffDouble);
+  r = run('POS05', 'COB04', [true]); assert.equal(r.cov.cob, 'COB01', 'sin salida conocida no se presupone una entrega');
   // show (COB03) no es una respuesta de entrega: se declara y no se sustituye por otra
   r = run('POS05', 'COB03', []); assert.equal(r.cov.none, true); assert.match(r.cov.info.limitada, /no es una respuesta compatible con una entrega/);
   // indirecto: seguimiento y cambio sí; trampa y drop no
@@ -406,7 +411,7 @@ test('8b. entrada: un plan de saque imposible se rechaza con motivo; una entrada
   assert.deepEqual(up.teams[0].plan.throwInBook, [{ playId: ti.defaultBandOffensivePlan, priority: 3 }, { playId: ti.defaultEndlineOffensivePlan, priority: 3 }]);
   assert.deepEqual(up.teams[1].plan.throwInBook, [{ playId: 'SaqF01', priority: 5 }], 'un plan ya configurado no se sobrescribe');
   assert.deepEqual(up.teams[0].plan.throwInDefense, { band: ti.defaultBandDefensiveResponse, endline: ti.defaultEndlineDefensiveResponse, target: null });
-  assert.equal(up.schema, 'beM-match-input/5'); // MOTOR-07 sube el formato de entrada (importancia y estados explícitos)
+  assert.equal(up.schema, 'beM-match-input/6'); // MOTOR-07 sube el formato (importancia y estados explícitos) y MOTOR-08 de nuevo (política de entrenador y plan de participación)
 });
 
 // ------------------------------------------------------------------------------------------------ 9. robo, sanciones y reglamento localizado
@@ -461,7 +466,7 @@ test('10. órdenes y datos de saques: export/reproducción dentro de la versión
   ]);
   assert.ok(orders.every((o) => o.state !== 'rechazada'), orders.map((o) => o.reason).join('; '));
   const res = buildResult(m); integrity(res);
-  assert.equal(res.schema, EXPORT_SCHEMA); assert.equal(res.meta.engineVersion, ENGINE_VERSION); assert.match(EXPORT_SCHEMA, /export\/[56]$/); assert.match(ENGINE_VERSION, /MOTOR0[67]/); // el contrato de la versión vigente lo fija motor07.test.js
+  assert.equal(res.schema, EXPORT_SCHEMA); assert.equal(res.meta.engineVersion, ENGINE_VERSION); assert.match(EXPORT_SCHEMA, /export\/[567]$/); assert.match(ENGINE_VERSION, /MOTOR0[678]/); // el contrato de la versión vigente lo fija motor07.test.js
   assert.ok(res.diagnostics.opportunities.length > 100 && res.diagnostics.throwInChains.length > 20, 'se exportan oportunidades y cadenas de saque');
   assert.ok(res.events.some((e) => e.type === 'throw_in' && e.intent.respuestaDefensiva === 'DSaqB03') || res.events.some((e) => e.intent?.respuestaDefensiva === 'DSaqB03'));
   const file = JSON.parse(JSON.stringify(res));

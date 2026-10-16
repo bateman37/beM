@@ -1,6 +1,7 @@
 // Construcción y validación de la entrada del motor a partir del perfil SEM y las fichas CSV.
 // Sin DOM, sin sistema de ficheros: recibe objetos/texto ya leídos.
 import { parseCsv } from './csv.js';
+import { validateParticipation, defaultParticipationPlan } from './coach-policy.js';
 
 export const ATTRS = [
   'TEC01','TEC02','TEC03','TEC04','TEC05','TEC06','TEC07','TEC08','TEC09','TEC10','TEC11','TEC12','TEC13','TEC14','TEC15','TEC16','TEC17','TEC18',
@@ -9,9 +10,10 @@ export const ATTRS = [
 ];
 export const SLOTS = ['PG', 'SG', 'SF', 'PF', 'C'];
 export const ZONES = ['rim', 'inside', 'midrange', 'three'];
-export const ENGINE_VERSION = 'beM-motor-0.7.0-MOTOR07';
-export const INPUT_SCHEMA = 'beM-match-input/5';
-export const EXPORT_SCHEMA = 'beM-match-export/6';
+export const ENGINE_VERSION = 'beM-motor-0.8.0-MOTOR08';
+export const INPUT_SCHEMA = 'beM-match-input/6';
+export const EXPORT_SCHEMA = 'beM-match-export/7';
+export const EXPORT_SCHEMA_MOTOR07 = 'beM-match-export/6';
 export const EXPORT_SCHEMA_MOTOR06 = 'beM-match-export/5';
 export const EXPORT_SCHEMA_MOTOR05 = 'beM-match-export/4';
 export const EXPORT_SCHEMA_MOTOR04 = 'beM-match-export/3';
@@ -264,6 +266,16 @@ export function validateInput(input, profile) {
     });
     const plan = t.plan;
     if (!plan) { add(`${tp}.plan`, 'plan ausente'); return; }
+    // MOTOR-08: política de entrenador, delegación por áreas y plan de participación (asignación validada antes de usarla)
+    if (profile.coach) {
+      const c = plan.coach;
+      if (!c || typeof c !== 'object') add(`${tp}.plan.coach`, 'falta la política de entrenador y la delegación por áreas');
+      else {
+        if (!(profile.activeCatalog.coachPolicies ?? []).includes(c.policy)) add(`${tp}.plan.coach.policy`, `política ${c.policy} fuera del catálogo activo (${(profile.activeCatalog.coachPolicies ?? []).join(', ')})`);
+        for (const a of profile.coach.areas) if (typeof c.delegation?.[a] !== 'boolean') add(`${tp}.plan.coach.delegation.${a}`, 'delegar un ámbito es verdadero o falso');
+      }
+      validateParticipation(profile, plan, ids, `${tp}.plan`, add);
+    }
     if (profile.teamMoment) {
       const [tl, th] = profile.teamMoment.range; const v = plan.initialTeamMoment;
       if (typeof v !== 'number' || !Number.isFinite(v) || v < tl || v > th) add(`${tp}.plan.initialTeamMoment`, `el momento colectivo T inicial debe ser un número entre ${tl} y ${th}`);
@@ -389,6 +401,14 @@ export function upgradeInput(input, profile) {
         p.state = p.state ?? {};
         for (const [k, key] of [['form', 'form'], ['M_TIR', 'M_TIR'], ['M_OFE', 'M_OFE'], ['M_DEF', 'M_DEF']]) if (p.state[k] === undefined) { p.state[k] = pol[key]; added.push(`${t.id}: ${p.id} ${k} inicial = ${pol[key]}`); }
       }
+    }
+  }
+  // MOTOR-08: política de entrenador, delegación y plan de participación. Precarga EXPLÍCITA y anotada (ENTREF02, todo delegado; cinco parejas 28/12 SEM); un plan ya configurado no se toca.
+  if (profile.coach) {
+    for (const t of out.teams ?? []) {
+      if (!t.plan) continue;
+      if (t.plan.coach === undefined) { t.plan.coach = JSON.parse(JSON.stringify(profile.scenario.plans[0].coach)); added.push(`${t.id}: política de entrenador ${t.plan.coach.policy} con los cinco ámbitos delegados (precarga explícita)`); }
+      if (t.plan.participation === undefined && t.players?.length === 12 && t.plan.starters) { t.plan.participation = defaultParticipationPlan(profile, t.players, t.plan); added.push(`${t.id}: plan de participación SEM (cinco parejas funcionales 28/12, revisable)`); }
     }
   }
   out.schema = INPUT_SCHEMA;

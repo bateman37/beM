@@ -547,9 +547,11 @@ P.shootFreeThrows = function shootFreeThrows(shooter, n, f, ex) {
       stats: [{ k: 'ft', p: shooter, team: f.shotTeam, made }],
       effects: { pLibre: round(p, 5), entra: made, ultimo: last },
     });
-    if (last && f.retain) { // falta disruptiva: la posesión sigue en el equipo del lanzador (saque en ataque, reloj de ataque)
-      this.shotClock = shotClockAfterDefensiveStoppage(this.shotClock, this.profile.rules); this.poss.advanced = true; this.clockRunning = false;
-      this.cover('posesión conservada tras disruptiva'); this.poss.pendingThrowIn = { kind: 'band', origin: 'saque en ataque tras falta disruptiva', frontcourt: true }; return { cont: 'inboundAfterFoul' };
+    if (last && f.retain) {
+      // Falta disruptiva (OBR 2026 v1.1, arts. 37.2/38.2, 17.2.7 y 29.2.6; resumen del encargo MOTOR-08): lanza quien recibió la falta, la posesión corresponde a SU EQUIPO (no a la persona) y se reanuda
+      // con saque en la línea de pista delantera, enfrente de la mesa, con exactamente catorce segundos de lanzamiento (no «al menos»: el saque de penalización no conserva un reloj mayor).
+      this.shotClock = toTenths(this.profile.rules.penaltyThrowInShotClockSeconds); this.poss.advanced = true; this.clockRunning = false;
+      this.cover('posesión conservada tras disruptiva'); this.poss.pendingThrowIn = { kind: 'band', origin: 'saque de penalización tras falta disruptiva (línea de pista delantera, enfrente de la mesa; 14 s)', frontcourt: true, penalty: true }; return { cont: 'inboundAfterFoul' };
     }
     if (last && made) { this.cover('último libre anotado'); this.endPossession('ftMade', { team: f.shotTeam }); return { end: 'ftMade' }; }
     if (last && !made) return this.afterMiss({ ...ex, team: f.shotTeam, actor: shooter }, 'freeThrow');
