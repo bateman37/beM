@@ -21,7 +21,12 @@ export function renderHome() {
   const mods = c.draft ? Object.keys(c.draft.overrides).length : 0;
   const dv = c.draft?.validation && L.validationIsCurrent(c.draft.id) ? c.draft.validation.summary : null;
   const evals = c.draft ? L.evaluationsFor(c.draft.id).length : 0;
+  const legacyCard = L.isLegacy(a.id) ? h('div', { class: 'errbox' }, h('strong', { class: 'err' }, 'El perfil activo es anterior a MOTOR-04. '), 'Conserva su identidad y no se migra en silencio: no puede jugar el repertorio nuevo. ',
+    h('button', { class: 'btn', type: 'button', id: 'legacy-activate', onclick: () => { L.activate(L.baseId, 'activar la base de MOTOR-04'); window.dispatchEvent(new Event('beM:repaint')); repaint(); } }, 'Activar la base de MOTOR-04'), ' ',
+    h('button', { class: 'btn secondary', type: 'button', id: 'legacy-upgrade', onclick: () => { const r = L.upgradeCandidate(a.id); if (r.ok) { ps.editing = r.draft.id; ps.tab = 'perfiles'; } else alert(r.error); repaint(); } }, 'Crear candidata MOTOR-04 desde esta versión'),
+    h('p', { class: 'small muted' }, 'La candidata es un borrador sobre la base de MOTOR-04 con los valores que esta versión había cambiado (las filas sustituidas por la extensión no se trasladan). Hay que validarla y publicarla.')) : null;
   return h('div', {},
+    legacyCard,
     h('div', { class: 'card' }, h('h3', { style: 'margin-top:0' }, 'Perfil activo para futuros partidos'),
       h('div', { class: 'row' }, h('strong', { style: 'font-size:18px' }, `${a.id} · ${a.label}`), h('span', { class: 'pill warn' }, `${a.status}`), h('span', { class: 'pill' }, a.kind), h('code', { title: a.hash }, a.hash.slice(0, 12))),
       h('p', { class: 'small muted' }, `Versión ${a.id}${a.parent ? `, hereda de ${a.parent.id} «${a.parent.label}» (huella ${a.parent.hash.slice(0, 8)})` : ', base protegida sin padre'} · creada ${a.createdAt.slice(0, 16).replace('T', ' ')} por ${a.actor}`),

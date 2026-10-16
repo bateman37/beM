@@ -2,7 +2,7 @@
 // Núcleo sin DOM ni reloj de ordenador. Toda intervención entra por submit / submitBatch / cancel, que se registran como
 // «comandos» ancladas a la frontera de avance (`afterStep`), no a una hora: son lo que permite reproducir el encuentro.
 import { MatchCore } from './core.js';
-import { SLOTS, deepCopy } from './data.js';
+import { SLOTS, deepCopy, MIDRANGE_POLICIES } from './data.js';
 import { ORDER_TYPES, EDITABLE_STYLES, TERMINAL_STATES } from './order-types.js';
 import { newTimeoutLedger, timeoutAllowance, chargeTimeout } from './admin.js';
 
@@ -82,20 +82,38 @@ P.validate_styles = function validate_styles(o) {
   if (!s || typeof s !== 'object' || !Object.keys(s).length) return fail('indica al menos un estilo');
   const editable = this.profile.activeCatalog.stylesEditable ?? EDITABLE_STYLES;
   for (const [k, v] of Object.entries(s)) {
-    if (!editable.includes(k)) return fail(`«${k}» no es editable en esta entrega (valor declarado, sin efecto)`);
+    if (k === 'midrange') { if (!MIDRANGE_POLICIES.includes(v)) return fail(`media distancia: una de ${MIDRANGE_POLICIES.join(', ')}`); continue; }
+    if (!editable.includes(k)) return fail(`«${k}» no es un estilo editable`);
     if (!Number.isInteger(v) || v < 1 || v > 5) return fail(`${k}: los estilos son enteros de 1 a 5`);
   }
   o.scope = this.planScope(); o.liveFields = Object.keys(s).map((k) => `styles.${k}`);
   return ok();
 };
+// Prioridades 1–5; `null` desactiva la ficha en el libro (no borra su definición global) y una ficha ausente se activa al darle prioridad.
 P.validate_priorities = function validate_priorities(o) {
   const pr = o.content.priorities;
   if (!pr || typeof pr !== 'object' || !Object.keys(pr).length) return fail('indica al menos una prioridad');
   for (const [k, v] of Object.entries(pr)) {
     if (!this.profile.activeCatalog.plays.includes(k)) return fail(`la ficha ${k} no está activa`);
-    if (!Number.isInteger(v) || v < 1 || v > 5) return fail(`${k}: la prioridad es un entero de 1 a 5`);
+    if (v !== null && (!Number.isInteger(v) || v < 1 || v > 5)) return fail(`${k}: la prioridad es un entero de 1 a 5 (o nula para desactivar la ficha)`);
   }
   o.scope = this.planScope(); o.liveFields = Object.keys(pr).map((k) => `priorities.${k}`);
+  return ok();
+};
+P.validate_disposition = function validate_disposition(o) {
+  const d = o.content.disposition;
+  if (!this.profile.activeCatalog.dispositions.includes(d)) return fail(`la disposición ${d} no está activa`);
+  o.scope = this.planScope(); o.liveFields = ['disposition'];
+  return ok();
+};
+P.validate_roles = function validate_roles(o) {
+  const r = o.content.roles;
+  if (!r || typeof r !== 'object' || !Object.keys(r).length) return fail('indica al menos un rol');
+  for (const [pid, code] of Object.entries(r)) {
+    if (!this.teams[o.team].ids.includes(pid)) return fail(`${pid} no pertenece al equipo`);
+    if (!this.profile.fixtureContract.offensiveRoleDictionary[code]) return fail(`${code} no es un rol ofensivo del catálogo`);
+  }
+  o.scope = this.planScope(); o.liveFields = Object.keys(r).map((k) => `roles.${k}`);
   return ok();
 };
 P.validate_director = function validate_director(o) {
@@ -274,18 +292,28 @@ P.supersedeActive = function supersedeActive(o) {
 };
 P.applyPlanOrder = function applyPlanOrder(o) {
   const plan = this.teams[o.team].plan;
-  if (o.type === 'styles') for (const [k, v] of Object.entries(o.content.styles)) { if (o.liveFields.includes(`styles.${k}`)) plan.styles[k] = v; }
-  else if (o.type === 'priorities') for (const [k, v] of Object.entries(o.content.priorities)) { if (o.liveFields.includes(`priorities.${k}`)) plan.playbook.find((b) => b.playId === k).priority = v; }
+  if (o.type === 'styles') for (const [k, v] of Object.entries(o.content.styles)) { if (o.liveFields.includes(`styles.${k}`)) { if (k === 'midrange') plan.midrange = v; else plan.styles[k] = v; } }
+  else if (o.type === 'priorities') {
+    for (const [k, v] of Object.entries(o.content.priorities)) {
+      if (!o.liveFields.includes(`priorities.${k}`)) continue;
+      const i = plan.playbook.findIndex((b) => b.playId === k);
+      if (v === null) { if (i >= 0) plan.playbook.splice(i, 1); } else if (i >= 0) plan.playbook[i].priority = v; else plan.playbook.push({ playId: k, priority: v });
+    }
+  }
   else if (o.type === 'director') plan.directorPriority = [...o.content.directorPriority];
+  else if (o.type === 'disposition') { plan.disposition = o.content.disposition; if (this.poss && !this.poss.done) { this.poss.disposition = null; this.poss.layout = null; } }
+  else if (o.type === 'roles') for (const [pid, code] of Object.entries(o.content.roles)) { if (o.liveFields.includes(`roles.${pid}`)) this.roleOf[pid] = code; }
   else if (o.type === 'delegate') this.lineupControl[o.team] = { mode: 'auto', cause: 'devuelto al entrenador', orderId: o.id };
   o.activation = { step: this.stepSeq, period: this.period, clock: this.clock, possession: this.poss && !this.poss.done ? this.poss.id : null, lastEvent: this.events.length ? this.events[this.events.length - 1].id : null };
   this.supersedeActive(o);
   this.setState(o, 'vigente', o.scope.kind === 'periodo' ? `vigente desde el inicio del ${ordinal(o.scope.targetPeriod)} periodo` : 'vigente desde la elección actual');
 };
-P.activatePlanOrders = function activatePlanOrders(period = this.period) {
+// `entry`: frontera de entrada o de reorganización compatible. Disposición y roles solo entran en ella (no en mitad de una ventaja).
+P.activatePlanOrders = function activatePlanOrders(period = this.period, { entry = true } = {}) {
   for (const o of this.orders) {
     if (o.kind !== 'plan' || o.state !== 'pendiente') continue;
     if (o.scope.targetPeriod != null && o.scope.targetPeriod > period) continue;
+    if ((o.type === 'disposition' || o.type === 'roles') && !entry) { this.setWait(o, 'pendiente de la próxima entrada o reorganización compatible'); continue; }
     this.applyPlanOrder(o);
   }
 };
@@ -394,7 +422,7 @@ P.planView = function planView(team) {
   const plan = this.teams[team].plan;
   const pending = this.orders.filter((o) => o.team === team && (o.state === 'pendiente' || o.state === 'vigente') && o.kind !== 'plan' || (o.team === team && o.kind === 'plan' && o.state === 'pendiente'));
   return {
-    styles: { ...plan.styles }, playbook: plan.playbook.map((b) => ({ ...b })), directorPriority: [...plan.directorPriority],
+    styles: { ...plan.styles }, midrange: plan.midrange, disposition: plan.disposition, roles: { ...this.roleOf }, playbook: plan.playbook.map((b) => ({ ...b })), directorPriority: [...plan.directorPriority],
     lineup: { ...this.lineup[team] }, projectedLineup: this.projectedLineup(team), lineupControl: { ...this.lineupControl[team] },
     timeouts: this.timeoutStatus(team), pending,
   };
@@ -405,6 +433,8 @@ P.describeOrder = function describeOrder(o) {
     case 'styles': return `Estilos: ${Object.entries(c.styles).map(([k, v]) => `${k} = ${v}`).join(', ')}`;
     case 'priorities': return `Prioridades: ${Object.entries(c.priorities).map(([k, v]) => `${k} = ${v}`).join(', ')}`;
     case 'director': return `Director y alternativas: ${c.directorPriority.join(' › ')}`;
+    case 'disposition': return `Disposición: ${c.disposition}`;
+    case 'roles': return `Roles ofensivos: ${Object.entries(c.roles).map(([k, v]) => `${k} = ${v}`).join(', ')}`;
     case 'delegate': return 'Devolver la gestión del quinteto al entrenador básico';
     case 'call': return `Llamar ${c.playId} (${c.target === 'current' ? 'posesión actual' : 'siguiente posesión propia'})`;
     case 'substitution': return `Cambio: ${(c.swaps ?? []).map((s) => `sale ${s.out}, entra ${s.in}`).join('; ')}`;

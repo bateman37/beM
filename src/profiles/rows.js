@@ -25,8 +25,10 @@ export const TASK_NAMES = {
   TAR05: 'Juego de poste', TAR06: 'Control del balón en el bote', TAR07: 'Pase', TAR09: 'Ayuda defensiva', TAR11: 'Preparación del tiro en movimiento', TAR17: 'Disputa de balón suelto',
 };
 export const PLAY_NAMES = {
-  POS01: 'Bloqueo directo central con continuación', POS05: 'Mano a mano desde cabecera', POS07: 'Indirecto descendente para recepción',
-  POS09: 'Pase y corte', POS11: 'Poste bajo', POS14: 'Aclarado desde cabecera',
+  POS01: 'Bloqueo directo central con continuación', POS02: 'Bloqueo directo lateral con continuación', POS03: 'Bloqueo directo central con apertura',
+  POS04: 'Bloqueo directo lateral con recepción corta', POS05: 'Mano a mano desde cabecera', POS06: 'Mano a mano desde ala',
+  POS07: 'Indirecto descendente para recepción', POS08: 'Indirecto hacia el exterior', POS09: 'Pase y corte', POS10: 'Puerta atrás ante negación',
+  POS11: 'Poste bajo', POS12: 'Recepción alta para distribuir', POS13: 'Alto-bajo', POS14: 'Aclarado desde cabecera', POS15: 'Aclarado lateral',
 };
 const DUR = {
   advance: 'Avance a la pista de ataque', organizedShot: 'Tiro de juego organizado', organizedFoul: 'Falta en juego organizado', organizedTurnover: 'Pérdida o infracción en juego organizado',
@@ -104,6 +106,40 @@ export const FAMILIES = [
     label: () => 'Política de calidad tras balón suelto vivo del mismo equipo', desc: () => 'Política declarada (conservar el contexto y resolver la oposición actual). Ninguna operación la consulta como dato: es el comportamiento codificado.', effect: () => 'Sin efecto como parámetro.' }),
   fam({ path: 'participantSlots.{g}', dom: { g: ['screener', 'hub', 'receiver', 'post', 'isolationHandler', 'additionalHelper'] }, node: 'array', type: 'slots', unit: 'posiciones', cls: 'contenido', grp: 'SEL07', views: ['seleccion', 'contenido'], mech: 'assignRoles',
     label: (m) => `Posiciones elegibles · ${SLOT_GROUP[m.g]}`, desc: (m) => `Posiciones del quinteto entre las que se elige quién cumple la función «${SLOT_GROUP[m.g]}» en las fichas que la usan. El orden no importa.`, effect: () => 'Ampliar el conjunto abre la función a más jugadores; reducirlo la concentra. Si ninguno de esos puestos tiene un jugador disponible, la ficha no es realizable.' }),
+  // ------------------------------------------------------------------ MOTOR-04: estilos, media distancia, roles, variantes y balance (SEM-MOTOR04)
+  fam({ path: 'selection.transitionAttemptOddsRatio', node: 'array', type: 'vector5', elem: 'multiplier', order: 'asc', unit: '× sobre los odds', cls: 'balance', grp: 'SEL03', views: ['seleccion', 'entrenador'], mech: 'transitionPhase', ext: 'SEM-MOTOR04',
+    label: () => 'Estilo de transición: factor sobre los odds del intento de correr', elems: ['Muy conservadora', 'Conservadora', 'Equilibrado', 'Agresiva', 'Muy agresiva'],
+    desc: () => 'Multiplica los odds de la probabilidad de intentar transición tras robo o rebote defensivo: p\' = f·p / (1 − p + f·p). Solo actúa si el origen y la ventaja representada ya permiten correr.',
+    effect: () => 'No crea robos ni superioridades, no cambia la calidad ni el acierto del tiro: solo cuántas veces se intenta correr con las oportunidades que ya existían.' }),
+  fam({ path: 'selection.elaborationContinuationWeightFactor', node: 'array', type: 'vector5', elem: 'multiplier', order: 'asc', unit: '× sobre el peso', cls: 'balance', grp: 'SEL02', views: ['seleccion', 'entrenador'], mech: 'mixIntention', ext: 'SEM-MOTOR04',
+    label: () => 'Estilo de elaboración: factor sobre el peso de continuar', elems: ['Pocas acciones', 'Directo', 'Equilibrado', 'Elaborado', 'Muchas acciones'],
+    desc: () => 'Multiplica, antes de normalizar, el peso de las continuaciones realmente elegibles (pase adicional, recepción corta, apertura…) frente a aceptar la finalización. Se aplica una sola vez.',
+    effect: () => 'Continuar consume tiempo y exige ejecución (cada pase es una causa de pérdida y de reloj); no hay un número de pases obligatorio. Una canasta clara o la urgencia pueden imponerse.' }),
+  fam({ path: 'selection.offensiveRiskPreferenceTilt', node: 'array', type: 'vector5', elem: 'logit', order: 'asc', unit: 'inclinación (exp(t·r))', cls: 'balance', grp: 'SEL09', views: ['seleccion', 'entrenador'], mech: 'mixIntention', ext: 'SEM-MOTOR04',
+    label: () => 'Estilo de riesgo ofensivo: inclinación de la preferencia por el riesgo estimado', elems: ['Poco riesgo', 'Prudente', 'Equilibrado', 'Arriesgado', 'Mucho riesgo'],
+    desc: () => 'Pondera la preferencia por cada opción elegible con riesgo estimado r (0–1, el que ya produce la valoración de opciones) por exp(inclinación·r). El nivel 3 conserva el factor 1.',
+    effect: () => 'Cambia QUÉ opción se prefiere; la pérdida o el contacto de la opción elegida los produce su ejecución, sin otra penalización universal. Si las opciones tienen igual riesgo, no las diferencia.' }),
+  fam({ path: 'selection.midrangePolicy.{k}', dom: { k: ['avoidWeight', 'openOnlyComfortableWeight', 'openOnlyOtherWeight', 'suitablePlayerBase', 'suitablePlayerAbilitySlope'] }, type: 'weight', unit: 'peso de selección', cls: 'balance', grp: 'SEL04', views: ['seleccion', 'entrenador'], mech: 'midrangeFactor', ext: 'SEM-MOTOR04',
+    label: (m) => ({ avoidWeight: 'Media distancia · «Evitar»: peso de la opción', openOnlyComfortableWeight: 'Media distancia · «Aceptar si está liberada»: peso con calidad cómoda', openOnlyOtherWeight: 'Media distancia · «Aceptar si está liberada»: peso en los demás casos', suitablePlayerBase: 'Media distancia · «Buscar con jugadores adecuados»: base', suitablePlayerAbilitySlope: 'Media distancia · «Buscar con jugadores adecuados»: pendiente por TEC02' }[m.k]),
+    desc: (m) => ({ avoidWeight: 'Peso que recibe una opción de media distancia cuando la instrucción es evitarla.', openOnlyComfortableWeight: 'Peso de una opción de media cuando la instrucción es aceptarla si está liberada y su calidad previa es cómoda (se usa su esperanza: la calidad real se sortea después).', openOnlyOtherWeight: 'Peso de una opción de media con la instrucción «aceptar si está liberada» cuando su calidad previa no es cómoda.', suitablePlayerBase: 'Parte fija del peso de una opción de media con la instrucción «buscar con jugadores adecuados».', suitablePlayerAbilitySlope: 'Cuánto sube ese peso con el Tiro de media distancia (TEC02) efectivo del ejecutor: base + pendiente·(TEC02 − 1)/29.' }[m.k]),
+    effect: () => 'Son instrucciones de SELECCIÓN: no modifican la nota de tiro ni su probabilidad de conversión. Nunca anulan la única opción legal por poco reloj (el peso no es cero).' }),
+  fam({ path: 'selection.rolePreference.{k}', dom: { k: ['favoredFunctionWeight', 'otherFunctionWeight'] }, type: 'weight', unit: 'peso de selección', cls: 'balance', grp: 'SEL07', views: ['seleccion', 'entrenador', 'poblacion'], mech: 'roleBias', ext: 'SEM-MOTOR04',
+    label: (m) => (m.k === 'favoredFunctionWeight' ? 'Rol ofensivo: peso de una función favorecida' : 'Rol ofensivo: peso de las demás funciones'),
+    desc: (m) => (m.k === 'favoredFunctionWeight' ? 'Multiplica una vez el peso de un candidato cuando el rol ofensivo que tiene asignado favorece la función que se está ocupando (tabla de funciones favorecidas por rol).' : 'Peso de un candidato cuyo rol no favorece esa función: nunca queda inelegible por su rol.'),
+    effect: () => 'Orienta candidatos y protagonismo al elegir participante. No incrementa habilidades, preparación ni acierto; se combina con el ajuste de capacidad vigente y no se acumula por varios sinónimos del mismo rol.' }),
+  fam({ path: 'selection.newVariantPreference.{k}', dom: { k: ['eligibleVariantBaseWeight', 'unknownRoleFunctionWeight'] }, type: 'weight', unit: 'peso de selección', cls: 'balance', grp: 'SEL01', views: ['seleccion', 'entrenador'], mech: ({ k }) => (k === 'eligibleVariantBaseWeight' ? 'coachPlayDistribution' : 'roleBias'), ext: 'SEM-MOTOR04',
+    label: (m) => (m.k === 'eligibleVariantBaseWeight' ? 'Variante nueva elegible: peso base' : 'Rol sin función favorecida conocida: peso'),
+    desc: (m) => (m.k === 'eligibleVariantBaseWeight' ? 'Peso neutral de una variante de ficha donde falta otra preferencia explícita; se combina con su prioridad bajo la masa de su familia.' : 'Peso de un candidato cuyo rol ofensivo no figura en la tabla de roles del repertorio.'),
+    effect: () => 'Con 1 es neutral. La masa de una familia sigue siendo la de su mejor variante elegible: cuatro variantes de bloqueo no cuadruplican la familia.' }),
+  fam({ path: 'rebound.offensiveReboundAssignmentTarget', node: 'array', type: 'vector5', elem: 'count', order: 'asc', unit: 'jugadores cargando', cls: 'balance', grp: 'RES10', views: ['rebote', 'seleccion', 'entrenador'], mech: 'reboundCommitments', ext: 'SEM-MOTOR04',
+    label: () => 'Estilo «después del tiro»: objetivo de encargos de rebote', elems: ['Balance total', 'Priorizar balance', 'Equilibrado', 'Priorizar rebote', 'Carga total'],
+    desc: () => 'Número objetivo de jugadores que cargan al rebote ofensivo por nivel. Es un ENCARGO, no una cuota de rebotes ni participantes garantizados: se asigna entre funciones con acceso. En el nivel 3 se conservan los candidatos históricos más el tirador cercano al aro.',
+    effect: () => 'Más cargadores = más participantes disputando, pero menos referencias de balance al recuperar el rival (sus odds de transición con ventaja suben). No hay bonus de captura gratuito.' }),
+  fam({ path: 'rebound.balance.unreadyReturnerOpportunityOddsRatio', type: 'multiplier', unit: '× por referencia', cls: 'balance', grp: 'RES10', views: ['rebote', 'seleccion'], mech: 'transitionPhase', ext: 'SEM-MOTOR04',
+    label: () => 'Referencia de retorno que falta: factor sobre los odds de la ventaja de transición', desc: () => 'Por cada referencia de balance que falte frente a la base neutral por un compromiso de carga adicional, se multiplica una vez por este factor los odds de la oportunidad de ventaja de la transición del rival (una referencia de balance extra usa su inverso).',
+    effect: () => 'Es el coste de cargar el rebote: no se aplica a la conversión del tiro ni añade otra penalización si el déficit ya figura en la operación de transición.' }),
+  fam({ path: 'rebound.balance.preserveNeutralBaselineAssignmentsWhenCompatible', type: 'bool', unit: 'sí/no', cls: 'invariante', coverage: 'sin_consumidor', grp: 'RES10', views: ['rebote'], mech: null, ext: 'SEM-MOTOR04',
+    label: () => 'Conservar los encargos neutrales históricos cuando son compatibles', desc: () => 'Política declarada: en el nivel neutral se conservan los candidatos históricos. El motor siempre la aplica; no existe otra alternativa definida que desactivarla.', effect: () => 'Sin efecto como parámetro.' }),
   // ------------------------------------------------------------------ oportunidad y desenlaces
   fam({ path: 'opportunity.advantageSensitivity', type: 'sensitivity', unit: 'logit por punto de capacidad', cls: 'balance', grp: 'RES12', views: ['oportunidades', 'capacidades'], mech: 'qualityOf',
     label: () => 'Sensibilidad de la calidad de oportunidad a la ventaja', desc: () => 'Cuánto desplaza la calidad previa (cómoda/normal/forzada) la diferencia entre la calidad de ataque y la de defensa de la ficha, por punto de capacidad.', effect: () => 'Subirla hace que ganar o perder el duelo táctico se note más en la calidad de tiro que se consigue.' }),
@@ -289,7 +325,7 @@ export const FAMILIES = [
 export const EXEMPT_LEAF = [
   /^id$/, /^status$/, /^scope$/, /^effectiveId$/, /^provenance\./, /^deferred/, /^scenario\./, /^fixtureContract\./, /^attributeOrder/, /^attributeDictionary/,
   /^extensions\./, /^motor02\.(seedExtensionId|status|basedOn|origin)$/, /^profileRef\./, /^plays\.\d+\.(id|family|roles|continuations)/, /^tasks\.[^.]+\.(attack|defense)\.\d+\.[01]$/, /^plays\.\d+\.(qualityAttack|qualityDefense)\.\d+\.[01]$/,
-  /^rotation\.foulProtection\.\d+\.period$/,
+  /^rotation\.foulProtection\.\d+\.period$/, /^repertoire\./,
 ];
 
 // Excepciones explicadas: valores del código que NO se convierten en filas (§4.1).

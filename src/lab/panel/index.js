@@ -6,8 +6,9 @@ import { masterTable } from './table.js';
 import { renderPerfiles } from './profiles.js';
 import { renderComparador } from './compareui.js';
 import { renderIntercambio } from './exchange.js';
+import { renderRepertorio } from './repertorio.js';
 
-const TABS = [['inicio', 'Inicio'], ['mesa', 'Mesa de ajustes'], ['tabla', 'Tabla maestra'], ['vistas', 'Vistas temáticas'], ['catalogo', 'Catálogo 81 + 4'], ['perfiles', 'Perfiles'], ['comparador', 'Comparador'], ['intercambio', 'Intercambio']];
+const TABS = [['inicio', 'Inicio'], ['mesa', 'Mesa de ajustes'], ['tabla', 'Tabla maestra'], ['vistas', 'Vistas temáticas'], ['repertorio', 'Repertorio'], ['catalogo', 'Catálogo 81 + 4'], ['perfiles', 'Perfiles'], ['comparador', 'Comparador'], ['intercambio', 'Intercambio']];
 
 export function renderPanel(root) {
   ps.repaint = () => renderPanel(root);
@@ -20,7 +21,7 @@ export function renderPanel(root) {
   const body = h('div', { id: 'panel-body' });
   root.append(body, h('div', { id: 'toast', class: 'toast', hidden: true, role: 'status' }));
   try {
-    const view = { inicio: renderHome, mesa: renderMesa, tabla: () => { ps.filters.view = ps.filters.view; return masterTable({}); }, vistas: renderVistas, catalogo: renderCatalog, perfiles: renderPerfiles, comparador: renderComparador, intercambio: renderIntercambio }[ps.tab];
+    const view = { inicio: renderHome, mesa: renderMesa, tabla: () => { ps.filters.view = ps.filters.view; return masterTable({}); }, vistas: renderVistas, repertorio: renderRepertorio, catalogo: renderCatalog, perfiles: renderPerfiles, comparador: renderComparador, intercambio: renderIntercambio }[ps.tab];
     body.append(view());
   } catch (e) { body.append(h('div', { class: 'errbox' }, h('strong', { class: 'err' }, 'Error al dibujar esta vista: '), e.message), h('pre', {}, String(e.stack).split('\n').slice(0, 6).join('\n'))); }
 }

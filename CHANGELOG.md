@@ -2,6 +2,13 @@
 
 Registro breve de entregas. Una entrada por entrega; las más recientes primero.
 
+## MOTOR-04 — Ataque posicional completo — 2026-10-16
+
+- Siete estilos ofensivos con efecto causal (transición, elaboración, riesgo y «después del tiro» ya no son valores declarados) e instrucción de media distancia; seis disposiciones como funciones; quince roles ofensivos; libro por familias con POS01–POS15 y CONT01–CONT09 sobre tareas reutilizadas (nueve fichas referencian la receta de su donante); decisión del receptor con su propia lectura; escalera de negación (CONT06/CONT07).
+- Encargos de rebote y balance con coste real (transición rival, odds ×1,2 por referencia); se retira el efecto abstracto de carga en la nueva ruta (sustitución identificada).
+- Extensión `SEM-MOTOR04-20261016` (cifras del anexo A verificadas por `npm run data:check`), filas nuevas con consumidor, panel › Repertorio, candidata explícita desde perfiles anteriores, órdenes `disposition`/`roles`, registro de disposición/funciones/decisión/encargos, JSON `beM-match-export/3`.
+- **Cambia los resultados** (referencia `20261016`: 94–89 → 90–126). 63 pruebas. Documentación: [`docs/tecnico/motor04.md`](docs/tecnico/motor04.md), [recorrido manual](docs/prompts/MOTOR-04-recorrido-manual.md). Pendiente de validación de Dennis.
+
 ## MOTOR-03 — Panel administrable, perfiles y comparación — 2026-10-16
 
 - Diccionario de ~390 filas del perfil (SUP01) con ficha, clase (balance/contenido/reglamento/invariante), cobertura real y consumidor; literales del código convertidos en filas con su valor exacto (`SEM-MOTOR03-20261016`). Equivalencia deportiva con la referencia anterior comprobada.
