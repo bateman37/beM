@@ -177,6 +177,7 @@ P.midrangeFactor = function midrangeFactor(team, ex, pComfortable) {
   if (policy === 'avoid') return mp.avoidWeight;
   if (policy === 'seek') return mp.suitablePlayerBase + mp.suitablePlayerAbilitySlope * ((this.eff(ex.actor, 'TEC02') - 1) / 29);
   const pc = pComfortable ?? 0;
+  this.note('media:esperanza_de_calidad_comoda', { actor: ex.actor, pComoda: round(pc, 4), nota: 'esperanza previa a la elección; la calidad real se sortea después' }); // distinta de la calidad realmente resuelta (intent.calidad)
   return pc * mp.openOnlyComfortableWeight + (1 - pc) * mp.openOnlyOtherWeight;
 };
 

@@ -129,8 +129,9 @@ test('4. cambiar conserva el responsable actual; show compromete y recupera; tra
   const exH = { role: 'handler', defend: D1, icpt: D1, zone: 'rim' }; m.coverageForExit(exH, cov); assert.equal(exH.defend, D2);
   assert.equal(m.defenderFor(handler), D2, 'persiste tras la acción'); m.resetCurrent(); assert.equal(m.defenderFor(handler), D1, 'una reorganización pertinente la restablece');
   // el cambio puede no completarse: el bloqueo es efectivo (espacio al manejador y al continuador) y no cambia las responsabilidades
-  const n = scene({ over: { coverage: 'COB02' } }); const e2 = organize(n, 'POS01').entry; force(n, [false]); const c2 = n.beginCoverage(e2.entry ?? e2, n.poss);
-  assert.equal(c2.exchanged, false); assert.equal(n.defenderFor(e2.roles.handler), D1 === n.defenderFor(e2.roles.handler) ? D1 : n.defenderFor(e2.roles.handler));
+  const n = scene({ over: { coverage: 'COB02' } }); const e2 = organize(n, 'POS01').entry; const ref2 = n.defRef(1).assign[e2.roles.handler]; force(n, [false]); const c2 = n.beginCoverage(e2, n.poss);
+  assert.equal(c2.exchanged, false); assert.equal(n.defenderFor(e2.roles.handler), ref2, 'sin cambio completado las responsabilidades no se tocan');
+  const e2x = { role: 'handler', defend: ref2, icpt: ref2, zone: 'rim', pullup: true }; assert.ok(n.coverageForExit(e2x, c2).k > 0, 'el bloqueo efectivo concede espacio al manejador');
   // COB03: el segundo defensor sale (compromiso real) y, si no recupera, el continuador queda libre
   const s = scene({ over: { coverage: 'COB03' } }); const es = organize(s, 'POS01').entry; force(s, [false]);
   const cs = s.beginCoverage(es, s.poss); assert.ok(s.poss.committed.has(cs.D2)); const roll = { role: 'screener', defend: cs.D2, icpt: cs.D2, zone: 'rim', roller: true }; s.coverageForExit(roll, cs);
@@ -183,7 +184,7 @@ test('6. objetivo ausente: alternativa individual, luego ORG02; el objetivo vuel
   m.ps['EQ01-J03'].onCourt = false; e = m.resolveEffectiveOrg(1);
   assert.equal(e.org, 'ORG02'); assert.equal(e.alternate, true); assert.equal(e.objective, null, 'no se inventa otro objetivo'); assert.equal(e.intent, 'ORG06');
   // la caja de cuatro más perseguidor solo cuenta como box and one efectiva mientras se ejecuta: en la alternativa no hay perseguidor
-  m.poss.team === 0; m.def[1].eff = null; m.defPlanVer[1] += 1; const ref = m.defRef(1); assert.equal(ref.org, 'ORG02'); assert.equal(ref.fnOwner.X, undefined);
+  m.def[1].eff = null; m.defPlanVer[1] += 1; const ref = m.defRef(1); assert.equal(ref.org, 'ORG02'); assert.equal(ref.fnOwner.X, undefined);
   m.ps['EQ01-J01'].onCourt = true; assert.equal(m.resolveEffectiveOrg(1).org, 'ORG06', 'regresa el principal y la intención sigue vigente');
   // una orden manual posterior sustituye la intención: no se restaura al volver el objetivo
   const g = createMatch(defInputFor(21, 1, { defense: 'ORG06', target: 'EQ01-J01', targetAlt: null }), profile, { detail: 'full', check: true });
@@ -191,7 +192,7 @@ test('6. objetivo ausente: alternativa individual, luego ORG02; el objetivo vuel
   const o = g.submit({ team: 1, type: 'defOrg', defense: 'ORG01', target: null, targetAlt: null, fallbackOrg: 'ORG02' }); assert.notEqual(o.state, 'rechazada', o.reason);
   while (g.step()) { /* hasta el final */ }
   assert.equal(g.errors.length, 0); assert.equal(g.teams[1].plan.defense, 'ORG01');
-  assert.ok(g.def[1].shifts.every((s) => s.org !== 'ORG06' || true)); assert.equal(g.def[1].eff.org, 'ORG01');
+  assert.equal(g.def[1].eff.org, 'ORG01');
   // el plan con objetivo ausente o alternativa inadmisible se rechaza entero
   assert.ok(g.submit({ team: 1, type: 'defOrg', defense: 'ORG06', target: null, targetAlt: null, fallbackOrg: 'ORG02' }).state === 'rechazada');
 });
@@ -236,7 +237,6 @@ test('8. falta táctica: la solicitud no para el reloj; ejecutor con acceso; cla
   assert.equal(o.state, 'pendiente'); assert.equal(m.clock, clock, 'pedirla no detiene ni consume el reloj'); assert.equal(m.events.length, evCount, 'no se narra nada que el motor no resolvió');
   assert.equal(m.submit({ team: 0, type: 'defSpecial', special: 'ESPD01', scope: 'current', target: 'EQ01-J01' }).state, 'rechazada', 'el objetivo es el poseedor o un jugador RIVAL');
   // ejecución controlada: intento sí, contacto no legítimo → antideportiva con dos libres y posesión
-  const f = scene({ seed: 33 }); f.poss.team = 1; // ataca EQ02 y defiende EQ01 (equipo 0)
   const input = inputFor(33); const g = createMatch(input, profile, { detail: 'full', check: true }); g.init(); g.startPossession({ team: 1, entry: 'deadFront', shotClock: 240 });
   for (const id of Object.keys(g.ps)) g.ps[id].energy = 100;
   const ord = g.submit({ team: 0, type: 'defSpecial', special: 'ESPD01', scope: 'current', target: 'holder' }); assert.equal(ord.state, 'pendiente');
@@ -261,7 +261,7 @@ test('8. falta táctica: la solicitud no para el reloj; ejecutor con acceso; cla
   // dos antideportivas del mismo jugador: descalificación
   k.uf = { [o3.team === 0 ? 'EQ01-J05' : 'x']: 1 }; k.unsportsmanlikeAdmin('EQ01-J05', 'EQ02-J01', 1);
   assert.equal(k.ps['EQ01-J05'].available, false);
-  assert.deepEqual(f.errors, []);
+  assert.deepEqual(g.errors, []);
 });
 
 // ------------------------------------------------------------------------------------------------ 9. robo, desvío, tapón, control; V09
