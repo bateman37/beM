@@ -2,7 +2,7 @@
   "name": "bem",
   "version": "0.1.0",
   "private": true,
-  "description": "beM — motor de partidos y laboratorio (MOTOR-04)",
+  "description": "beM — motor de partidos y laboratorio (MOTOR-05)",
   "type": "module",
   "engines": {
     "node": ">=22"

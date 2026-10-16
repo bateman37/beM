@@ -132,7 +132,7 @@ P.beginCoverage = function beginCoverage(entry, poss) {
       const p = hp(this, o.helpExecutionP0, this.taskValue('TAR02', 'defense', { primary: D1 }) - this.taskValue('TAR02', 'attack', { handler: pair.handler }));
       c.underArrives = this.bernoulli(p, 'COB01:por_debajo_recupera'); info.porDebajo = { recupera: c.underArrives, p: round(p, 4) };
     }
-    this.commit(D2, 'drop');
+    this.commit(D2, 'drop'); this.cover(nav === 'under' ? 'COB01 drop por debajo' : 'COB01 drop');
   } else if (cob === 'COB02') {
     const A = (this.taskValue('TAR04', 'defense', { primary: D1 }) + this.taskValue('TAR04', 'defense', { primary: D2 })) / 2;
     const p = hp(this, refs.symmetricTaskP0, A - this.taskValue('TAR04', 'attack', { screener: pair.screener }));

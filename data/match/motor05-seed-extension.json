@@ -345,10 +345,10 @@
        }
       ],
       "highInside": {
-       "first": "B",
+       "first": "F1",
        "relief": [
-        "F1",
-        "F2"
+        "F2",
+        "B"
        ]
       },
       "lowInside": {
@@ -927,20 +927,26 @@
       "top": {
        "first": "HI1",
        "relief": [
-        "HI2"
+        "HI2",
+        "LO1",
+        "LO2"
        ]
       },
       "wing": [
        {
         "first": "HI1",
         "relief": [
-         "HI2"
+         "HI2",
+         "LO1",
+         "LO2"
         ]
        },
        {
         "first": "HI2",
         "relief": [
-         "HI1"
+         "HI1",
+         "LO2",
+         "LO1"
         ]
        }
       ],
@@ -948,13 +954,17 @@
        {
         "first": "HI1",
         "relief": [
-         "HI2"
+         "HI2",
+         "LO1",
+         "LO2"
         ]
        },
        {
         "first": "HI2",
         "relief": [
-         "HI1"
+         "HI1",
+         "LO2",
+         "LO1"
         ]
        }
       ],
@@ -962,13 +972,15 @@
        {
         "first": "LO1",
         "relief": [
-         "HI1"
+         "HI1",
+         "LO2"
         ]
        },
        {
         "first": "LO2",
         "relief": [
-         "HI2"
+         "HI2",
+         "LO1"
         ]
        }
       ],
@@ -976,7 +988,8 @@
        "first": "LO1",
        "relief": [
         "HI1",
-        "LO2"
+        "LO2",
+        "HI2"
        ]
       },
       "lowInside": {

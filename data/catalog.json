@@ -31,7 +31,7 @@
     "data/match/motor05-seed-extension.json": {
       "id": "SEM-MOTOR05-20261016",
       "status": "SEM: provisional, no calibrado",
-      "sha256": "0db7f1dacda005a789067e3c2e69b08221faaa4d9dfb24467ae1a5d5238e2a35",
+      "sha256": "c6797df3b03554619f0201efbdfe9fd533531ea349f5ed2447541fdb96078305",
       "origin": "Anexo A del prompt de MOTOR-05 (cifras SEM, literales) + contenido declarativo de organizaciones, funciones, responsabilidades, roles y coberturas: lectura de Claude, a revisar por Dennis",
       "state": "SEM provisional, no calibrado; amplía el catálogo activo de defensas y coberturas"
     },
