@@ -5,6 +5,7 @@ Cómo está **realmente implementado** el proyecto. Distingue lo documentado de 
 ## Documentado
 
 - **MOTOR-01** (motor, laboratorio, datos y pruebas): [`motor01.md`](motor01.md).
+- **MOTOR-02** (modalidades, órdenes, tiempos muertos, registro y reproducción): [`motor02.md`](motor02.md).
 - **Utilidades documentales** (`scripts/docs/`): descritas en [`../exportados/README.md`](../exportados/README.md).
 
 ## Pendiente (no existe aún)

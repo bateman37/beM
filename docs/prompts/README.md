@@ -12,7 +12,8 @@ Directorio de los encargos a Claude Code. **El texto original de un prompt ejecu
 | ID | Objetivo | Texto | Estado | Última ejecución | Continuaciones |
 |---|---|---|---|---|---|
 | DOC-001 | Organización documental de beM y normas de trabajo | [`DOC-001-organizacion-documental-y-normas.md`](DOC-001-organizacion-documental-y-normas.md) | Ejecutado, **pendiente de revisión de Dennis** | 2026-10-16 (intento 1) | — |
-| MOTOR-01 | Primer partido completo y laboratorio inicial | [`MOTOR-01-primer-partido-completo.md`](MOTOR-01-primer-partido-completo.md) | Ejecutado, **pendiente de revisión de Dennis** | 2026-10-16 (intento 1) | — |
+| MOTOR-01 | Primer partido completo y laboratorio inicial | [`MOTOR-01-primer-partido-completo.md`](MOTOR-01-primer-partido-completo.md) | Integrado en `main`; Dennis comunicó (en el prompt de MOTOR-02) arranque local y recorrido manual correctos | 2026-10-16 (intento 1) | — |
+| MOTOR-02 | Tres modalidades y dirección manual del partido | [`MOTOR-02-modos-y-direccion.md`](MOTOR-02-modos-y-direccion.md) | Ejecutado, **pendiente de revisión de Dennis** | 2026-10-16 (intento 1) | — |
 
 ## Fichas de ejecución
 
@@ -65,3 +66,19 @@ Comprobación local de enlaces: hecha por Claude. Presentación en GitHub: no co
 | Comprobaciones realizadas | `npm test` (23 correctas: datos, tres semillas, reproducibilidad, independencia de la presentación, reglas críticas), `npm run data:check`, recorrido de la interfaz con Chromium automatizado. Un barrido de desarrollo de 60 semillas sin fallos (no parte de la entrega). |
 | Limitaciones | PDF FIBA no accesible (403): ver T01–T16 en la documentación técnica. Node 22 (no 24). Coeficientes provisionales sin calibrar. Consumo de cuota no medible desde el entorno. |
 | Pendientes | Validación de Dennis, [recorrido manual](MOTOR-01-recorrido-manual.md), decisión de fusión. MOTOR-02 no iniciado. |
+
+
+### MOTOR-02
+
+| Campo | Valor |
+|---|---|
+| Objetivo | Total, por cuartos y por tiempo (x2/x4/x8/x16) sobre un núcleo común; órdenes con ciclo de vida, sustituciones, tiempo muerto manual, registro y reproducción desde JSON. |
+| Medio de entrada del texto | Archivo `.md` adjunto (`4e629669-beM-PROMPT-MOTOR-02-MODOS-DE-PARTIDO-Y-DIRECCION.md`; prefijo añadido por la subida). La copia archivada es idéntica byte a byte. |
+| Fecha real de ejecución | 2026-10-16 · intento 1 |
+| Revisión de partida | `2bb7397` (`main` con MOTOR-01 integrado). |
+| Rama | `claude/busy-edison-b1fmnc` (designada por el entorno; el prompt proponía `feature/MOTOR-02-modos-y-direccion`), reiniciada desde `main` tras fusionarse la PR anterior. |
+| PR | Ver la PR abierta contra `main` (sin fusionar). |
+| Resultado breve | Ver [`../tecnico/motor02.md`](../tecnico/motor02.md). Versión `beM-motor-0.2.0-MOTOR02`, perfil `SEM-MOTOR01-20261016+SEM-MOTOR02-20261016`, semilla `20261016`. |
+| Comprobaciones realizadas | `npm test` (40), `npm run data:check`, recorrido de la interfaz con Chromium automatizado, barrido de desarrollo de 39 partidos con órdenes aleatorias (no parte de la entrega). |
+| Limitaciones | PDF FIBA no accesible (403): U01–U03 sin contrastar. Corrección B01 cambia resultados de referencia de MOTOR-01. Consumo de cuota no medible. |
+| Pendientes | [Recorrido manual](MOTOR-02-recorrido-manual.md) y validación de Dennis; decisión de fusión. MOTOR-03 no iniciado. |

@@ -73,7 +73,7 @@ export class MatchSession {
     if (this.mode !== 'cuartos' || this.busy || this.state !== 'revision') return { ok: false, reason: 'no hay un periodo pendiente de jugar' };
     let orders = [];
     if (draftSpecs.length) {
-      orders = this.match.submitBatch(draftSpecs, label);
+      orders = this.match.submitBatch(draftSpecs.map((x) => ({ team: this.managedTeam, ...x })), label);
       const bad = orders.filter((o) => o.state === 'rechazada');
       if (bad.length) { this._emit(); return { ok: false, reason: 'conjunto no aplicado', orders }; }
     }

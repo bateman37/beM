@@ -18,7 +18,7 @@ function paint() {
 document.getElementById('detail-close').addEventListener('click', () => document.getElementById('detail').close());
 try {
   await loadAll();
-  document.getElementById('profile-badge').textContent = `${store.profile.id} · ${store.profile.status}`;
+  document.getElementById('profile-badge').textContent = `${store.profile.effectiveId} · ${store.profile.status}`;
   paint();
 } catch (e) {
   document.getElementById('view').textContent = `No se pudieron cargar los datos: ${e.message}`;

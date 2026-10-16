@@ -4,7 +4,7 @@ Juego de gestión de baloncesto en desarrollo. Este repositorio contiene, por ah
 
 ## Estado real
 
-- **Desde MOTOR-01 hay motor y laboratorio ejecutables**: `npm run dev` → <http://localhost:5173/>; `npm test` para las comprobaciones. Detalle en [`docs/tecnico/motor01.md`](docs/tecnico/motor01.md). Datos provisionales, sin calibrar; pendiente de validación de Dennis.
+- **Desde MOTOR-01 hay motor y laboratorio ejecutables**: `npm run dev` → <http://localhost:5173/>; `npm test` para las comprobaciones. **MOTOR-02** añade tres modalidades y dirección manual: [`docs/tecnico/motor02.md`](docs/tecnico/motor02.md). Datos provisionales, sin calibrar; MOTOR-02 pendiente de validación de Dennis.
 
 - Existen documentación, motor de partidos y laboratorio (MOTOR-01); **no** hay manager, base de datos ni despliegue. Ver [`docs/estado.md`](docs/estado.md).
 - El diseño funcional del motor está **definido** y organizado por temas; «definido» no significa implementado, validado ni calibrado.

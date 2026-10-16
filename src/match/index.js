@@ -24,6 +24,28 @@ export const COVERAGE = {
     ordenes: ['estilos', 'prioridades del libro', 'director y alternativas', 'llamada de ficha (posesión actual o siguiente)', 'sustitución individual', 'cambio de quinteto (conjunto atómico)', 'devolver el quinteto al entrenador básico', 'tiempo muerto manual'],
     registro: ['JSON ampliado (órdenes, comandos, ciclo de vida)', 'reproducción desde JSON de esta versión'],
   },
+  // Tabla breve de cobertura de MOTOR-02 (estados distintos: no equivalen a «validado» ni «calibrado»)
+  tabla: {
+    comprobado: [
+      'Avance por fronteras: un solo núcleo para total, cuartos y tiempo; sin órdenes reproduce MOTOR-01 (salvo la corrección B01)',
+      'Equivalencia deportiva entre modalidades y velocidades; pausa/velocidad sin efecto deportivo ni temporizadores duplicados',
+      'Ciclo de vida, precedencia y conjuntos atómicos de órdenes; llamadas (consumo y caducidad)',
+      'Sustituciones y quintetos con ventanas, revalidación, exclusión obligatoria y lanzador de libres',
+      'Tiempos muertos: cupos, concesión, recuperación única y ventanas por causa',
+      'Cierre de periodo, plan del siguiente periodo y prórroga (fixture controlado)',
+      'Registro JSON ampliado y reproducción desde el archivo (con validación previa y detección de alteraciones)',
+    ],
+    pendienteRevisionManual: [
+      'Recorrido de interfaz de las tres modalidades (recorrido automatizado en Chromium hecho; revisión de Dennis pendiente)',
+      'Sensación de las velocidades x2/x4/x8/x16 (solo x2/x8/x16 recorridas en navegador; x4/x8 parametrizadas en pruebas)',
+      'Mensajes, orden y claridad del panel de dirección',
+    ],
+    noImplementado: [
+      ['Panel completo y perfiles editables', 'MOTOR-03'], ['Repertorio ofensivo ampliado', 'MOTOR-04'], ['Defensas, marcas, dobles y roles individuales', 'MOTOR-05'],
+      ['Saques tácticos y ampliación espontánea', 'MOTOR-06'], ['Forma y momentos (la pausa no atenúa nada todavía)', 'MOTOR-07'],
+      ['Políticas avanzadas del entrenador y tiempos muertos automáticos', 'MOTOR-08'], ['Cierre reglamentario extraordinario', 'MOTOR-09'],
+    ],
+  },
   pendientes: [
     'Resto del repertorio y disposiciones', 'Zonas y otras coberturas', 'Forma, momento, Consistencia y Presión (entrada neutral; la pausa no atenúa el momento hasta MOTOR-07)',
     'Memoria rival', 'Panel completo y perfiles editables (MOTOR-03)', 'Defensas, marcas, dobles y roles individuales editables (MOTOR-05/08)',

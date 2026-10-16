@@ -83,8 +83,9 @@ test('3. una llamada se consume cuando la ficha comienza; caduca con motivo si s
   const team = f.nextPoss.team; const real = f.assignRoles;
   f.assignRoles = function (t, playId, dir) { return t === team && playId === 'POS11' ? null : real.call(this, t, playId, dir); };
   const c2 = f.submit({ team, type: 'call', playId: 'POS11', target: 'next' });
-  stepUntil(f, () => c2.state !== 'pendiente' && c2.state !== 'vigente');
-  assert.equal(c2.state, 'caducada'); assert.match(c2.reason, /no realizable/);
+  stepUntil(f, () => c2.state === 'caducada');
+  assert.ok(c2.history.some((x) => x.state === 'suspendida' && /no realizable/.test(x.reason)), 'pasó por «suspendida por condición»: declarada pero no aplicable ahora');
+  assert.match(c2.reason, /terminó la posesión.*no realizable/);
   assert.equal(f.events.some((e) => e.intent?.origen === 'POS11' && e.team === team && e.possessionId === c2.bound), false, 'no se fuerza el inicio');
   // validaciones: posesión actual solo si el equipo ataca y aún no empezó ficha
   const g = newMatch(20261016); stepUntil(g, (x) => x.poss && !x.poss.done && !x.poss.playStarted);

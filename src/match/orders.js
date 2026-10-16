@@ -301,8 +301,16 @@ P.activateCalls = function activateCalls(poss) {
     }
   }
 };
-P.callFor = function callFor(poss) { return this.orders.find((o) => o.kind === 'call' && o.state === 'vigente' && o.bound === poss.id && o.team === poss.team) ?? null; };
+P.callFor = function callFor(poss) { return this.orders.find((o) => o.kind === 'call' && (o.state === 'vigente' || o.state === 'suspendida') && o.bound === poss.id && o.team === poss.team) ?? null; };
 P.noteCall = function noteCall(call, cause) { if (call && !call.notes.includes(cause)) call.notes.push(cause); };
+// «Suspendida por condición»: la llamada sigue declarada pero la ficha no es realizable ahora (sin participante compatible);
+// puede recuperarse dentro de su ámbito (p. ej. tras una reorganización) o caducar con motivo al cerrar la posesión.
+P.suspendCall = function suspendCall(call, cause) {
+  if (!call) return;
+  this.noteCall(call, cause);
+  if (call.state === 'vigente') this.setState(call, 'suspendida', `suspendida: ${cause}`);
+};
+P.resumeCall = function resumeCall(call) { if (call && call.state === 'suspendida') this.setState(call, 'vigente', 'la ficha vuelve a ser realizable'); };
 P.consumeCall = function consumeCall(poss, playId) {
   const call = this.callFor(poss);
   if (!call || call.content.playId !== playId) return;
@@ -312,7 +320,7 @@ P.consumeCall = function consumeCall(poss, playId) {
 };
 P.expireCallsFor = function expireCallsFor(poss) {
   for (const o of this.orders) {
-    if (o.kind !== 'call' || o.state !== 'vigente' || o.bound !== poss.id) continue;
+    if (o.kind !== 'call' || (o.state !== 'vigente' && o.state !== 'suspendida') || o.bound !== poss.id) continue;
     const why = o.notes.length ? o.notes.join('; ') : 'la ficha no llegó a iniciarse';
     this.setState(o, 'caducada', `terminó la posesión ${poss.id}: ${why}`);
   }
@@ -378,7 +386,7 @@ P.releaseLineupControl = function releaseLineupControl() {
 };
 P.closeOrdersAtFinish = function closeOrdersAtFinish() {
   for (const o of this.orders) if (!TERMINAL_STATES.has(o.state) && o.state !== 'vigente') this.setState(o, 'caducada', 'terminó el partido');
-  for (const o of this.orders) if (o.kind === 'call' && o.state === 'vigente') this.setState(o, 'caducada', 'terminó el partido');
+  for (const o of this.orders) if (o.kind === 'call' && (o.state === 'vigente' || o.state === 'suspendida')) this.setState(o, 'caducada', 'terminó el partido');
 };
 
 // ---------------------------------------------------------------- consulta para la interfaz y el registro

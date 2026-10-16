@@ -5,7 +5,7 @@ import { SLOTS, validateInput } from '../match/index.js';
 
 const f2 = (v) => String(v).replace('.', ',');
 
-function styleLabels(profile) {
+export function styleLabels(profile) {
   const s = profile.selection;
   return {
     organizedPace: s.organizedDurationFactor.map((f, i) => `${i + 1} — duración organizada ×${f2(f)}`),
@@ -13,7 +13,7 @@ function styleLabels(profile) {
     freedom: s.freedom.map((f, i) => `${i + 1} — libertad F=${f2(f)}`),
   };
 }
-const STYLE_TITLES = { organizedPace: 'Ritmo organizado', finishPreference: 'Prioridad de finalización (1 interior … 5 exterior)', freedom: 'Libertad' };
+export const STYLE_TITLES = { organizedPace: 'Ritmo organizado', finishPreference: 'Prioridad de finalización (1 interior … 5 exterior)', freedom: 'Libertad' };
 const LOCKED = { transition: 'Transición', elaboration: 'Elaboración', offensiveRisk: 'Riesgo ofensivo', afterShot: 'Tras tiro' };
 
 export function renderPrep(root) {

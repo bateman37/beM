@@ -166,8 +166,8 @@ P.organizedAction = function organizedAction(poss) {
   if (call) {
     // Orden manual específica: la ficha llamada recibe todo el peso del libro si es realizable. La lectura del director
     // (libertad) y la negación posterior siguen actuando; no se fuerza un inicio ni un desenlace.
-    if (el.some((e) => e.playId === call.content.playId)) { for (const k of Object.keys(coach)) coach[k] = k === call.content.playId ? 1 : 0; }
-    else this.noteCall(call, `${call.content.playId} no realizable (sin participante compatible o ya negada en esta posesión)`);
+    if (el.some((e) => e.playId === call.content.playId)) { this.resumeCall(call); for (const k of Object.keys(coach)) coach[k] = k === call.content.playId ? 1 : 0; }
+    else this.suspendCall(call, `${call.content.playId} no realizable (sin participante compatible o ya negada en esta posesión)`);
   }
   for (const e of el) {
     e.exits = this.scoreExits(team, this.buildExits(team, e.playId, e.roles, e.def), e.play.shotWeights);

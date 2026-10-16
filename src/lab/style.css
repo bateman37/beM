@@ -61,3 +61,7 @@ pre { background:#0f1626; color:#d7e2f7; padding:10px; border-radius:6px; overfl
 .kv { display:grid; grid-template-columns:200px 1fr; gap:2px 12px; }
 .neutral { color:var(--muted); font-style:italic; }
 details > summary { cursor:pointer; }
+ul.orders { list-style:none; padding:0; margin:0; }
+li.ord { padding:5px 0; border-bottom:1px dotted var(--line); }
+.pill.on { background:var(--accent); color:#fff; }
+label.opt { display:flex; gap:10px; align-items:flex-start; }

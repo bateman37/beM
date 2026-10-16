@@ -9,7 +9,8 @@ Registro breve de decisiones **de proceso y organización** aceptadas por Dennis
 | DEC-DOC-03 | 2026-10-16 | Jerarquía de autoridad documental: Dennis y cambios aceptados > secciones temáticas > exportado generado; original congelado e histórico solo como antecedente. | Dennis, DOC-001 | Evitar dos especificaciones vigentes. | [`../README.md`](../README.md#autoridad-documental) |
 | DEC-DOC-04 | 2026-10-16 | Los paquetes masivos de partidos son artefactos descargables ligados a una ejecución o auditoría; el repositorio conserva identificación, ubicación, versiones, manifiesto y conclusiones. | Dennis, DOC-001 | No inflar el repositorio ni los índices con logs. | [`../../AGENTS.md`](../../AGENTS.md), [laboratorio](../motor/laboratorio/README.md) |
 | DEC-DOC-05 | 2026-10-16 | Trabajo exclusivo en `beM`; las consultas a otros repositorios corresponden a ChatGPT. | Dennis, DOC-001 | Separar investigación y ejecución. | [`../../AGENTS.md`](../../AGENTS.md) |
+| IMP-M02-01 | 2026-10-16 | Implementación (no decisión nueva) de las decisiones aceptadas de dirección en vivo, modalidades y registro reproducible en MOTOR-02. La recuperación por tiempo muerto (+1,5) es una **semilla de desarrollo provisional**, distinta de las normas deportivas; los cupos de tiempos muertos son lectura propia de FIBA 2026 v1.1 sin contrastar. | Dennis, prompt [MOTOR-02](../prompts/MOTOR-02-modos-y-direccion.md) | Separar semilla provisional de norma deportiva. | [`../tecnico/motor02.md`](../tecnico/motor02.md) |
 
 ## Decisiones pendientes
 
-Ninguna de proceso abierta por esta entrega.
+Ninguna de proceso. Pendientes de confirmación de contenido (no bloquean): U01–U03 y U05 de [`motor02.md`](../tecnico/motor02.md).
