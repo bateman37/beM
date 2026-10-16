@@ -1,0 +1,240 @@
+// Núcleo del encuentro: estado pequeño, reloj, energía, registro de acontecimientos,
+// recetas de capacidades efectivas y sorteos con rastro. Sin DOM ni base de datos.
+import { createRng } from './rng.js';
+import { clamp, interpolate, triangularFromU, round, sigmoid, logit } from './mathx.js';
+import { deepCopy, ENGINE_VERSION, SLOTS } from './data.js';
+import { toTenths, periodLengthTenths } from './rules.js';
+
+export class MatchCore {
+  constructor(input, profile, opts = {}) {
+    this.opts = { detail: 'full', check: false, ...opts };
+    this.profile = profile;
+    this.input = deepCopy(input); // copia de entrada congelada (efectiva)
+    this.rng = createRng(this.input.seed, profile.rng);
+    this.teams = this.input.teams.map((t, i) => ({ idx: i, id: t.id, name: t.name, plan: t.plan, ids: t.players.map((p) => p.id) }));
+    this.pl = {}; // jugadores (no se mutan durante la simulación)
+    this.ps = {}; // estado dinámico por jugador
+    this.input.teams.forEach((t, ti) => {
+      for (const p of t.players) {
+        Object.freeze(p.abilities);
+        this.pl[p.id] = { ...p, teamIdx: ti, reach: this.reachOf(p) };
+        this.ps[p.id] = {
+          energy: p.state.energy, fouls: p.state.fouls ?? 0, available: p.state.available !== false,
+          onCourt: false, slot: null, stintTenths: 0, benchTenths: 9999 * 10,
+        };
+      }
+    });
+    // quintetos
+    this.lineup = this.teams.map((t) => ({ ...t.plan.starters }));
+    this.lineup.forEach((l, ti) => { for (const s of SLOTS) { const id = l[s]; this.ps[id].onCourt = true; this.ps[id].slot = s; this.ps[id].benchTenths = 0; } });
+    this.lineupTable = [];
+    this.lineupId = [null, null];
+    this.registerLineups();
+    // reloj y marcador
+    this.period = 0; this.clock = 0; this.shotClock = 0; this.shotClockOn = false; this.clockRunning = true;
+    this.score = [0, 0]; this.periodScores = [];
+    this.teamFouls = [{}, {}];
+    this.arrow = null;
+    this.poss = null; this.nextPoss = null; this.possSeq = 0; this.eventSeq = 0;
+    this.events = []; this.calcBuf = []; this.status = 'created'; this.errors = [];
+    this.coverageObserved = {};
+    this.openingWinner = null;
+  }
+
+  reachOf(p) {
+    const b = this.profile.body;
+    const n = (v, [lo, hi]) => clamp((v - lo) / (hi - lo), 0, 1);
+    const [wh, ww] = b.normalizedMix;
+    return wh * n(p.heightCm, b.heightRangeCm) + ww * n(p.wingspanCm, b.wingspanRangeCm);
+  }
+
+  // ---------- lineups ----------
+  registerLineups() {
+    for (let t = 0; t < 2; t++) {
+      const players = SLOTS.map((s) => this.lineup[t][s]);
+      const key = players.join('|');
+      const prev = this.lineupTable.filter((l) => l.team === t);
+      const found = prev.find((l) => l.key === key);
+      if (found) { this.lineupId[t] = found.id; continue; }
+      const id = `L${t}-${prev.length + 1}`;
+      this.lineupTable.push({ id, team: t, key, slots: { ...this.lineup[t] } });
+      this.lineupId[t] = id;
+    }
+  }
+  onCourt(t) { return SLOTS.map((s) => this.lineup[t][s]); }
+  slotOf(pid) { return this.ps[pid].slot; }
+  oppIdx(t) { return 1 - t; }
+  markerOf(pid) { const p = this.pl[pid]; return this.lineup[1 - p.teamIdx][this.ps[pid].slot]; }
+  playersAtSlots(t, slots) { return slots.map((s) => this.lineup[t][s]).filter((id) => this.ps[id].available); }
+
+  // ---------- azar ----------
+  draw(purpose) { return this.rng.next(purpose); }
+  // Elige entre opciones {key,w,...}; ordena por clave estable antes del sorteo. Solo w>0.
+  pick(items, purpose) {
+    const els = items.filter((i) => i.w > 0).sort((a, b) => (a.key < b.key ? -1 : a.key > b.key ? 1 : 0));
+    if (!els.length) return null;
+    const total = els.reduce((s, i) => s + i.w, 0);
+    const u = this.draw(purpose);
+    let acc = 0; let chosen = els[els.length - 1];
+    for (const e of els) { acc += e.w / total; if (u < acc) { chosen = e; break; } }
+    this.note(`sorteo:${purpose}`, { opciones: els.map((e) => ({ clave: e.key, p: round(e.w / total) })), u: round(u, 6), elegido: chosen.key });
+    return chosen;
+  }
+  bernoulli(p, purpose) {
+    const u = this.draw(purpose);
+    const ok = u < p;
+    this.note(`binaria:${purpose}`, { p: round(p, 5), u: round(u, 6), resultado: ok });
+    return ok;
+  }
+  // Duración triangular [min, moda, max] en segundos -> décimas enteras, truncada a < limit si procede.
+  sampleDuration(dist, purpose, { factor = 1, limit = Infinity } = {}) {
+    const d = dist.map((x) => x * factor);
+    const hiSec = (limit - 1) / 10; // estrictamente antes del límite
+    const u = this.draw(purpose);
+    const sec = triangularFromU(u, d, hiSec);
+    let tenths = Math.max(1, Math.round(sec * 10));
+    if (tenths >= limit) tenths = Math.max(1, limit - 1);
+    this.note(`duración:${purpose}`, { dist: d, limiteDecimas: limit === Infinity ? null : limit, u: round(u, 6), decimas: tenths });
+    return tenths;
+  }
+
+  // ---------- registro de detalle ----------
+  note(label, data) { if (this.opts.detail === 'full') this.calcBuf.push({ label, ...data }); }
+
+  // ---------- capacidades efectivas ----------
+  severity(pid) { return interpolate(this.profile.energy.severityNodes, this.ps[pid].energy); }
+  penFor(attr, taskMax) {
+    if (taskMax != null) return taskMax;
+    const e = this.profile.energy;
+    return attr.startsWith('FIS') ? e.defaultPhysicalTaskMax : e.defaultTechnicalTaskMax;
+  }
+  eff(pid, attr, taskMax = null) {
+    const base = this.pl[pid].abilities[attr];
+    return clamp(base - this.severity(pid) * this.penFor(attr, taskMax), 1, 30);
+  }
+  // terms: [[role, attr, weight]...]; actors: role -> playerId. Media ponderada normalizada.
+  recipe(terms, actors, taskMax = null, label = null) {
+    let num = 0; let den = 0; const trace = [];
+    for (const [role, attr, w] of terms) {
+      const pid = actors[role];
+      if (!pid) throw new Error(`receta: falta el actor del rol ${role}`);
+      const e = this.eff(pid, attr, taskMax);
+      num += w * e; den += w;
+      if (this.opts.detail === 'full') trace.push({ rol: role, jugador: pid, cap: attr, base: this.pl[pid].abilities[attr], efectiva: round(e, 3), peso: w, energia: round(this.ps[pid].energy, 2) });
+    }
+    const value = num / den;
+    if (label) this.note(`receta:${label}`, { valor: round(value, 4), terminos: trace });
+    return value;
+  }
+  // Receta con objeto {attr: peso} para un único ejecutante.
+  recipeObj(obj, pid, taskMax = null, label = null) {
+    const terms = Object.entries(obj).map(([attr, w]) => ['x', attr, w]);
+    return this.recipe(terms, { x: pid }, taskMax, label);
+  }
+  taskValue(taskId, side, actors, label = null) {
+    const t = this.profile.tasks[taskId];
+    return this.recipe(t[side], actors, t.maxEnergyPenalty, label ?? `${taskId}.${side}`);
+  }
+
+  // ---------- tiempo y energía ----------
+  limit() { return this.shotClockOn ? Math.min(this.clock, this.shotClock) : this.clock; }
+  enduranceFactor(pid) {
+    const e = this.profile.energy;
+    return clamp(1 - e.enduranceSlope * (this.pl[pid].abilities.FIS06 - e.baseEnduranceReference), e.enduranceFactorBounds[0], e.enduranceFactorBounds[1]);
+  }
+  // Consume `dur` décimas de juego real: reloj, energía de los que están en pista y recuperación del banquillo.
+  consume(dur, loadKind = 'organized') {
+    const e = this.profile.energy;
+    const t0 = { clock: this.clock, shot: this.shotClock };
+    const mins = dur / 600;
+    const load = clamp(e.load[loadKind] ?? e.load.organized, e.loadBounds[0], e.loadBounds[1]);
+    for (let t = 0; t < 2; t++) {
+      for (const id of this.teams[t].ids) {
+        const s = this.ps[id];
+        if (!s.available) continue;
+        if (s.onCourt) {
+          s.energy = clamp(s.energy - e.costPerLiveMinute * mins * load * this.enduranceFactor(id), e.range[0], e.range[1]);
+          s.stintTenths += dur;
+        } else {
+          s.energy = clamp(s.energy + e.benchRecoveryPerLiveMinute * mins, e.range[0], e.range[1]);
+          s.benchTenths += dur;
+        }
+      }
+    }
+    this.clock = Math.max(0, this.clock - dur);
+    if (this.shotClockOn) this.shotClock = Math.max(0, this.shotClock - dur);
+    return { dur, clockBefore: t0.clock, clockAfter: this.clock, shotBefore: t0.shot, shotAfter: this.shotClock };
+  }
+  snap() { return { dur: 0, clockBefore: this.clock, clockAfter: this.clock, shotBefore: this.shotClock, shotAfter: this.shotClock }; }
+  recoverAll(amount) {
+    const e = this.profile.energy;
+    for (const id of Object.keys(this.ps)) if (this.ps[id].available) this.ps[id].energy = clamp(this.ps[id].energy + amount, e.range[0], e.range[1]);
+  }
+
+  // ---------- eventos ----------
+  // data: { t (marca de tiempo), team (ataque), intent, participants, stats, effects, text? }
+  emit(type, data = {}) {
+    this.eventSeq += 1;
+    const t = data.t ?? this.snap();
+    const ev = {
+      seq: this.eventSeq,
+      id: `E${String(this.eventSeq).padStart(4, '0')}`,
+      type,
+      period: this.period,
+      possessionId: this.poss ? this.poss.id : null,
+      team: data.team ?? (this.poss ? this.poss.team : null),
+      clock: { before: t.clockBefore, after: t.clockAfter },
+      shotClock: { before: t.shotBefore, after: t.shotAfter },
+      durationTenths: t.dur,
+      lineups: [...this.lineupId],
+      intent: data.intent ?? null,
+      participants: data.participants ?? {},
+      stats: data.stats ?? [],
+      effects: data.effects ?? {},
+      score: [...this.score],
+      draws: this.rng.drain(),
+    };
+    if (this.opts.detail === 'full') { ev.calc = this.calcBuf; }
+    this.calcBuf = [];
+    this.events.push(ev);
+    if (this.opts.check) this.checkInvariants(ev);
+    return ev;
+  }
+  cover(key) { this.coverageObserved[key] = (this.coverageObserved[key] ?? 0) + 1; }
+
+  addPoints(team, pts) {
+    this.score[team] += pts;
+    const ps = this.periodScores[this.periodScores.length - 1];
+    ps.points[team] += pts;
+  }
+
+  checkInvariants(ev) {
+    const bad = (m) => { throw new Error(`invariante ${ev.id}: ${m}`); };
+    const transient = ev.type === 'attempt' || ev.type === 'foul';
+    for (let t = 0; t < 2; t++) {
+      const on = this.onCourt(t);
+      if (new Set(on).size !== 5) bad(`quinteto ${t} sin cinco jugadores distintos`);
+      for (const id of on) { if (!transient && (!this.ps[id].available || !this.ps[id].onCourt)) bad(`${id} en pista no disponible`); }
+      for (const id of this.teams[t].ids) {
+        const s = this.ps[id];
+        if (s.energy < -1e-9 || s.energy > 100 + 1e-9) bad(`energía fuera de rango ${id}`);
+        if (!transient && s.fouls >= this.profile.rules.foulOut && s.available) bad(`${id} con ${s.fouls} faltas sigue disponible`);
+      }
+    }
+    if (this.clock < 0 || this.shotClock < 0) bad('reloj negativo');
+    if (ev.clock.after > ev.clock.before) bad('el reloj de juego no puede crecer');
+    if (ev.durationTenths !== ev.clock.before - ev.clock.after && ev.type !== 'interval' && ev.type !== 'period_start') bad('duración distinta de la variación del reloj');
+  }
+
+  meta() {
+    return {
+      engineVersion: ENGINE_VERSION,
+      profileId: this.profile.id,
+      profileStatus: this.profile.status,
+      rulesProfile: this.profile.rules.profile,
+      rng: { algorithm: this.rng.algorithm, initialSeed: this.rng.initialSeed, zeroSeedReplaced: this.rng.zeroSeedReplaced, draws: this.rng.count },
+    };
+  }
+}
+
+export { clamp, sigmoid, logit, round, toTenths, periodLengthTenths };

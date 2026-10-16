@@ -2,6 +2,13 @@
 
 Registro breve de entregas. Una entrada por entrega; las más recientes primero.
 
+## MOTOR-01 — Primer partido completo y laboratorio inicial — 2026-10-16
+
+- Motor por acontecimientos en `src/match/` (azar xorshift32, energía, reglas FIBA 2026 del funcional, fichas POS01/05/07/09/11/14, continuaciones, recursos ESP, relevo básico) y laboratorio en `src/lab/` (`npm run dev`).
+- Perfil SEM y 144 fichas extraídos programáticamente del prompt archivado ([`data/`](data/catalog.json)); provisionales, sin calibrar.
+- Acta proyectada desde los hechos, relato por posesiones, detalle calculado y descarga JSON. 23 pruebas (`npm test`).
+- Documentación: [`docs/tecnico/motor01.md`](docs/tecnico/motor01.md), [recorrido manual](docs/prompts/MOTOR-01-recorrido-manual.md). Pendiente de validación de Dennis.
+
 ## DOC-001 — Organización documental y normas — 2026-10-16
 
 - Incorporadas las normas de trabajo N01–N12 y las responsabilidades en [`AGENTS.md`](AGENTS.md) y [`CLAUDE.md`](CLAUDE.md) (N11 y N12 son nuevas).

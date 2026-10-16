@@ -1,0 +1,19 @@
+{
+  "description": "Catálogo de datos de MOTOR-01: identidad y estado de los materiales cargados literalmente desde los anexos del prompt.",
+  "source": "docs/prompts/MOTOR-01-primer-partido-completo.md (Anexo A y Anexo B)",
+  "files": {
+    "data/match/motor01-seed-profile.json": {
+      "id": "SEM-MOTOR01-20261016",
+      "status": "SEM: provisional, no calibrado",
+      "sha256": "6563efc099c1553eebbe8c3aa82b2eb8888ff61daf95318b3bc7a88c10c056d5",
+      "origin": "Anexo A (extraído programáticamente)",
+      "state": "SEM provisional, no calibrado"
+    },
+    "data/fixtures/reference-players-MOTOR01.csv": {
+      "sha256": "f84f71923ceadd4a99cfcdbe2a5a523cf352d57060529331ffeb96598344e3a3",
+      "origin": "Anexo B (extraído programáticamente)",
+      "state": "SEM provisional: 144 fichas ficticias; solo EQ01/EQ02 jugables en MOTOR-01"
+    }
+  },
+  "promptSha256": "3aeb4f5810fe9c05716b87df4f99e50bb76cc4499b9b1281900edf4ff8dffbfb"
+}
