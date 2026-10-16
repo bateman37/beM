@@ -47,6 +47,9 @@ P.planDurationWithExtra = function planDurationWithExtra(spec, cat, purpose, ext
 P.resolveAttempt = function resolveAttempt(ex) {
   const tf = this.tacticalFoul(ex); // ESPD01: la orden vigente puede producir un contacto antes de resolver la acción
   if (tf) return tf;
+  // Decisión de intervenir sobre el balón: una sola vez por interacción también en las rutas que no pasan por `defenseIntent` (transición, recursos sencillos,
+  // balón recuperado). Sin decisión no hay robo atribuible (acceso → decisión → ejecución → control).
+  if (ex.stealAttempt === undefined && ex.icpt && (ex.exec === 'dribble' || ex.exec === 'pass') && !ex.deferSteal) this.decideSteal(ex);
   const w = this.categoryWeights(ex);
   const items = ['turnover', 'defensiveNonShootingFoul', 'shootingFoul', 'fieldShot', 'looseBall', 'offensiveFoul', 'ballViolation'].filter((k) => w[k] > 0).map((k) => ({ key: k, w: w[k] }));
   const cat = this.pick(items, 'categoría').key;

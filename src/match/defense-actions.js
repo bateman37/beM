@@ -122,8 +122,8 @@ P.screenPair = function screenPair(entry) {
 const hp = (m, p, q) => sigmoid(logit(p) + m.profile.opportunity.helpDifferenceSensitivity * q);
 
 // Decide la cobertura de la interacción. Registra compromisos, cambios y recuperaciones reales en la posesión (`poss.cur`, `committed`).
-P.beginCoverage = function beginCoverage(entry, poss) {
-  const t = 1 - poss.team; const plan = this.defPlan(t); const cob = plan.coverage; const d = this.dcfg();
+P.beginCoverage = function beginCoverage(entry, poss, { cob: forced = null } = {}) {
+  const t = 1 - poss.team; const plan = this.defPlan(t); const cob = forced ?? plan.coverage; const d = this.dcfg();
   const pair = this.screenPair(entry);
   const info = { cobertura: cob };
   if (!pair) return null;

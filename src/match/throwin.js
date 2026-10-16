@@ -110,7 +110,8 @@ P.prepareOption = function prepareOption(poss, spec, optSpec, role, pid, roles, 
   if (optSpec.approach === 'screen' && roles[optSpec.screener]) {
     const entry = { spec: { coverage: SCREEN_COVERAGE }, roles: { receiver: pid, screener: roles[optSpec.screener] } };
     this.poss.coverage = null;
-    const cov = this.beginCoverage(entry, poss);
+    // DSaqB02/DSaqF03 resuelven persecución o cambio según la cobertura declarada; con otra respuesta el encargo principal está en otra tarea y la pantalla solo se sigue
+    const cov = this.beginCoverage(entry, poss, { cob: def.chase ? null : 'COB01' });
     cvk = this.coverageForExit(ex, cov);
     if (cov && !cov.none) ex.cobertura = { id: cov.cob, ...cov.info }; else if (cov?.info?.limitada) ex.cobertura = { id: cov.cob, ...cov.info };
   } else if (optSpec.approach === 'screen') ex.sinBloqueador = true;
