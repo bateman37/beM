@@ -2,8 +2,8 @@
 // Núcleo sin DOM ni reloj de ordenador. Toda intervención entra por submit / submitBatch / cancel, que se registran como
 // «comandos» ancladas a la frontera de avance (`afterStep`), no a una hora: son lo que permite reproducir el encuentro.
 import { MatchCore } from './core.js';
-import { SLOTS, deepCopy, MIDRANGE_POLICIES } from './data.js';
-import { ORDER_TYPES, EDITABLE_STYLES, TERMINAL_STATES } from './order-types.js';
+import { SLOTS, deepCopy, MIDRANGE_POLICIES, DEFENSE_STYLE_KEYS, validateDefensePlan } from './data.js';
+import { ORDER_TYPES, EDITABLE_STYLES, TERMINAL_STATES, ENTRY_TYPES } from './order-types.js';
 import { newTimeoutLedger, timeoutAllowance, chargeTimeout } from './admin.js';
 
 const P = MatchCore.prototype;
@@ -52,7 +52,7 @@ P.makeOrder = function makeOrder(spec, batchId) {
   const content = {}; for (const [k, v] of Object.entries(spec ?? {})) if (!SPEC_META.includes(k)) content[k] = deepCopy(v);
   const o = {
     id: `O${pad(this.orderSeq)}`, seq: this.orderSeq, batchId: batchId ?? null, team: spec?.team, issuer: spec?.issuer ?? 'manual',
-    type: spec?.type, kind: def?.kind ?? null, label: def?.label ?? null, scope: null, content, targets: [],
+    type: spec?.type, kind: spec?.type === 'defSpecial' && spec?.special === 'ESPD01' ? 'special' : (def?.kind ?? null), label: def?.label ?? null, scope: null, content, targets: [],
     anchor: this.frontier(), state: 'solicitada', reason: null, activation: null, execution: null,
     replaces: [], supersededBy: null, liveFields: null, notes: [], history: [],
   };
@@ -127,6 +127,89 @@ P.validate_director = function validate_director(o) {
   o.scope = this.planScope(); o.liveFields = ['director'];
   return ok();
 };
+// ---------------------------------------------------------------- órdenes defensivas (MOTOR-05)
+// La configuración conjunta se valida junta: se proyecta el plan con la orden y se aplica la misma validación de la entrada.
+const DEF_FIELDS = { defOrg: ['defense', 'target', 'targetAlt', 'fallbackOrg'], defHeight: ['pressureHeight'], defStyles: ['defStyles'], defCoverage: ['coverage', 'navigation'], defMarks: ['marks'] };
+P.projectDefensePlan = function projectDefensePlan(team, orders) {
+  const plan = deepCopy(this.teams[team].plan);
+  for (const o of orders) {
+    if (o.type === 'defStyles') plan.defStyles = { ...plan.defStyles, ...o.content.defStyles };
+    else if (o.type === 'defCoverage') { plan.coverage = o.content.coverage ?? plan.coverage; plan.navigation = o.content.navigation ?? (o.content.coverage && o.content.coverage !== plan.coverage ? null : plan.navigation); }
+    else if (o.type === 'defSpecial' && o.content.special !== 'ESPD01') { plan.specials = (plan.specials ?? []).filter((x) => x.id !== o.content.special); if (o.content.config) plan.specials.push({ id: o.content.special, ...o.content.config }); }
+    else if (DEF_FIELDS[o.type]) for (const f of DEF_FIELDS[o.type]) if (f in o.content) plan[f] = deepCopy(o.content[f]);
+  }
+  return plan;
+};
+P.checkDefensePlan = function checkDefensePlan(team, orders) {
+  const errs = [];
+  const plan = this.projectDefensePlan(team, orders);
+  validateDefensePlan(plan, this.input.teams[team], this.input.teams[1 - team], this.profile, 'plan', (path, message) => errs.push(`${path.replace(/^plan\./, '')}: ${message}`));
+  return errs;
+};
+const defValidate = (field) => function defValidated(o) {
+  const errs = this.checkDefensePlan(o.team, [o]);
+  if (errs.length) return fail(errs[0]);
+  o.scope = this.planScope(); o.liveFields = [field];
+  return ok();
+};
+P.validate_defOrg = function validate_defOrg(o) {
+  if (!o.content.defense) return fail('indica la organización defensiva');
+  const r = defValidate('defense').call(this, o); if (!r.ok) return r;
+  o.liveFields = ['defense', 'target', 'targetAlt', 'fallbackOrg'];
+  return r;
+};
+P.validate_defHeight = function validate_defHeight(o) { return defValidate('pressureHeight').call(this, o); };
+P.validate_defStyles = function validate_defStyles(o) {
+  const s = o.content.defStyles;
+  if (!s || typeof s !== 'object' || !Object.keys(s).length) return fail('indica al menos un estilo defensivo');
+  for (const k of Object.keys(s)) if (!DEFENSE_STYLE_KEYS.includes(k)) return fail(`«${k}» no es un estilo defensivo`);
+  const r = defValidate('defStyles').call(this, o); if (!r.ok) return r;
+  o.liveFields = Object.keys(s).map((k) => `defStyles.${k}`);
+  return r;
+};
+P.validate_defCoverage = function validate_defCoverage(o) {
+  if (!o.content.coverage) return fail('indica la cobertura');
+  const r = defValidate('coverage').call(this, o); if (!r.ok) return r;
+  o.liveFields = ['coverage', 'navigation'];
+  return r;
+};
+P.validate_defRoles = function validate_defRoles(o) {
+  const r = o.content.roles;
+  if (!r || typeof r !== 'object' || !Object.keys(r).length) return fail('indica al menos un rol defensivo');
+  for (const [pid, code] of Object.entries(r)) {
+    if (!this.teams[o.team].ids.includes(pid)) return fail(`${pid} no pertenece al equipo`);
+    if (!this.profile.activeCatalog.defenseRoles.includes(code)) return fail(`${code} no es un rol defensivo del catálogo`);
+  }
+  o.scope = this.planScope(); o.liveFields = Object.keys(r).map((k) => `defRoles.${k}`);
+  return ok();
+};
+P.validate_defMarks = function validate_defMarks(o) {
+  if (!Array.isArray(o.content.marks)) return fail('las marcas son una lista (vacía para retirarlas)');
+  const r = defValidate('marks').call(this, o); return r;
+};
+P.validate_defSpecial = function validate_defSpecial(o) {
+  const c = o.content; const id = c.special;
+  if (!this.profile.activeCatalog.specials.includes(id)) return fail(`la instrucción ${id} no está activa`);
+  if (id === 'ESPD01') {
+    const theirs = this.teams[1 - o.team].ids; const mine = this.teams[o.team].ids;
+    if (c.target && c.target !== 'holder' && !theirs.includes(c.target)) return fail('falta táctica: el objetivo es el poseedor o un jugador rival');
+    if (c.executor && (!mine.includes(c.executor) || !this.ps[c.executor].available)) return fail('falta táctica: el ejecutor debe ser un jugador disponible del equipo');
+    if (c.scope === undefined) c.scope = this.profile.defense.specials.defaultTacticalFoulScope.includes('next_legal_opportunity') ? 'next' : 'current'; // ámbito por defecto del perfil
+    if (c.scope !== 'current' && c.scope !== 'next') return fail('el ámbito es «posesión rival actual» o «siguiente posesión rival»');
+    if (c.scope === 'current') {
+      const p = this.poss;
+      if (!p || p.done || p.team === o.team) return fail('el rival no está atacando: no hay posesión rival en curso');
+      if (this.clock <= 0) return fail('no queda tiempo en el periodo');
+      o.scope = { kind: 'posesión', target: 'current', possession: p.id, possSeq: this.possSeq };
+    } else o.scope = { kind: 'posesión', target: 'next', minPossSeq: this.possSeq + 1 };
+    return ok();
+  }
+  const errs = this.checkDefensePlan(o.team, [o]);
+  if (errs.length) return fail(errs[0]);
+  o.scope = this.planScope(); o.liveFields = [`special.${id}`];
+  return ok();
+};
+
 P.validate_delegate = function validate_delegate(o) {
   if (o.content.domain !== 'lineup') return fail('solo se puede devolver el ámbito «quinteto» al entrenador básico en esta entrega');
   o.scope = this.planScope(); o.liveFields = ['lineupControl'];
@@ -215,6 +298,7 @@ P.validate_timeout = function validate_timeout(o) {
 // ---------------------------------------------------------------- aceptación (efectos de una solicitud válida)
 const WAIT = {
   plan: (o) => (o.scope.kind === 'periodo' ? `vigente desde el inicio del ${ordinal(o.scope.targetPeriod)} periodo` : 'vigente desde la próxima elección'),
+  special: (o) => (o.scope.target === 'current' ? 'pendiente de una oportunidad pertinente en la posesión rival actual' : 'pendiente de la siguiente posesión rival'),
   call: (o) => (o.scope.target === 'current' ? 'pendiente de la selección de inicio de la posesión actual' : 'pendiente de la siguiente posesión ofensiva propia'),
   lineup: () => 'pendiente de oportunidad reglamentaria',
   timeout: () => 'pendiente de oportunidad reglamentaria',
@@ -229,7 +313,7 @@ P.acceptOrder = function acceptOrder(o) {
       old.liveFields = old.liveFields.filter((f) => !o.liveFields.includes(f));
       if (!old.liveFields.length) { old.supersededBy = o.id; o.replaces.push(old.id); this.setState(old, 'sustituida', `sustituida por ${o.id} antes de activarse`); }
     }
-  } else if (o.kind === 'call' || o.kind === 'lineup') {
+  } else if (o.kind === 'call' || o.kind === 'lineup' || o.kind === 'special') {
     for (const old of this.orders) {
       if (old === o || old.kind !== o.kind || old.team !== o.team || old.state !== 'pendiente') continue;
       old.supersededBy = o.id; o.replaces.push(old.id); this.setState(old, 'sustituida', `sustituida por ${o.id} (la última solicitud válida prevalece)`);
@@ -303,6 +387,13 @@ P.applyPlanOrder = function applyPlanOrder(o) {
   else if (o.type === 'director') plan.directorPriority = [...o.content.directorPriority];
   else if (o.type === 'disposition') { plan.disposition = o.content.disposition; if (this.poss && !this.poss.done) { this.poss.disposition = null; this.poss.layout = null; } }
   else if (o.type === 'roles') for (const [pid, code] of Object.entries(o.content.roles)) { if (o.liveFields.includes(`roles.${pid}`)) this.roleOf[pid] = code; }
+  else if (o.type === 'defOrg') { for (const f of DEF_FIELDS.defOrg) if (f in o.content) plan[f] = deepCopy(o.content[f]); this.defPlanVer[o.team] += 1; this.def[o.team].eff = null; }
+  else if (o.type === 'defHeight') plan.pressureHeight = o.content.pressureHeight;
+  else if (o.type === 'defStyles') { for (const [k, v] of Object.entries(o.content.defStyles)) if (o.liveFields.includes(`defStyles.${k}`)) plan.defStyles[k] = v; }
+  else if (o.type === 'defCoverage') { const nav = o.content.navigation ?? (o.content.coverage !== plan.coverage ? null : plan.navigation); plan.coverage = o.content.coverage; plan.navigation = nav; }
+  else if (o.type === 'defRoles') { for (const [pid, code] of Object.entries(o.content.roles)) if (o.liveFields.includes(`defRoles.${pid}`)) this.defRoleOf[pid] = code; this.defPlanVer[o.team] += 1; }
+  else if (o.type === 'defMarks') { plan.marks = deepCopy(o.content.marks); this.defPlanVer[o.team] += 1; }
+  else if (o.type === 'defSpecial') { const sp = (plan.specials ?? []).filter((x) => x.id !== o.content.special); if (o.content.config) sp.push({ id: o.content.special, ...deepCopy(o.content.config) }); plan.specials = sp; this.defPlanVer[o.team] += 1; }
   else if (o.type === 'delegate') this.lineupControl[o.team] = { mode: 'auto', cause: 'devuelto al entrenador', orderId: o.id };
   o.activation = { step: this.stepSeq, period: this.period, clock: this.clock, possession: this.poss && !this.poss.done ? this.poss.id : null, lastEvent: this.events.length ? this.events[this.events.length - 1].id : null };
   this.supersedeActive(o);
@@ -313,7 +404,8 @@ P.activatePlanOrders = function activatePlanOrders(period = this.period, { entry
   for (const o of this.orders) {
     if (o.kind !== 'plan' || o.state !== 'pendiente') continue;
     if (o.scope.targetPeriod != null && o.scope.targetPeriod > period) continue;
-    if ((o.type === 'disposition' || o.type === 'roles') && !entry) { this.setWait(o, 'pendiente de la próxima entrada o reorganización compatible'); continue; }
+    if (o.kind !== 'plan') continue;
+    if (ENTRY_TYPES.has(o.type) && !entry) { this.setWait(o, 'pendiente de la próxima entrada o reorganización compatible'); continue; }
     this.applyPlanOrder(o);
   }
 };
@@ -414,7 +506,7 @@ P.releaseLineupControl = function releaseLineupControl() {
 };
 P.closeOrdersAtFinish = function closeOrdersAtFinish() {
   for (const o of this.orders) if (!TERMINAL_STATES.has(o.state) && o.state !== 'vigente') this.setState(o, 'caducada', 'terminó el partido');
-  for (const o of this.orders) if (o.kind === 'call' && (o.state === 'vigente' || o.state === 'suspendida')) this.setState(o, 'caducada', 'terminó el partido');
+  for (const o of this.orders) if ((o.kind === 'call' || o.kind === 'special') && (o.state === 'vigente' || o.state === 'suspendida')) this.setState(o, 'caducada', 'terminó el partido');
 };
 
 // ---------------------------------------------------------------- consulta para la interfaz y el registro
@@ -435,6 +527,13 @@ P.describeOrder = function describeOrder(o) {
     case 'director': return `Director y alternativas: ${c.directorPriority.join(' › ')}`;
     case 'disposition': return `Disposición: ${c.disposition}`;
     case 'roles': return `Roles ofensivos: ${Object.entries(c.roles).map(([k, v]) => `${k} = ${v}`).join(', ')}`;
+    case 'defOrg': return `Organización defensiva: ${c.defense}${c.target ? ` · objetivo ${c.target}` : ''}${c.targetAlt ? ` · alternativa ${c.targetAlt}` : ''}${c.fallbackOrg ? ` · si falta: ${c.fallbackOrg}` : ''}`;
+    case 'defHeight': return `Altura de presión: ${c.pressureHeight}`;
+    case 'defStyles': return `Estilos defensivos: ${Object.entries(c.defStyles).map(([k, v]) => `${k} = ${v}`).join(', ')}`;
+    case 'defCoverage': return `Cobertura: ${c.coverage}${c.navigation ? ` (${c.navigation})` : ''}`;
+    case 'defRoles': return `Roles defensivos: ${Object.entries(c.roles).map(([k, v]) => `${k} = ${v}`).join(', ')}`;
+    case 'defMarks': return `Marcas: ${c.marks.length ? c.marks.map((m) => `${m.defender} → ${m.attacker ?? m.fn}`).join(', ') : 'ninguna'}`;
+    case 'defSpecial': return c.special === 'ESPD01' ? `Falta táctica (${c.scope === 'current' ? 'posesión rival actual' : 'siguiente posesión rival'})${c.target && c.target !== 'holder' ? ` sobre ${c.target}` : ' sobre el poseedor'}${c.executor ? ` · ejecutor ${c.executor}` : ''}` : `${c.special === 'ESPD02' ? 'Doble a jugador' : 'No abandonar tirador'}: ${c.config ? JSON.stringify(c.config) : 'retirada'}`;
     case 'delegate': return 'Devolver la gestión del quinteto al entrenador básico';
     case 'call': return `Llamar ${c.playId} (${c.target === 'current' ? 'posesión actual' : 'siguiente posesión propia'})`;
     case 'substitution': return `Cambio: ${(c.swaps ?? []).map((s) => `sale ${s.out}, entra ${s.in}`).join('; ')}`;

@@ -16,6 +16,7 @@ Directorio de los encargos a Claude Code. **El texto original de un prompt ejecu
 | MOTOR-02 | Tres modalidades y dirección manual del partido | [`MOTOR-02-modos-y-direccion.md`](MOTOR-02-modos-y-direccion.md) | Integrado en `main` (Dennis comunicó la integración; sin auditoría de su código por parte de ChatGPT) | 2026-10-16 (intento 1) | — |
 | MOTOR-03 | Panel administrable, perfiles y comparación de ajustes | [`MOTOR-03-panel-y-perfiles.md`](MOTOR-03-panel-y-perfiles.md) · [recorrido manual](MOTOR-03-recorrido-manual.md) | Ejecutado, **pendiente de revisión de Dennis** | 2026-10-16 (intento 1) | — |
 | MOTOR-04 | Ataque posicional completo: siete estilos, seis disposiciones, roles, libro de quince fichas y nueve continuaciones | [`MOTOR-04-ataque-posicional.md`](MOTOR-04-ataque-posicional.md) · [recorrido manual](MOTOR-04-recorrido-manual.md) | Ejecutado, **pendiente de revisión de Dennis** | 2026-10-16 (intento 1) | — |
+| MOTOR-05 | Defensa completa: seis organizaciones, cinco estilos defensivos, tres alturas, cuatro coberturas, doce roles, tres especiales y cierre de salvedades de MOTOR-04 | [`MOTOR-05-defensa-completa.md`](MOTOR-05-defensa-completa.md) · [recorrido manual](MOTOR-05-recorrido-manual.md) | Ejecutado, **pendiente de revisión de Dennis** | 2026-10-16 (intento 1) | — |
 
 ## Fichas de ejecución
 
@@ -114,3 +115,17 @@ Comprobación local de enlaces: hecha por Claude. Presentación en GitHub: no co
 | Comprobaciones realizadas | `npm test` (63 pruebas, 10 nuevas), `npm run data:check`, cuatro partidos completos de cierre, recorrido de interfaz con Chromium automatizado. No ejecutado: Node 24, otros navegadores. |
 | Limitaciones | Todo SEM (anexo A) y contenido declarativo de lectura de Claude (V01); sin zonas ni roles defensivos, ESP completo, Forma, memoria ni cierre extraordinario. |
 | Pendientes | Validación de Dennis y confirmación de V01/V03/V05/V09 ([`../tecnico/motor04.md`](../tecnico/motor04.md)). |
+
+### MOTOR-05
+
+| Campo | Valor |
+|---|---|
+| Objetivo | Defensa completa sobre el motor común: ORG01–ORG06 como funciones y responsabilidades, cinco estilos, tres alturas, COB01–COB04, doce roles, marcas, ayudas con relevo, ESPD01–ESPD03, box and one con alternativa, y cierre acotado de las salvedades V01/V03/V05/V09 de MOTOR-04. |
+| Medio de entrada del texto | Archivo `.md` adjunto (`c825fb9e-beM-PROMPT-MOTOR-05-DEFENSA-COMPLETA.md`; prefijo añadido por la subida). Copia archivada íntegra (con anexo): [`MOTOR-05-defensa-completa.md`](MOTOR-05-defensa-completa.md). |
+| Fecha real de ejecución | 2026-10-16 · intento 1 |
+| Rama | `claude/busy-edison-b1fmnc` (rama designada por el entorno; el trabajo se hizo en `feature/MOTOR-05-defensa-completa` y se integra fast-forward en ella). Parte de MOTOR-04 (ya contenido en la rama de trabajo; no estaba fusionado en `main`). |
+| PR | Ver la PR abierta contra `main` (sin fusionar); el enlace consta en la respuesta final de la entrega. |
+| Resultado breve | Defensa por funciones con referencia/responsabilidad actual, estilos que orientan elecciones, coberturas con compromisos persistentes, avance presionado con violación de 8 s, especiales con sanción antideportiva administrada, órdenes defensivas con validación conjunta, filas, perfiles, registro y reproducción (`export/4`) ampliados. |
+| Comprobaciones realizadas | `npm test` (75 pruebas, 12 nuevas), `npm run data:check`, cinco partidos completos de cierre, matriz organización×cobertura de desarrollo, recorrido de interfaz con Chromium automatizado. No ejecutado: Node 24, otros navegadores, contraste con el PDF FIBA (no accesible). |
+| Limitaciones | Todo SEM (anexo A) y contenido declarativo de lectura de Claude (D01); lecturas FIBA propias (antideportiva, 8 s); sin presiones zonales específicas, saques tácticos, memoria, Forma ni cierre extraordinario; V01 con POS05/06 y POS14 pendientes de decisión. |
+| Pendientes | Validación de Dennis ([recorrido manual](MOTOR-05-recorrido-manual.md)) y decisiones listadas en [`../tecnico/motor05.md`](../tecnico/motor05.md). |

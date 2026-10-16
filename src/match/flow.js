@@ -45,6 +45,8 @@ P.planDurationWithExtra = function planDurationWithExtra(spec, cat, purpose, ext
 
 // ---------------------------------------------------------------- resolución con duración compuesta
 P.resolveAttempt = function resolveAttempt(ex) {
+  const tf = this.tacticalFoul(ex); // ESPD01: la orden vigente puede producir un contacto antes de resolver la acción
+  if (tf) return tf;
   const w = this.categoryWeights(ex);
   const items = ['turnover', 'defensiveNonShootingFoul', 'shootingFoul', 'fieldShot', 'looseBall', 'offensiveFoul', 'ballViolation'].filter((k) => w[k] > 0).map((k) => ({ key: k, w: w[k] }));
   const cat = this.pick(items, 'categoría').key;
@@ -52,7 +54,7 @@ P.resolveAttempt = function resolveAttempt(ex) {
   const spec = this.durationKindFor(ex, cat);
   const plan = this.planDurationWithExtra(spec, cat, 'duración', ex.extraPasses ?? 0);
   if (plan.expired) return this.expire(ex, cat);
-  const t = this.consumeParts(plan.parts);
+  const t = this.withDuty(this.dutyFor(ex), () => this.consumeParts(plan.parts));
   const base = {
     t, team: ex.team,
     intent: { origen: ex.origin, continuacion: ex.chain?.length ? ex.chain : (ex.label ?? null), oportunidad: ex.opportunity ?? null, zona: ex.zone, calidad: ex.quality?.cls ?? null, categoria: cat, ejecucion: ex.exec, ...this.directorTrace(), ...this.playTrace(ex) },
@@ -136,26 +138,6 @@ P.playQuality = function playQuality(entry, ex) {
   return { CA, CD };
 };
 
-P.tryHelp = function tryHelp(ex, L, q) {
-  const opp = this.profile.opportunity; const team = ex.team; const defT = 1 - team;
-  const interior = ex.zone === 'rim' || ex.zone === 'inside';
-  if (!interior) return { K: 0 };
-  const slots = this.profile.participantSlots.additionalHelper;
-  const cands = this.playersAtSlots(defT, slots).filter((id) => id !== ex.defend && id !== ex.icpt);
-  if (!cands.length) return { K: 0 };
-  if (!this.bernoulli(opp.helpProbability, 'ayuda:compromiso')) return { K: 0 };
-  const helper = this.pick(cands.map((id) => ({ key: id, w: this.taskValue('TAR09', 'attack', { helper: id }) })), 'ayuda:ayudante').key;
-  const abandoned = this.lineup[team][this.slotOf(helper)];
-  const Ah = this.taskValue('TAR09', 'attack', { helper }, 'ayuda:ayudante');
-  const Ar = this.taskValue('TAR09', 'defense', { receiver: abandoned }, 'ayuda:receptor_abandonado');
-  const p = sigmoid(logit(opp.helpExecutionP0) + opp.helpDifferenceSensitivity * (Ah - Ar));
-  const arrives = this.bernoulli(p, 'ayuda:llega');
-  this.cover('ayuda comprometida');
-  const res = { K: 0, helper, abandoned, arrives, pArrive: p };
-  if (arrives) { res.K = opp.helperQualityLogit; this.cover('ayuda llega'); }
-  return res;
-};
-
 P.acceptance = function acceptance(team, decider, techValue) {
   const { L, q } = this.libertyAndReading(team, decider);
   const f = this.profile.selection.direct.acceptanceFloor;
@@ -175,6 +157,7 @@ P.reorganize = function reorganize(poss, reason, playId, { toDisposition = null 
   const tenths = this.sampleDuration(d, 'reorganización', { factor: f, limit: this.limit() - Math.round(this.profile.durationSeconds.organizedShot[0] * f * 10) });
   const t = this.consume(tenths, 'organized');
   poss.disorganized = false; poss.reorgCount = (poss.reorgCount ?? 0) + 1;
+  this.resetCurrent(); // reorganización pertinente: la defensa se reorganiza (cambios y ayudas ya no están activos)
   if (playId) (poss.excludePlays ??= new Set()).add(playId);
   if (toDisposition) poss.disposition = toDisposition;
   this.activatePlanOrders(this.period, { entry: true }); // frontera de reorganización compatible: entran disposición y roles pendientes
@@ -310,7 +293,7 @@ P.denialAlternative = function denialAlternative(poss, entry, ex, lq) {
 
 P.runPlay = function runPlay(poss, entry, dir, lq) {
   const team = poss.team;
-  const { CA, CD } = entry.q ?? this.playQuality(entry);
+  let { CA, CD } = entry.q ?? this.playQuality(entry);
   // salida (jugador, zona)
   const mixed = this.mixIntention(entry.exits.map((x) => this.exitItem(x)), lq, `salida:${entry.playId}`);
   const ex = { ...this.pick(mixed, 'salida').exit };
@@ -319,31 +302,40 @@ P.runPlay = function runPlay(poss, entry, dir, lq) {
   if (entry.spec.fixing && ex.role !== 'cutter') ex.cutRecord = { cortador: entry.roles.cutter, recibe: false }; // el corte fijó sin recibir: utilidad resuelta, no una recepción
   let nativeQuality = true;
   if (ex.stage) { this.receiverDecision(ex, entry); nativeQuality = false; }
+  // cobertura del bloqueo (COB01–COB04): dos defensores identificables, responsabilidad abandonada y compromiso real (MOTOR-05)
+  poss.coverage = null;
+  const cov = entry.spec.coverage ? this.beginCoverage(entry, poss) : null;
+  const cvk = this.coverageForExit(ex, cov);
+  if (cov && cov.exchanged) CD = this.cdWith(entry, { primary: cov.D2, screenMarker: cov.D1 }); // tras el cambio, la calidad del bloqueo se evalúa con los defensores intercambiados
+  let kctx = nativeQuality ? cvk.k : 0;
+  // decisiones de estilo de esta interacción: negar o facilitar ayuda, presión al balón, intentar robo (una vez cada una)
+  const double = this.applyDouble(ex); // ESPD02: reutiliza el compromiso de dos; no se duplica con COB04
+  const intent = this.defenseIntent(ex);
+  const cvDef = this.profile.opportunity.coverageContainment;
+  const kd = ex.exec === 'dribble' && ex.pressureClose === false && !cvk.spaceFromCoverage ? cvDef.handlerPullupQualityLogit : 0; // distancia concedida: mismo espacio que el drop
+  if (nativeQuality) kctx += kd;
   // ayuda en salidas interiores y lectura de la ventana libre
   const help = this.tryHelp(ex, lq.L, lq.q);
-  let kctx = help.K;
+  kctx += help.K;
+  ex.defTrace = { ...intent, ...(double ? { especial: double } : {}), ...(help.helper ? { ayuda: { ayudante: help.helper, deja: help.abandoned, llega: help.arrives, relevo: help.relief, relevoLlega: help.reliefArrives } } : {}), ...(help.blocked ? { ayudaBloqueadaPorNoAbandonar: help.blocked } : {}) };
   if (help.helper) {
-    ex.helper = help.helper; ex.helpArrived = help.arrives;
+    ex.helper = help.helper; ex.helpArrived = help.arrives; ex.helpTrace = { deja: help.abandoned, relevo: help.relief, relevoLlega: help.reliefArrives };
+    const covered = help.relief && help.reliefArrives ? help.relief : null; // el relevo cubre lo abandonado; si no llega, se concede
     if (help.abandoned === ex.actor) {
-      ex.window = true; ex.defend = null; ex.icpt = null; ex.helpWindow = 'receptor libre';
-    } else if (help.abandoned !== ex.holder) {
+      if (covered) { ex.defend = covered; ex.icpt = covered; ex.helpWindow = 'relevo cubre al receptor'; }
+      else { ex.window = true; ex.defend = null; ex.icpt = null; ex.helpWindow = 'receptor libre'; }
+    } else if (help.abandoned && help.abandoned !== ex.holder) {
       const tech = this.recipeObj({ [ZONE_TEC.three]: 1 }, help.abandoned);
       const pAcc = this.acceptance(team, ex.holder, tech);
       if (this.bernoulli(pAcc, 'CONT04:aceptación')) {
-        const cand = ['three', 'midrange', 'rim'].map((zone) => ({ actor: help.abandoned, zone, exec: 'pass', passer: ex.holder, icpt: null, defend: null, moved: false, offContact: null, holder: ex.holder, role: 'abierto', key: `abierto:${zone}`, qual: null, stage: null }));
+        const cand = ['three', 'midrange', 'rim'].map((zone) => ({ actor: help.abandoned, zone, exec: 'pass', passer: ex.holder, icpt: covered, defend: covered, window: !covered, moved: false, offContact: null, holder: ex.holder, role: 'abierto', key: `abierto:${zone}`, qual: null, stage: null }));
         const sc = this.scoreExits(team, cand, null, 'TAR03');
         const pickd = this.pick(this.mixIntention(sc.map((x) => this.exitItem(x)), lq, 'salida:descarga'), 'salida:descarga').exit;
-        Object.assign(ex, pickd, { window: true, label: 'CONT04', helper: help.helper, helpArrived: help.arrives, helpWindow: 'descarga' });
+        Object.assign(ex, pickd, { window: !covered, label: 'CONT04', helper: help.helper, helpArrived: help.arrives, helpWindow: covered ? 'descarga con relevo' : 'descarga', denier: null, stealAttempt: undefined, pressureClose: undefined, noDenial: false, defMix: undefined });
         ex.chain = [...(ex.chain ?? []), 'CONT04']; ex.extraPasses = (ex.extraPasses ?? 0) + 1; nativeQuality = false; kctx = 0;
         this.cover('CONT04 descarga');
       }
     }
-  }
-  // cobertura COB01 (contención drop del bloqueo directo): solo en las fichas que la declaran y con calidad nativa
-  if (nativeQuality && entry.spec.coverage) {
-    const cv = this.profile.opportunity.coverageContainment;
-    if (ex.pullup) kctx += cv.handlerPullupQualityLogit;
-    if (ex.roller) kctx += cv.rollerQualityLogit;
   }
   // pases adicionales (CONT05) mientras haya alternativas realizables y tiempo
   this.extraPassChain(ex, lq, entry);
@@ -351,14 +343,15 @@ P.runPlay = function runPlay(poss, entry, dir, lq) {
   // calidad previa al resultado
   let q;
   if (nativeQuality) {
-    q = ex.window ? this.qualityOf(ex, CA, 0, kctx, false) : this.qualityOf(ex, CA, CD, kctx, true);
+    const CDx = ex.defMix ? this.mixDuelCD(entry, ex) : CD;
+    q = ex.window ? this.qualityOf(ex, CA, 0, kctx, false) : this.qualityOf(ex, CA, CDx, kctx, true);
   } else if (ex.qual === 'TAR05' && !ex.window && ex.defend) {
-    q = this.qualityOf(ex, this.taskValue('TAR05', 'attack', { post: ex.actor }), this.taskValue('TAR05', 'defense', { postMarker: ex.defend }), 0, true);
+    q = this.qualityOf(ex, this.taskValue('TAR05', 'attack', { post: ex.actor }), ex.defMix ? this.mixedValue(ex, (id) => this.taskValue('TAR05', 'defense', { postMarker: id })) : this.taskValue('TAR05', 'defense', { postMarker: ex.defend }), 0, true);
   } else {
     // el actor recibe tras un pase adicional, una descarga o una recepción: calidad por desmarque (TAR03) frente a su marcador
     const ca = this.taskValue('TAR03', 'attack', { receiver: ex.actor });
-    if (ex.window || !ex.defend) q = this.qualityOf(ex, ca, 0, 0, false);
-    else q = this.qualityOf(ex, ca, this.taskValue('TAR03', 'defense', { receiverMarker: ex.defend }), 0, true);
+    if (ex.window || !ex.defend) q = this.qualityOf(ex, ca, 0, kd, false);
+    else q = this.qualityOf(ex, ca, ex.defMix ? this.mixedValue(ex, (id) => this.taskValue('TAR03', 'defense', { receiverMarker: id })) : this.taskValue('TAR03', 'defense', { receiverMarker: ex.defend }), kd, true);
   }
   ex.quality = q;
   if (ex.window) { ex.opportunity = 'ESP06'; this.cover('ESP06 recepción liberada'); }
@@ -398,11 +391,12 @@ P.extraPassChain = function extraPassChain(ex, lq, entry) {
     // receptor entre los compañeros disponibles; mezcla de preferencias/valor (sin libro: es una decisión de jugador)
     const pairs = [];
     for (const id of cands) for (const zone of ZONES) {
-      pairs.push({ actor: id, zone, exec: 'pass', passer: ex.actor, icpt: this.markerOf(id), defend: this.markerOf(id), moved: false, offContact: null, holder: ex.actor, role: 'adicional', key: `${id}:${zone}`, qual: null, stage: null });
+      const open = this.isOpen(id); // atacante sin función defensiva que lo cubra: recibe libre (concesión estructural)
+      pairs.push({ actor: id, zone, exec: 'pass', passer: ex.actor, icpt: open ? null : this.markerOf(id), defend: open ? null : (this.shotDefenderFor(id, zone) ?? this.markerOf(id)), window: open, moved: false, offContact: null, holder: ex.actor, role: 'adicional', key: `${id}:${zone}`, qual: null, stage: null });
     }
     const sc = this.scoreExits(ex.team, pairs, null, 'TAR03');
     const pk = this.pick(this.mixIntention(sc.map((x) => this.exitItem(x)), lq, 'salida:pase_adicional'), 'salida:pase_adicional').exit;
-    Object.assign(ex, pk, { label: 'CONT05', window: false });
+    Object.assign(ex, pk, { label: 'CONT05', window: !!pk.window });
     ex.extraPasses += 1; ex.chain.push('CONT05'); ex.helper = undefined;
     this.cover('CONT05 pase adicional');
   }
@@ -522,6 +516,8 @@ P.playTrace = function playTrace(ex) {
     if (ex.decidedBy) t.decidePor = { jugador: ex.decidedBy, ...ex.decisionLq };
     if (ex.negada) t.negacionPrevia = ex.negada.de;
     if (ex.cutRecord) t.corte = ex.cutRecord;
+    if (ex.cobertura) t.cobertura = ex.cobertura;
+    if (ex.defTrace && Object.keys(ex.defTrace).length) t.defensa = ex.defTrace;
   }
   return t;
 };
@@ -536,6 +532,8 @@ P.directorTrace = function directorTrace() {
 P.startPossession = function startPossession(spec) {
   this.possSeq += 1;
   this.poss = { id: `P${String(this.possSeq).padStart(3, '0')}`, seq: this.possSeq, team: spec.team, entry: spec.entry, origin: spec.origin ?? null, carrier: spec.carrier ?? null, carrierPid: spec.carrier ?? null, advanced: spec.entry === 'deadFront', disorganized: false, reorgCount: 0, done: false, units: 0, playStarted: false, transitionDone: false, pendingFT: null, deficit: spec.deficit ?? 0, denials: [], disposition: null, layout: null };
+  this.poss.cur = {}; this.poss.committed = new Set(); this.poss.commitKinds = {};
+  this.refreshEffectiveOrg(1 - spec.team); // organización defensiva efectiva en la frontera de entrada de la posesión
   this.shotClock = spec.shotClock; this.shotClockOn = true;
 };
 
@@ -551,10 +549,12 @@ P.advancePhase = function advancePhase(poss) {
   } else if (poss.entry === 'inbound') {
     this.emit('inbound', { team: poss.team, intent: { origen: 'saque con reloj parado' } });
   }
+  const height = this.defPlan(1 - poss.team).pressureHeight;
+  if (height !== 'normal' || !this.dcfg().pressure.normalUsesExistingAdvance) return this.pressedAdvance(poss, height); // MOTOR-05: presión adelantada
   const lim = this.limit();
   if (lim <= Math.round(d.advance[0] * 10)) return this.expire({ team: poss.team, origin: 'avance' }, 'avance');
   const tenths = this.sampleDuration(d.advance, 'avance', { limit: lim });
-  if (tenths >= rules.backcourtSeconds * 10) { throw new Error('violación de 8 s no representada'); }
+  if (tenths >= rules.backcourtSeconds * 10) return this.backcourtViolation(poss);
   const t = this.consume(tenths, 'organized');
   this.emit('advance', { t, team: poss.team, intent: { origen: 'avance a pista de ataque' } });
   poss.advanced = true;
@@ -566,6 +566,7 @@ P.advancePhase = function advancePhase(poss) {
 P.settlePossession = function settlePossession(poss, r) {
   poss.done = true; poss.endKind = r.end ?? null;
   this.expireCallsFor(poss);
+  this.expireSpecialOrdersFor(poss);
   return r;
 };
 
@@ -576,6 +577,7 @@ P.possessionUnit = function possessionUnit() {
   const poss = this.poss;
   this.activatePlanOrders(this.period, { entry: poss.units === 0 }); // disposición y roles solo entran en la entrada de posesión o en una reorganización
   this.activateCalls(poss);
+  this.activateSpecialOrders(poss);
   poss.units += 1;
   if (poss.units > 64) throw new Error('límite técnico de acciones por posesión alcanzado');
   let r = null;
@@ -597,6 +599,7 @@ P.possessionUnit = function possessionUnit() {
   if (!poss.advanced) {
     const e = this.advancePhase(poss);
     if (e && e.end) return this.settlePossession(poss, e);
+    if (e && e.cont) return e; // falta en el avance: la ventana reglamentaria es una frontera propia
   }
   r = this.organizedAction(poss);
   if (r && r.end) return this.settlePossession(poss, r);

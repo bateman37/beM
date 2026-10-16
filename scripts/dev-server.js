@@ -26,5 +26,5 @@ export function createLabServer() {
 }
 
 if (process.argv[1] && process.argv[1].endsWith('dev-server.js')) {
-  createLabServer().listen(PORT, HOST, () => console.log(`Laboratorio beM (MOTOR-04): http://${HOST === '127.0.0.1' ? 'localhost' : HOST}:${PORT}/`));
+  createLabServer().listen(PORT, HOST, () => console.log(`Laboratorio beM (MOTOR-05): http://${HOST === '127.0.0.1' ? 'localhost' : HOST}:${PORT}/`));
 }

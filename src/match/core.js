@@ -56,6 +56,7 @@ export class MatchCore {
     this.stepSeq = 0; this.lastStep = null;
     this.pendingWindows = []; this.periodBreak = null; this.periodStartPending = false; this.pendingFoul = null;
     this.initDirection();
+    this.initDefense();
   }
 
   reachOf(p) {
@@ -81,7 +82,6 @@ export class MatchCore {
   onCourt(t) { return SLOTS.map((s) => this.lineup[t][s]); }
   slotOf(pid) { return this.ps[pid].slot; }
   oppIdx(t) { return 1 - t; }
-  markerOf(pid) { const p = this.pl[pid]; return this.lineup[1 - p.teamIdx][this.ps[pid].slot]; }
   playersAtSlots(t, slots) { return slots.map((s) => this.lineup[t][s]).filter((id) => this.ps[id].available); }
 
   // ---------- azar ----------
@@ -178,7 +178,9 @@ export class MatchCore {
         const s = this.ps[id];
         if (!s.available) continue;
         if (s.onCourt) {
-          s.energy = clamp(s.energy - e.costPerLiveMinute * mins * load * this.enduranceFactor(id), e.range[0], e.range[1]);
+          // carga por encargo: el comprometido paga clamp(carga · factor) una sola vez por el intervalo (máximo, no producto)
+          const l = this.duty?.[id] ? clamp(load * this.duty[id], e.loadBounds[0], e.loadBounds[1]) : load;
+          s.energy = clamp(s.energy - e.costPerLiveMinute * mins * l * this.enduranceFactor(id), e.range[0], e.range[1]);
           s.stintTenths += dur;
         } else {
           s.energy = clamp(s.energy + e.benchRecoveryPerLiveMinute * mins, e.range[0], e.range[1]);

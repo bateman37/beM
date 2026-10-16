@@ -1,6 +1,6 @@
 # Estado del proyecto
 
-Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANGELOG.md)). Última actualización: 2026-10-16, entrega MOTOR-04.
+Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANGELOG.md)). Última actualización: 2026-10-16, entrega MOTOR-05.
 
 ## Qué hay realmente en el repositorio
 
@@ -9,12 +9,20 @@ Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANG
 - **Copia original congelada** del funcional unificado y **exportado completo vigente** generado: ver [`historico/`](historico/README.md) y [`exportados/`](exportados/README.md).
 - **Utilidades documentales** en `scripts/docs/` (Python 3, librería estándar).
 
+## MOTOR-05 (ejecutado, pendiente de Dennis)
+
+- **Existe**: seis organizaciones defensivas como funciones y responsabilidades (individual, 2–3, 3–2, 1–3–1, 1–2–2, box and one con objetivo, alternativa y ORG02 por ausencia), cinco estilos defensivos, tres alturas de presión (avance presionado y violación de 8 s), cuatro coberturas, doce roles, marcas, ayudas con relevo, ESPD01–ESPD03 (falta táctica con antideportiva administrada, doble, no abandonar), órdenes defensivas con validación conjunta, controles en Preparación y dirección en vivo y panel › Repertorio defensivo. 75 pruebas y cinco partidos completos de cierre. Ver [`tecnico/motor05.md`](tecnico/motor05.md) y [recorrido manual](prompts/MOTOR-05-recorrido-manual.md).
+- **Salvedades de MOTOR-04**: V03 corregido; V05 y V09 verificados; V01 contrastado (POS05/06 y POS14 pendientes de decisión de contenido); el 90–126 revisado sin evidencia de error («SEM, evaluación pendiente»).
+- **Provisional**: cifras del anexo A (SEM), contenido declarativo defensivo (lectura de Claude, D01) y lecturas FIBA propias de antideportiva y 8 s (PDF no accesible); nada calibrado. **Cambia los resultados** (referencia `20261016`: 90–126 → 70–100); los `export/2` y `/3` se rechazan sin reproducirse.
+- **Comprobado por Claude**: pruebas automáticas y recorrido en Chromium. **Pendiente de Dennis**: todo el recorrido manual y las decisiones de `motor05.md`. **No ejecutado**: Node 24, otros navegadores.
+- Siguiente: lo que ordene Dennis (MOTOR-06: ESP completo y saques tácticos; no iniciado).
+
 ## MOTOR-04 (ejecutado, pendiente de Dennis)
 
 - **Existe**: siete estilos y media distancia con efecto, DIS01–DIS06, quince roles, libro de quince fichas por familia con nueve continuaciones, decisión del receptor, negación (CONT06/CONT07), encargos de rebote y balance, panel › Repertorio, candidata explícita desde perfiles anteriores y órdenes de disposición y roles. 63 pruebas y cuatro partidos completos de cierre. Ver [`tecnico/motor04.md`](tecnico/motor04.md) y [recorrido manual](prompts/MOTOR-04-recorrido-manual.md).
 - **Provisional**: cifras del anexo A (SEM) y contenido declarativo del repertorio (lectura de Claude, V01); nada calibrado. **Cambia los resultados** respecto a MOTOR-02/03.
 - **Comprobado por Claude**: pruebas automáticas y recorrido en Chromium. **Pendiente de Dennis**: todo el recorrido manual y V01/V03/V05/V09. **No ejecutado**: Node 24, otros navegadores.
-- Siguiente: lo que ordene Dennis (MOTOR-05 no iniciado: zonas, coberturas y roles defensivos).
+- Siguiente: lo que ordene Dennis (MOTOR-05 ejecutado: defensa completa).
 
 ## MOTOR-03 (ejecutado, pendiente de Dennis)
 

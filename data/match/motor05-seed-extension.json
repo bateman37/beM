@@ -1,0 +1,1325 @@
+{
+ "seedExtensionId": "SEM-MOTOR05-20261016",
+ "status": "SEM: provisional, no calibrado",
+ "basedOn": "SEM-MOTOR01-20261016",
+ "origin": "docs/prompts/MOTOR-05-defensa-completa.md (anexo A): cifras SEM propuestas por ChatGPT, copiadas literalmente; contenido declarativo de organizaciones, funciones, responsabilidades, roles y coberturas: lectura de Claude de los apartados 4–10 del encargo, a revisar por Dennis",
+ "additions": {
+  "defense": {
+   "styles": {
+    "additionalHelpOddsRatio": [
+     0.25,
+     0.55,
+     1,
+     1.5,
+     2
+    ],
+    "closePressureChoiceOddsRatio": [
+     0.5,
+     0.75,
+     1,
+     1.35,
+     1.7
+    ],
+    "receiverDenialChoiceOddsRatio": [
+     0.5,
+     0.75,
+     1,
+     1.4,
+     1.8
+    ],
+    "stealAttemptChoiceOddsRatio": [
+     0.4,
+     0.7,
+     1,
+     1.4,
+     1.8
+    ],
+    "interiorProtectionChoiceWeight": [
+     1.6,
+     1.25,
+     1,
+     0.8,
+     0.6
+    ],
+    "exteriorProtectionChoiceWeight": [
+     0.6,
+     0.8,
+     1,
+     1.25,
+     1.6
+    ]
+   },
+   "choiceReferences": {
+    "closePressureChoiceP0": 0.5,
+    "receiverDenialChoiceP0": 0.5,
+    "stealAttemptGivenAccessP0": 0.25,
+    "symmetricTaskP0": 0.5
+   },
+   "assignment": {
+    "perimeterFit": {
+     "TEC12": 0.6,
+     "FIS03": 0.25,
+     "MEN04": 0.15
+    },
+    "interiorFit": {
+     "TEC13": 0.6,
+     "FIS04": 0.25,
+     "TEC17": 0.15
+    },
+    "screenPursuitFit": {
+     "TEC16": 0.6,
+     "TEC12": 0.25,
+     "FIS03": 0.15
+    },
+    "helpRecoveryFit": {
+     "MEN04": 0.35,
+     "TEC12": 0.25,
+     "TEC13": 0.25,
+     "FIS02": 0.15
+    },
+    "roleFitWeight": 1.25,
+    "otherRoleFitWeight": 1,
+    "retainedReferenceScorePoints": 0.5,
+    "nominalPositionExecutionPenalty": 0
+   },
+   "pressure": {
+    "normalUsesExistingAdvance": true,
+    "newAdvancedInteractionBaseWeights": {
+     "controlledAdvance": 0.6,
+     "delayedAdvance": 0.15,
+     "pressureBeaten": 0.15,
+     "turnover": 0.06,
+     "contact": 0.04
+    },
+    "advanceDurationFactorByHeight": {
+     "normal": 1,
+     "three_quarters": 1.1,
+     "full": 1.2
+    },
+    "committedActorLoadByHeight": {
+     "normal": 1,
+     "three_quarters": 1.1,
+     "full": 1.2
+    },
+    "closePressureExposureWeightFactor": 1.15,
+    "closePressureBeatenWeightFactor": 1.2,
+    "delayedAdvanceAdditionalSeconds": [
+     0.5,
+     1.5,
+     3
+    ]
+   },
+   "coverage": {
+    "committedActorLoad": {
+     "COB01": 1,
+     "COB02": 1.05,
+     "COB03": 1.15,
+     "COB04": 1.25
+    },
+    "sameTaskTwoDefenderMixture": {
+     "primary": 0.65,
+     "second": 0.35
+    },
+    "referenceNavigation": {
+     "COB01": "over",
+     "COB02": "exchange",
+     "COB03": "over_and_recover",
+     "COB04": "joint_commitment"
+    }
+   },
+   "specials": {
+    "boxAndOneDefaultFallback": "ORG02",
+    "tacticalFoulAttemptGivenAccessP0": 0.65,
+    "defaultTacticalFoulScope": "declared_opponent_possession_next_legal_opportunity",
+    "automaticNewTargetByReputation": false,
+    "duplicateTrapCommitmentAllowed": false
+   }
+  },
+  "defenseRepertoire": {
+   "attackerFunctions": {
+    "top": {
+     "fit": "perimeterFit",
+     "tags": [
+      "ballPressure",
+      "ballContain",
+      "chaser"
+     ],
+     "area": "high"
+    },
+    "wing": {
+     "fit": "perimeterFit",
+     "tags": [
+      "shooterChaser",
+      "chaser",
+      "switch"
+     ],
+     "area": "high"
+    },
+    "corner": {
+     "fit": "perimeterFit",
+     "tags": [
+      "shooterChaser",
+      "perimeterHelp"
+     ],
+     "area": "low"
+    },
+    "elbow": {
+     "fit": "screenPursuitFit",
+     "tags": [
+      "switch",
+      "mobileInterior"
+     ],
+     "area": "high"
+    },
+    "highInside": {
+     "fit": "interiorFit",
+     "tags": [
+      "postDefense",
+      "mobileInterior"
+     ],
+     "area": "low"
+    },
+    "lowInside": {
+     "fit": "interiorFit",
+     "tags": [
+      "postDefense",
+      "rimProtect",
+      "rimHelp"
+     ],
+     "area": "low"
+    },
+    "inside": {
+     "fit": "interiorFit",
+     "tags": [
+      "postDefense",
+      "rimProtect",
+      "rimHelp"
+     ],
+     "area": "low"
+    },
+    "block": {
+     "fit": "interiorFit",
+     "tags": [
+      "postDefense",
+      "rimProtect",
+      "rimHelp"
+     ],
+     "area": "low"
+    }
+   },
+   "fallbackFunctionBySlot": {
+    "PG": "top",
+    "SG": "wing",
+    "SF": "corner",
+    "PF": "highInside",
+    "C": "lowInside"
+   },
+   "attackerPriority": [
+    "top",
+    "wing",
+    "elbow",
+    "corner",
+    "highInside",
+    "lowInside",
+    "inside",
+    "block"
+   ],
+   "organizations": {
+    "ORG01": {
+     "name": "Individual",
+     "kind": "individual",
+     "description": "Cinco referencias personales al organizarse (adecuación funcional, marcas manuales y estabilidad), con modificaciones reales por ayudas y cambios."
+    },
+    "ORG02": {
+     "name": "Zona 2–3",
+     "kind": "zone",
+     "description": "Dos referencias adelantadas; dos posteriores laterales; una posterior central/interior.",
+     "functions": {
+      "F1": {
+       "label": "Adelantada 1",
+       "line": "front",
+       "fit": "perimeterFit",
+       "tags": [
+        "ballPressure",
+        "ballContain",
+        "perimeterHelp",
+        "switch"
+       ]
+      },
+      "F2": {
+       "label": "Adelantada 2",
+       "line": "front",
+       "fit": "perimeterFit",
+       "tags": [
+        "ballPressure",
+        "ballContain",
+        "perimeterHelp",
+        "switch"
+       ]
+      },
+      "W1": {
+       "label": "Posterior lateral 1",
+       "line": "wing",
+       "fit": "helpRecoveryFit",
+       "tags": [
+        "perimeterHelp",
+        "teamHelp",
+        "switch",
+        "shooterChaser"
+       ]
+      },
+      "W2": {
+       "label": "Posterior lateral 2",
+       "line": "wing",
+       "fit": "helpRecoveryFit",
+       "tags": [
+        "perimeterHelp",
+        "teamHelp",
+        "switch",
+        "shooterChaser"
+       ]
+      },
+      "B": {
+       "label": "Posterior central",
+       "line": "back",
+       "fit": "interiorFit",
+       "tags": [
+        "rimProtect",
+        "rimHelp",
+        "postDefense",
+        "mobileInterior",
+        "teamHelp"
+       ]
+      }
+     },
+     "areas": {
+      "top": {
+       "first": "F1",
+       "relief": [
+        "F2",
+        "B"
+       ]
+      },
+      "wing": [
+       {
+        "first": "F1",
+        "relief": [
+         "W1"
+        ]
+       },
+       {
+        "first": "F2",
+        "relief": [
+         "W2"
+        ]
+       }
+      ],
+      "corner": [
+       {
+        "first": "W1",
+        "relief": [
+         "F1",
+         "B"
+        ]
+       },
+       {
+        "first": "W2",
+        "relief": [
+         "F2",
+         "B"
+        ]
+       }
+      ],
+      "elbow": [
+       {
+        "first": "F1",
+        "relief": [
+         "B"
+        ]
+       },
+       {
+        "first": "F2",
+        "relief": [
+         "B"
+        ]
+       }
+      ],
+      "highInside": {
+       "first": "F1",
+       "relief": [
+        "F2",
+        "B"
+       ]
+      },
+      "lowInside": {
+       "first": "B",
+       "relief": [
+        "W1",
+        "W2"
+       ]
+      },
+      "inside": {
+       "first": "B",
+       "relief": [
+        "W1",
+        "W2"
+       ]
+      },
+      "block": [
+       {
+        "first": "B",
+        "relief": [
+         "W1"
+        ]
+       },
+       {
+        "first": "B",
+        "relief": [
+         "W2"
+        ]
+       }
+      ]
+     },
+     "rim": [
+      "B"
+     ],
+     "concessions": [
+      "Poste alto disputado entre primera línea y central sin cobertura perfecta simultánea.",
+      "El lateral posterior que sale a la esquina deja la cobertura interior por resolver."
+     ]
+    },
+    "ORG03": {
+     "name": "Zona 3–2",
+     "kind": "zone",
+     "description": "Una referencia alta central y dos altas laterales; dos posteriores.",
+     "functions": {
+      "H0": {
+       "label": "Alta central",
+       "line": "high",
+       "fit": "perimeterFit",
+       "tags": [
+        "ballPressure",
+        "ballContain",
+        "perimeterHelp",
+        "switch"
+       ]
+      },
+      "H1": {
+       "label": "Alta lateral 1",
+       "line": "high",
+       "fit": "perimeterFit",
+       "tags": [
+        "ballPressure",
+        "ballContain",
+        "perimeterHelp",
+        "switch"
+       ]
+      },
+      "H2": {
+       "label": "Alta lateral 2",
+       "line": "high",
+       "fit": "perimeterFit",
+       "tags": [
+        "ballPressure",
+        "ballContain",
+        "perimeterHelp",
+        "switch"
+       ]
+      },
+      "P1": {
+       "label": "Posterior 1",
+       "line": "back",
+       "fit": "interiorFit",
+       "tags": [
+        "rimProtect",
+        "rimHelp",
+        "postDefense",
+        "mobileInterior",
+        "teamHelp"
+       ]
+      },
+      "P2": {
+       "label": "Posterior 2",
+       "line": "back",
+       "fit": "interiorFit",
+       "tags": [
+        "rimProtect",
+        "rimHelp",
+        "postDefense",
+        "mobileInterior",
+        "teamHelp"
+       ]
+      }
+     },
+     "areas": {
+      "top": {
+       "first": "H0",
+       "relief": [
+        "H1",
+        "H2"
+       ]
+      },
+      "wing": [
+       {
+        "first": "H1",
+        "relief": [
+         "P1"
+        ]
+       },
+       {
+        "first": "H2",
+        "relief": [
+         "P2"
+        ]
+       }
+      ],
+      "corner": [
+       {
+        "first": "P1",
+        "relief": [
+         "H1"
+        ]
+       },
+       {
+        "first": "P2",
+        "relief": [
+         "H2"
+        ]
+       }
+      ],
+      "elbow": [
+       {
+        "first": "H0",
+        "relief": [
+         "P1",
+         "P2"
+        ]
+       },
+       {
+        "first": "H0",
+        "relief": [
+         "P2",
+         "P1"
+        ]
+       }
+      ],
+      "highInside": {
+       "first": "P1",
+       "relief": [
+        "H0",
+        "P2"
+       ]
+      },
+      "lowInside": {
+       "first": "P1",
+       "relief": [
+        "P2"
+       ]
+      },
+      "inside": {
+       "first": "P2",
+       "relief": [
+        "P1"
+       ]
+      },
+      "block": [
+       {
+        "first": "P1",
+        "relief": [
+         "P2"
+        ]
+       },
+       {
+        "first": "P2",
+        "relief": [
+         "P1"
+        ]
+       }
+      ]
+     },
+     "rim": [
+      "P1",
+      "P2"
+     ],
+     "concessions": [
+      "La posterior que sale a la esquina deja el interior menos protegido.",
+      "La recepción entre líneas exige el compromiso de la función pertinente."
+     ]
+    },
+    "ORG04": {
+     "name": "Zona 1–3–1",
+     "kind": "zone",
+     "description": "Una superior; dos intermedias laterales y una intermedia central; una de fondo.",
+     "functions": {
+      "T": {
+       "label": "Superior",
+       "line": "front",
+       "fit": "perimeterFit",
+       "tags": [
+        "ballPressure",
+        "ballContain",
+        "switch"
+       ]
+      },
+      "M1": {
+       "label": "Intermedia lateral 1",
+       "line": "mid",
+       "fit": "screenPursuitFit",
+       "tags": [
+        "perimeterHelp",
+        "teamHelp",
+        "switch",
+        "shooterChaser"
+       ]
+      },
+      "M2": {
+       "label": "Intermedia lateral 2",
+       "line": "mid",
+       "fit": "screenPursuitFit",
+       "tags": [
+        "perimeterHelp",
+        "teamHelp",
+        "switch",
+        "shooterChaser"
+       ]
+      },
+      "MC": {
+       "label": "Intermedia central",
+       "line": "mid",
+       "fit": "helpRecoveryFit",
+       "tags": [
+        "mobileInterior",
+        "teamHelp",
+        "switch",
+        "postDefense"
+       ]
+      },
+      "K": {
+       "label": "Fondo",
+       "line": "back",
+       "fit": "interiorFit",
+       "tags": [
+        "rimProtect",
+        "rimHelp",
+        "postDefense",
+        "mobileInterior",
+        "teamHelp"
+       ]
+      }
+     },
+     "areas": {
+      "top": {
+       "first": "T",
+       "relief": [
+        "MC",
+        "M1"
+       ]
+      },
+      "wing": [
+       {
+        "first": "M1",
+        "relief": [
+         "MC",
+         "T"
+        ]
+       },
+       {
+        "first": "M2",
+        "relief": [
+         "MC",
+         "T"
+        ]
+       }
+      ],
+      "corner": [
+       {
+        "first": "K",
+        "relief": [
+         "M1"
+        ]
+       },
+       {
+        "first": "K",
+        "relief": [
+         "M2"
+        ]
+       }
+      ],
+      "elbow": [
+       {
+        "first": "MC",
+        "relief": [
+         "M1",
+         "K"
+        ]
+       },
+       {
+        "first": "MC",
+        "relief": [
+         "M2",
+         "K"
+        ]
+       }
+      ],
+      "highInside": {
+       "first": "MC",
+       "relief": [
+        "K",
+        "T"
+       ]
+      },
+      "lowInside": {
+       "first": "K",
+       "relief": [
+        "MC"
+       ]
+      },
+      "inside": {
+       "first": "K",
+       "relief": [
+        "MC"
+       ]
+      },
+      "block": [
+       {
+        "first": "K",
+        "relief": [
+         "MC"
+        ]
+       },
+       {
+        "first": "K",
+        "relief": [
+         "M1",
+         "M2"
+        ]
+       }
+      ]
+     },
+     "rim": [
+      "K"
+     ],
+     "concessions": [
+      "La función de fondo no puede cubrir ambas esquinas a la vez.",
+      "La recepción alta y la protección baja se reparten entre intermedia central y fondo."
+     ]
+    },
+    "ORG05": {
+     "name": "Zona 1–2–2",
+     "kind": "zone",
+     "description": "Una adelantada; dos intermedias; dos posteriores.",
+     "functions": {
+      "A": {
+       "label": "Adelantada",
+       "line": "front",
+       "fit": "perimeterFit",
+       "tags": [
+        "ballPressure",
+        "ballContain",
+        "switch"
+       ]
+      },
+      "M1": {
+       "label": "Intermedia 1",
+       "line": "mid",
+       "fit": "screenPursuitFit",
+       "tags": [
+        "perimeterHelp",
+        "teamHelp",
+        "switch",
+        "shooterChaser"
+       ]
+      },
+      "M2": {
+       "label": "Intermedia 2",
+       "line": "mid",
+       "fit": "screenPursuitFit",
+       "tags": [
+        "perimeterHelp",
+        "teamHelp",
+        "switch",
+        "shooterChaser"
+       ]
+      },
+      "P1": {
+       "label": "Posterior 1",
+       "line": "back",
+       "fit": "interiorFit",
+       "tags": [
+        "rimProtect",
+        "rimHelp",
+        "postDefense",
+        "mobileInterior",
+        "teamHelp"
+       ]
+      },
+      "P2": {
+       "label": "Posterior 2",
+       "line": "back",
+       "fit": "interiorFit",
+       "tags": [
+        "rimProtect",
+        "rimHelp",
+        "postDefense",
+        "mobileInterior",
+        "teamHelp"
+       ]
+      }
+     },
+     "areas": {
+      "top": {
+       "first": "A",
+       "relief": [
+        "M1",
+        "M2"
+       ]
+      },
+      "wing": [
+       {
+        "first": "M1",
+        "relief": [
+         "A",
+         "P1"
+        ]
+       },
+       {
+        "first": "M2",
+        "relief": [
+         "A",
+         "P2"
+        ]
+       }
+      ],
+      "corner": [
+       {
+        "first": "P1",
+        "relief": [
+         "M1"
+        ]
+       },
+       {
+        "first": "P2",
+        "relief": [
+         "M2"
+        ]
+       }
+      ],
+      "elbow": [
+       {
+        "first": "M1",
+        "relief": [
+         "P1"
+        ]
+       },
+       {
+        "first": "M2",
+        "relief": [
+         "P2"
+        ]
+       }
+      ],
+      "highInside": {
+       "first": "M1",
+       "relief": [
+        "P1",
+        "P2"
+       ]
+      },
+      "lowInside": {
+       "first": "P1",
+       "relief": [
+        "P2"
+       ]
+      },
+      "inside": {
+       "first": "P2",
+       "relief": [
+        "P1"
+       ]
+      },
+      "block": [
+       {
+        "first": "P1",
+        "relief": [
+         "P2"
+        ]
+       },
+       {
+        "first": "P2",
+        "relief": [
+         "P1"
+        ]
+       }
+      ]
+     },
+     "rim": [
+      "P1",
+      "P2"
+     ],
+     "concessions": [
+      "Una intermedia que disputa la recepción entre líneas deja su zona lateral.",
+      "Las dos posteriores protegen el interior pero no ambas esquinas a la vez."
+     ]
+    },
+    "ORG06": {
+     "name": "Box and one",
+     "kind": "boxAndOne",
+     "description": "Un perseguidor individual del objetivo y cuatro funciones de caja, dos altas y dos bajas.",
+     "functions": {
+      "X": {
+       "label": "Perseguidor del objetivo",
+       "line": "chase",
+       "fit": "screenPursuitFit",
+       "tags": [
+        "chaser",
+        "shooterChaser",
+        "primaryThreat"
+       ]
+      },
+      "HI1": {
+       "label": "Caja alta 1",
+       "line": "high",
+       "fit": "perimeterFit",
+       "tags": [
+        "ballContain",
+        "perimeterHelp",
+        "switch",
+        "ballPressure"
+       ]
+      },
+      "HI2": {
+       "label": "Caja alta 2",
+       "line": "high",
+       "fit": "perimeterFit",
+       "tags": [
+        "ballContain",
+        "perimeterHelp",
+        "switch",
+        "ballPressure"
+       ]
+      },
+      "LO1": {
+       "label": "Caja baja 1",
+       "line": "back",
+       "fit": "interiorFit",
+       "tags": [
+        "rimProtect",
+        "rimHelp",
+        "postDefense",
+        "mobileInterior",
+        "teamHelp"
+       ]
+      },
+      "LO2": {
+       "label": "Caja baja 2",
+       "line": "back",
+       "fit": "interiorFit",
+       "tags": [
+        "rimProtect",
+        "rimHelp",
+        "postDefense",
+        "mobileInterior",
+        "teamHelp"
+       ]
+      }
+     },
+     "areas": {
+      "top": {
+       "first": "HI1",
+       "relief": [
+        "HI2",
+        "LO1",
+        "LO2"
+       ]
+      },
+      "wing": [
+       {
+        "first": "HI1",
+        "relief": [
+         "HI2",
+         "LO1",
+         "LO2"
+        ]
+       },
+       {
+        "first": "HI2",
+        "relief": [
+         "HI1",
+         "LO2",
+         "LO1"
+        ]
+       }
+      ],
+      "elbow": [
+       {
+        "first": "HI1",
+        "relief": [
+         "HI2",
+         "LO1",
+         "LO2"
+        ]
+       },
+       {
+        "first": "HI2",
+        "relief": [
+         "HI1",
+         "LO2",
+         "LO1"
+        ]
+       }
+      ],
+      "corner": [
+       {
+        "first": "LO1",
+        "relief": [
+         "HI1",
+         "LO2"
+        ]
+       },
+       {
+        "first": "LO2",
+        "relief": [
+         "HI2",
+         "LO1"
+        ]
+       }
+      ],
+      "highInside": {
+       "first": "LO1",
+       "relief": [
+        "HI1",
+        "LO2",
+        "HI2"
+       ]
+      },
+      "lowInside": {
+       "first": "LO1",
+       "relief": [
+        "LO2"
+       ]
+      },
+      "inside": {
+       "first": "LO2",
+       "relief": [
+        "LO1"
+       ]
+      },
+      "block": [
+       {
+        "first": "LO1",
+        "relief": [
+         "LO2"
+        ]
+       },
+       {
+        "first": "LO2",
+        "relief": [
+         "LO1"
+        ]
+       }
+      ]
+     },
+     "rim": [
+      "LO1",
+      "LO2"
+     ],
+     "chaser": "X",
+     "dedicated": true,
+     "concessions": [
+      "El perseguidor dedicado no ayuda: la caja de cuatro asume el resto.",
+      "Solo cuenta como box and one efectiva mientras el objetivo está en pista."
+     ]
+    }
+   },
+   "roles": {
+    "D01": {
+     "tags": [
+      "teamHelp"
+     ],
+     "encargo": "Cubrir compromisos y responsabilidades desplazadas."
+    },
+    "D02": {
+     "tags": [
+      "rimHelp"
+     ],
+     "encargo": "Acudir a protección interior compatible."
+    },
+    "D03": {
+     "tags": [
+      "perimeterHelp"
+     ],
+     "encargo": "Ayudar desde perímetro y recuperar."
+    },
+    "D04": {
+     "tags": [
+      "ballContain"
+     ],
+     "encargo": "Sostener penetración y evitar ser superado."
+    },
+    "D05": {
+     "tags": [
+      "postDefense"
+     ],
+     "encargo": "Disputar recepción, posición y creación de poste."
+    },
+    "D06": {
+     "tags": [
+      "switch"
+     ],
+     "encargo": "Asumir intercambios de responsabilidad compatibles."
+    },
+    "D07": {
+     "tags": [
+      "mobileInterior"
+     ],
+     "encargo": "Defender interacciones alejadas y recuperar."
+    },
+    "D08": {
+     "tags": [
+      "primaryThreat"
+     ],
+     "encargo": "Asumir la referencia prioritaria indicada."
+    },
+    "D09": {
+     "tags": [
+      "chaser"
+     ],
+     "encargo": "Dificultar recepción/continuidad del objetivo."
+    },
+    "D10": {
+     "tags": [
+      "shooterChaser"
+     ],
+     "encargo": "Seguir salidas, cortes e indirectos del tirador."
+    },
+    "D11": {
+     "tags": [
+      "ballPressure"
+     ],
+     "encargo": "Incomodar al manejador dentro del plan."
+    },
+    "D12": {
+     "tags": [
+      "rimProtect"
+     ],
+     "encargo": "Presencia y oposición cercana cuando tiene acceso."
+    }
+   },
+   "defaultRolesBySlot": {
+    "PG": "D04",
+    "SG": "D10",
+    "SF": "D01",
+    "PF": "D07",
+    "C": "D12"
+   },
+   "styles": {
+    "help": {
+     "label": "Ayudas",
+     "levels": [
+      "Solo emergencia",
+      "Pocas ayudas",
+      "Equilibrado",
+      "Ayudas frecuentes",
+      "Muchas ayudas"
+     ]
+    },
+    "pressure": {
+     "label": "Presión al balón",
+     "levels": [
+      "Dar distancia",
+      "Contener",
+      "Equilibrado",
+      "Presión cercana",
+      "Presión máxima"
+     ]
+    },
+    "receivers": {
+     "label": "Defensa de receptores",
+     "levels": [
+      "Priorizar ayuda",
+      "Facilitar ayuda",
+      "Equilibrado",
+      "Negar recepciones",
+      "Negación máxima"
+     ]
+    },
+    "steal": {
+     "label": "Riesgo de robo",
+     "levels": [
+      "Muy prudente",
+      "Prudente",
+      "Equilibrado",
+      "Agresivo",
+      "Muy agresivo"
+     ]
+    },
+    "protection": {
+     "label": "Protección del tiro",
+     "levels": [
+      "Interior",
+      "Preferencia interior",
+      "Equilibrado",
+      "Preferencia exterior",
+      "Exterior"
+     ]
+    }
+   },
+   "heights": {
+    "normal": "Normal (media pista)",
+    "three_quarters": "Tres cuartos",
+    "full": "Total (toda pista)"
+   },
+   "coverages": {
+    "COB01": {
+     "name": "Contener / drop",
+     "commitment": "El defensor del bloqueador protege por detrás; el perseguidor recupera.",
+     "concession": "Puede dejar espacio al manejador; conserva quién llega al tiro o a la continuación.",
+     "navigation": [
+      "over",
+      "under"
+     ]
+    },
+    "COB02": {
+     "name": "Cambiar",
+     "commitment": "Intercambia las responsabilidades de los dos defensores que ejecutan la cobertura.",
+     "concession": "Desajuste, sello o rebote posibles; el nuevo emparejamiento persiste hasta una modificación pertinente.",
+     "navigation": [
+      "exchange"
+     ]
+    },
+    "COB03": {
+     "name": "Salir y recuperar (show)",
+     "commitment": "El segundo defensor incomoda temporalmente el balón y trata de volver.",
+     "concession": "El continuador puede quedar disponible mientras recupera.",
+     "navigation": [
+      "over_and_recover"
+     ]
+    },
+    "COB04": {
+     "name": "Atrapar / 2×1",
+     "commitment": "Dos defensores se comprometen con el balón.",
+     "concession": "El pase de salida o la recepción corta pueden crear una ventaja detrás.",
+     "navigation": [
+      "joint_commitment"
+     ]
+    }
+   },
+   "navigationLabels": {
+    "over": "Por encima",
+    "under": "Por debajo",
+    "exchange": "Intercambio",
+    "over_and_recover": "Por encima y vuelta",
+    "joint_commitment": "Compromiso conjunto"
+   },
+   "specials": {
+    "ESPD01": {
+     "name": "Falta táctica",
+     "fields": [
+      "target",
+      "executor",
+      "scope"
+     ]
+    },
+    "ESPD02": {
+     "name": "Doble a jugador",
+     "fields": [
+      "principal",
+      "alternate",
+      "activation",
+      "executor",
+      "executorAlt",
+      "scope"
+     ],
+     "activations": [
+      "reception",
+      "firstDribble"
+     ]
+    },
+    "ESPD03": {
+     "name": "No abandonar tirador",
+     "fields": [
+      "protected",
+      "scope"
+     ]
+    }
+   }
+  },
+  "activeCatalog.pressureHeights": [
+   "normal",
+   "three_quarters",
+   "full"
+  ],
+  "activeCatalog.defenseStyles": [
+   "help",
+   "pressure",
+   "receivers",
+   "steal",
+   "protection"
+  ],
+  "activeCatalog.specials": [
+   "ESPD01",
+   "ESPD02",
+   "ESPD03"
+  ],
+  "activeCatalog.defenseRoles": [
+   "D01",
+   "D02",
+   "D03",
+   "D04",
+   "D05",
+   "D06",
+   "D07",
+   "D08",
+   "D09",
+   "D10",
+   "D11",
+   "D12"
+  ],
+  "scenario.plans.0.defStyles": {
+   "help": 3,
+   "pressure": 3,
+   "receivers": 3,
+   "steal": 3,
+   "protection": 3
+  },
+  "scenario.plans.0.navigation": null,
+  "scenario.plans.0.marks": [],
+  "scenario.plans.0.target": null,
+  "scenario.plans.0.targetAlt": null,
+  "scenario.plans.0.fallbackOrg": "ORG02",
+  "scenario.plans.0.specials": [],
+  "scenario.plans.1.defStyles": {
+   "help": 3,
+   "pressure": 3,
+   "receivers": 3,
+   "steal": 3,
+   "protection": 3
+  },
+  "scenario.plans.1.navigation": null,
+  "scenario.plans.1.marks": [],
+  "scenario.plans.1.target": null,
+  "scenario.plans.1.targetAlt": null,
+  "scenario.plans.1.fallbackOrg": "ORG02",
+  "scenario.plans.1.specials": []
+ },
+ "replacements": {
+  "activeCatalog.defenses": [
+   "ORG01",
+   "ORG02",
+   "ORG03",
+   "ORG04",
+   "ORG05",
+   "ORG06"
+  ],
+  "activeCatalog.coverage": [
+   "COB01",
+   "COB02",
+   "COB03",
+   "COB04"
+  ]
+ },
+ "replacementNotes": {
+  "activeCatalog.defenses": "Antes solo ORG01 (MOTOR-01).",
+  "activeCatalog.coverage": "Antes solo COB01 (MOTOR-01)."
+ }
+}

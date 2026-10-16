@@ -8,6 +8,7 @@ Cómo está **realmente implementado** el proyecto. Distingue lo documentado de 
 - **MOTOR-02** (modalidades, órdenes, tiempos muertos, registro y reproducción): [`motor02.md`](motor02.md).
 - **MOTOR-03** (panel de ajustes, perfiles, herencia, validación, comparación e intercambio): [`motor03.md`](motor03.md).
 - **MOTOR-04** (repertorio ofensivo, disposiciones, estilos, roles, rebote/balance): [`motor04.md`](motor04.md).
+- **MOTOR-05** (defensa por funciones, coberturas, alturas de presión, especiales y cierre de salvedades de MOTOR-04): [`motor05.md`](motor05.md).
 - **Utilidades documentales** (`scripts/docs/`): descritas en [`../exportados/README.md`](../exportados/README.md).
 
 ## Pendiente (no existe aún)
