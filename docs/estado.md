@@ -1,6 +1,6 @@
 # Estado del proyecto
 
-Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANGELOG.md)). Última actualización: 2026-10-16, entrega MOTOR-07.
+Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANGELOG.md)). Última actualización: 2026-10-16, entrega MOTOR-08.
 
 ## Qué hay realmente en el repositorio
 
@@ -8,6 +8,15 @@ Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANG
 - **Diseño funcional del motor y del primer laboratorio**, organizado por temas en [`motor/`](motor/README.md) (34 capítulos). Es **especificación**: está *definida*, no implementada.
 - **Copia original congelada** del funcional unificado y **exportado completo vigente** generado: ver [`historico/`](historico/README.md) y [`exportados/`](exportados/README.md).
 - **Utilidades documentales** en `scripts/docs/` (Python 3, librería estándar).
+
+## MOTOR-08 (ejecutado, pendiente de Dennis)
+
+- **Existe**: entrenador automático (ENTREF01–03) con cinco ámbitos delegables (rotaciones con estabilidad, librillo de faltas, tiempos muertos con reserva y enfriamiento, ajustes y finales), memoria defensiva de hasta ocho patrones con exposición previa al acierto, vista permitida del entrenador, bloqueos manuales y orden `coachDelegation`, plan de participación precargado y revisable, interfaz de preparación, tarjeta del partido y diagnóstico, `export/7`.
+- **Provisional**: parámetros SEM del encargo y tablas declarativas (lectura de Claude); nada calibrado ni validado. **Cambia los resultados** (referencia `20261016`: 83–97 → 88–110); el `export/6` se rechaza sin reproducirse.
+- **Salvedades de MOTOR-07**: disruptiva (14 s), COB04 en entregas con fallback, recepción forzada no garantizada y mapa MEN acotado; lecturas FIBA del resumen del encargo, **sin consultar el PDF**.
+- **No implementado**: ruta B de la memoria (preparación en acción), memoria entre encuentros, calibración.
+- **Comprobado por Claude**: 118 pruebas, `data:check`, cinco partidos de integración y recorrido en Chromium. **Pendiente de Dennis**: todo el recorrido manual y las `DECISIÓN REQUERIDA` de `motor08.md`. **No ejecutado**: Node 24, otros navegadores.
+- Siguiente: lo que ordene Dennis (MOTOR-09: cierre reglamentario extraordinario; no iniciado).
 
 ## MOTOR-07 (ejecutado, pendiente de Dennis)
 

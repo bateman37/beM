@@ -19,6 +19,7 @@ Directorio de los encargos a Claude Code. **El texto original de un prompt ejecu
 | MOTOR-05 | Defensa completa: seis organizaciones, cinco estilos defensivos, tres alturas, cuatro coberturas, doce roles, tres especiales y cierre de salvedades de MOTOR-04 | [`MOTOR-05-defensa-completa.md`](MOTOR-05-defensa-completa.md) · [recorrido manual](MOTOR-05-recorrido-manual.md) | Ejecutado, **pendiente de revisión de Dennis** | 2026-10-16 (intento 1) | — |
 | MOTOR-06 | Transición, decisiones espontáneas ESP01–ESP20 y saques de banda y fondo (seis jugadas y seis respuestas), con cierre de salvedades de MOTOR-05 | [`MOTOR-06-transicion-y-saques.md`](MOTOR-06-transicion-y-saques.md) · [recorrido manual](MOTOR-06-recorrido-manual.md) | Ejecutado, **pendiente de revisión de Dennis** | 2026-10-16 (intento 1) | — |
 | MOTOR-07 | Capacidades, energía, Forma, presión, tres momentos, momento colectivo T y episodios EPI01–EPI06, con mapa causal de las 32 capacidades y cierre acotado de salvedades de MOTOR-06 | [`MOTOR-07-capacidades-y-estados.md`](MOTOR-07-capacidades-y-estados.md) · [recorrido manual](MOTOR-07-recorrido-manual.md) | Ejecutado, **pendiente de revisión de Dennis** | 2026-10-16 (intento 1) | — |
+| MOTOR-08 | Entrenador automático (tres políticas, cinco ámbitos delegables), memoria defensiva colectiva, contrato de información, perfil `SEM-MOTOR08` y cierre acotado de salvedades de MOTOR-07 | [`MOTOR-08-entrenador-y-memoria.md`](MOTOR-08-entrenador-y-memoria.md) · [recorrido manual](MOTOR-08-recorrido-manual.md) | Ejecutado, **pendiente de revisión de Dennis** | 2026-10-16 (intento 1) | — |
 
 ## Fichas de ejecución
 
@@ -159,3 +160,17 @@ Comprobación local de enlaces: hecha por Claude. Presentación en GitHub: no co
 | Comprobaciones realizadas | `npm test` (11 pruebas nuevas), `npm run data:check`, cinco partidos completos de cierre con invariantes, revisión independiente acotada del contenido declarativo de MOTOR-06, recorrido con Chromium automatizado. No ejecutado: Node 24, otros navegadores, contraste con el PDF FIBA (403). |
 | Limitaciones | Todo SEM (anexo A) y tablas declarativas de lectura de Claude; sin calibrar; Forma entre encuentros, temporada y memoria fuera de alcance; el tiempo de sesión y la cuota no son medibles. |
 | Pendientes | Validación de Dennis ([recorrido manual](MOTOR-07-recorrido-manual.md)) y las cuatro `DECISIÓN REQUERIDA` de [`../tecnico/motor07.md`](../tecnico/motor07.md). |
+
+### MOTOR-08
+
+| Campo | Valor |
+|---|---|
+| Objetivo | Entrenador automático con tres políticas y cinco ámbitos delegables (rotaciones, ajustes, faltas, tiempos muertos, finales), memoria defensiva colectiva, contrato de información, tablas administrables, perfil `SEM-MOTOR08` e interfaz de preparación, partido y diagnóstico; cierre acotado de salvedades de MOTOR-07. |
+| Medio de entrada del texto | Archivo `.md` adjunto (`beM-PROMPT-MOTOR-08-ENTRENADOR-Y-MEMORIA-RIVAL.md`; prefijo añadido por la subida). Copia archivada íntegra: [`MOTOR-08-entrenador-y-memoria.md`](MOTOR-08-entrenador-y-memoria.md). |
+| Fecha real de ejecución | 2026-10-16 · intento 1 |
+| Rama | `claude/busy-edison-b1fmnc` (rama designada por el entorno), a partir de `main` tras la fusión de la PR #8 de MOTOR-07. |
+| PR | Ver la PR abierta contra `main` (sin fusionar); el enlace consta en la respuesta final de la entrega. |
+| Resultado breve | `SEM-MOTOR08`, `coach-policy.js`/`coach.js`/`memory.js`, filas `coach.*`/`memory.*`, vistas del panel, `beM-match-input/6` y `export/7`, interfaz del entrenador y diagnóstico. Referencia `20261016`: 88–110. |
+| Comprobaciones realizadas | `npm test` (118 pruebas, 12 nuevas), `npm run data:check`, cinco partidos completos de integración con invariantes, recorrido de interfaz con Chromium automatizado. No ejecutado: Node 24, otros navegadores, contraste con el PDF FIBA. |
+| Limitaciones | Todo SEM y tablas declarativas de lectura de Claude; ruta B de la memoria no implementada; lecturas FIBA tomadas del resumen del encargo; el tiempo de sesión y la cuota no son medibles. |
+| Pendientes | Validación de Dennis ([recorrido manual](MOTOR-08-recorrido-manual.md)) y las `DECISIÓN REQUERIDA` de [`../tecnico/motor08.md`](../tecnico/motor08.md). |
