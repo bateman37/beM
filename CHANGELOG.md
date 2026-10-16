@@ -2,6 +2,13 @@
 
 Registro breve de entregas. Una entrada por entrega; las más recientes primero.
 
+## MOTOR-05 — Defensa completa y cierre de salvedades de MOTOR-04 — 2026-10-16
+
+- Seis organizaciones (individual, zonas 2–3/3–2/1–3–1/1–2–2 y box and one) como **funciones y responsabilidades** (referencia frente a responsabilidad actual), cinco estilos defensivos con efecto en elecciones y encargos, tres alturas de presión (avance presionado, violación de 8 s), cuatro coberturas con persistencia del cambio, doce roles, marcas, ayudas con relevo y las tres especiales (falta táctica con sanción antideportiva administrada, doble a jugador, no abandonar tirador); box and one con objetivo, alternativa individual y ORG02 por ausencia.
+- Extensión `SEM-MOTOR05-20261016` (cifras del anexo A verificadas por `npm run data:check`), filas `defense.*` con consumidor, órdenes defensivas con validación conjunta, controles en Preparación y dirección en vivo, panel › Repertorio defensivo, JSON `beM-match-export/4` (los `export/2` y `/3` se rechazan sin tocarse).
+- Salvedades de MOTOR-04: V03 corregido (la posición nominal ya no filtra candidatos), V05 y V09 verificados, V01 contrastado de forma independiente (sin aprobación en bloque; quedan POS05/06 y POS14 pendientes de decisión), 90–126 revisado sin evidencia de error.
+- **Cambia los resultados** (referencia `20261016`: 90–126 → 70–100). 75 pruebas (12 nuevas). Documentación: [`docs/tecnico/motor05.md`](docs/tecnico/motor05.md), [recorrido manual](docs/prompts/MOTOR-05-recorrido-manual.md). Pendiente de validación de Dennis.
+
 ## MOTOR-04 — Ataque posicional completo — 2026-10-16
 
 - Siete estilos ofensivos con efecto causal (transición, elaboración, riesgo y «después del tiro» ya no son valores declarados) e instrucción de media distancia; seis disposiciones como funciones; quince roles ofensivos; libro por familias con POS01–POS15 y CONT01–CONT09 sobre tareas reutilizadas (nueve fichas referencian la receta de su donante); decisión del receptor con su propia lectura; escalera de negación (CONT06/CONT07).
