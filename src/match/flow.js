@@ -52,7 +52,7 @@ P.resolveAttempt = function resolveAttempt(ex) {
   const t = this.consumeParts(plan.parts);
   const base = {
     t, team: ex.team,
-    intent: { origen: ex.origin, continuacion: ex.chain?.length ? ex.chain : (ex.label ?? null), oportunidad: ex.opportunity ?? null, zona: ex.zone, calidad: ex.quality?.cls ?? null, categoria: cat, ejecucion: ex.exec },
+    intent: { origen: ex.origin, continuacion: ex.chain?.length ? ex.chain : (ex.label ?? null), oportunidad: ex.opportunity ?? null, zona: ex.zone, calidad: ex.quality?.cls ?? null, categoria: cat, ejecucion: ex.exec, ...this.directorTrace() },
     participants: this.participantsOf(ex),
   };
   switch (cat) {
@@ -154,13 +154,21 @@ P.organizedAction = function organizedAction(poss) {
   const team = poss.team;
   const f = this.profile.selection.organizedDurationFactor[this.styleOf(team).organizedPace - 1];
   const d = this.profile.durationSeconds;
-  if (this.limit() <= Math.round(d.organizedShot[0] * f * 10)) return this.simpleResource(poss, { origin: this.clock <= this.shotClock ? 'ESP17' : 'ESP16' });
-  if (poss.oreb) { const r = this.afterOffensiveRebound(poss); if (r) return r; }
+  if (this.limit() <= Math.round(d.organizedShot[0] * f * 10)) { this.noteCall(this.callFor(poss), 'tiempo insuficiente: recurso final de posesión'); return this.simpleResource(poss, { origin: this.clock <= this.shotClock ? 'ESP17' : 'ESP16' }); }
+  if (poss.oreb) { const r = this.afterOffensiveRebound(poss); if (r) { this.noteCall(this.callFor(poss), 'opción directa previa: continuación tras rebote ofensivo'); return r; } }
   const dir = this.pickDirector(team);
+  poss.director = dir;
   const el = this.eligiblePlays(team, dir.id, poss.excludePlays);
-  if (!el.length) return this.simpleResource(poss, { origin: 'ESP15', denied: null });
+  const call = this.callFor(poss);
+  if (!el.length) { this.noteCall(call, 'sin ficha elegible: recurso sencillo'); return this.simpleResource(poss, { origin: 'ESP15', denied: null }); }
   const { L, q } = this.libertyAndReading(team, dir.id);
   const coach = this.coachPlayDistribution(el);
+  if (call) {
+    // Orden manual específica: la ficha llamada recibe todo el peso del libro si es realizable. La lectura del director
+    // (libertad) y la negación posterior siguen actuando; no se fuerza un inicio ni un desenlace.
+    if (el.some((e) => e.playId === call.content.playId)) { for (const k of Object.keys(coach)) coach[k] = k === call.content.playId ? 1 : 0; }
+    else this.noteCall(call, `${call.content.playId} no realizable (sin participante compatible o ya negada en esta posesión)`);
+  }
   for (const e of el) {
     e.exits = this.scoreExits(team, this.buildExits(team, e.playId, e.roles, e.def), e.play.shotWeights);
     const ct = e.exits.reduce((s, x) => s + x.coach, 0) || 1;
@@ -171,6 +179,9 @@ P.organizedAction = function organizedAction(poss) {
   const mixed = this.mixIntention(el.map((e) => ({ key: e.playId, coach: e.coach, pref: e.pref, adapt: e.adapt, entry: e })), { L, q }, 'ficha');
   const chosen = this.pick(mixed, 'ficha:selección');
   const entry = chosen.entry;
+  if (call && entry.playId !== call.content.playId && el.some((e) => e.playId === call.content.playId)) this.noteCall(call, 'la lectura del director eligió otra ficha');
+  this.consumeCall(poss, entry.playId);
+  poss.playStarted = true;
   this.cover(entry.playId);
   return this.runPlay(poss, entry, dir, { L, q });
 };
@@ -359,10 +370,16 @@ P.afterOffensiveRebound = function afterOffensiveRebound(poss) {
   return this.resolveAttempt(ex);
 };
 
-// ---------------------------------------------------------------- posesión completa
+// Quién decide efectivamente cuando no es el director principal (alternativa o primer disponible).
+P.directorTrace = function directorTrace() {
+  const d = this.poss?.director;
+  return d && (d.fallback || d.rank > 0) ? { director: { id: d.id, rango: d.rank, sustituto: d.fallback } } : {};
+};
+
+// ---------------------------------------------------------------- posesión completa, por unidades
 P.startPossession = function startPossession(spec) {
   this.possSeq += 1;
-  this.poss = { id: `P${String(this.possSeq).padStart(3, '0')}`, team: spec.team, entry: spec.entry, origin: spec.origin ?? null, carrier: spec.carrier ?? null, carrierPid: spec.carrier ?? null, advanced: spec.entry === 'deadFront', disorganized: false, reorgCount: 0 };
+  this.poss = { id: `P${String(this.possSeq).padStart(3, '0')}`, seq: this.possSeq, team: spec.team, entry: spec.entry, origin: spec.origin ?? null, carrier: spec.carrier ?? null, carrierPid: spec.carrier ?? null, advanced: spec.entry === 'deadFront', disorganized: false, reorgCount: 0, done: false, units: 0, playStarted: false, transitionDone: false, pendingFT: null };
   this.shotClock = spec.shotClock; this.shotClockOn = true;
 };
 
@@ -389,31 +406,75 @@ P.advancePhase = function advancePhase(poss) {
   return null;
 };
 
-P.runPossession = function runPossession() {
-  const poss = this.poss;
-  let r = null;
-  if (poss.entry === 'live') {
-    r = this.transitionPhase(poss);
-    if (r && (r.end)) return r;
-    if (r && r.cont) poss.advanced = true; // continúa el mismo ataque ya en pista de ataque
-    if (!r) { poss.advanced = false; poss.entry = 'inbound-live'; }
-  }
-  for (let guard = 0; guard < 60; guard++) {
-    if (this.clock <= 0) return { end: 'periodEnd' };
-    if (!poss.advanced) {
-      const e = this.advancePhase(poss);
-      if (e && e.end) return e;
-    }
-    r = this.organizedAction(poss);
-    if (r && r.end) return r;
-    // 'cont': el mismo ataque continúa (reorganización, rebote ofensivo, balón suelto, saque tras falta...)
-  }
-  throw new Error('límite técnico de acciones por posesión alcanzado');
+// Cierra la posesión: las llamadas de ficha ligadas a ella caducan con motivo.
+P.settlePossession = function settlePossession(poss, r) {
+  poss.done = true; poss.endKind = r.end ?? null;
+  this.expireCallsFor(poss);
+  return r;
 };
 
+// Una unidad de posesión = una frontera de avance. Cada unidad es una resolución indivisible (o el arranque de la posesión);
+// entre unidades se pueden registrar órdenes. Mismo orden de sorteos y hechos que el antiguo bucle por posesión (MOTOR-01).
+P.possessionUnit = function possessionUnit() {
+  if (!this.poss || this.poss.done) this.startPossession(this.nextPoss);
+  const poss = this.poss;
+  this.activatePlanOrders();
+  this.activateCalls(poss);
+  poss.units += 1;
+  if (poss.units > 64) throw new Error('límite técnico de acciones por posesión alcanzado');
+  let r = null;
+  if (poss.pendingFT) { // serie de tiros libres (o saque) pendiente tras la ventana de la falta
+    const ex = poss.pendingFT; poss.pendingFT = null;
+    r = this.afterFreeThrows(ex);
+    return r && r.end ? this.settlePossession(poss, r) : r;
+  }
+  if (poss.entry === 'live' && !poss.transitionDone) {
+    poss.transitionDone = true;
+    r = this.transitionPhase(poss);
+    if (r) this.noteCall(this.callFor(poss), 'opción directa previa: transición (ESP01/ESP02)');
+    if (r && r.end) return this.settlePossession(poss, r);
+    if (r && r.cont) poss.advanced = true; // continúa el mismo ataque ya en pista de ataque
+    if (!r) { poss.advanced = false; poss.entry = 'inbound-live'; }
+    return r;
+  }
+  if (this.clock <= 0) return this.settlePossession(poss, { end: 'periodEnd' });
+  if (!poss.advanced) {
+    const e = this.advancePhase(poss);
+    if (e && e.end) return this.settlePossession(poss, e);
+  }
+  r = this.organizedAction(poss);
+  if (r && r.end) return this.settlePossession(poss, r);
+  return r;
+};
+
+// Compatibilidad: resuelve la posesión entera encadenando unidades.
+P.runPossession = function runPossession() {
+  const poss = this.poss;
+  while (!poss.done) this.possessionUnit();
+  return { end: poss.endKind };
+};
+
+// ---------------------------------------------------------------- ventanas reglamentarias (frontera propia)
+P.queueWindow = function queueWindow(w) { this.windowSeq += 1; this.pendingWindows.push({ id: this.windowSeq, timeoutTeams: [], subs: false, ...w }); };
+
+// Procesa la primera ventana pendiente: tiempos muertos solicitados y, si no hay, sustituciones. Un tiempo muerto concedido
+// abre una oportunidad de sustitución para ambos equipos que se resuelve en la frontera siguiente (permite revisar el plan).
+P.processWindow = function processWindow() {
+  const w = this.pendingWindows.shift();
+  const granted = this.grantTimeouts(w);
+  if (granted.length) {
+    this.queueWindowFirst({ reason: 'tiempo muerto', subs: true });
+    return { timeouts: granted.length };
+  }
+  if (w.subs) this.substitutionWindow(w.reason);
+  return { timeouts: 0 };
+};
+P.queueWindowFirst = function queueWindowFirst(w) { this.windowSeq += 1; this.pendingWindows.unshift({ id: this.windowSeq, timeoutTeams: [], subs: false, ...w }); };
+
 // ---------------------------------------------------------------- periodos y partido
-P.startPeriod = function startPeriod(period) {
+P.beginPeriod = function beginPeriod(period) {
   const rules = this.profile.rules; const e = this.profile.energy;
+  this.activatePlanOrders(period); // plan preparado para este periodo: entra en su frontera de inicio
   this.poss = null;
   this.period = period; this.clock = periodLengthTenths(period, rules);
   this.periodScores.push({ period, points: [0, 0] });
@@ -421,14 +482,25 @@ P.startPeriod = function startPeriod(period) {
     const amount = period === 3 ? e.halftimeRecovery : isOvertime(period, rules) ? e.overtimeIntervalRecovery : e.quarterRecovery;
     this.recoverAll(amount);
     this.emit('interval', { intent: { origen: period === 3 ? 'descanso largo' : isOvertime(period, rules) ? 'intervalo previo a prórroga' : 'intervalo de cuarto' }, effects: { recuperacion: amount } });
-    this.substitutionWindow('intervalo');
+    this.queueWindow({ reason: 'intervalo', subs: true });
   }
+  this.periodStartPending = true;
+};
+P.finishPeriodStart = function finishPeriodStart() {
+  const rules = this.profile.rules; const period = this.period;
+  this.periodStartPending = false;
   let team;
   if (period === 1) team = this.openingWinner;
   else { team = this.arrow; this.arrow = 1 - this.arrow; }
   this.clockRunning = false;
   this.emit('period_start', { team, intent: { origen: period === 1 ? 'salto inicial' : 'posesión alterna (flecha)' }, effects: { flechaApunta: this.arrow } });
   this.nextPoss = { team, entry: 'inbound', shotClock: toTenths(rules.shotClockSeconds) };
+};
+// Compatibilidad (MOTOR-01 y pruebas directas): empieza el periodo resolviendo de inmediato sus ventanas.
+P.startPeriod = function startPeriod(period) {
+  this.beginPeriod(period);
+  while (this.pendingWindows.length) this.processWindow();
+  this.finishPeriodStart();
 };
 
 P.init = function init() {
@@ -440,29 +512,43 @@ P.init = function init() {
   this.startPeriod(1);
 };
 
-// Un paso = una posesión completa (el cedido de ejecución de la interfaz se hace entre posesiones).
+// Un paso = una frontera de avance. Tipos: inicio, ventana reglamentaria, inicio de periodo, final de periodo, comienzo del
+// periodo siguiente y unidad de posesión. Sin intervención externa, encadenar pasos reproduce exactamente el mismo partido.
 P.step = function step() {
   if (this.status === 'finished' || this.status === 'error') return false;
-  if (this.status === 'created') { this.init(); return true; }
-  const rules = this.profile.rules;
-  if (this.clock <= 0) return this.closePeriod();
-  this.startPossession(this.nextPoss);
-  let r;
-  try { r = this.runPossession(); } catch (err) { this.fail(err); return false; }
-  if (this.eventSeq > rules.technicalGuardMaxEvents) { this.fail(new Error('límite técnico de acontecimientos alcanzado')); return false; }
-  return true;
+  const ev0 = this.events.length;
+  this.stepSeq += 1; this.inStep = true;
+  const info = { n: this.stepSeq, kind: null, timeouts: 0, firstEvent: ev0 };
+  try {
+    if (this.status === 'created') { this.init(); info.kind = 'inicio'; }
+    else if (this.pendingWindows.length) { info.kind = 'ventana'; info.timeouts = this.processWindow().timeouts; }
+    else if (this.periodStartPending) { this.finishPeriodStart(); info.kind = 'inicio de periodo'; }
+    else if (this.periodBreak != null) { const p = this.periodBreak; this.periodBreak = null; this.beginPeriod(p); info.kind = 'comienzo de periodo'; }
+    else if (this.clock <= 0 && (!this.poss || this.poss.done)) { this.closePeriod(); info.kind = 'final de periodo'; }
+    else {
+      info.kind = 'posesión';
+      if (this.eventSeq > this.profile.rules.technicalGuardMaxEvents) throw new Error('límite técnico de acontecimientos alcanzado');
+      this.possessionUnit();
+    }
+  } catch (err) { this.fail(err); }
+  this.inStep = false;
+  info.events = this.events.length - ev0;
+  this.lastStep = info;
+  return this.status !== 'finished' && this.status !== 'error';
 };
 
 P.closePeriod = function closePeriod() {
   const rules = this.profile.rules;
   this.emit('period_end', { intent: { origen: 'bocina de final de periodo' }, effects: { marcador: [...this.score] } });
-  if (this.period >= rules.quarters && this.score[0] !== this.score[1]) { this.status = 'finished'; return false; }
+  this.expireTimeoutRequests('terminó el periodo sin oportunidad: puedes volver a solicitarlo');
+  this.releaseLineupControl();
+  if (this.period >= rules.quarters && this.score[0] !== this.score[1]) { this.status = 'finished'; this.closeOrdersAtFinish(); return false; }
   if (this.period - rules.quarters >= rules.technicalGuardMaxOvertimes) { this.fail(new Error('límite técnico de prórrogas alcanzado')); return false; }
-  this.startPeriod(this.period + 1);
+  this.periodBreak = this.period + 1; // pausa lógica: el periodo siguiente empieza en el paso siguiente
   return true;
 };
 
 P.fail = function fail(err) {
   this.status = 'error';
-  this.errors.push({ message: err.message, stack: this.opts.detail === 'full' ? String(err.stack).split('\n').slice(0, 6) : undefined, eventSeq: this.eventSeq });
+  this.errors.push({ message: err.message, stack: this.opts.detail === 'full' ? String(err.stack).split('\n').slice(0, 6) : undefined, eventSeq: this.eventSeq, step: this.stepSeq });
 };

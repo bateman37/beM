@@ -1,0 +1,19 @@
+{
+  "seedExtensionId": "SEM-MOTOR02-20261016",
+  "status": "SEM: provisional, no calibrado",
+  "basedOn": "SEM-MOTOR01-20261016",
+  "origin": "docs/prompts/MOTOR-02-modos-y-direccion.md (apartado 8.4); constantes reglamentarias: lectura propia de FIBA 2026 v1.1 no contrastada con el PDF",
+  "timeOutRecoveryEnergyPoints": 1.5,
+  "timeOutRecoveryRecipients": "all_available_players_both_teams",
+  "timeOutRecoveryApplication": "once_per_granted_time_out",
+  "momentDynamics": "not_implemented_until_MOTOR07",
+  "timeOuts": {
+    "durationSeconds": 60,
+    "firstHalf": 2,
+    "secondHalf": 3,
+    "perOvertime": 1,
+    "carryOver": false,
+    "finalWindowSeconds": 120,
+    "maxInFinalWindow": 2
+  }
+}

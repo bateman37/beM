@@ -1,6 +1,6 @@
 {
-  "description": "Catálogo de datos de MOTOR-01: identidad y estado de los materiales cargados literalmente desde los anexos del prompt.",
-  "source": "docs/prompts/MOTOR-01-primer-partido-completo.md (Anexo A y Anexo B)",
+  "description": "Catálogo de datos: identidad y estado de los materiales (MOTOR-01 cargados literalmente de los anexos del prompt; extensión de MOTOR-02 aparte, sin tocar el perfil original).",
+  "source": "docs/prompts/MOTOR-01-primer-partido-completo.md (Anexo A y Anexo B); docs/prompts/MOTOR-02-modos-y-direccion.md (apartado 8.4)",
   "files": {
     "data/match/motor01-seed-profile.json": {
       "id": "SEM-MOTOR01-20261016",
@@ -13,6 +13,13 @@
       "sha256": "f84f71923ceadd4a99cfcdbe2a5a523cf352d57060529331ffeb96598344e3a3",
       "origin": "Anexo B (extraído programáticamente)",
       "state": "SEM provisional: 144 fichas ficticias; solo EQ01/EQ02 jugables en MOTOR-01"
+    },
+    "data/match/motor02-seed-extension.json": {
+      "id": "SEM-MOTOR02-20261016",
+      "status": "SEM: provisional, no calibrado",
+      "sha256": "83c7a86406aaedf863b5f20af9e5c5fc9a1a5cdfb5360859f49c6d12fdc96c0f",
+      "origin": "Apartado 8.4 del prompt de MOTOR-02 (recuperación por tiempo muerto, literal) + constantes reglamentarias de tiempos muertos (lectura propia, sin contrastar con el PDF FIBA)",
+      "state": "SEM provisional, no calibrado; no completa los 81 grupos finales"
     }
   },
   "promptSha256": "3aeb4f5810fe9c05716b87df4f99e50bb76cc4499b9b1281900edf4ff8dffbfb"

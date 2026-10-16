@@ -9,9 +9,11 @@ export class MatchCore {
   constructor(input, profile, opts = {}) {
     this.opts = { detail: 'full', check: false, ...opts };
     this.profile = profile;
+    this.cfg = profile.motor02 ?? null; // extensión SEM de MOTOR-02 (tiempos muertos); ausente en perfiles de MOTOR-01
     this.input = deepCopy(input); // copia de entrada congelada (efectiva)
     this.rng = createRng(this.input.seed, profile.rng);
-    this.teams = this.input.teams.map((t, i) => ({ idx: i, id: t.id, name: t.name, plan: t.plan, ids: t.players.map((p) => p.id) }));
+    // `this.input` queda congelada (entrada efectiva exportable); el plan de trabajo se copia y puede cambiar por órdenes activas.
+    this.teams = this.input.teams.map((t, i) => ({ idx: i, id: t.id, name: t.name, plan: deepCopy(t.plan), ids: t.players.map((p) => p.id) }));
     this.pl = {}; // jugadores (no se mutan durante la simulación)
     this.ps = {}; // estado dinámico por jugador
     this.input.teams.forEach((t, ti) => {
@@ -20,7 +22,7 @@ export class MatchCore {
         this.pl[p.id] = { ...p, teamIdx: ti, reach: this.reachOf(p) };
         this.ps[p.id] = {
           energy: p.state.energy, fouls: p.state.fouls ?? 0, available: p.state.available !== false,
-          onCourt: false, slot: null, stintTenths: 0, benchTenths: 9999 * 10,
+          onCourt: false, slot: null, stintTenths: 0, benchTenths: 9999 * 10, locked: false,
         };
       }
     });
@@ -39,6 +41,10 @@ export class MatchCore {
     this.events = []; this.calcBuf = []; this.status = 'created'; this.errors = [];
     this.coverageObserved = {};
     this.openingWinner = null;
+    // avance incremental (MOTOR-02): fronteras, ventanas reglamentarias pendientes y estado de periodo
+    this.stepSeq = 0; this.lastStep = null;
+    this.pendingWindows = []; this.periodBreak = null; this.periodStartPending = false; this.pendingFoul = null;
+    this.initDirection();
   }
 
   reachOf(p) {
@@ -147,6 +153,7 @@ export class MatchCore {
     const e = this.profile.energy;
     const t0 = { clock: this.clock, shot: this.shotClock };
     const mins = dur / 600;
+    if (dur > 0) for (const id of Object.keys(this.ps)) this.ps[id].locked = false; // corre el reloj: cesa la restricción de reentrada inmediata
     const load = clamp(e.load[loadKind] ?? e.load.organized, e.loadBounds[0], e.loadBounds[1]);
     for (let t = 0; t < 2; t++) {
       for (const id of this.teams[t].ids) {
@@ -194,6 +201,7 @@ export class MatchCore {
       score: [...this.score],
       draws: this.rng.drain(),
     };
+    if (this.pendingLinks.length) { ev.orders = this.pendingLinks; this.pendingLinks = []; }
     if (this.opts.detail === 'full') { ev.calc = this.calcBuf; }
     this.calcBuf = [];
     this.events.push(ev);

@@ -45,13 +45,15 @@ P.substitute = function substitute(team, slot, outId, inId, reason, ctx = {}) {
   const outS = this.ps[outId]; const inS = this.ps[inId];
   outS.onCourt = false; outS.slot = null; outS.benchTenths = 0; outS.stintTenths = 0;
   inS.onCourt = true; inS.slot = slot; inS.stintTenths = 0; inS.benchTenths = 0;
+  outS.locked = true; inS.locked = true; // reentrada inmediata: hasta que corra el reloj no se vuelve a cambiar a ninguno de los dos
   this.lineup[team][slot] = inId;
   this.registerLineups();
   const offPosition = !this.pl[inId].positions.includes(slot);
   this.cover('sustitución');
+  if (ctx.order) this.linkOrder(ctx.order, 'sustitución ejecutada');
   return this.emit('substitution', {
     team,
-    intent: { origen: 'relevo', motivo: reason },
+    intent: ctx.order ? { origen: 'orden manual', motivo: reason, solicitud: ctx.order } : { origen: 'relevo', motivo: reason },
     participants: { sale: outId, entra: inId, posicion: slot },
     effects: { fueraDePosicionNominal: offPosition, ventana: ctx.window ?? null, energiaSale: round(outS.energy, 2), energiaEntra: round(inS.energy, 2), foulsSale: outS.fouls },
   });
@@ -61,6 +63,10 @@ P.substitute = function substitute(team, slot, outId, inId, reason, ctx = {}) {
 // Nunca se llama entre tiros libres de una misma serie.
 P.substitutionWindow = function substitutionWindow(window) {
   const rot = this.profile.rotation;
+  // Lanzador de una serie de libres pendiente: no puede salir antes de tirar (ni por el entrenador ni por una orden manual).
+  const shooter = this.pendingFoul && this.pendingFoul.n > 0 ? this.pendingFoul.fouled : null;
+  // Órdenes manuales de quinteto (MOTOR-02): primero, por equipo; las obligaciones reglamentarias se resuelven después.
+  for (let team = 0; team < 2; team++) this.applyManualLineups(team, window, shooter);
   const used = [new Set(), new Set()];
   // primero las sustituciones obligatorias de ambos equipos; después las voluntarias
   for (const pass of ['obligatorias', 'voluntarias']) {
@@ -70,6 +76,8 @@ P.substitutionWindow = function substitutionWindow(window) {
         const why = this.relevoReason(out);
         if (!why || (pass === 'obligatorias') !== !!why.mandatory) continue;
         const mandatory = !!why.mandatory;
+        if (!mandatory && out === shooter) { this.note('relevo:retenido', { saliente: out, motivo: 'lanzador de libres pendiente' }); continue; }
+        if (!mandatory && this.lineupControl[team].mode === 'manual') { this.note('relevo:retenido por orden manual', { saliente: out, motivo: why.reason }); continue; }
         const pool = this.benchCandidates(team, slot, { strictPosition: true }).filter((id) => !used[team].has(id));
         let cands = pool;
         if (!cands.length && mandatory) cands = this.benchCandidates(team, slot, { strictPosition: false }).filter((id) => !used[team].has(id));

@@ -4,6 +4,7 @@ import './rotation.js';
 import './plays.js';
 import './actions.js';
 import './flow.js';
+import './orders.js';
 import { projectBox, teamTotals } from './box.js';
 import { deepCopy, validateInput, buildMatchInput, parsePlayersCsv, validateProfileAndFixtures, ENGINE_VERSION, EXPORT_SCHEMA, ATTRS, SLOTS } from './data.js';
 
