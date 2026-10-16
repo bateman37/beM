@@ -25,12 +25,12 @@ Directorio de los encargos a Claude Code. **El texto original de un prompt ejecu
 | Fecha real de ejecución | 2026-10-16 · intento 1 |
 | Revisión de partida | `053144e` («Initial commit», solo `README.md` de una línea). |
 | Rama | `claude/busy-edison-b1fmnc` (rama designada por el entorno de ejecución; el prompt proponía `docs/DOC-001-organizacion-documental`). |
-| PR | Ver la PR de la rama contra `main` (URL en la respuesta final de la entrega; se completa en este registro tras su creación). |
+| PR | [bateman37/beM#1](https://github.com/bateman37/beM/pull/1) (abierta contra `main`, sin fusionar). |
 | Commits | Los de la rama; el SHA final no puede constar dentro del propio commit. |
 | Resultado breve | Funcional importado sin pérdidas y seccionado en 74 archivos por 12 temas; índices, normas, estado, decisiones, catálogo y plantilla creados; exportado generado y reproducible. |
 | Comprobaciones realizadas | `check_engine_docs.py --importacion` y `build_engine_docs.py --check`; resultados en [`../motor/COBERTURA.md`](../motor/COBERTURA.md). No se ejecutaron simulaciones, pruebas del motor ni E2E (no existen; el cambio es documental). |
 | Limitaciones | No se comprobó el renderizado en GitHub. Ocho originales ausentes. |
-| Pendientes | Validación de Dennis; completar la URL de la PR en este registro. |
+| Pendientes | Validación de Dennis y decisión de fusión. |
 
 #### DOC-001: revisión manual para Dennis
 
