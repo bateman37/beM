@@ -4,7 +4,7 @@
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { join } from 'node:path';
-import { ROOT, PROFILE_PATH, PLAYERS_PATH, EXTENSION_PATH, EXTENSION3_PATH, EXTENSION4_PATH, EXTENSION5_PATH, EXTENSION6_PATH, EXTENSION7_PATH, EXTENSION8_PATH, loadData } from './node-data.js';
+import { ROOT, PROFILE_PATH, PLAYERS_PATH, EXTENSION_PATH, EXTENSION3_PATH, EXTENSION4_PATH, EXTENSION5_PATH, EXTENSION6_PATH, EXTENSION7_PATH, EXTENSION8_PATH, EXTENSION9_PATH, loadData } from './node-data.js';
 import { validateProfileAndFixtures, validateExtension } from '../src/match/data.js';
 
 const sha = (p) => createHash('sha256').update(readFileSync(p)).digest('hex');
@@ -130,9 +130,31 @@ export function checkMotor04Annex(extension4, annex) {
   return problems;
 }
 
+// MOTOR-09: la matriz normativa debe ser coherente y declarar el estado de contraste de cada fila; los valores contrastados deben coincidir con el encargo (§4.3).
+export function checkMotor09(extension9) {
+  const problems = []; const a = extension9.additions; const reg = a.regulation;
+  if (extension9.seedExtensionId !== 'SEM-MOTOR09-20261016') problems.push('MOTOR-09: identidad de la extensión inesperada');
+  const STATES = ['contrastada', 'heredada', 'provisional', 'pendiente'];
+  const ids = new Set();
+  for (const r of reg.matrix) {
+    if (ids.has(r.id)) problems.push(`MOTOR-09: fila repetida ${r.id}`); ids.add(r.id);
+    if (!STATES.includes(r.contrast)) problems.push(`MOTOR-09: ${r.id} sin estado de contraste válido`);
+    if (!r.source?.doc || !r.source?.article || !r.source?.reading) problems.push(`MOTOR-09: ${r.id} sin fuente, artículo y tipo de lectura`);
+    if (r.contrast === 'contrastada' && !/§4\.3/.test(r.source.reading)) problems.push(`MOTOR-09: ${r.id} marcada contrastada sin remitir al encargo §4.3`);
+    if (r.contrast === 'pendiente' && r.consequence) problems.push(`MOTOR-09: ${r.id} pendiente no puede llevar consecuencia ejecutable`);
+  }
+  const f5 = reg.matrix.find((r) => r.id === 'RG-F05'); const f6 = reg.matrix.find((r) => r.id === 'RG-F06');
+  if (f5?.consequence?.ft !== 2 || f5?.consequence?.resume?.shotClock !== 'fixed14') problems.push('MOTOR-09: disruptiva/flagrante sin tiro = dos libres y saque con 14 s (§4.3)');
+  if (f6?.consequence?.ft?.made !== 1 || f6?.consequence?.ft?.missed !== 'shotPoints') problems.push('MOTOR-09: con tiro, un adicional si hay canasta y dos o tres si falla (§4.3)');
+  if (reg.disqualification.limit !== 2 || reg.disqualification.sumOf.join() !== 'flagrant,technicalCat1') problems.push('MOTOR-09: la descalificación acumula flagrantes y técnicas de categoría 1 (§4.3)');
+  if (!reg.sources.every((x) => x.url && x.access)) problems.push('MOTOR-09: cada fuente declara su URL y el acceso real');
+  if (!a.statsPolicy?.families?.length) problems.push('MOTOR-09: falta la política estadística');
+  return problems;
+}
+
 export function checkData() {
   const problems = [];
-  const { profile, baseProfile, extension, extension3, extension4, extension5, extension6, extension7, extension8, players } = loadData();
+  const { profile, baseProfile, extension, extension3, extension4, extension5, extension6, extension7, extension8, extension9, players } = loadData();
   for (const e of validateProfileAndFixtures(profile, players)) problems.push(`${e.path}: ${e.message}`);
   for (const e of validateExtension(baseProfile, extension)) problems.push(`extensión MOTOR-02: ${e}`);
   for (const e of validateExtension(baseProfile, extension3)) problems.push(`extensión MOTOR-03: ${e}`);
@@ -141,7 +163,9 @@ export function checkData() {
   for (const e of validateExtension(baseProfile, extension6, profile)) problems.push(`extensión MOTOR-06: ${e}`);
   for (const e of validateExtension(baseProfile, extension7, profile)) problems.push(`extensión MOTOR-07: ${e}`);
   for (const e of validateExtension(baseProfile, extension8, profile)) problems.push(`extensión MOTOR-08: ${e}`);
-  const hashes = { profile: sha(PROFILE_PATH), players: sha(PLAYERS_PATH), prompt: sha(PROMPT), extension: sha(EXTENSION_PATH), extension3: sha(EXTENSION3_PATH), extension4: sha(EXTENSION4_PATH), extension5: sha(EXTENSION5_PATH), extension6: sha(EXTENSION6_PATH), extension7: sha(EXTENSION7_PATH), extension8: sha(EXTENSION8_PATH) };
+  for (const e of validateExtension(baseProfile, extension9, profile)) problems.push(`extensión MOTOR-09: ${e}`);
+  problems.push(...checkMotor09(extension9));
+  const hashes = { profile: sha(PROFILE_PATH), players: sha(PLAYERS_PATH), prompt: sha(PROMPT), extension: sha(EXTENSION_PATH), extension3: sha(EXTENSION3_PATH), extension4: sha(EXTENSION4_PATH), extension5: sha(EXTENSION5_PATH), extension6: sha(EXTENSION6_PATH), extension7: sha(EXTENSION7_PATH), extension8: sha(EXTENSION8_PATH), extension9: sha(EXTENSION9_PATH) };
   if (existsSync(PROMPT4)) problems.push(...checkMotor04Annex(extension4, extractAnnexA4(readFileSync(PROMPT4, 'utf8'))));
   else problems.push('falta el prompt archivado de MOTOR-04');
   if (existsSync(PROMPT5)) problems.push(...checkMotor05Annex(extension5, extractAnnexA5(readFileSync(PROMPT5, 'utf8'))));
@@ -170,13 +194,14 @@ export function checkData() {
     if (cat.files['data/match/motor06-seed-extension.json']?.sha256 !== hashes.extension6) problems.push('hash de la extensión de MOTOR-06 distinto del catálogo');
     if (cat.files['data/match/motor07-seed-extension.json']?.sha256 !== hashes.extension7) problems.push('hash de la extensión de MOTOR-07 distinto del catálogo');
     if (cat.files['data/match/motor08-seed-extension.json']?.sha256 !== hashes.extension8) problems.push('hash de la extensión de MOTOR-08 distinto del catálogo');
+    if (cat.files['data/match/motor09-seed-extension.json']?.sha256 !== hashes.extension9) problems.push('hash de la extensión de MOTOR-09 distinto del catálogo');
   } else problems.push('falta data/catalog.json');
   return { problems, hashes, profile, baseProfile, players };
 }
 
 if (process.argv[1] && process.argv[1].endsWith('check-data.js')) {
   if (process.argv.includes('--write-catalog')) {
-    const { baseProfile: profile, extension, extension3, extension4, extension5, extension6, extension7, extension8 } = loadData();
+    const { baseProfile: profile, extension, extension3, extension4, extension5, extension6, extension7, extension8, extension9 } = loadData();
     const cat = {
       description: 'Catálogo de datos: identidad y estado de los materiales (MOTOR-01 cargados literalmente de los anexos del prompt; extensión de MOTOR-02 aparte, sin tocar el perfil original).',
       source: 'docs/prompts/MOTOR-01-primer-partido-completo.md (Anexo A y Anexo B); docs/prompts/MOTOR-02-modos-y-direccion.md (apartado 8.4); docs/prompts/MOTOR-03-panel-y-perfiles.md (apartado 4.1); docs/prompts/MOTOR-04-ataque-posicional.md (anexo A); docs/prompts/MOTOR-05-defensa-completa.md (anexo A); docs/prompts/MOTOR-06-transicion-y-saques.md (anexo A); docs/prompts/MOTOR-07-capacidades-y-estados.md (anexo A); docs/prompts/MOTOR-08-entrenador-y-memoria.md (apartados 6.1, 7.1, 10.2, 10.3 y 11.4)',
@@ -189,6 +214,7 @@ if (process.argv[1] && process.argv[1].endsWith('check-data.js')) {
         'data/match/motor06-seed-extension.json': { id: extension6.seedExtensionId, status: extension6.status, sha256: sha(EXTENSION6_PATH), origin: 'Anexo A del prompt de MOTOR-06 (cifras SEM, literales) + contenido declarativo del catálogo ESP01–ESP20, seis fichas de saque y seis respuestas defensivas (anexos B y C): lectura de Claude, a revisar por Dennis', state: 'SEM provisional, no calibrado; completa el catálogo espontáneo activo y añade saques de banda y fondo' },
         'data/match/motor07-seed-extension.json': { id: extension7.seedExtensionId, status: extension7.status, sha256: sha(EXTENSION7_PATH), origin: 'Anexo A del prompt de MOTOR-07 (cifras SEM, literales) + tablas declarativas de tareas con estados y episodios (lectura de Claude)', state: 'SEM provisional, no calibrado' },
         'data/match/motor08-seed-extension.json': { id: extension8.seedExtensionId, status: extension8.status, sha256: sha(EXTENSION8_PATH), origin: 'Apartados 6.1, 7.1, 10.2, 10.3 y 11.4 del prompt de MOTOR-08 (cifras SEM literales, verificadas) + tablas declarativas de necesidades, causas de pausa, contextos de final, patrones y respuestas de memoria (concreción de Claude, a revisar por Dennis)', state: 'SEM provisional, no calibrado; sustituye (sin borrar) las filas históricas rotation.* y añade el plan de participación y la política de cada equipo' },
+        'data/match/motor09-seed-extension.json': { id: extension9.seedExtensionId, status: extension9.status, sha256: sha(EXTENSION9_PATH), origin: 'Encargo MOTOR-09 (§4 fuentes, §5 matriz, §12 política estadística, §16.3 ruta B): matriz normativa con estado de contraste por fila (los PDF de S09-01 a S09-04 no fueron accesibles) y política estadística beM', state: 'SEM provisional en parámetros; matriz normativa con estados contrastada/heredada/provisional/pendiente' },
         'data/match/motor04-seed-extension.json': { id: extension4.seedExtensionId, status: extension4.status, sha256: sha(EXTENSION4_PATH), origin: 'Anexo A del prompt de MOTOR-04 (cifras SEM, literales) + contenido declarativo del repertorio (anexo B) y funciones por disposición: lectura de Claude, a revisar por Dennis', state: 'SEM provisional, no calibrado; sustituye explícitamente el efecto abstracto de carga y amplía el catálogo activo' },
       },
       promptSha256: sha(PROMPT),
@@ -207,6 +233,7 @@ if (process.argv[1] && process.argv[1].endsWith('check-data.js')) {
   console.log('sha256 ext. M6', r.hashes.extension6);
   console.log('sha256 ext. M7', r.hashes.extension7);
   console.log('sha256 ext. M8', r.hashes.extension8);
+  console.log('sha256 ext. M9', r.hashes.extension9);
   if (r.problems.length) { console.log('PROBLEMAS:'); r.problems.forEach((p) => console.log(' -', p)); process.exit(1); }
   console.log('datos correctos');
 }

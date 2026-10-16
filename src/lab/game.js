@@ -2,7 +2,7 @@
 // dirigirlo con órdenes, ver acta y relato, descargar el JSON y reproducir un encuentro exportado.
 import { h, clear, fmt, table } from './dom.js';
 import { store, PLAY_NAMES, matchSource } from './store.js';
-import { validateInput, deepCopy, teamTotals, SLOTS, diagnosticQueries, ownStateView, rivalPublicView, diagnosticView } from '../match/index.js';
+import { validateInput, deepCopy, SLOTS, diagnosticQueries, ownStateView, rivalPublicView, diagnosticView } from '../match/index.js';
 import { MatchSession, MODES, SESSION_STATES, PRESENTATION } from '../match/session.js';
 import { replayMatch, validateReplayFile } from '../match/replay.js';
 import { describeEvent, clockText } from '../match/narrative.js';
@@ -12,6 +12,8 @@ import { defenseSummary, defStyleLabels, DEF_STYLE_DEFS } from './defense-ui.js'
 import { rowsOf, valueText, unitText } from './panel/common.js';
 import { openRow } from './panel/rowdialog.js';
 import { coachLiveCard, coachDiagnosticCard } from './coach-ui.js';
+import { actaCards, casesCard } from './acta-ui.js';
+import { LAB_CASES } from '../match/cases.js';
 
 const ui = { mode: 'total', managed: 0, speed: PRESENTATION.defaultSpeed, session: null, draft: null, msg: null, call: null, filter: 'all', limit: 150, showBox: false, storyLimit: 18, replay: null, compare: null, error: null, root: null };
 
@@ -37,7 +39,7 @@ const rerender = () => { if (ui.root && document.getElementById('live')) { paint
 function setupCard() {
   const { profile } = store; const edit = matchSource(); // copia de contraste activa o entrada editada
   const errs = validateInput(edit, profile);
-  if (!profile.moment || !profile.coach) errs.push({ path: 'perfil activo', message: 'es anterior a MOTOR-08: activa la base de MOTOR-08 o una candidata explícita en el Panel de ajustes' });
+  if (!profile.moment || !profile.coach || !profile.regulation) errs.push({ path: 'perfil activo', message: 'es anterior a MOTOR-09: activa la base de MOTOR-09 o una candidata explícita en el Panel de ajustes' });
   const s = ui.session;
   const live = s && !['finalizado', 'error'].includes(s.state);
   return h('div', { class: 'card' },
@@ -225,17 +227,8 @@ function boxBlock(s) {
   const d = h('details', {}, h('summary', {}, 'Acta parcial y detalles de laboratorio'));
   d.open = ui.showBox;
   d.addEventListener('toggle', () => { ui.showBox = d.open; if (d.open) paintLive(); });
-  if (ui.showBox && s.match.events.length) { const res = s.result(); d.append(h('div', { class: 'grid2' }, [0, 1].map((t) => boxCard(res, t))), h('p', { class: 'small muted' }, 'El acta se proyecta desde los hechos ya resueltos. Los detalles calculados de cada acontecimiento están en «detalle» (laboratorio), no en el flujo ordinario.')); }
+  if (ui.showBox && s.match.events.length) { const res = s.result(); d.append(...actaCards(res), h('p', { class: 'small muted' }, 'El acta se proyecta desde los hechos ya resueltos. Los detalles calculados de cada acontecimiento están en «detalle» (laboratorio), no en el flujo ordinario.')); }
   return h('div', { class: 'card' }, d);
-}
-
-function boxCard(res, t) {
-  const rows = res.input.teams[t].players.map((p) => { const b = res.box.players[p.id]; return { cls: b.min === 0 ? 'muted' : '', cells: [p.id, fmt(b.min), b.pts, `${b.fg2m}/${b.fg2a}`, `${b.fg3m}/${b.fg3a}`, `${b.ftm}/${b.fta}`, b.oreb, b.dreb, b.tov, b.pf, b.stl, b.blk, fmt(res.diagnostics.finalEnergy[p.id], 0)] }; });
-  const tt = teamTotals(res.box, res.input, t);
-  rows.push({ cls: 'starter', cells: ['Total equipo', fmt(tt.min), tt.pts, `${tt.fg2m}/${tt.fg2a}`, `${tt.fg3m}/${tt.fg3a}`, `${tt.ftm}/${tt.fta}`, tt.oreb, tt.dreb, tt.tov, tt.pf, tt.stl, tt.blk, ''] });
-  return h('div', { class: 'card' }, h('h3', { style: 'margin-top:0' }, `Acta — ${res.teams[t].id} ${res.teams[t].name}`),
-    table(['Jugador', 'Min', 'Pts', 'T2', 'T3', 'TL', 'RO', 'RD', 'Per', 'Fal', 'Rob', 'Tap', 'Energía'], rows, { numeric: [1, 2, 6, 7, 8, 9, 10, 11, 12] }),
-    h('p', { class: 'small muted' }, `Pérdidas de equipo (violación de reloj de posesión, sin jugador): ${res.box.teams[t].teamTov}. Métricas aún no implementadas, omitidas (no son ceros observados): ${res.box.pending.join('; ')}.`));
 }
 
 function showDetail(ev, teams, src = null) {
@@ -291,7 +284,7 @@ function renderResult(root, res, { live = false, banner = null, refresh = paintR
       h('button', { class: 'btn secondary', id: 'download', onclick: () => download(res) }, 'Descargar encuentro (JSON)'),
       live ? [h('button', { class: 'btn secondary', onclick: () => recompute(res) }, 'Reproducir este encuentro (recalcular)'),
         ui.compare ? h('span', { class: `pill ${ui.compare.identical ? 'ok' : 'bad'}` }, ui.compare.identical ? 'Recálculo idéntico: mismos hechos, sorteos, acta y órdenes' : 'El recálculo difiere') : null] : null)));
-  root.append(h('div', { class: 'grid2' }, [0, 1].map((t) => boxCard(res, t))), lineupsCard(res), choicesCard(res), opportunitiesCard(res), statesDiagnosticCard(res), coachDiagnosticCard(res), finalStory(refresh, res, teamName));
+  root.append(...actaCards(res), casesCard(LAB_CASES, { profile: store.baseNew, players: store.players }, res), lineupsCard(res), choicesCard(res), opportunitiesCard(res), statesDiagnosticCard(res), coachDiagnosticCard(res), finalStory(refresh, res, teamName));
 }
 
 // Diagnóstico ampliable de oportunidades y saques (MOTOR-06): ejes separados (procedencia, contexto, calidad previa, resultado) con numerador

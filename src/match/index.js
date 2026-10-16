@@ -14,7 +14,9 @@ import './coach.js';
 import './memory.js';
 import './orders.js';
 import { projectBox, teamTotals } from './box.js';
-import { deepCopy, validateInput, buildMatchInput, parsePlayersCsv, validateProfileAndFixtures, applyExtension, validateExtension, upgradeInput, ENGINE_VERSION, EXPORT_SCHEMA, EXPORT_SCHEMA_MOTOR01, EXPORT_SCHEMA_MOTOR02, EXPORT_SCHEMA_MOTOR04, EXPORT_SCHEMA_MOTOR05, EXPORT_SCHEMA_MOTOR06, EXPORT_SCHEMA_MOTOR07, MIDRANGE_POLICIES, ATTRS, SLOTS } from './data.js';
+import { buildActa } from './acta.js';
+import { reconcile } from './reconcile.js';
+import { deepCopy, validateInput, buildMatchInput, parsePlayersCsv, validateProfileAndFixtures, applyExtension, validateExtension, upgradeInput, ENGINE_VERSION, EXPORT_SCHEMA, EXPORT_SCHEMA_MOTOR01, EXPORT_SCHEMA_MOTOR02, EXPORT_SCHEMA_MOTOR04, EXPORT_SCHEMA_MOTOR05, EXPORT_SCHEMA_MOTOR06, EXPORT_SCHEMA_MOTOR07, EXPORT_SCHEMA_MOTOR08, MIDRANGE_POLICIES, ATTRS, SLOTS } from './data.js';
 import { diagnosticQueries } from './diagnostics.js';
 import { coachCounts } from './coach.js';
 export { ownStateView, rivalPublicView, diagnosticView, publicStreak, SCOPE_TEXT } from './visibility.js';
@@ -25,7 +27,7 @@ export { coachCounts, describeDecision, AREA_TEXT, ROTATION_TEXT, TIMEOUT_TEXT }
 export { COACH_AREAS, defaultParticipationPlan, validateParticipation, endgameState, foulBookRow, utilityFor } from './coach-policy.js';
 import { ORDER_TYPES, ORDER_STATES, TERMINAL_STATES, EDITABLE_STYLES } from './order-types.js';
 
-export { ENGINE_VERSION, EXPORT_SCHEMA, EXPORT_SCHEMA_MOTOR01, EXPORT_SCHEMA_MOTOR02, EXPORT_SCHEMA_MOTOR04, EXPORT_SCHEMA_MOTOR05, EXPORT_SCHEMA_MOTOR06, EXPORT_SCHEMA_MOTOR07, MIDRANGE_POLICIES, upgradeInput, ATTRS, SLOTS, validateInput, buildMatchInput, parsePlayersCsv, validateProfileAndFixtures, applyExtension, validateExtension, projectBox, teamTotals, deepCopy, ORDER_TYPES, ORDER_STATES, TERMINAL_STATES, EDITABLE_STYLES };
+export { ENGINE_VERSION, EXPORT_SCHEMA, EXPORT_SCHEMA_MOTOR01, EXPORT_SCHEMA_MOTOR02, EXPORT_SCHEMA_MOTOR04, EXPORT_SCHEMA_MOTOR05, EXPORT_SCHEMA_MOTOR06, EXPORT_SCHEMA_MOTOR07, EXPORT_SCHEMA_MOTOR08, MIDRANGE_POLICIES, upgradeInput, ATTRS, SLOTS, validateInput, buildMatchInput, parsePlayersCsv, validateProfileAndFixtures, applyExtension, validateExtension, projectBox, teamTotals, deepCopy, ORDER_TYPES, ORDER_STATES, TERMINAL_STATES, EDITABLE_STYLES };
 
 export const COVERAGE = {
   activos: {
@@ -45,6 +47,9 @@ export const COVERAGE = {
     estados: ['energía (curva selectiva por tarea, carga por encargo y recuperación)', 'Forma recibida y estable durante el encuentro', 'tres momentos individuales (M-TIR, M-OFE, M-DEF) con Consistencia y actualización perezosa en tiempo deportivo', 'momento colectivo T (coordinación, no conversión)', 'presión = máximo(importancia, tensión) con MEN07', 'episodios EPI01–EPI06 con evidencia representada y atenuación por pausas'],
     modalidades: ['simulado total', 'por cuartos (con prórrogas)', 'por tiempo a x2/x4/x8/x16 con pausa'],
     ordenes: ['estilos ofensivos (siete) y media distancia', 'prioridades del libro y activar/desactivar fichas', 'disposición', 'roles ofensivos', 'director y alternativas', 'llamada de ficha', 'organización defensiva (objetivo y alternativa)', 'altura de presión', 'estilos defensivos', 'cobertura y navegación', 'roles defensivos', 'marcas', 'doble a jugador y no abandonar', 'falta táctica', 'libro de saques', 'sacadores', 'respuesta defensiva de saque', 'llamada puntual de saque', 'sustitución individual', 'cambio de quinteto (conjunto atómico)', 'devolver el quinteto al entrenador básico', 'tiempo muerto manual'],
+    reglamento: ['matriz REG tipada de consecuencias de faltas con estado de contraste por fila (consumida por la administración común de faltas, la disruptiva y la descalificación)', 'series de libres como unidad causal (concedidos, administrados, válidos, repetidos y anulados)', 'sanciones combinadas en cola con una reanudación única; compensación pendiente de contraste', 'disponibilidad, inferioridad y terminación administrativa (casos preparados; el motor natural exige cinco elegibles y falla con diagnóstico)'],
+    acta: ['acta individual y colectiva completa (AS a canasta/libres, REC, TAP/TREC, FC/FR, más-menos, VAL, DNP y participación sin tiempo)', 'posesiones beM y finalizaciones F con dos particiones de puntos', 'presencia por intervalos ordenados por secuencia estable', 'conciliación consultable (33 comprobaciones), revisiones estadística/reglamentaria/técnica y casos de laboratorio preparados'],
+    memoria: ['ruta B: cobertura compatible preparada dentro de la acción sin cambio de plan, ventana ni bonus', 'informe con denominadores separados (exposiciones, patrones únicos, episodios de reconocimiento, respuestas por ruta)'],
     registro: ['JSON ampliado (órdenes, comandos, ciclo de vida, disposición, funciones, referencias y responsabilidad defensiva, coberturas, ayudas con relevo, organización efectiva, procedencia y etiquetas ESP, oportunidades y cadenas de saque)', 'reproducción desde JSON de esta versión'],
   },
   // Tabla breve de cobertura (estados distintos: no equivalen a «validado» ni «calibrado»)
@@ -67,12 +72,13 @@ export const COVERAGE = {
     ],
     noImplementado: [
       ['Evolución de Forma entre encuentros, temporada, entrenamiento, química y moral acumulable', 'fuera del motor de partido'], ['Memoria y entrenador estratégico completo (DEF09, políticas de final)', 'MOTOR-08'],
-      ['Cierre reglamentario extraordinario; contenido exacto de Arts. 37.2/38.2/17.2.7/29.2.6 (el PDF sigue sin ser accesible)', 'MOTOR-09'], ['Presiones zonales específicas y orientación a mano dominante', 'entregas posteriores'],
+      ['Contraste de la matriz REG con el PDF de FIBA (S09-01 a S09-04 inaccesibles, HTTP 403): técnicas y antideportivas, compensación de sanciones, art. 45, inferioridad y terminación', 'sin fecha: requiere acceso a las fuentes o el contenido exacto'], ['Análisis completo, informes, mapas, on/off y resumen', 'MOTOR-10'], ['Presiones zonales específicas y orientación a mano dominante', 'entregas posteriores'],
     ],
   },
   pendientes: [
     'Memoria rival y entrenador estratégico completo (MOTOR-08): la repetición de una ficha no tiene castigo automático',
-    'Cierre reglamentario extraordinario y atribución exhaustiva del acta (MOTOR-09); la administración de la falta disruptiva es lectura propia hasta contrastar el texto exacto',
+    'Contraste de la matriz REG con S09-01/S09-02 (inaccesibles): cada fila declara su estado; no hay lectura directa del PDF',
+    'Análisis, informes, mapas y resumen (MOTOR-10)',
     'Una capa de percepción independiente en el diagnóstico (hoy «no disponible»: la lectura pondera la mezcla)',
     'Generador, lotes y calibración final', 'Guardado de carreras y persistencia entre sesiones',
     'Perfil final completo de los 81 grupos (este perfil es SEM provisional, no calibrado)',
@@ -101,7 +107,8 @@ export async function runMatchAsync(input, profile, opts = {}, onProgress) {
 }
 
 export function buildResult(m, extra = {}) {
-  const box = projectBox(m.events, m.lineupTable, m.input);
+  const acta = buildActa({ events: m.events, lineups: m.lineupTable, input: m.input, possessions: m.possLog, status: m.status }, m.profile.statsPolicy); // MOTOR-09: acta completa desde los hechos
+  const box = projectBox(m.events, m.lineupTable, m.input, { acta });
   const teams = m.teams.map((t) => ({ id: t.id, name: t.name }));
   const complete = m.status === 'finished';
   return {
@@ -121,6 +128,9 @@ export function buildResult(m, extra = {}) {
     score: [...m.score],
     periodScores: m.periodScores.map((p) => ({ period: p.period, points: [...p.points] })),
     box,
+    acta, possessions: m.possLog,
+    reconciliation: reconcile({ events: m.events, lineups: m.lineupTable, input: m.input, score: m.score, periodScores: m.periodScores, possessions: m.possLog, status: m.status, diagnostics: { finalFouls: Object.fromEntries(Object.entries(m.ps).map(([id, s]) => [id, s.fouls])), timeouts: m.timeouts.map((l) => ({ used: { ...l.used }, finalWindow: l.final })) } }, acta),
+    administrative: null, revisions: [],
     direction: m.opts.direction ?? null,
     commands: m.commands,
     orders: m.orders,

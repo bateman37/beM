@@ -19,6 +19,7 @@ Directorio de los encargos a Claude Code. **El texto original de un prompt ejecu
 | MOTOR-05 | Defensa completa: seis organizaciones, cinco estilos defensivos, tres alturas, cuatro coberturas, doce roles, tres especiales y cierre de salvedades de MOTOR-04 | [`MOTOR-05-defensa-completa.md`](MOTOR-05-defensa-completa.md) · [recorrido manual](MOTOR-05-recorrido-manual.md) | Ejecutado, **pendiente de revisión de Dennis** | 2026-10-16 (intento 1) | — |
 | MOTOR-06 | Transición, decisiones espontáneas ESP01–ESP20 y saques de banda y fondo (seis jugadas y seis respuestas), con cierre de salvedades de MOTOR-05 | [`MOTOR-06-transicion-y-saques.md`](MOTOR-06-transicion-y-saques.md) · [recorrido manual](MOTOR-06-recorrido-manual.md) | Ejecutado, **pendiente de revisión de Dennis** | 2026-10-16 (intento 1) | — |
 | MOTOR-07 | Capacidades, energía, Forma, presión, tres momentos, momento colectivo T y episodios EPI01–EPI06, con mapa causal de las 32 capacidades y cierre acotado de salvedades de MOTOR-06 | [`MOTOR-07-capacidades-y-estados.md`](MOTOR-07-capacidades-y-estados.md) · [recorrido manual](MOTOR-07-recorrido-manual.md) | Ejecutado, **pendiente de revisión de Dennis** | 2026-10-16 (intento 1) | — |
+| MOTOR-09 | Reglamento, administración y acta: matriz normativa con estado de contraste, series, combinadas, acta completa, posesiones y F, conciliación, revisiones, casos preparados y ruta B de la memoria | [`MOTOR-09-reglamento-administracion-y-acta.md`](MOTOR-09-reglamento-administracion-y-acta.md) · [recorrido manual](MOTOR-09-recorrido-manual.md) | Ejecutado, **pendiente de revisión de Dennis** | 2026-10-16 (intento 1) | — |
 | MOTOR-08 | Entrenador automático (tres políticas, cinco ámbitos delegables), memoria defensiva colectiva, contrato de información, perfil `SEM-MOTOR08` y cierre acotado de salvedades de MOTOR-07 | [`MOTOR-08-entrenador-y-memoria.md`](MOTOR-08-entrenador-y-memoria.md) · [recorrido manual](MOTOR-08-recorrido-manual.md) | Ejecutado, **pendiente de revisión de Dennis** | 2026-10-16 (intento 1) | — |
 
 ## Fichas de ejecución
@@ -174,3 +175,17 @@ Comprobación local de enlaces: hecha por Claude. Presentación en GitHub: no co
 | Comprobaciones realizadas | `npm test` (118 pruebas, 12 nuevas), `npm run data:check`, cinco partidos completos de integración con invariantes, recorrido de interfaz con Chromium automatizado. No ejecutado: Node 24, otros navegadores, contraste con el PDF FIBA. |
 | Limitaciones | Todo SEM y tablas declarativas de lectura de Claude; ruta B de la memoria no implementada; lecturas FIBA tomadas del resumen del encargo; el tiempo de sesión y la cuota no son medibles. |
 | Pendientes | Validación de Dennis ([recorrido manual](MOTOR-08-recorrido-manual.md)) y las `DECISIÓN REQUERIDA` de [`../tecnico/motor08.md`](../tecnico/motor08.md). |
+
+### MOTOR-09
+
+| Campo | Valor |
+|---|---|
+| Objetivo | Cerrar la administración deportiva y la atribución del acta: matriz normativa, series y combinadas, acta completa, posesiones/F, conciliación, revisiones, casos preparados y cierre acotado de pendientes de MOTOR-08 (incluida la ruta B). |
+| Medio de entrada del texto | Archivo `.md` adjunto (`beM-PROMPT-MOTOR-09-REGLAMENTO-ADMINISTRACION-Y-ACTA.md`; prefijo añadido por la subida). Copia archivada: [`MOTOR-09-reglamento-administracion-y-acta.md`](MOTOR-09-reglamento-administracion-y-acta.md). |
+| Fecha real de ejecución | 2026-10-16 · intento 1 |
+| Rama | `claude/busy-edison-b1fmnc` (designada por el entorno), rehecha desde `origin/main` (`34d4c9e`, con MOTOR-08 fusionado). |
+| PR | La PR abierta contra `main` (sin fusionar); el enlace consta en la respuesta final. |
+| Resultado breve | `regs.js`, `acta.js`, `reconcile.js`, `revisions.js`, `cases.js`, `memory-report.js`, ruta B, `SEM-MOTOR09`, `export/8`. Referencia `20261016`: 83–103. |
+| Comprobaciones realizadas | `npm test` (131 pruebas, 13 nuevas), `npm run data:check`, `scripts/integration-motor09.js` (cinco partidos: 83–103, 89–95, 80–85, 124–92, 85–108; todos conciliados y el quinto reproducido idéntico), recorrido en Chromium automatizado. Base comprobada: 118 pruebas y 88–110 antes de cambiar nada. No ejecutado: Node 24, otros navegadores, contraste con los PDF de FIBA. |
+| Limitaciones | PDF S09-01 a S09-04 inaccesibles (HTTP 403): ninguna fila es lectura directa; filas pendientes sin ejecución; lecturas heredadas y provisionales sin contrastar; todo SEM sin calibrar; el tiempo de sesión y la cuota no son medibles. |
+| Pendientes | Validación de Dennis ([recorrido manual](MOTOR-09-recorrido-manual.md)) y los contenidos normativos de [`../tecnico/motor09.md`](../tecnico/motor09.md) §13. |

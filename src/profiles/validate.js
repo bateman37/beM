@@ -4,6 +4,7 @@ import { buildRows, uncoveredLeaves, indexRows, COVERAGE_STATES } from './rows.j
 import { canonical, getAt } from './util.js';
 import { SLOTS } from '../match/data.js';
 import { motor08Issues } from './validate-motor08.js';
+import { validateMatrix } from '../match/regs.js';
 
 const finite = (v) => typeof v === 'number' && Number.isFinite(v);
 const TOL = 1e-9; // precisión numérica de una suma; no admite otra distribución
@@ -117,6 +118,7 @@ function relationIssues(profile, add) {
   const cb = pr?.combinedFormPressureLogitBounds;
   if (Array.isArray(cb) && !(cb[0] <= 0 && cb[1] >= 0)) add('pressure.combinedFormPressureLogitBounds', 'error', 'rango', 'el presupuesto conjunto debe incluir el 0 (sin Forma ni presión no hay ajuste)', cb);
   for (const [k, v] of Object.entries(ep ?? {})) if (/Impulse$/.test(k) && finite(v) && Math.abs(v) > 1) add(`episodes.${k}`, 'error', 'dominio', 'un impulso mayor que la escala completa del estado no es un impulso limitado', v);
+  if (profile.regulation) for (const i of validateMatrix(profile)) add('regulation', i.severity, i.rule, i.message, null); // MOTOR-09: la matriz normativa debe ser coherente para activarse como perfil reglamentario
   motor08Issues(profile, add); // MOTOR-08: referencias, prioridades, unidades y límites del entrenador y la memoria
 }
 

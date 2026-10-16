@@ -3,11 +3,12 @@
 // frontera de avance que en el original. Las activaciones del historial sirven solo para comprobar, nunca se reaplican.
 // El archivo se trata como datos: no se evalúa ni se ejecuta nada de su contenido.
 import { createMatch, buildResult } from './index.js';
-import { validateInput, deepCopy, ENGINE_VERSION, EXPORT_SCHEMA, EXPORT_SCHEMA_MOTOR01, EXPORT_SCHEMA_MOTOR02, EXPORT_SCHEMA_MOTOR04, EXPORT_SCHEMA_MOTOR05, EXPORT_SCHEMA_MOTOR06, EXPORT_SCHEMA_MOTOR07 } from './data.js';
+import { validateInput, deepCopy, ENGINE_VERSION, EXPORT_SCHEMA, EXPORT_SCHEMA_MOTOR01, EXPORT_SCHEMA_MOTOR02, EXPORT_SCHEMA_MOTOR04, EXPORT_SCHEMA_MOTOR05, EXPORT_SCHEMA_MOTOR06, EXPORT_SCHEMA_MOTOR07, EXPORT_SCHEMA_MOTOR08 } from './data.js';
+import { buildActa } from './acta.js';
 import { projectBox } from './box.js';
 
 const COMMAND_KINDS = new Set(['submit', 'batch', 'cancel']);
-const REQUIRED_PROFILE_KEYS = ['id', 'rng', 'rules', 'selection', 'opportunity', 'outcomes', 'tasks', 'plays', 'shots', 'energy', 'rotation', 'durationSeconds', 'activeCatalog', 'attributeOrder', 'form', 'pressure', 'moment', 'teamMoment', 'episodes', 'stateTasks', 'episodeCatalog', 'coach', 'memory'];
+const REQUIRED_PROFILE_KEYS = ['id', 'rng', 'rules', 'selection', 'opportunity', 'outcomes', 'tasks', 'plays', 'shots', 'energy', 'rotation', 'durationSeconds', 'activeCatalog', 'attributeOrder', 'form', 'pressure', 'moment', 'teamMoment', 'episodes', 'stateTasks', 'episodeCatalog', 'coach', 'memory', 'regulation', 'statsPolicy'];
 
 // Valida formato, versiones y referencias ANTES de ejecutar nada. Devuelve { ok, reproducible, legacy, problems }.
 export function validateReplayFile(file) {
@@ -38,6 +39,10 @@ export function validateReplayFile(file) {
     problems.push(`formato ${EXPORT_SCHEMA_MOTOR07} de MOTOR-07: se puede consultar, pero no es reproducible con esta versión del motor (${file.meta?.engineVersion ?? 'versión desconocida'} ≠ ${ENGINE_VERSION}); MOTOR-08 añade el entrenador automático con política y delegación por áreas, el plan de participación, la memoria defensiva y corrige entregas, saques y la falta disruptiva, de modo que el mismo archivo no produce el mismo partido. El archivo se conserva sin cambios y no se le asigna el perfil nuevo`);
     return out({ reproducible: false, legacy: true });
   }
+  if (file.schema === EXPORT_SCHEMA_MOTOR08) {
+    problems.push(`formato ${EXPORT_SCHEMA_MOTOR08} de MOTOR-08: se puede consultar, pero no es reproducible con esta versión del motor (${file.meta?.engineVersion ?? 'versión desconocida'} ≠ ${ENGINE_VERSION}); MOTOR-09 añade la matriz reglamentaria con series y consecuencias, la política estadística del acta (un fallo con falta de tiro deja de contar como intento de campo), el registro de posesiones, la conciliación, las revisiones y la ruta B de la memoria, de modo que el mismo archivo no produce el mismo partido ni la misma acta. El archivo se conserva sin cambios y no se le asigna el perfil ni las reglas nuevas`);
+    return out({ reproducible: false, legacy: true });
+  }
   if (file.schema !== EXPORT_SCHEMA) { problems.push(`formato no reconocido: ${String(file.schema)} (se espera ${EXPORT_SCHEMA})`); return out(); }
   const ver = file.meta?.engineVersion;
   if (ver !== ENGINE_VERSION) problems.push(`versión del motor distinta: el archivo es de ${ver ?? 'versión desconocida'} y este motor es ${ENGINE_VERSION}; no se aparenta reproducibilidad`);
@@ -64,6 +69,8 @@ export function sportsProjection(res) {
     events: res.events.map(({ calc, params, ...e }) => e),
     score: res.score, periodScores: res.periodScores,
     box: projectBox(res.events, res.lineups, res.input),
+    acta: (({ glossary, ...a }) => a)(buildActa({ events: res.events, lineups: res.lineups, input: res.input, possessions: res.possessions, status: res.status }, res.profile?.statsPolicy)), // MOTOR-09: acta reconstruida desde los hechos
+    possessions: res.possessions ?? null,
     orders: res.orders, commands: res.commands,
     states: res.diagnostics?.states ?? null, episodes: res.diagnostics?.episodes ?? null, // MOTOR-07: estados y timestamps comprometidos y episodios (reproducibles)
     coach: (res.diagnostics?.coach?.decisions ?? null)?.map((d) => ({ ...d, version: d.version ? { ...d.version, versionDeLaBiblioteca: undefined } : d.version })), // la etiqueta de biblioteca es procedencia del perfil, no un hecho deportivo

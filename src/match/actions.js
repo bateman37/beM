@@ -10,6 +10,7 @@ import {
   toTenths, fitsBeforeLimit, clockStopsAfterGoal, foulPeriodKey, inPenalty,
   shotClockAfterDefensiveStoppage, shotClockAfterRingContact, freeThrowsForShootingFoul,
 } from './rules.js';
+import { resolveFoul } from './regs.js';
 
 const P = MatchCore.prototype;
 const ZONE_TEC = { three: 'TEC01', midrange: 'TEC02', inside: 'TEC03', rim: 'TEC04' };
@@ -370,7 +371,9 @@ P.resolveShot = function resolveShot(ex, base, contact) {
   const p = perturbBinary(pBase, mz.Z, mz.alpha);
   this.perturbNote('shotConversion', mz, { pBase: round(pBase, 5), pFinal: round(p, 5), contraparteOmitidaPorOportunidad: !!ex.mdefUsed && counterIds.length > 0 });
   const made = this.bernoulli(p, `conversión:${ex.zone}`);
-  const shotFact = { k: 'shot', p: ex.actor, team: ex.team, zone: ex.zone, points: sh.points, made, fromFoul: contact };
+  // MOTOR-09: el pase final que alimenta el tiro (candidato único de asistencia) viaja con el hecho; `moved` indica creación propia con movimiento.
+  const feed = ex.exec === 'pass' && ex.passer && ex.passer !== ex.actor ? { passer: ex.passer, moved: !!ex.moved, window: !!ex.window, origin: ex.origin ?? null } : null;
+  const shotFact = { k: 'shot', p: ex.actor, team: ex.team, zone: ex.zone, points: sh.points, made, fromFoul: contact, feed };
   stats.push(shotFact);
   const eff = { zona: ex.zone, pConversion: round(p, 5), pConversionBase: round(pBase, 5), entra: made, defensor: defender ?? null, ventanaLibre: !!ex.window };
   if (made) this.addPoints(ex.team, sh.points);
@@ -380,7 +383,7 @@ P.resolveShot = function resolveShot(ex, base, contact) {
     const n = freeThrowsForShootingFoul(sh.points, made);
     const ev = this.emit('attempt', { ...base, stats, effects: { ...eff, falta: { de: committer, sobre: ex.actor, tirosLibres: n, canastaValida: made } } });
     this.episodesAfterShot(ex, { made, pBase, contact: true }); // MOTOR-07: episodios a partir de esta frontera (nunca sobre la misma acción)
-    this.foulAdmin(committer, ex.actor, { shooting: true, ftCount: n, shotTeam: ex.team, shotMade: made });
+    this.foulAdmin(committer, ex.actor, { shooting: true, ftCount: n, shotTeam: ex.team, shotMade: made, shotEvent: ev.id, feed, shotPoints: sh.points });
     this.poss.pendingFT = ex; // la ventana de la falta es una frontera; la serie de libres se resuelve en la unidad siguiente
     return { cont: 'foulWindow' };
   }
@@ -467,7 +470,7 @@ P.resolveOffensiveFoul = function resolveOffensiveFoul(ex, base) {
   this.ps[committer].fouls += 1;
   const key = foulPeriodKey(this.period, this.profile.rules);
   this.teamFouls[ex.team][key] = (this.teamFouls[ex.team][key] ?? 0) + 1;
-  const stats = [{ k: 'foul', p: committer, team: ex.team, kind: 'ofensiva', teamFoul: true }, { k: 'tov', p: committer, team: ex.team, cause: 'falta ofensiva' }];
+  const stats = [{ k: 'foul', p: committer, team: ex.team, kind: 'ofensiva', teamFoul: true, sobre: ex.defend ?? ex.icpt ?? null }, { k: 'tov', p: committer, team: ex.team, cause: 'falta ofensiva' }];
   this.cover('falta ofensiva');
   this.emit('attempt', { ...base, stats, effects: { faltaOfensiva: committer, contacto: ex.offContact.kind, faltasPersonales: this.ps[committer].fouls } });
   if (this.ps[committer].fouls >= this.profile.rules.foulOut) this.exclude(committer);
@@ -490,7 +493,7 @@ P.exclude = function exclude(pid) {
 };
 
 // Administración determinista de una falta defensiva validada (sin nuevos sorteos).
-P.foulAdmin = function foulAdmin(committer, fouled, { shooting, ftCount = 0, shotTeam, shotMade = false }) {
+P.foulAdmin = function foulAdmin(committer, fouled, { shooting, ftCount = 0, shotTeam, shotMade = false, shotEvent = null, feed = null, shotPoints = null }) {
   const rules = this.profile.rules;
   const defTeam = 1 - shotTeam;
   const key = foulPeriodKey(this.period, rules);
@@ -500,18 +503,21 @@ P.foulAdmin = function foulAdmin(committer, fouled, { shooting, ftCount = 0, sho
   this.teamFouls[defTeam][key] = before + 1;
   const out = this.ps[committer].fouls >= rules.foulOut;
   if (out) this.exclude(committer);
-  let n = 0; let kind;
-  if (shooting) { n = ftCount; kind = 'falta en acto de tiro'; }
-  else if (penalty) { n = rules.freeThrowsForOrdinaryBonus; kind = 'penalización colectiva'; }
+  // MOTOR-09: las consecuencias salen de la matriz REG02 (una sola fuente); `ftCount` del llamador debe coincidir con la fila aplicada.
+  const cons = resolveFoul(this.profile, { category: 'personal', shotAction: !!shooting, shotPoints: shooting ? shotPoints : null, shotMade: !!shotMade, penalty });
+  if (!cons.ok) throw new Error(`falta sin consecuencia válida: ${cons.diagnostic}`);
+  let n = cons.ft; let kind;
+  if (shooting) { kind = 'falta en acto de tiro'; if (n !== ftCount) throw new Error(`libres de la falta en tiro incoherentes con la matriz (${n} ≠ ${ftCount})`); }
+  else if (penalty) kind = 'penalización colectiva';
   else kind = 'saque de banda';
   const ev = this.emit('foul', {
     team: shotTeam,
     intent: { origen: 'falta defensiva', tipo: kind },
     participants: { infractor: committer, sobre: fouled },
-    stats: [{ k: 'foul', p: committer, team: defTeam, kind: shooting ? 'tiro' : 'personal', teamFoul: true }],
-    effects: { faltasPersonales: this.ps[committer].fouls, faltasColectivasPeriodo: this.teamFouls[defTeam][key], penalizacion: penalty, tirosLibres: n, excluido: out, causaTirosLibres: kind },
+    stats: [{ k: 'foul', p: committer, team: defTeam, kind: shooting ? 'tiro' : 'personal', teamFoul: true, sobre: fouled }],
+    effects: { faltasPersonales: this.ps[committer].fouls, faltasColectivasPeriodo: this.teamFouls[defTeam][key], penalizacion: penalty, tirosLibres: n, excluido: out, causaTirosLibres: kind, regla: cons.row },
   });
-  this.pendingFoul = { fouled, n, shotTeam, shooting, shotMade, kind };
+  this.pendingFoul = { fouled, n, shotTeam, shooting, shotMade, kind, shotEvent, feed };
   this.deadBall('falta');
 };
 
@@ -529,6 +535,7 @@ P.afterFreeThrows = function afterFreeThrows(ex) {
 
 P.shootFreeThrows = function shootFreeThrows(shooter, n, f, ex) {
   const sh = this.profile.shots.freeThrow;
+  this.seriesSeq = (this.seriesSeq ?? 0) + 1; const seriesId = `S${String(this.seriesSeq).padStart(3, '0')}`; // MOTOR-09: la serie es la unidad causal de los libres
   for (let i = 1; i <= n; i++) {
     const A = this.recipeObj(sh.attack, shooter, this.profile.energy.freeThrowTaskMax, 'ataque_libre');
     // MOTOR-07: Forma y presión del lanzador y su momento M-TIR; sin defensor ni contraparte ficticios (el libre no usa la oposición de campo).
@@ -544,7 +551,7 @@ P.shootFreeThrows = function shootFreeThrows(shooter, n, f, ex) {
       team: f.shotTeam,
       intent: { origen: f.kind, serie: `${i}/${n}` },
       participants: { lanzador: shooter },
-      stats: [{ k: 'ft', p: shooter, team: f.shotTeam, made }],
+      stats: [{ k: 'ft', p: shooter, team: f.shotTeam, made, series: seriesId, i, n, cause: f.kind, shooting: !!f.shooting, shotEvent: f.shotEvent ?? null, shotMade: !!f.shotMade, feed: f.feed ?? null }],
       effects: { pLibre: round(p, 5), entra: made, ultimo: last },
     });
     if (last && f.retain) {
@@ -674,13 +681,14 @@ P.afterMiss = function afterMiss(ex, zone) {
     this.cover('fallo con bocina sin rebote');
     return { end: 'periodEnd' };
   }
+  const missEvent = this.events[this.events.length - 1]?.id ?? null; // MOTOR-09: oferta de rebote = el fallo elegible que la origina
   const t = this.consume(plan.tenths, plan.load);
   const offReb = this.bernoulli(pRO, 'rebote:equipo');
   const team = offReb ? offT : defT;
   const cands = offReb ? offP : defP;
   const captor = this.pick(cands.map((id) => ({ key: id, w: this.recipeObj(rb.captor, id, rb.maxEnergyPenalty) })), 'rebote:captor').key;
   this.cover(offReb ? 'rebote ofensivo' : 'rebote defensivo');
-  this.emit('rebound', { t, team: offT, intent: { origen: ft ? 'último libre fallado' : `tiro fallado ${zone}` }, participants: { captor, candidatos: cands }, stats: [{ k: 'reb', p: captor, team, off: offReb }], effects: { ofensivo: offReb, pRebOfensivo: round(pRO, 5), contactoAro: true, encargos: this.commitTrace(commit) } });
+  this.emit('rebound', { t, team: offT, intent: { origen: ft ? 'último libre fallado' : `tiro fallado ${zone}` }, participants: { captor, candidatos: cands }, stats: [{ k: 'reb', p: captor, team, off: offReb, of: missEvent }], effects: { ofensivo: offReb, pRebOfensivo: round(pRO, 5), contactoAro: true, encargos: this.commitTrace(commit) } });
   if (!offReb) { this.endPossession('live', { team: offT, origin: 'rebote', carrier: captor, deficit: commit.deficit }); return { end: 'dreb' }; }
   this.shotClock = shotClockAfterRingContact(this.shotClock, this.profile.rules);
   this.poss.advanced = true; this.poss.disorganized = true;

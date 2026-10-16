@@ -2,6 +2,16 @@
 
 Registro breve de entregas. Una entrada por entrega; las más recientes primero.
 
+## MOTOR-09 — Reglamento, administración y acta — 2026-10-16
+
+- Matriz normativa REG (19 filas) con **estado de contraste por fila** (`contrastada`, `heredada`, `provisional`, `pendiente`): los PDF de FIBA (S09-01 a S09-04) devolvieron HTTP 403, así que ninguna fila es lectura directa del PDF; lo contrastado procede del texto del encargo §4.3. La administración de faltas defensivas, la disruptiva (libres y saque con 14 s) y la descalificación acumulada consultan ya la matriz. Técnicas/antideportivas, compensación de sanciones y art. 45 quedan **tipadas sin ejecución** (diagnóstico, no una regla inventada).
+- Series de libres como unidad causal (concedidos, administrados, válidos, repetidos, anulados), sanciones combinadas en cola con reanudación única, disponibilidad/inferioridad y terminación administrativa (casos preparados; el motor natural falla con diagnóstico si no hay cinco elegibles).
+- Acta completa desde los hechos: AS a canasta/libres, REC, TAP/TREC, FC/FR, más-menos por intervalos de presencia con secuencia estable, VAL, DNP y participación sin tiempo, sujetos colectivos, parciales, posesiones beM, finalizaciones F y dos particiones de puntos. **Un fallo con falta en acción de tiro deja de contar como intento de campo.**
+- Conciliación consultable (33 comprobaciones con universo, esperado y observado), revisiones estadística/reglamentaria/técnica con propagación y casos de laboratorio preparados.
+- Pendientes de MOTOR-08: informe de la memoria con denominadores separados, auditoría de claves y rotación (sin tocar la capacidad) y **ruta B** (cobertura preparada dentro de la acción, sin ventana, sin cambio de plan, sin bonus).
+- Extensión `SEM-MOTOR09-20261016`, `beM-match-export/8` (el `export/7` se rechaza con motivo y se conserva), vistas «Reglamento» y «Estadística e información» del panel.
+- **Cambia los resultados** (referencia `20261016`: 88–110 → 83–103, por la ruta B). 131 pruebas (13 nuevas). Documentación: [`docs/tecnico/motor09.md`](docs/tecnico/motor09.md), [recorrido manual](docs/prompts/MOTOR-09-recorrido-manual.md). Pendiente de validación de Dennis.
+
 ## MOTOR-08 — Entrenador automático y memoria defensiva — 2026-10-16
 
 - Entrenador automático con tres políticas (ENTREF01–03, catorce parámetros literales del encargo) y cinco ámbitos delegables: rotaciones contextuales con estabilidad, librillo de faltas ordenado, tiempos muertos con causa, reserva y enfriamiento, ajustes tácticos y finales por tabla de contextos. Una sola utilidad 1–30 compartida con la sustitución; la exclusión reglamentaria no es delegable.

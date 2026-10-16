@@ -6,6 +6,7 @@
 import { getAt, pathKey } from './util.js';
 import { MOTOR07_FAMILIES, MOTOR07_EXEMPT } from './rows-motor07.js';
 import { MOTOR08_FAMILIES, MOTOR08_EXEMPT } from './rows-motor08.js';
+import { MOTOR09_FAMILIES, MOTOR09_EXEMPT } from './rows-motor09.js';
 
 export const CLASSES = {
   balance: 'Parámetro de balance',
@@ -421,13 +422,15 @@ export const FAMILIES = [
   ...MOTOR07_FAMILIES,
   // ------------------------------------------------------------------ MOTOR-08: entrenador automático y memoria defensiva (SEM-MOTOR08)
   ...MOTOR08_FAMILIES,
+  // ------------------------------------------------------------------ MOTOR-09: reglamento y acta (SEM-MOTOR09)
+  ...MOTOR09_FAMILIES,
 ];
 
 // Hojas del perfil que NO son filas: identidad, procedencia y estructura de contenido, no magnitudes calibrables (§4.1).
 export const EXEMPT_LEAF = [
   /^id$/, /^status$/, /^scope$/, /^effectiveId$/, /^provenance\./, /^deferred/, /^scenario\./, /^fixtureContract\./, /^attributeOrder/, /^attributeDictionary/,
   /^extensions\./, /^motor02\.(seedExtensionId|status|basedOn|origin)$/, /^profileRef\./, /^plays\.\d+\.(id|family|roles|continuations)/, /^tasks\.[^.]+\.(attack|defense)\.\d+\.[01]$/, /^plays\.\d+\.(qualityAttack|qualityDefense)\.\d+\.[01]$/,
-  /^rotation\.foulProtection\.\d+\.period$/, ...MOTOR07_EXEMPT, ...MOTOR08_EXEMPT, /^repertoire\./, /^defenseRepertoire\./, /^spontaneousRepertoire\./, /^throwInRepertoire\./,
+  /^rotation\.foulProtection\.\d+\.period$/, ...MOTOR07_EXEMPT, ...MOTOR08_EXEMPT, ...MOTOR09_EXEMPT, /^repertoire\./, /^defenseRepertoire\./, /^spontaneousRepertoire\./, /^throwInRepertoire\./,
 ];
 
 // Excepciones explicadas: valores del código que NO se convierten en filas (§4.1).
