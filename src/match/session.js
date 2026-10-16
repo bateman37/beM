@@ -18,10 +18,11 @@ const browserScheduler = {
 };
 
 export class MatchSession {
-  constructor({ input, profile, mode = 'total', managedTeam = 0, speed = PRESENTATION.defaultSpeed, scheduler = browserScheduler, presentation = PRESENTATION, pauseOnTimeout = true } = {}) {
+  constructor({ input, profile, profileRef = null, mode = 'total', managedTeam = 0, speed = PRESENTATION.defaultSpeed, scheduler = browserScheduler, presentation = PRESENTATION, pauseOnTimeout = true } = {}) {
     if (!MODES[mode]) throw new Error(`modalidad desconocida: ${mode}`);
     this.mode = mode; this.managedTeam = managedTeam; this.speed = speed; this.sched = scheduler; this.pres = presentation; this.pauseOnTimeout = pauseOnTimeout;
-    this.match = createMatch(input, profile, { detail: 'full', direction: { managedTeam, mode } }); // copia congelada de la entrada
+    // copia congelada de la entrada y del perfil efectivo: activar otro perfil después no cambia este encuentro
+    this.match = createMatch(input, profile, { detail: 'full', direction: { managedTeam, mode }, profileRef });
     this.state = 'preparado'; this.token = 0; this.timer = null; this.running = false; this.listeners = new Set();
     this.pendingBaseMs = 0;
     this.log = { mode, managedTeam, initialSpeed: speed, speedChanges: [], pauses: [], resumes: [], reviews: [], startedAt: null, finishedAt: null };

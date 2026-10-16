@@ -1,6 +1,7 @@
 // Selección de intención, resolución de acontecimientos y flujo de posesiones.
 // Una resolución agrupa preparación, lectura, elección y ejecución; el tiempo se descuenta una vez por hecho.
 import { clamp, sigmoid, logit, round } from './mathx.js';
+import { shotLogit, vocationFactor } from './formulas.js';
 import { SLOTS } from './data.js';
 import { MatchCore } from './core.js';
 import { PLAY_SPEC, fit } from './plays.js';
@@ -52,18 +53,19 @@ P.mixIntention = function mixIntention(items, { L, q }, label) {
 P.estimateValue = function estimateValue(ex) {
   const sh = this.profile.shots[ex.zone];
   const A = this.recipeObj(sh.attack, ex.actor, this.profile.energy.defaultTechnicalTaskMax);
-  const pEst = sigmoid(logit(sh.p0) + sh.sA * (A - 16) + (ex.moved ? -this.profile.shotPreparation.movementMaximumLogitCost * (1 - (this.prepAbility(ex.actor) - 1) / 29) : 0));
-  let ctl = 16;
+  const cr = this.profile.selection.candidateRead; const N = this.profile.neutralAbility;
+  // el valor estimado supone un rival de capacidad `opponentAbilityEstimate` (en la referencia neutra no añade nada)
+  const pEst = sigmoid(logit(sh.p0) + sh.sA * (A - N) - sh.sD * (cr.opponentAbilityEstimate - N) + (ex.moved ? -this.profile.shotPreparation.movementMaximumLogitCost * (1 - (this.prepAbility(ex.actor) - 1) / 29) : 0));
+  let ctl = N;
   if (ex.exec === 'dribble') ctl = this.taskValue('TAR06', 'attack', { handler: ex.actor });
   else if (ex.exec === 'pass') ctl = this.taskValue('TAR07', 'attack', { passer: ex.passer });
-  const risk = ex.exec === 'none' ? 0 : this.profile.outcomes.base.turnover * Math.exp(this.profile.outcomes.controlSensitivity * (16 - ctl));
-  const cr = this.profile.selection.candidateRead;
+  const risk = ex.exec === 'none' ? 0 : this.profile.outcomes.base.turnover * Math.exp(this.profile.outcomes.controlSensitivity * (cr.opponentAbilityEstimate - ctl));
   return Math.max(cr.minimumUtility, sh.points * pEst - cr.expectedTurnoverCostPoints * risk);
 };
 P.prepAbility = function prepAbility(pid) { return this.taskValue('TAR11', 'attack', { shooter: pid }); };
 P.prefWeight = function prefWeight(ex) {
   const p = this.pl[ex.actor];
-  return p.zonePreference[ZONE_PREF[ex.zone]] * (0.35 + 0.65 * p.finishingVocation)
+  return p.zonePreference[ZONE_PREF[ex.zone]] * vocationFactor(this.profile, p.finishingVocation)
     * fit(this.profile, this.eff(ex.actor, ZONE_TEC[ex.zone])) * this.zoneStyleMult(p.teamIdx, ex.zone);
 };
 
@@ -138,7 +140,7 @@ P.categoryWeights = function categoryWeights(ex) {
       off = this.taskValue('TAR07', 'attack', { passer: ex.passer });
       if (ex.icpt) def = this.taskValue('TAR07', 'defense', { interceptor: ex.icpt });
     }
-    z.turnover = def != null ? o.controlSensitivity * (def - off) : -o.controlSensitivity * (off - 16);
+    z.turnover = def != null ? o.controlSensitivity * (def - off) : -o.controlSensitivity * (off - this.profile.neutralAbility);
     w.turnover = base.turnover * Math.exp(z.turnover);
     ex.ctl = { off: round(off, 3), def: def == null ? null : round(def, 3) };
   }
@@ -148,7 +150,7 @@ P.categoryWeights = function categoryWeights(ex) {
     const c = this.profile.contact;
     const dt = innerZone ? 'TEC13' : 'TEC12';
     const legal = this.recipe([['d', dt, c.defensiveLegality.defenseTechnique], ['d', 'MEN04', c.defensiveLegality.MEN04], ['d', 'MEN05', c.defensiveLegality.MEN05]], { d: opposer }, c.maximumEnergyPenalty, 'legalidad_defensiva');
-    z.defFoul = o.defensiveFoulSensitivity * (16 - legal);
+    z.defFoul = o.defensiveFoulSensitivity * (this.profile.neutralAbility - legal);
     w.defensiveNonShootingFoul = base.defensiveNonShootingFoul * Math.exp(z.defFoul);
     if (ex.defend) w.shootingFoul = base.shootingFoul * Math.exp(z.defFoul);
     w.looseBall = base.looseBall * 1; z.loose = 0;
@@ -156,7 +158,7 @@ P.categoryWeights = function categoryWeights(ex) {
   if (ex.offContact) {
     const c = this.profile.contact;
     const legal = this.recipe([['o', ex.offContact.tech, c.offensiveLegality.actionTechnique], ['o', 'FIS04', c.offensiveLegality.FIS04], ['o', 'FIS07', c.offensiveLegality.FIS07]], { o: ex.offContact.pid }, c.maximumEnergyPenalty, 'legalidad_ofensiva');
-    z.offFoul = o.offensiveFoulSensitivity * (16 - legal);
+    z.offFoul = o.offensiveFoulSensitivity * (this.profile.neutralAbility - legal);
     w.offensiveFoul = base.offensiveFoul * Math.exp(z.offFoul);
   }
   if (ex.exec === 'dribble') w.ballViolation = base.ballViolation;
@@ -246,12 +248,11 @@ P.resolveShot = function resolveShot(ex, base, contact) {
     const b = this.profile.block;
     const blk = this.recipeObj(b.attack, defender, b.maximumEnergyPenalty, 'tapón:bloqueador');
     const resist = b.resistanceTechniqueWeight * A + b.resistanceBalanceWeight * this.eff(ex.actor, 'FIS07', this.profile.energy.defaultTechnicalTaskMax);
-    const pB = sigmoid(logit(sh.blockP0) + b.sA * (blk - 16) - b.sD * (resist - 16));
+    const N = this.profile.neutralAbility;
+    const pB = sigmoid(logit(sh.blockP0) + b.sA * (blk - N) - b.sD * (resist - N));
     if (this.bernoulli(pB, 'tapón')) return this.resolveBlocked(ex, base, defender);
   }
-  let pr = logit(sh.p0) + sh.sA * (A - 16) + K;
-  if (defender) pr -= sh.sD * (this.shotDefense(ex.zone, defender, ex.actor) - 16);
-  const p = sigmoid(pr);
+  const p = sigmoid(shotLogit(this.profile, sh, A, defender ? this.shotDefense(ex.zone, defender, ex.actor) : null, K));
   const made = this.bernoulli(p, `conversión:${ex.zone}`);
   const shotFact = { k: 'shot', p: ex.actor, team: ex.team, zone: ex.zone, points: sh.points, made, fromFoul: contact };
   stats.push(shotFact);
@@ -404,9 +405,9 @@ P.shootFreeThrows = function shootFreeThrows(shooter, n, f, ex) {
   const sh = this.profile.shots.freeThrow;
   for (let i = 1; i <= n; i++) {
     const A = this.recipeObj(sh.attack, shooter, this.profile.energy.freeThrowTaskMax, 'ataque_libre');
-    const p = sigmoid(logit(sh.p0) + sh.sA * (A - 16));
+    const p = sigmoid(shotLogit(this.profile, sh, A, null, 0));
     const made = this.bernoulli(p, 'libre');
-    if (made) this.addPoints(f.shotTeam, 1);
+    if (made) this.addPoints(f.shotTeam, sh.points);
     const last = i === n;
     this.emit('free_throw', {
       team: f.shotTeam,
@@ -454,7 +455,7 @@ P.afterMiss = function afterMiss(ex, zone) {
   const offP = this.playersAtSlots(offT, offSlots);
   if (!ft && rb.addShooterIfNearRim && (zone === 'rim' || zone === 'inside') && !offP.includes(ex.actor)) offP.push(ex.actor);
   const defP = this.playersAtSlots(defT, defSlots);
-  const strength = (pid) => this.recipeObj(rb.strength, pid, rb.maxEnergyPenalty) + this.profile.body.reboundStrengthSensitivity * (this.pl[pid].reach - 0.5);
+  const strength = (pid) => this.recipeObj(rb.strength, pid, rb.maxEnergyPenalty) + this.profile.body.reboundStrengthSensitivity * (this.pl[pid].reach - this.profile.body.reboundReachReference);
   const mean = (ids) => ids.reduce((s, id) => s + strength(id), 0) / ids.length;
   const RA = mean(offP); const RD = mean(defP);
   const K = rb.loadLogitByLevel[this.styleOf(offT).afterShot - 1];

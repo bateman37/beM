@@ -65,3 +65,33 @@ ul.orders { list-style:none; padding:0; margin:0; }
 li.ord { padding:5px 0; border-bottom:1px dotted var(--line); }
 .pill.on { background:var(--accent); color:#fff; }
 label.opt { display:flex; gap:10px; align-items:flex-start; }
+/* ---- MOTOR-03: panel de ajustes ---- */
+.tabs2 { margin:6px 0 12px; display:flex; flex-wrap:wrap; }
+.tabs2 button { margin-bottom:4px; }
+.draftbar { display:flex; flex-wrap:wrap; gap:6px 14px; align-items:center; background:#fff8e1; border:1px solid #e8d48a; border-radius:8px; padding:8px 12px; margin-bottom:14px; }
+.draftbar.none { background:#f0f2f6; border-color:var(--line); }
+.card.tight { padding:8px 12px; margin:8px 0; }
+.lights { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:10px; margin:10px 0; }
+.light { border:1px solid var(--line); border-left:6px solid #9aa3b5; border-radius:6px; padding:6px 10px; background:#fff; }
+.light.ok { border-left-color:var(--ok); } .light.bad { border-left-color:var(--bad); } .light.pending { border-left-color:#d6a100; }
+.filters { display:flex; flex-wrap:wrap; gap:8px 14px; align-items:center; margin:8px 0; }
+.filters input[type=search] { min-width:260px; padding:5px 8px; }
+.scroll.tall { max-height:68vh; }
+table.master td.name { white-space:normal; min-width:260px; max-width:420px; }
+table.master tr.pinned td { background:#fffbe6; } table.master tr.modified td:first-child { box-shadow: inset 3px 0 0 #d6a100; }
+td.chg { background:#fff1da; font-weight:600; }
+th.sortable { cursor:pointer; user-select:none; }
+table.mini th, table.mini td { padding:2px 6px; }
+.bulk { background:#f4f8ff; border-color:#b9cdee; }
+.kv.wide { grid-template-columns:170px 1fr; }
+.kv .k { color:var(--muted); }
+.numin { padding:3px 6px; border:1px solid var(--line); border-radius:4px; text-align:right; }
+.numin.bad { border-color:var(--bad); background:#fff5f4; }
+.warn-t { color:var(--warn); }
+.warn-box { background:#fff8e1; border-color:#e8d48a; }
+.pill.cls-reglamento { background:#e8e0f7; color:#4b2c8f; } .pill.cls-invariante { background:#fde3e1; color:var(--bad); } .pill.cls-contenido { background:#dff3e6; color:var(--ok); }
+.toast { position:fixed; right:18px; bottom:18px; background:#101828; color:#fff; padding:10px 16px; border-radius:8px; z-index:99; max-width:60vw; }
+.toast.bad { background:var(--bad); }
+.toast[hidden] { display:none; }
+#rowdlg-body { padding:10px 14px; overflow:auto; max-height:76vh; }
+.editor .row { margin:6px 0; }

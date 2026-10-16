@@ -3,7 +3,8 @@ import { buildMatchInput, createMatch } from '../src/match/index.js';
 
 export const data = loadData();
 export const inputFor = (seed) => buildMatchInput(data.profile, data.players, { seed });
-export const stripCalc = (events) => events.map(({ calc, ...rest }) => rest);
+// `calc` (detalle calculado) y `params` (filas consultadas) son diagnóstico: no forman parte del deporte.
+export const stripCalc = (events) => events.map(({ calc, params, ...rest }) => rest);
 
 // Encuentro inicializado y listo para casos controlados de reglas.
 export function freshMatch(seed = 1, opts = {}) {

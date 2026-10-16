@@ -2,6 +2,7 @@
 // aplicación de +1/+3/+5 y persistencia opcional (localStorage, con degradación segura).
 import { parsePlayersCsv, buildMatchInput, deepCopy, validateInput, applyExtension, ATTRS } from '../match/index.js';
 import { storage } from './dom.js';
+import { ProfileLibrary } from '../profiles/library.js';
 
 const KEY = 'beM.motor01.edit.v1'; // la entrada editable no cambia de formato en MOTOR-02: se conserva la clave
 export const ATTR_GROUPS = [
@@ -17,20 +18,26 @@ export const PLAY_NAMES = {
   POS09: 'Pase y corte', POS11: 'Poste bajo', POS14: 'Aclarado desde cabecera',
 };
 
-export const store = { profile: null, baseProfile: null, extension: null, base: null, edit: null, labels: {}, catalog: null, last: null, persisted: false };
+// `profile` es el perfil EFECTIVO de la versión ACTIVA (MOTOR-03): lo que usarán los próximos encuentros. Los encuentros ya
+// iniciados llevan su propia copia congelada y no se ven afectados por activar otra versión.
+export const store = { baseProfile: null, extension: null, extension3: null, base: null, edit: null, labels: {}, catalog: null, last: null, persisted: false, library: null, matchRef: null,
+  get profile() { return this.library ? this.library.activeVersion().effective : null; },
+  get profileRef() { return this.library ? this.library.profileRef(this.library.activeId) : null; } };
 
 export async function loadAll() {
-  const [baseProfile, extension, csv, catalog] = await Promise.all([
+  const [baseProfile, extension, extension3, csv, catalog] = await Promise.all([
     fetch('/data/match/motor01-seed-profile.json').then((r) => r.json()),
     fetch('/data/match/motor02-seed-extension.json').then((r) => r.json()),
+    fetch('/data/match/motor03-seed-extension.json').then((r) => r.json()),
     fetch('/data/fixtures/reference-players-MOTOR01.csv').then((r) => r.text()),
     fetch('/data/catalog.json').then((r) => (r.ok ? r.json() : null)).catch(() => null),
   ]);
   const players = parsePlayersCsv(csv, baseProfile);
-  const profile = applyExtension(baseProfile, extension); // perfil efectivo: el original no se sobrescribe
-  store.profile = profile; store.baseProfile = baseProfile; store.extension = extension; store.catalog = catalog;
+  const profile = applyExtension(baseProfile, extension, extension3); // perfil efectivo base: el original no se sobrescribe
+  store.baseProfile = baseProfile; store.extension = extension; store.extension3 = extension3; store.catalog = catalog;
+  store.library = new ProfileLibrary({ storage: storage(), base: profile });
   store.labels = Object.fromEntries(profile.attributeDictionary.map((a) => [a.id, a.label]));
-  store.base = buildMatchInput(profile, players);
+  store.base = buildMatchInput(store.profile, players);
   store.edit = restore() ?? deepCopy(store.base);
   return store;
 }

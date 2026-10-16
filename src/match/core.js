@@ -4,12 +4,21 @@ import { createRng } from './rng.js';
 import { clamp, interpolate, triangularFromU, round, sigmoid, logit } from './mathx.js';
 import { deepCopy, ENGINE_VERSION, SLOTS } from './data.js';
 import { toTenths, periodLengthTenths } from './rules.js';
+import { assertProfileComplete } from '../profiles/rows.js';
+import { createParamTracker } from '../profiles/tracker.js';
+import { deepFreeze } from '../profiles/util.js';
 
 export class MatchCore {
   constructor(input, profile, opts = {}) {
-    this.opts = { detail: 'full', check: false, ...opts };
-    this.profile = profile;
-    this.cfg = profile.motor02 ?? null; // extensión SEM de MOTOR-02 (tiempos muertos); ausente en perfiles de MOTOR-01
+    this.opts = { detail: 'full', check: false, track: true, profileRef: null, ...opts };
+    // MOTOR-03: configuración efectiva CONGELADA del encuentro. Una fila requerida ausente es un error de configuración
+    // identificable, nunca un valor por defecto oculto. La copia no cambia aunque se edite o active otro perfil después.
+    assertProfileComplete(profile);
+    this.profileData = deepFreeze(deepCopy(profile)); // lo que se exporta y se reproduce
+    // Con detalle completo se registran las filas realmente consultadas en cada hecho (diagnóstico); no altera nada.
+    this.tracker = this.opts.detail === 'full' && this.opts.track ? createParamTracker(deepCopy(profile)) : null;
+    this.profile = this.tracker ? this.tracker.profile : this.profileData;
+    this.cfg = this.profile.motor02 ?? null; // extensión SEM de MOTOR-02 (tiempos muertos)
     this.input = deepCopy(input); // copia de entrada congelada (efectiva)
     this.rng = createRng(this.input.seed, profile.rng);
     // `this.input` queda congelada (entrada efectiva exportable); el plan de trabajo se copia y puede cambiar por órdenes activas.
@@ -116,7 +125,14 @@ export class MatchCore {
   }
   eff(pid, attr, taskMax = null) {
     const base = this.pl[pid].abilities[attr];
-    return clamp(base - this.severity(pid) * this.penFor(attr, taskMax), 1, 30);
+    const [lo, hi] = this.profile.abilityBounds;
+    return clamp(base - this.severity(pid) * this.penFor(attr, taskMax), lo, hi);
+  }
+  // Suma ponderada (sin normalizar) de capacidades efectivas de un jugador: {capacidad: peso}.
+  weightedSum(pid, weights) {
+    let s = 0;
+    for (const [attr, w] of Object.entries(weights)) s += w * this.eff(pid, attr);
+    return s;
   }
   // terms: [[role, attr, weight]...]; actors: role -> playerId. Media ponderada normalizada.
   recipe(terms, actors, taskMax = null, label = null) {
@@ -201,11 +217,12 @@ export class MatchCore {
       score: [...this.score],
       draws: this.rng.drain(),
     };
+    if (this.tracker) ev.params = this.tracker.drain();
     if (this.pendingLinks.length) { ev.orders = this.pendingLinks; this.pendingLinks = []; }
     if (this.opts.detail === 'full') { ev.calc = this.calcBuf; }
     this.calcBuf = [];
     this.events.push(ev);
-    if (this.opts.check) this.checkInvariants(ev);
+    if (this.opts.check) { if (this.tracker) this.tracker.quiet(() => this.checkInvariants(ev)); else this.checkInvariants(ev); }
     return ev;
   }
   cover(key) { this.coverageObserved[key] = (this.coverageObserved[key] ?? 0) + 1; }
@@ -241,6 +258,7 @@ export class MatchCore {
       profileStatus: this.profile.status,
       effectiveProfileId: this.profile.effectiveId ?? this.profile.id,
       profileExtensions: this.profile.extensions ?? [],
+      profileRef: this.opts.profileRef ?? null,
       rulesProfile: this.profile.rules.profile,
       rng: { algorithm: this.rng.algorithm, initialSeed: this.rng.initialSeed, zeroSeedReplaced: this.rng.zeroSeedReplaced, draws: this.rng.count },
     };

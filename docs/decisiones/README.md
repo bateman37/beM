@@ -14,3 +14,4 @@ Registro breve de decisiones **de proceso y organización** aceptadas por Dennis
 ## Decisiones pendientes
 
 Ninguna de proceso. Pendientes de confirmación de contenido (no bloquean): U01–U03 y U05 de [`motor02.md`](../tecnico/motor02.md).
+| IMP-M03-01 | 2026-10-16 | Implementación (no decisión nueva) del panel y los perfiles de MOTOR-03: filas del perfil con herencia de padre versionado, base protegida, activación explícita solo para futuros partidos, persistencia local y comparación exploratoria de un partido por perfil. Se conectan al perfil literales del código con su valor exacto (extensión SEM-MOTOR03). La asignación fila→grupo 81+4 y las entregas previstas son propuesta de Claude, a revisar. | Dennis, prompt [MOTOR-03](../prompts/MOTOR-03-panel-y-perfiles.md) | Separar balance, contenido, reglamento e invariantes. | [`../tecnico/motor03.md`](../tecnico/motor03.md) |

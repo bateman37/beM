@@ -8,6 +8,8 @@ import { replayMatch, validateReplayFile } from '../match/replay.js';
 import { describeEvent, clockText } from '../match/narrative.js';
 import { directionPanel, ordersCard, newDraft, syncDraft, draftSpecs } from './direction.js';
 import { styleLabels, STYLE_TITLES } from './prep.js';
+import { rowsOf, valueText, unitText } from './panel/common.js';
+import { openRow } from './panel/rowdialog.js';
 
 const ui = { mode: 'total', managed: 0, speed: PRESENTATION.defaultSpeed, session: null, draft: null, msg: null, call: null, filter: 'all', limit: 150, showBox: false, storyLimit: 18, replay: null, compare: null, error: null, root: null };
 
@@ -47,7 +49,7 @@ function setupCard() {
       h('div', {},
         h('label', { class: 'row' }, 'Equipo dirigido manualmente ', h('select', { id: 'managed', onchange: (e) => { ui.managed = Number(e.target.value); } }, edit.teams.map((t, i) => h('option', { value: i, selected: ui.managed === i }, `${t.id} — ${t.name}`)))),
         h('p', { class: 'small muted' }, 'El rival utiliza la delegación básica ya disponible (relevo del entrenador básico). Esa delegación no es un entrenador completo: no toma tiempos muertos ni cambia estilos (MOTOR-08).'),
-        h('p', { class: 'small' }, `Semilla ${edit.seed} · ${edit.teams[0].id} vs ${edit.teams[1].id} · perfil ${profile.id} + ${profile.extensions[0].id} `, h('span', { class: 'pill warn' }, profile.status)))),
+        h('p', { class: 'small' }, `Semilla ${edit.seed} · ${edit.teams[0].id} vs ${edit.teams[1].id} · perfil ${store.library.activeId} «${store.library.activeVersion().label}» (${profile.effectiveId}) `, h('span', { class: 'pill warn' }, profile.status)))),
     errs.length ? h('div', { class: 'errbox' }, h('strong', { class: 'err' }, 'No se puede preparar: entrada no válida.'), h('ul', {}, errs.map((e) => h('li', {}, h('code', {}, e.path), ' — ', e.message)))) : null,
     ui.error ? h('div', { class: 'errbox' }, h('strong', { class: 'err' }, ui.error)) : null,
     h('div', { class: 'row' },
@@ -63,7 +65,8 @@ function prepare() {
   if (s0) s0.dispose(); // invalida callbacks y temporizadores del anterior
   ui.error = null; ui.draft = null; ui.msg = null; ui.compare = null; ui.call = null; ui.filter = 'all'; ui.limit = 150; ui.storyLimit = 18; ui.showBox = false;
   try {
-    const s = new MatchSession({ input: deepCopy(store.edit), profile: store.profile, mode: ui.mode, managedTeam: ui.managed, speed: ui.speed, scheduler: sched() });
+    const s = new MatchSession({ input: deepCopy(store.edit), profile: store.profile, profileRef: store.profileRef, mode: ui.mode, managedTeam: ui.managed, speed: ui.speed, scheduler: sched() });
+    store.matchRef = store.profileRef; // perfil congelado de este encuentro (se muestra en el panel)
     s.subscribe(onSession); ui.session = s;
   } catch (e) { ui.error = `No se pudo preparar el encuentro: ${e.message}`; ui.session = null; }
   renderGame(ui.root);
@@ -190,7 +193,7 @@ function storyBlock(s) {
   let lastPoss = null;
   for (const ev of evs) {
     if (ev.possessionId && ev.possessionId !== lastPoss) { lastPoss = ev.possessionId; body.append(h('li', { class: 'poss' }, `Periodo ${ev.period} · posesión ${ev.possessionId} · ataca ${teamName(ev.team)} · marcador ${ev.score.join('–')}`)); }
-    body.append(h('li', {}, h('span', { class: 't' }, `${clockText(ev.clock.before)}→${clockText(ev.clock.after)}`), describeEvent(ev, { name, teamName }), ' ', h('button', { class: 'link small', onclick: () => showDetail(ev, m.teams) }, `detalle ${ev.id}`)));
+    body.append(h('li', {}, h('span', { class: 't' }, `${clockText(ev.clock.before)}→${clockText(ev.clock.after)}`), describeEvent(ev, { name, teamName }), ' ', h('button', { class: 'link small', onclick: () => showDetail(ev, m.teams, { profile: m.profileData, table: m.tracker?.table, ref: m.opts.profileRef }) }, `detalle ${ev.id}`)));
   }
   const last = m.events[m.events.length - 1];
   return h('div', { class: 'card story' }, h('h3', { style: 'margin-top:0' }, 'Último acontecimiento y relato'),
@@ -215,7 +218,7 @@ function boxCard(res, t) {
     h('p', { class: 'small muted' }, `Pérdidas de equipo (violación de reloj de posesión, sin jugador): ${res.box.teams[t].teamTov}. Métricas aún no implementadas, omitidas (no son ceros observados): ${res.box.pending.join('; ')}.`));
 }
 
-function showDetail(ev, teams) {
+function showDetail(ev, teams, src = null) {
   const dlg = document.getElementById('detail');
   document.getElementById('detail-title').textContent = `${ev.id} · ${ev.type} · periodo ${ev.period}`;
   const body = document.getElementById('detail-body'); clear(body);
@@ -224,8 +227,20 @@ function showDetail(ev, teams) {
     h('p', { class: 'small muted' }, 'Vista de detalle calculado (laboratorio): no forma parte del relato normal. Incluye capacidades base y efectivas usadas, pesos, energía, probabilidades, sorteos y resultado.'),
     sec('Hecho', { tipo: ev.type, periodo: ev.period, posesion: ev.possessionId, equipoEnAtaque: ev.team == null ? null : teams[ev.team].id, relojAntes: clockText(ev.clock.before), relojDespues: clockText(ev.clock.after), relojPosesion: [ev.shotClock.before / 10, ev.shotClock.after / 10], duracionSegundos: ev.durationTenths / 10, quintetos: ev.lineups, marcador: ev.score, ordenesVinculadas: ev.orders ?? [] }),
     sec('Intención y procedencia', ev.intent), sec('Participantes', ev.participants), sec('Consecuencias', ev.effects), sec('Hechos de acta que produce', ev.stats),
-    sec('Cálculo (recetas, distribuciones, mezclas, binarias)', ev.calc ?? 'Sin detalle calculado (modo mínimo).'), sec('Sorteos deportivos consumidos', ev.draws));
+    sec('Cálculo (recetas, distribuciones, mezclas, binarias)', ev.calc ?? 'Sin detalle calculado (modo mínimo).'), sec('Sorteos deportivos consumidos', ev.draws),
+    paramsSection(ev, src));
   dlg.showModal();
+}
+
+// Filas del PERFIL CONGELADO de este encuentro que se consultaron al resolver el hecho (no el perfil activo de hoy).
+function paramsSection(ev, src) {
+  if (!src?.table || !ev.params) return h('div', {}, h('h3', {}, 'Filas del perfil consultadas'), h('p', { class: 'small muted' }, 'Sin registro de filas: encuentro en modo mínimo o de una versión anterior.'));
+  const idx = rowsOf(src.profile).byId;
+  const ids = ev.params.map((i) => src.table[i]);
+  const label = src.ref ? `${src.ref.versionId} «${src.ref.label}» (huella ${String(src.ref.hash ?? '').slice(0, 8)})` : 'perfil congelado de este encuentro';
+  return h('div', {}, h('h3', {}, `Filas del perfil consultadas al resolver este hecho (${ids.length})`),
+    h('p', { class: 'small muted' }, `Valores del perfil congelado ${label}; aunque hoy esté activo otro perfil. Solo aparecen las filas que el motor leyó de verdad.`),
+    table(['Fila', 'Valor usado', 'Unidad'], ids.map((id) => { const r = idx.get(id); return r ? [h('button', { class: 'link', type: 'button', onclick: () => openRow(id, { effective: src.profile, refLabel: `perfil congelado ${src.ref?.versionId ?? ''}`, readOnly: true }) }, id), valueText(r, r.value), unitText(r)] : [id, '—', '']; })));
 }
 
 // ---------------------------------------------------------------- panel de dirección y resultado final
@@ -296,7 +311,7 @@ function finalStory(refresh, res, teamName) {
   const body = h('ul', {}); let lastPoss = null;
   for (const ev of shown) {
     if (ev.possessionId && ev.possessionId !== lastPoss) { lastPoss = ev.possessionId; body.append(h('li', { class: 'poss' }, `Periodo ${ev.period} · posesión ${ev.possessionId} · ataca ${teamName(ev.team)} · marcador ${ev.score.join('–')}`)); }
-    body.append(h('li', {}, h('span', { class: 't' }, `${clockText(ev.clock.before)}→${clockText(ev.clock.after)} · pos. ${fmt(ev.shotClock.after / 10)}`), describeEvent(ev, { name, teamName }), ' ', h('button', { class: 'link small', onclick: () => showDetail(ev, res.teams) }, `ver detalle ${ev.id}`)));
+    body.append(h('li', {}, h('span', { class: 't' }, `${clockText(ev.clock.before)}→${clockText(ev.clock.after)} · pos. ${fmt(ev.shotClock.after / 10)}`), describeEvent(ev, { name, teamName }), ' ', h('button', { class: 'link small', onclick: () => showDetail(ev, res.teams, { profile: res.profile, table: res.diagnostics.paramTable, ref: res.meta.profileRef }) }, `ver detalle ${ev.id}`)));
   }
   return h('div', { class: 'card story' }, h('h3', {}, 'Relato cronológico por periodos y posesiones'),
     h('div', { class: 'row' }, h('label', {}, 'Periodo ', h('select', { onchange: (e) => { ui.filter = e.target.value; ui.limit = 150; refresh(); } }, h('option', { value: 'all', selected: ui.filter === 'all' }, 'Todos'), periods.map((p) => h('option', { value: p, selected: String(p) === String(ui.filter) }, periodName(p))))), h('span', { class: 'muted small' }, `Mostrando ${shown.length} de ${evs.length} acontecimientos. El relato se pagina; la descarga JSON conserva todos los registros.`)),

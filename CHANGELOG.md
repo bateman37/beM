@@ -2,6 +2,13 @@
 
 Registro breve de entregas. Una entrada por entrega; las más recientes primero.
 
+## MOTOR-03 — Panel administrable, perfiles y comparación — 2026-10-16
+
+- Diccionario de ~390 filas del perfil (SUP01) con ficha, clase (balance/contenido/reglamento/invariante), cobertura real y consumidor; literales del código convertidos en filas con su valor exacto (`SEM-MOTOR03-20261016`). Equivalencia deportiva con la referencia anterior comprobada.
+- Panel de ajustes: inicio, mesa por 7 preguntas, tabla maestra con filtros, vistas temáticas, catálogo 81 + 4, edición tipada y conjunta, ciclo de perfiles (borrador → validación → publicación → activación → restauración), comparador de un partido por perfil e intercambio JSON.
+- Perfil efectivo congelado por partido, `profileRef` en el resultado y filas consultadas por hecho en el detalle diagnóstico. 53 pruebas.
+- Documentación: [`docs/tecnico/motor03.md`](docs/tecnico/motor03.md), [recorrido manual](docs/prompts/MOTOR-03-recorrido-manual.md). Pendiente de validación de Dennis.
+
 ## MOTOR-02 — Tres modalidades y dirección manual — 2026-10-16
 
 - Avance por fronteras (`step()`), ventanas reglamentarias como frontera propia y `MatchSession` como único controlador: simulado total, por cuartos (con prórroga) y por tiempo a x2/x4/x8/x16 con pausa. Misma semilla y órdenes ⇒ mismo deporte en cualquier modalidad.

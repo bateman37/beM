@@ -41,7 +41,7 @@ export function validateReplayFile(file) {
 // Proyección deportiva: excluye fechas reales, duración de ejecución, detalle calculado, relato y metadatos de presentación.
 export function sportsProjection(res) {
   return {
-    events: res.events.map(({ calc, ...e }) => e),
+    events: res.events.map(({ calc, params, ...e }) => e),
     score: res.score, periodScores: res.periodScores,
     box: projectBox(res.events, res.lineups, res.input),
     orders: res.orders, commands: res.commands,
@@ -66,7 +66,7 @@ export function replayMatch(file, { detail = 'minimal' } = {}) {
   const v = validateReplayFile(file);
   if (!v.reproducible) { const e = new Error(`No se puede reproducir: ${v.problems.join(' · ')}`); e.validation = v; throw e; }
   const profile = deepCopy(file.profile);
-  const m = createMatch(deepCopy(file.input), profile, { detail, direction: file.direction ?? null });
+  const m = createMatch(deepCopy(file.input), profile, { detail, direction: file.direction ?? null, profileRef: file.identity?.profileRef ?? null });
   const cmds = file.commands;
   let i = 0;
   const inject = () => { while (i < cmds.length && cmds[i].afterStep === m.stepSeq) { m.applyCommand(cmds[i]); i += 1; } };
