@@ -3,30 +3,45 @@
 import { h } from './dom.js';
 import { store, PLAY_NAMES } from './store.js';
 import { SLOTS, deepCopy, ORDER_STATES, EDITABLE_STYLES } from '../match/index.js';
-import { styleLabels, STYLE_TITLES } from './prep.js';
+import { styleLevelLabels, STYLE_DEFS, STYLE_GROUPS, STYLE_TITLES, MIDRANGE_OPTIONS, MIDRANGE_LABEL, FAMILY_NAMES, FAMILY_ORDER } from './styles.js';
 
+const optLabelShort = (id, m) => `${id}${m.ps[id].onCourt ? ' (en pista)' : ''}`;
 const STATE_CLASS = { pendiente: 'warn', vigente: 'ok', consumida: 'ok', rechazada: 'bad', caducada: 'bad', sustituida: '', cancelada: '' };
 
 // Plan efectivo + órdenes de plan pendientes (lo que quedará vigente). El borrador parte de aquí.
 export function projectedPlan(m, team) {
   const plan = deepCopy(m.teams[team].plan);
+  plan.roles = { ...m.roleOf };
   for (const o of m.orders) {
     if (o.team !== team || o.kind !== 'plan' || o.state !== 'pendiente') continue;
-    if (o.type === 'styles') for (const [k, v] of Object.entries(o.content.styles)) { if (o.liveFields.includes(`styles.${k}`)) plan.styles[k] = v; }
-    else if (o.type === 'priorities') for (const [k, v] of Object.entries(o.content.priorities)) { if (o.liveFields.includes(`priorities.${k}`)) plan.playbook.find((b) => b.playId === k).priority = v; }
+    if (o.type === 'styles') for (const [k, v] of Object.entries(o.content.styles)) { if (o.liveFields.includes(`styles.${k}`)) { if (k === 'midrange') plan.midrange = v; else plan.styles[k] = v; } }
+    else if (o.type === 'priorities') for (const [k, v] of Object.entries(o.content.priorities)) {
+      if (!o.liveFields.includes(`priorities.${k}`)) continue;
+      const i = plan.playbook.findIndex((b) => b.playId === k);
+      if (v === null) { if (i >= 0) plan.playbook.splice(i, 1); } else if (i >= 0) plan.playbook[i].priority = v; else plan.playbook.push({ playId: k, priority: v });
+    }
     else if (o.type === 'director') plan.directorPriority = [...o.content.directorPriority];
+    else if (o.type === 'disposition') plan.disposition = o.content.disposition;
+    else if (o.type === 'roles') for (const [pid, code] of Object.entries(o.content.roles)) { if (o.liveFields.includes(`roles.${pid}`)) plan.roles[pid] = code; }
   }
   return plan;
 }
 
+// Prioridad por ficha del catálogo: número 1–5 si está activa, null si no.
+const prioMap = (plan, catalog) => Object.fromEntries(catalog.map((id) => [id, plan.playbook.find((b) => b.playId === id)?.priority ?? null]));
+
 export function newDraft(m, team) {
   const plan = projectedPlan(m, team);
-  return { team, styles: Object.fromEntries(EDITABLE_STYLES.map((k) => [k, plan.styles[k]])), priorities: Object.fromEntries(plan.playbook.map((b) => [b.playId, b.priority])), director: [...plan.directorPriority], lineup: m.projectedLineup(team), dirty: { styles: {}, priorities: {}, director: false, lineup: false } };
+  const cat = m.profile.activeCatalog.plays;
+  return { team, styles: Object.fromEntries(EDITABLE_STYLES.map((k) => [k, plan.styles[k]])), midrange: plan.midrange, disposition: plan.disposition, roles: { ...plan.roles }, priorities: prioMap(plan, cat), director: [...plan.directorPriority], lineup: m.projectedLineup(team), dirty: { styles: {}, midrange: false, disposition: false, roles: {}, priorities: {}, director: false, lineup: false } };
 }
 // Lo que el usuario no ha tocado sigue al partido (p. ej. un relevo del entrenador básico); lo que sí tocó es su borrador.
 export function syncDraft(m, team, d) {
   const f = newDraft(m, team);
   for (const k of EDITABLE_STYLES) if (!d.dirty.styles[k]) d.styles[k] = f.styles[k];
+  if (!d.dirty.midrange) d.midrange = f.midrange;
+  if (!d.dirty.disposition) d.disposition = f.disposition;
+  for (const k of Object.keys(f.roles)) if (!d.dirty.roles[k]) d.roles[k] = f.roles[k];
   for (const k of Object.keys(f.priorities)) if (!d.dirty.priorities[k]) d.priorities[k] = f.priorities[k];
   if (!d.dirty.director) d.director = f.director;
   if (!d.dirty.lineup) d.lineup = f.lineup;
@@ -37,9 +52,14 @@ export function syncDraft(m, team, d) {
 export function draftSpecs(m, team, draft) {
   const base = projectedPlan(m, team); const lineup = m.projectedLineup(team); const specs = [];
   const sd = {}; for (const k of EDITABLE_STYLES) if (draft.styles[k] !== base.styles[k]) sd[k] = draft.styles[k];
+  if (draft.midrange !== base.midrange) sd.midrange = draft.midrange;
   if (Object.keys(sd).length) specs.push({ type: 'styles', styles: sd });
-  const pd = {}; for (const b of base.playbook) if (draft.priorities[b.playId] !== b.priority) pd[b.playId] = draft.priorities[b.playId];
+  const pd = {}; const bp = prioMap(base, m.profile.activeCatalog.plays);
+  for (const id of Object.keys(bp)) if (draft.priorities[id] !== bp[id]) pd[id] = draft.priorities[id];
   if (Object.keys(pd).length) specs.push({ type: 'priorities', priorities: pd });
+  if (draft.disposition !== base.disposition) specs.push({ type: 'disposition', disposition: draft.disposition });
+  const rd = {}; for (const [pid, code] of Object.entries(draft.roles)) if (code !== base.roles[pid]) rd[pid] = code;
+  if (Object.keys(rd).length) specs.push({ type: 'roles', roles: rd });
   if (draft.director.join('|') !== base.directorPriority.join('|')) specs.push({ type: 'director', directorPriority: [...draft.director] });
   if (SLOTS.some((s) => draft.lineup[s] !== lineup[s])) specs.push({ type: 'lineup', assignment: { ...draft.lineup } });
   return specs;
@@ -53,8 +73,10 @@ export function orderText(o) {
   const c = o.content;
   const lv = (k, v) => `${STYLE_TITLES[k] ?? k} → ${v}`;
   switch (o.type) {
-    case 'styles': return `Estilos: ${Object.entries(c.styles).map(([k, v]) => lv(k, v)).join(' · ')}`;
-    case 'priorities': return `Prioridades del libro: ${Object.entries(c.priorities).map(([k, v]) => `${k} = ${v}`).join(' · ')}`;
+    case 'styles': return `Estilos: ${Object.entries(c.styles).map(([k, v]) => (k === 'midrange' ? `Media distancia → ${MIDRANGE_LABEL[v]}` : lv(k, v))).join(' · ')}`;
+    case 'priorities': return `Libro: ${Object.entries(c.priorities).map(([k, v]) => `${k} = ${v === null ? 'desactivada' : v}`).join(' · ')}`;
+    case 'disposition': return `Disposición → ${c.disposition}`;
+    case 'roles': return `Roles ofensivos: ${Object.entries(c.roles).map(([k, v]) => `${k} → ${v}`).join(' · ')}`;
     case 'director': return `Director y alternativas: ${c.directorPriority.join(' › ')}`;
     case 'delegate': return 'Devolver la gestión del quinteto al entrenador básico';
     case 'call': return `Llamada de ${c.playId} — ${PLAY_NAMES[c.playId] ?? ''} (${c.target === 'current' ? 'posesión actual' : 'siguiente posesión propia'})`;
@@ -100,7 +122,7 @@ export function directionPanel(session, ui, rerender) {
   const enabled = session.canDirect() && session.state !== 'enMarcha';
   const msg = (text, cls = 'pill') => { ui.msg = text ? { text, cls } : null; rerender(); };
   if (!ui.draft || ui.draft.team !== team) ui.draft = newDraft(m, team);
-  const d = syncDraft(m, team, ui.draft); const labels = styleLabels(store.profile); const view = m.planView(team);
+  const d = syncDraft(m, team, ui.draft); const labels = styleLevelLabels(store.profile); const view = m.planView(team); const rep = m.profile.repertoire;
   const dis = !enabled;
   const optLabel = (id) => { const p = tm.players.find((x) => x.id === id); const s = m.ps[id]; return `${id} · ${p.positions.join('|')} · energía ${Math.round(s.energy)} · faltas ${s.fouls}${s.available ? '' : ' · excluido'}`; };
 
@@ -108,13 +130,27 @@ export function directionPanel(session, ui, rerender) {
     h('p', { class: 'small muted' }, enabled ? 'Lo que edites aquí es un borrador hasta pulsar «Aplicar». Las órdenes entran en la siguiente frontera válida: no reescriben nada ya resuelto ni dan descanso por mirar la pantalla.' : session.state === 'enMarcha' ? 'El visionado está en marcha: pausa para consultar y decidir (la pausa de pantalla no da descanso deportivo).' : 'La dirección está disponible cuando el encuentro está preparado y en pausa, en revisión entre periodos o con un tiempo muerto concedido.'));
   const status = ui.msg ? h('p', { class: ui.msg.cls }, ui.msg.text) : null;
 
-  // estilos
-  const styles = h('div', {}, h('h3', {}, 'Estilos activos (cinco niveles)'), h('div', { style: 'display:grid; gap:6px' }, EDITABLE_STYLES.map((k) => h('label', { class: 'row' }, h('span', { style: 'width:250px' }, STYLE_TITLES[k]),
-    h('select', { disabled: dis, onchange: (e) => { d.styles[k] = Number(e.target.value); d.dirty.styles[k] = true; rerender(); } }, labels[k].map((t, i) => h('option', { value: i + 1, selected: d.styles[k] === i + 1 }, t)))))),
-    h('p', { class: 'small muted' }, `Sin control en esta entrega (valor declarado): transición ${m.teams[team].plan.styles.transition}, elaboración ${m.teams[team].plan.styles.elaboration}, riesgo ofensivo ${m.teams[team].plan.styles.offensiveRisk}, tras tiro ${m.teams[team].plan.styles.afterShot}.`));
-  // libro
-  const book = h('div', {}, h('h3', {}, 'Libro: prioridades 1–5 (pueden repetirse)'), h('div', { style: 'display:grid; gap:6px' }, Object.keys(d.priorities).map((pid) => h('label', { class: 'row' }, h('span', { style: 'width:330px' }, `${pid} — ${PLAY_NAMES[pid]}`),
-    h('select', { disabled: dis, onchange: (e) => { d.priorities[pid] = Number(e.target.value); d.dirty.priorities[pid] = true; rerender(); } }, [1, 2, 3, 4, 5].map((n) => h('option', { value: n, selected: d.priorities[pid] === n }, `Prioridad ${n} (peso ${store.profile.selection.priorityWeights[n - 1]})`)))))));
+  // estilos (siete, agrupados) y media distancia
+  const styles = h('div', {}, h('h3', {}, 'Estilos ofensivos (cinco niveles)'),
+    STYLE_GROUPS.map((g) => h('div', { style: 'margin-bottom:6px' }, h('div', { class: 'small muted' }, g), h('div', { style: 'display:grid; gap:6px' }, STYLE_DEFS.filter((x) => x.group === g).map((x) => h('label', { class: 'row', title: x.help }, h('span', { style: 'width:230px' }, x.title),
+      h('select', { disabled: dis, onchange: (e) => { d.styles[x.key] = Number(e.target.value); d.dirty.styles[x.key] = true; rerender(); } }, labels[x.key].map((t, i) => h('option', { value: i + 1, selected: d.styles[x.key] === i + 1 }, t)))))))),
+    h('label', { class: 'row' }, h('span', { style: 'width:230px' }, 'Media distancia'),
+      h('select', { disabled: dis, onchange: (e) => { d.midrange = e.target.value; d.dirty.midrange = true; rerender(); } }, MIDRANGE_OPTIONS.map(([k, t]) => h('option', { value: k, selected: d.midrange === k }, t)))),
+    h('label', { class: 'row' }, h('span', { style: 'width:230px' }, 'Disposición'),
+      h('select', { disabled: dis, onchange: (e) => { d.disposition = e.target.value; d.dirty.disposition = true; rerender(); } }, m.profile.activeCatalog.dispositions.map((x) => h('option', { value: x, selected: d.disposition === x }, `${x} · ${rep.dispositions[x].name}`)))),
+    h('p', { class: 'small muted' }, 'La disposición y los roles entran en la próxima entrada de posesión o reorganización compatible; no recolocan a cinco jugadores en mitad de una ventaja ni cambian una ficha ya comprometida.'));
+  // libro por familia: activar/desactivar y prioridad
+  const book = h('div', {}, h('h3', {}, 'Libro: prioridades 1–5 (pueden repetirse)'),
+    FAMILY_ORDER.map((f) => h('div', {}, h('strong', { class: 'small' }, FAMILY_NAMES[f]), h('div', { style: 'display:grid; gap:4px' }, Object.keys(d.priorities).filter((pid) => rep.plays[pid].family === f).map((pid) => h('label', { class: 'row' },
+      h('input', { type: 'checkbox', disabled: dis, checked: d.priorities[pid] !== null, 'aria-label': `Activar ${pid}`, onchange: (e) => { d.priorities[pid] = e.target.checked ? 3 : null; d.dirty.priorities[pid] = true; rerender(); } }),
+      h('span', { style: 'width:300px' }, `${pid} — ${PLAY_NAMES[pid]}`),
+      d.priorities[pid] === null ? h('span', { class: 'muted small' }, 'desactivada') : h('select', { disabled: dis, onchange: (e) => { d.priorities[pid] = Number(e.target.value); d.dirty.priorities[pid] = true; rerender(); } }, [1, 2, 3, 4, 5].map((n) => h('option', { value: n, selected: d.priorities[pid] === n }, `Prioridad ${n} (peso ${store.profile.selection.priorityWeights[n - 1]})`)))))))));
+  // roles ofensivos
+  const roleDict = m.profile.fixtureContract.offensiveRoleDictionary;
+  const roles = h('div', {}, h('h3', {}, 'Roles ofensivos'),
+    h('div', { style: 'display:grid; gap:4px' }, tm.players.map((p) => h('label', { class: 'row' }, h('span', { style: 'width:150px' }, optLabelShort(p.id, m)),
+      h('select', { disabled: dis, onchange: (e) => { d.roles[p.id] = e.target.value; d.dirty.roles[p.id] = true; rerender(); } }, Object.entries(roleDict).map(([c, n]) => h('option', { value: c, selected: d.roles[p.id] === c }, `${c} ${n}`)))))),
+    h('p', { class: 'small muted' }, 'El rol orienta candidatos y protagonismo en la siguiente asignación; no cambia capacidades permanentes.'));
   // director
   const avail = tm.players.filter((p) => !d.director.includes(p.id) && m.ps[p.id].available);
   const move = (i, dlt) => { const j = i + dlt; [d.director[i], d.director[j]] = [d.director[j], d.director[i]]; d.dirty.director = true; rerender(); };
@@ -168,7 +204,7 @@ export function directionPanel(session, ui, rerender) {
     h('div', { class: 'row', style: 'margin-top:6px' }, h('button', { class: 'btn secondary', disabled: dis || view.lineupControl.mode !== 'manual', onclick: () => { const o = session.submit({ type: 'delegate', domain: 'lineup' }); msg(o.state === 'rechazada' ? o.reason : 'El quinteto volverá al entrenador básico en la siguiente decisión delegada (sin cambios retroactivos).', 'pill ok'); } }, 'Devolver el quinteto al entrenador')),
     callSection(session, ui, dis, msg));
 
-  return h('div', { class: 'card' }, head, status, h('div', { class: 'grid2' }, h('div', {}, styles, book), h('div', {}, director, lineup)), applyRow, h('hr', { style: 'border:0;border-top:1px solid var(--line);margin:14px 0' }), quick);
+  return h('div', { class: 'card' }, head, status, h('div', { class: 'grid2' }, h('div', {}, styles, book), h('div', {}, director, roles, lineup)), applyRow, h('hr', { style: 'border:0;border-top:1px solid var(--line);margin:14px 0' }), quick);
 }
 
 function callSection(session, ui, dis, msg) {
@@ -182,7 +218,7 @@ function callSection(session, ui, dis, msg) {
     : 'Siguiente posesión ofensiva propia (la que empiece tras la actual). Caduca al cerrar esa posesión si no se inicia; no se arrastra a más ataques.';
   return h('div', {}, h('h3', {}, 'Llamar una ficha'),
     h('div', { class: 'row' },
-      h('select', { disabled: dis, onchange: (e) => { c.playId = e.target.value; } }, store.profile.activeCatalog.plays.map((p) => h('option', { value: p, selected: c.playId === p }, `${p} — ${PLAY_NAMES[p]}`))),
+      h('select', { disabled: dis, onchange: (e) => { c.playId = e.target.value; } }, store.profile.activeCatalog.plays.map((p) => h('option', { value: p, selected: c.playId === p }, `${p} — ${PLAY_NAMES[p]}${m.teams[team].plan.playbook.some((b) => b.playId === p) ? '' : ' (no activa en el libro)'}`))),
       h('label', {}, h('input', { type: 'radio', name: 'call-target', disabled: dis || !canCurrent, checked: c.target === 'current', onchange: () => { c.target = 'current'; msg(null); } }), ' Posesión actual'),
       h('label', {}, h('input', { type: 'radio', name: 'call-target', disabled: dis, checked: c.target === 'next', onchange: () => { c.target = 'next'; msg(null); } }), ' Siguiente posesión propia'),
       h('button', { class: 'btn secondary', disabled: dis, onclick: () => {

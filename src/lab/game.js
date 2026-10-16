@@ -7,7 +7,7 @@ import { MatchSession, MODES, SESSION_STATES, PRESENTATION } from '../match/sess
 import { replayMatch, validateReplayFile } from '../match/replay.js';
 import { describeEvent, clockText } from '../match/narrative.js';
 import { directionPanel, ordersCard, newDraft, syncDraft, draftSpecs } from './direction.js';
-import { styleLabels, STYLE_TITLES } from './prep.js';
+import { styleLevelLabels, STYLE_DEFS, MIDRANGE_LABEL } from './styles.js';
 import { rowsOf, valueText, unitText } from './panel/common.js';
 import { openRow } from './panel/rowdialog.js';
 
@@ -35,6 +35,7 @@ const rerender = () => { if (ui.root && document.getElementById('live')) { paint
 function setupCard() {
   const { edit, profile } = store;
   const errs = validateInput(edit, profile);
+  if (!profile.repertoire) errs.push({ path: 'perfil activo', message: 'es anterior a MOTOR-04: activa la base de MOTOR-04 o una candidata explícita en el Panel de ajustes' });
   const s = ui.session;
   const live = s && !['finalizado', 'error'].includes(s.state);
   return h('div', { class: 'card' },
@@ -170,17 +171,19 @@ function teamCard(s, t) {
 }
 
 function planCard(s) {
-  const m = s.match; const t = s.managedTeam; const v = m.planView(t); const labels = styleLabels(store.profile);
+  const m = s.match; const t = s.managedTeam; const v = m.planView(t); const labels = styleLevelLabels(store.profile); const rep = m.profile.repertoire;
   const tmx = v.timeouts;
   const ctl = v.lineupControl.mode === 'manual' ? 'MANUAL — el entrenador básico no lo contradice por una revisión ordinaria; las exclusiones prevalecen.' : 'Automático (entrenador básico).';
   const proj = SLOTS.some((sl) => v.projectedLineup[sl] !== v.lineup[sl]) ? ` · previsto tras la ventana: ${SLOTS.map((sl) => v.projectedLineup[sl].split('-')[1]).join(' ')}` : '';
   return h('div', { class: 'card' }, h('h3', { style: 'margin-top:0' }, `Plan vigente de ${m.teams[t].id}`),
     h('div', { class: 'kv' },
-      ...Object.keys(STYLE_TITLES).flatMap((k) => [h('span', { class: 'muted' }, STYLE_TITLES[k]), h('span', {}, labels[k][v.styles[k] - 1])]),
+      ...STYLE_DEFS.flatMap((x) => [h('span', { class: 'muted' }, x.title), h('span', {}, labels[x.key][v.styles[x.key] - 1])]),
+      h('span', { class: 'muted' }, 'Media distancia'), h('span', {}, MIDRANGE_LABEL[v.midrange]),
+      h('span', { class: 'muted' }, 'Disposición'), h('span', {}, `${v.disposition} · ${rep.dispositions[v.disposition].name}`),
       h('span', { class: 'muted' }, 'Director y alternativas'), h('span', {}, v.directorPriority.join(' › ')),
       h('span', { class: 'muted' }, 'Libro (prioridad)'), h('span', {}, v.playbook.map((b) => `${b.playId}=${b.priority}`).join(' · ')),
       h('span', { class: 'muted' }, 'Quinteto'), h('span', {}, `${ctl}${proj}`),
-      h('span', { class: 'muted' }, 'Sistema'), h('span', {}, 'DIS02 · defensa individual ORG01 · cobertura COB01 (contener/drop): únicos disponibles; no editables'),
+      h('span', { class: 'muted' }, 'Defensa'), h('span', {}, 'individual ORG01 · cobertura COB01 (contener/drop): únicas disponibles hasta MOTOR-05; no editables'),
       h('span', { class: 'muted' }, 'Tiempos muertos'), h('span', {}, tmx ? `quedan ${tmx.remaining} en este bloque (cupo ${tmx.quota})${tmx.pending ? ' · solicitud pendiente' : ''}` : '—'),
       h('span', { class: 'muted' }, 'Rival'), h('span', {}, `${m.teams[1 - t].id}: delegación básica (sin tiempos muertos ni ajustes automáticos)`)));
 }
