@@ -292,7 +292,7 @@ P.completeThrowIn = function completeThrowIn(poss, spec, traceBase, t, d, option
     this.logOpp({ frontier: 'acceptance', situacion: `${traceBase.ficha}:${o.spec.cont}`, aceptada: accepted, decide: pid, pAceptacion: round(pAcc, 4) });
     if (accepted) {
       const sx = { ...pk };
-      Object.assign(sx, { team, origin: traceBase.ficha, kind: 'continuation', roles: { sacador: ex.passer, receptor: pid }, procedencia: 'saque', quality: ex.quality, window: !!ex.window, espTags: ex.window ? ['ESP06'] : [], directo: true });
+      Object.assign(sx, { team, origin: traceBase.ficha, kind: 'continuation', roles: { sacador: ex.passer, receptor: pid }, procedencia: 'saque', contexto: 'saque', quality: ex.quality, window: !!ex.window, espTags: ex.window ? ['ESP06'] : [], directo: true });
       if (ex.window) this.cover('ESP06 recepción liberada');
       poss.early = false; poss.playStarted = true;
       return this.resolveAttempt(sx);

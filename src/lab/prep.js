@@ -4,6 +4,7 @@ import { h, clear } from './dom.js';
 import { store, PLAY_NAMES, persist, prepProfile, loadDemoPlan } from './store.js';
 import { SLOTS, validateInput, createMatch, deepCopy } from '../match/index.js';
 import { defenseControls } from './defense-ui.js';
+import { throwInControls } from './throwin-ui.js';
 import { STYLE_DEFS, STYLE_GROUPS, STYLE_TITLES, MIDRANGE_OPTIONS, FAMILY_NAMES, FAMILY_ORDER, STATUS_TEXT, styleLevelLabels } from './styles.js';
 
 export { STYLE_TITLES };
@@ -23,9 +24,9 @@ function compat(profile, edit) {
 export function renderPrep(root) {
   clear(root);
   const { edit } = store; const profile = prepProfile();
-  const legacy = !store.profile.defense;
+  const legacy = !store.profile.throwInRepertoire;
   root.append(h('h2', {}, 'Preparación del encuentro'));
-  if (legacy) root.append(h('div', { class: 'errbox' }, h('strong', { class: 'err' }, 'El perfil activo es anterior a MOTOR-05. '), 'Puedes preparar la entrada (se valida con el perfil de MOTOR-05), pero no se podrá jugar hasta activar la base de MOTOR-05 o una candidata explícita (Panel de ajustes › Inicio).'));
+  if (legacy) root.append(h('div', { class: 'errbox' }, h('strong', { class: 'err' }, 'El perfil activo es anterior a MOTOR-06. '), 'Puedes preparar la entrada (se valida con el perfil de MOTOR-06), pero no se podrá jugar hasta activar la base de MOTOR-06 o una candidata explícita (Panel de ajustes › Inicio).'));
   if (store.upgradeNotes?.length) root.append(h('p', { class: 'small muted' }, `Entrada guardada con una versión anterior: se añadieron explícitamente los campos nuevos con su valor inicial (${store.upgradeNotes.join('; ')}).`));
   root.append(h('div', { class: 'card' },
     h('div', { class: 'row' },
@@ -124,9 +125,19 @@ function teamPrep(team, idx, profile, cm, root) {
       h('div', { class: 'row', style: 'margin-top:8px' },
         h('button', { class: 'btn secondary', type: 'button', onclick: () => { const o = store.edit.teams[1 - idx].plan; for (const k of ['defense', 'target', 'targetAlt', 'fallbackOrg', 'pressureHeight', 'coverage', 'navigation']) o[k] = deepCopy(plan[k]); o.defStyles = deepCopy(plan.defStyles); o.marks = []; o.specials = []; ui.msg = `Defensa copiada a ${store.edit.teams[1 - idx].id} (sin marcas ni especiales: apuntan a jugadores del otro equipo). Es solo para pruebas; no es una recomendación de «mejor defensa».`; again(); } }, 'Copiar organización, altura, estilos y cobertura al otro equipo'))));
 
+  // ---- saques de banda y fondo (MOTOR-06): libro, sacadores y respuesta defensiva
+  const setPrio = (id, v) => { const i = plan.throwInBook.findIndex((b) => b.playId === id); if (v == null) { if (i >= 0) plan.throwInBook.splice(i, 1); } else if (i >= 0) plan.throwInBook[i].priority = v; else plan.throwInBook.push({ playId: id, priority: v }); };
+  const throwIns = h('details', { open: ui.open.has(`thr:${idx}`), ontoggle: (e) => { const k = `thr:${idx}`; if (e.target.open) ui.open.add(k); else ui.open.delete(k); } },
+    h('summary', {}, h('strong', {}, 'Saques de banda y fondo'), ` — ${plan.throwInBook.length} ficha(s) activa(s) · respuesta ${plan.throwInDefense.band} / ${plan.throwInDefense.endline}`),
+    h('div', { style: 'margin-top:8px' }, throwInControls({ profile, players: team.players, rivals: rivalTeam.players, disabled: false, coverage: plan.coverage, idPrefix: `thr-${idx}`, refresh: again, label: (id) => `${id}${starterSet.has(id) ? ' ★' : ''}`,
+      getPriority: (id) => plan.throwInBook.find((b) => b.playId === id)?.priority ?? null, setPriority: setPrio,
+      getServer: (k, f) => plan.throwInServers[k][f], setServer: (k, f, v) => { plan.throwInServers[k][f] = v; if (f === 'preferred' && v && plan.throwInServers[k].alternate === v) plan.throwInServers[k].alternate = null; },
+      getDef: (f) => plan.throwInDefense[f], setDef: (f, v) => { plan.throwInDefense[f] = v; } })));
+
   return h('div', { class: 'card' }, h('h3', {}, `${team.id} — ${team.name}`),
     disposition,
     defense,
+    throwIns,
     h('h3', {}, 'Quinteto inicial'), h('div', { style: 'display:grid; gap:4px' }, SLOTS.map(starterSel)),
     h('h3', {}, 'Director (prioridad entre jugadores activos y disponibles)'), dirList, addDir,
     roles, styles, book);

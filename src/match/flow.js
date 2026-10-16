@@ -52,6 +52,9 @@ P.resolveAttempt = function resolveAttempt(ex) {
   const cat = this.pick(items, 'categoría').key;
   ex.category = cat;
   const spec = this.durationKindFor(ex, cat);
+  // Art. 16.2.5 (resumen contrastado del encargo MOTOR-06): recibir/controlar y lanzar necesita al menos 0,3 s; con menos solo caben las finalizaciones
+  // directas previstas (palmeo/mate, exec «none»). Una recepción con lanzamiento no se comprime para caber: si no hay opción legal rige el límite.
+  if ((cat === 'fieldShot' || cat === 'shootingFoul') && ex.exec !== 'none' && this.limit() < Math.round(this.profile.rules.receiveAndShootMinimumSeconds * 10)) { this.cover('lanzamiento imposible por tiempo (0,3 s)'); return this.expire(ex, cat); }
   const plan = this.planDurationWithExtra(spec, cat, 'duración', ex.extraPasses ?? 0);
   if (plan.expired) return this.expire(ex, cat);
   const t = this.withDuty(this.dutyFor(ex), () => this.consumeParts(plan.parts));
@@ -532,7 +535,7 @@ P.transitionPhase = function transitionPhase(poss) {
   const accepted = this.bernoulli(pAcc, `${label}:aceptación`);
   this.logOpp({ frontier: 'acceptance', situacion: label, aceptada: accepted, decide: carrier, pAceptacion: round(pAcc, 4) });
   if (!accepted) { this.note('transición:rechazada', { opcion: label }); this.logOpp({ frontier: 'arrival', contexto: 'transición', origen: poss.origin, intentada: true, aceptada: false, etiquetas: [label] }); return null; }
-  Object.assign(ex, { team, origin: label, kind: 'transition', roles: { portador: carrier }, window: !defender, procedencia: 'decisión directa', directo: true });
+  Object.assign(ex, { team, origin: label, kind: 'transition', roles: { portador: carrier }, window: !defender, procedencia: 'decisión directa', directo: true, contexto: 'transición' });
   ex.espTags = [label, ...this.espTags({ frontier: 'arrival', zone: [ex.zone], window: !!ex.window, early: true }).filter((t) => t !== label)];
   const ca = this.taskValue('TAR02', 'attack', { handler: ex.actor });
   ex.quality = defender ? this.qualityOf(ex, ca, this.taskValue('TAR02', 'defense', { primary: defender }), 0, true) : this.qualityOf(ex, ca, 0, 0, false);
@@ -575,7 +578,7 @@ P.afterBallRecovery = function afterBallRecovery(poss, src = poss.recovery) {
     this.reorganize(poss, oreb ? 'rebote ofensivo sin ventaja aceptada' : 'balón recuperado sin ventaja aceptada: se asegura y se organiza', null);
     return null;
   }
-  Object.assign(ex, { team, origin: ex.esp, kind: 'continuation', roles: { captor }, procedencia: 'decisión directa', directo: true });
+  Object.assign(ex, { team, origin: ex.esp, kind: 'continuation', roles: { captor }, procedencia: 'decisión directa', directo: true, contexto: 'continuidad' });
   ex.espTags = this.espTags({ frontier, zone: [ex.zone], exec: [ex.exec], recovery: [kind] });
   if (!ex.espTags.includes(ex.esp)) ex.espTags.unshift(ex.esp);
   let ca; let cd;
@@ -595,6 +598,7 @@ P.playTrace = function playTrace(ex) {
   // procedencia (MOTOR-06): llamada del plan / libro / recurso autónomo (ESP20) / decisión directa; ejes distintos de contexto y calidad previa
   t.procedencia = isPlay ? (poss.autonomous ? 'recurso autónomo' : poss.fromCall ? 'llamada' : 'libro') : (ex.procedencia ?? 'recurso directo');
   if (ex.espTags?.length) t.etiquetasESP = ex.espTags;
+  t.contexto = ex.contexto ?? (ex.kind === 'transition' && /^ESP0[12]$/.test(ex.origin ?? '') && ex.directo && !ex.early ? 'transición' : ex.early ? 'temprano' : poss.throwInOrigin && ex.procedencia === 'saque' ? 'saque' : 'organizado');
   if (poss.throwInOrigin) t.saque = { id: poss.throwInOrigin.id, ficha: poss.throwInOrigin.play, abierta: this.chainOpen(poss) };
   if (isPlay) {
     t.familia = ex.family ?? null; t.sector = ex.sector ?? null;

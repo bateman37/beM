@@ -94,7 +94,7 @@ test('3. funciones de disposición y participantes: cinco distintos, sin talento
       if (a.fail) continue;
       const spec = rep.plays[play];
       const ids = Object.entries(a.roles).filter(([r]) => r !== 'director' && spec.roles[r]?.src !== 'director').map(([, pid]) => pid);
-      assert.equal(new Set(ids).size, ids.length, `${id} ${play}: ${JSON.stringify(a.roles)}`); assert.ok(!ids.includes(dir) || spec.roles.cutter?.src === 'denied', 'ninguna otra función recae en el director');
+      assert.equal(new Set(ids).size, ids.length, `${id} ${play}: ${JSON.stringify(a.roles)}`); assert.ok(!ids.includes(dir) || spec.roles.cutter?.src === 'denied' || Object.values(spec.roles).some((x) => x.directorOk), 'ninguna otra función recae en el director (salvo el aislador de POS14, MOTOR-06 §2.2)');
       for (const pid of ids) assert.ok(on.includes(pid));
     }
   }
@@ -228,8 +228,10 @@ test('6. una causa se cobra una vez: tiempo y riesgo por resolución compuesta, 
   const vacio = inputFor(33); vacio.teams[0].plan.playbook = [];
   const rv = runMatch(vacio, profile, { detail: 'full', check: true });
   assert.deepEqual(rv.errors, []);
-  assert.equal(rv.events.some((e) => e.team === 0 && e.type === 'attempt' && /^POS/.test(e.intent.origen ?? '')), false);
-  assert.ok(rv.events.some((e) => e.team === 0 && e.type === 'attempt' && e.intent.origen === 'ESP15'), 'salida sencilla conocida (ESP15), no la primera ficha del catálogo');
+  // MOTOR-06: sin libro solo existen las interacciones sencillas conocidas (recurso autónomo, ESP20) y las decisiones directas; nunca una llamada falsa
+  const fichas = rv.events.filter((e) => e.team === 0 && e.type === 'attempt' && /^POS/.test(e.intent.origen ?? ''));
+  assert.ok(fichas.every((e) => e.intent.procedencia === 'recurso autónomo' && e.intent.etiquetasESP?.includes('ESP20')), 'una ficha fuera del libro solo entra como recurso autónomo ESP20');
+  assert.ok(rv.events.some((e) => e.team === 0 && e.type === 'attempt' && /^ESP/.test(e.intent.origen ?? '')), 'salida sencilla o decisión directa conocida (ESP), no la primera ficha del catálogo');
   // poco reloj: solo entran acciones viables; si no cabe ninguna ficha organizada se usa el recurso final, sin tope de pases ni tiro regalado
   const m = freshMatch(13); energyFull(m); withBook(m, 0, [['POS01', 1]]);
   m.clock = 25; m.shotClock = 25; // 2,5 s

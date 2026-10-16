@@ -126,7 +126,7 @@ P.autonomousIds = function autonomousIds(team, poss, callId) {
 // ---------------------------------------------------------------- ejecución de una decisión directa (misma resolución compartida)
 P.runDirect = function runDirect(poss, ex, lq) {
   const team = poss.team;
-  Object.assign(ex, { team, origin: ex.espTags[0], kind: ex.early ? 'transition' : 'continuation', roles: { portador: ex.holder }, procedencia: 'decisión directa', directo: true });
+  Object.assign(ex, { team, origin: ex.espTags[0], kind: ex.early ? 'transition' : 'continuation', roles: { portador: ex.holder }, procedencia: 'decisión directa', directo: true, contexto: ex.early ? 'temprano' : 'organizado' });
   const cvk = { k: 0, spaceFromCoverage: false };
   const st = this.interactionResolve(poss, ex, lq, team, null, 0, false, cvk);
   const k = st.kctx + st.kd;

@@ -1092,7 +1092,8 @@
    "band": "DSaqB01",
    "endline": "DSaqF01",
    "target": null
-  }
+  },
+  "rules.receiveAndShootMinimumSeconds": 0.3
  },
  "replacements": {
   "repertoire.plays.POS14.roles.handler.fn": [

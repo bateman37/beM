@@ -2,6 +2,16 @@
 const ZONA = { rim: 'a canasta', inside: 'tiro corto', midrange: 'media distancia', three: 'triple', freeThrow: 'tiro libre' };
 const CALIDAD = { comfortable: 'cómoda', normal: 'normal', forced: 'forzada' };
 
+// Explicación funcional de la situación reconocida (solo desde hechos reales: etiquetas calculadas del propio acontecimiento).
+const ESP_TEXT = {
+  ESP01: 'aprovecha la recuperación', ESP02: 'triple en transición', ESP03: 'llegada temprana con espacio', ESP04: 'tras separación con el bote', ESP05: 'primer paso disponible',
+  ESP06: 'recepción liberada', ESP07: 'defensa recuperando tarde', ESP08: 'corte espontáneo', ESP09: 'ataca el desajuste', ESP10: 'poste disponible', ESP11: 'supera la presión',
+  ESP12: 'rebote ofensivo cercano', ESP13: 'balón fuera tras rebote ofensivo', ESP14: 'balón recuperado', ESP15: 'sistema negado: recurso sencillo', ESP16: 'final de posesión', ESP17: 'última acción del periodo',
+  ESP18: 'oportunidad clara antes de colocarse', ESP19: 'elección temprana forzada', ESP20: 'recurso autónomo',
+};
+const PROC_TEXT = { llamada: 'llamada del plan', libro: 'libro', 'recurso autónomo': 'recurso autónomo', 'decisión directa': 'decisión directa', saque: 'tras el saque' };
+const procText = (i) => { const t = [i.procedencia ? PROC_TEXT[i.procedencia] ?? i.procedencia : null, ...(i.etiquetasESP ?? []).map((e) => ESP_TEXT[e] ?? e)].filter(Boolean); return t.length ? ` — ${[...new Set(t)].join(' · ')}` : ''; };
+
 export function clockText(tenths) {
   const s = Math.max(0, tenths) / 10; const m = Math.floor(s / 60);
   return `${m}:${(s - m * 60).toFixed(1).padStart(4, '0')}`;
@@ -27,12 +37,23 @@ export function describeEvent(ev, { name, teamName }) {
   const e = ev.effects ?? {}; const i = ev.intent ?? {}; const p = ev.participants ?? {};
   const decide = i.decidePor ? `; decide ${n(i.decidePor.jugador)} tras recibir` : '';
   const nega = i.negacionPrevia ? '; tras negarse la primera opción' : '';
-  const origin = i.origen ? ` (${i.origen}${i.continuacion ? `, ${[].concat(i.continuacion).join('+')}` : ''}${decide}${nega})` : '';
+  const entrega = i.entregaInicial ? `; ${n(i.entregaInicial.de)} entrega antes a ${n(i.entregaInicial.a)}` : '';
+  const origin = i.origen ? ` (${i.origen}${i.continuacion ? `, ${[].concat(i.continuacion).join('+')}` : ''}${decide}${nega}${entrega}${procText(i)})` : '';
   switch (ev.type) {
     case 'tipoff': return `Salto inicial: gana ${e.gana}. La flecha apunta a ${e.flechaApunta === 0 ? 'el primer equipo' : 'el segundo equipo'}.`;
     case 'period_start': return `Comienza el periodo ${ev.period}. Saca ${teamName(ev.team)} (${i.origen}).`;
     case 'period_end': return `Final del periodo ${ev.period}. Marcador ${e.marcador?.join('–')}.`;
     case 'interval': return `Intervalo (${i.origen}); recuperación +${e.recuperacion} de energía.`;
+    case 'throw_in': {
+      const ops = i.opciones ?? []; const tipo = i.saque === 'band' ? 'banda' : 'fondo';
+      const negadas = ops.filter((o) => o.negada);
+      const first = ops[0];
+      const partes = [];
+      if (first?.negada) partes.push(`primera recepción negada (${n(first.receptor)})`);
+      if (negadas.length) partes.push(negadas.length === ops.length ? 'todas las opciones negadas: envío forzado' : `sale por la ${e.opcionUsada}`);
+      const salida = e.opcionUsada === 'seguridad' && !first?.negada ? 'salida segura' : null;
+      return `Saque de ${tipo} de ${teamName(ev.team)} (${i.ficha} ${i.nombre}; ${i.origen}): saca ${n(p.sacador)} y recibe ${n(e.recibe)}${partes.length ? `; ${partes.join('; ')}` : ''}${salida ? `; ${salida}` : ''}. Respuesta rival ${i.respuestaDefensiva}.${ev.durationTenths ? ` Reloj en marcha: ${(ev.durationTenths / 10).toFixed(1)} s.` : ''}`;
+    }
     case 'inbound': return e && i.relojEnMarcha ? `Saque con reloj en marcha para ${teamName(ev.team)}.` : `Saque de ${teamName(ev.team)} con reloj parado.`;
     case 'defense': return `${teamName(1 - ev.team)} defiende ahora en ${i.efectiva} ${i.nombreEfectiva}${i.alternativa ? ` (alternativa: ${i.motivo})` : i.objetivo ? ` (objetivo ${n(i.objetivo)})` : ''}.${!i.alternativa && i.motivo ? ` ${i.motivo}.` : ''}`;
     case 'advance': return i.altura ? `${teamName(ev.team)} avanza bajo presión ${{ three_quarters: 'a tres cuartos', full: 'a toda pista' }[i.altura] ?? i.altura}: ${{ controlledAdvance: 'controla el avance', delayedAdvance: `se demora ${i.demoraSegundos} s`, pressureBeaten: `supera la presión de ${n(i.presionador)}${i.retorno ? ` (${n(i.retorno.asume)} asume y ${n(i.retorno.recupera)} recupera)` : ''}`, turnover: `pierde el balón${e.robo ? `; roba ${n(e.robo)}` : ''}`, contact: `contacto de ${n(i.presionador)}` }[i.resultado] ?? i.resultado}.` : `${teamName(ev.team)} avanza el balón a pista de ataque.`;

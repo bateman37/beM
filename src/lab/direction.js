@@ -4,6 +4,7 @@ import { h } from './dom.js';
 import { store, PLAY_NAMES } from './store.js';
 import { SLOTS, deepCopy, ORDER_STATES, EDITABLE_STYLES } from '../match/index.js';
 import { defenseControls, DEF_STYLE_TITLES } from './defense-ui.js';
+import { throwInControls } from './throwin-ui.js';
 import { styleLevelLabels, STYLE_DEFS, STYLE_GROUPS, STYLE_TITLES, MIDRANGE_OPTIONS, MIDRANGE_LABEL, FAMILY_NAMES, FAMILY_ORDER } from './styles.js';
 
 const optLabelShort = (id, m) => `${id}${m.ps[id].onCourt ? ' (en pista)' : ''}`;
@@ -31,6 +32,13 @@ export function projectedPlan(m, team) {
     else if (o.type === 'defRoles') for (const [pid, code] of Object.entries(o.content.roles)) { if (o.liveFields.includes(`defRoles.${pid}`)) plan.defRoles[pid] = code; }
     else if (o.type === 'defMarks') plan.marks = deepCopy(o.content.marks);
     else if (o.type === 'defSpecial' && o.content.special !== 'ESPD01') { plan.specials = (plan.specials ?? []).filter((x) => x.id !== o.content.special); if (o.content.config) plan.specials.push({ id: o.content.special, ...deepCopy(o.content.config) }); }
+    else if (o.type === 'throwInBook') for (const [k, v] of Object.entries(o.content.priorities)) {
+      if (!o.liveFields.includes(`throwBook.${k}`)) continue;
+      const i = plan.throwInBook.findIndex((b) => b.playId === k);
+      if (v === null) { if (i >= 0) plan.throwInBook.splice(i, 1); } else if (i >= 0) plan.throwInBook[i].priority = v; else plan.throwInBook.push({ playId: k, priority: v });
+    }
+    else if (o.type === 'throwInServers') for (const k of ['band', 'endline']) { if (o.liveFields.includes(`throwServer.${k}`)) plan.throwInServers[k] = { ...plan.throwInServers[k], ...deepCopy(o.content[k]) }; }
+    else if (o.type === 'defThrowIn') for (const f of ['band', 'endline', 'target']) { if (o.liveFields.includes(`defThrow.${f}`)) plan.throwInDefense[f] = o.content[f]; }
   }
   return plan;
 }
@@ -40,10 +48,12 @@ const DEF_KEYS = ['defense', 'target', 'targetAlt', 'fallbackOrg', 'pressureHeig
 const defOf = (plan) => ({ ...Object.fromEntries(DEF_KEYS.map((k) => [k, plan[k] ?? null])), defStyles: { ...plan.defStyles }, marks: deepCopy(plan.marks ?? []), specials: deepCopy(plan.specials ?? []) });
 const prioMap = (plan, catalog) => Object.fromEntries(catalog.map((id) => [id, plan.playbook.find((b) => b.playId === id)?.priority ?? null]));
 
+const throwOf = (plan, cat) => ({ priorities: Object.fromEntries(cat.map((id) => [id, plan.throwInBook.find((b) => b.playId === id)?.priority ?? null])), servers: deepCopy(plan.throwInServers), defense: deepCopy(plan.throwInDefense) });
+
 export function newDraft(m, team) {
   const plan = projectedPlan(m, team);
   const cat = m.profile.activeCatalog.plays;
-  return { team, styles: Object.fromEntries(EDITABLE_STYLES.map((k) => [k, plan.styles[k]])), midrange: plan.midrange, disposition: plan.disposition, roles: { ...plan.roles }, priorities: prioMap(plan, cat), director: [...plan.directorPriority], lineup: m.projectedLineup(team), def: defOf(plan), defRoles: Object.fromEntries(m.teams[team].ids.map((id) => [id, plan.defRoles[id]])), dirty: { styles: {}, midrange: false, disposition: false, roles: {}, priorities: {}, director: false, lineup: false, def: false, defRoles: {} } };
+  return { team, styles: Object.fromEntries(EDITABLE_STYLES.map((k) => [k, plan.styles[k]])), midrange: plan.midrange, disposition: plan.disposition, roles: { ...plan.roles }, priorities: prioMap(plan, cat), director: [...plan.directorPriority], lineup: m.projectedLineup(team), def: defOf(plan), defRoles: Object.fromEntries(m.teams[team].ids.map((id) => [id, plan.defRoles[id]])), throwIns: throwOf(plan, m.profile.activeCatalog.throwInPlays), dirty: { styles: {}, midrange: false, disposition: false, roles: {}, priorities: {}, director: false, lineup: false, def: false, defRoles: {}, throwIns: false } };
 }
 // Lo que el usuario no ha tocado sigue al partido (p. ej. un relevo del entrenador básico); lo que sí tocó es su borrador.
 export function syncDraft(m, team, d) {
@@ -56,6 +66,7 @@ export function syncDraft(m, team, d) {
   if (!d.dirty.director) d.director = f.director;
   if (!d.dirty.lineup) d.lineup = f.lineup;
   if (!d.dirty.def) d.def = f.def;
+  if (!d.dirty.throwIns) d.throwIns = f.throwIns;
   for (const k of Object.keys(f.defRoles)) if (!d.dirty.defRoles[k]) d.defRoles[k] = f.defRoles[k];
   return d;
 }
@@ -84,6 +95,14 @@ export function draftSpecs(m, team, draft) {
   const dr = {}; for (const [pid, code] of Object.entries(draft.defRoles)) if (code !== base.defRoles[pid]) dr[pid] = code;
   if (Object.keys(dr).length) specs.push({ type: 'defRoles', roles: dr });
   if (!same(dd.marks, bd.marks)) specs.push({ type: 'defMarks', marks: deepCopy(dd.marks) });
+  // saques (MOTOR-06): libro, sacadores y respuesta defensiva viajan como sus propias órdenes; el conjunto se valida junto
+  const bt = throwOf(base, m.profile.activeCatalog.throwInPlays); const dt = draft.throwIns;
+  const tp = {}; for (const id of Object.keys(bt.priorities)) if (dt.priorities[id] !== bt.priorities[id]) tp[id] = dt.priorities[id];
+  if (Object.keys(tp).length) specs.push({ type: 'throwInBook', priorities: tp });
+  const ts = {}; for (const k of ['band', 'endline']) if (!same(dt.servers[k], bt.servers[k])) ts[k] = { ...dt.servers[k] };
+  if (Object.keys(ts).length) specs.push({ type: 'throwInServers', ...ts });
+  const td = {}; for (const f of ['band', 'endline', 'target']) if (dt.defense[f] !== bt.defense[f]) td[f] = dt.defense[f];
+  if (Object.keys(td).length) specs.push({ type: 'defThrowIn', ...td });
   for (const id of ['ESPD02', 'ESPD03']) {
     const a = dd.specials.find((x) => x.id === id); const b = bd.specials.find((x) => x.id === id);
     if (!same(a ?? null, b ?? null)) { const { id: _i, ...config } = a ?? {}; specs.push({ type: 'defSpecial', special: id, config: a ? config : null }); }
@@ -111,6 +130,10 @@ export function orderText(o) {
     case 'defRoles': return `Roles defensivos: ${Object.entries(c.roles).map(([k, v]) => `${k} → ${v}`).join(' · ')}`;
     case 'defMarks': return `Marcas: ${c.marks.length ? c.marks.map((x) => `${x.defender} → ${x.attacker ?? x.fn}`).join(' · ') : 'ninguna'}`;
     case 'defSpecial': return c.special === 'ESPD01' ? `Falta táctica (${c.scope === 'current' ? 'posesión rival actual' : 'siguiente posesión rival'}${c.target && c.target !== 'holder' ? `, sobre ${c.target}` : ', sobre el poseedor'}${c.executor ? `, ejecutor ${c.executor}` : ''})` : `${c.special === 'ESPD02' ? 'Doble a jugador' : 'No abandonar tirador'}: ${c.config ? JSON.stringify(c.config) : 'retirada'}`;
+    case 'throwInBook': return `Libro de saques: ${Object.entries(c.priorities).map(([k, v]) => `${k} = ${v === null ? 'desactivada' : v}`).join(' · ')}`;
+    case 'throwInServers': return `Sacadores: ${['band', 'endline'].filter((k) => c[k]).map((k) => `${k === 'band' ? 'banda' : 'fondo'} ${c[k].preferred ?? 'política'}${c[k].alternate ? ` / alt. ${c[k].alternate}` : ''}`).join(' · ')}`;
+    case 'defThrowIn': return `Respuesta de saque: ${['band', 'endline'].filter((k) => c[k]).map((k) => `${k === 'band' ? 'banda' : 'fondo'} → ${c[k]}`).join(' · ')}${'target' in c ? ` · objetivo ${c.target ?? 'ninguno'}` : ''}`;
+    case 'throwInCall': return `Llamada de saque ${c.playId} (próximo saque compatible propio del periodo)`;
     case 'delegate': return 'Devolver la gestión del quinteto al entrenador básico';
     case 'call': return `Llamada de ${c.playId} — ${PLAY_NAMES[c.playId] ?? ''} (${c.target === 'current' ? 'posesión actual' : 'siguiente posesión propia'})`;
     case 'substitution': return `Cambio: ${(c.swaps ?? []).map((s) => `sale ${s.out}, entra ${s.in}`).join('; ')}`;
@@ -124,9 +147,9 @@ export function orderMessage(o) {
   const r = o.reason ?? '';
   switch (o.state) {
     case 'pendiente': return o.type === 'timeout' || o.kind === 'lineup' ? `${o.type === 'timeout' ? 'Tiempo muerto' : 'Cambio'} ${r.startsWith('pendiente') ? r : `pendiente de oportunidad reglamentaria`}` : r.charAt(0).toUpperCase() + r.slice(1);
-    case 'vigente': return o.kind === 'call' || o.kind === 'special' ? r.charAt(0).toUpperCase() + r.slice(1) : `Vigente${o.activation ? ` desde ${periodWord(o.activation.period)}` : ''}`;
+    case 'vigente': return o.kind === 'call' || o.kind === 'special' || o.kind === 'tcall' ? r.charAt(0).toUpperCase() + r.slice(1) : `Vigente${o.activation ? ` desde ${periodWord(o.activation.period)}` : ''}`;
     case 'consumida': return r.charAt(0).toUpperCase() + r.slice(1);
-    case 'caducada': return o.kind === 'call' ? `Llamada caducada: ${r}` : o.kind === 'special' ? `Falta táctica caducada: ${r}` : `Caducada: ${r}`;
+    case 'caducada': return o.kind === 'tcall' ? `Llamada de saque caducada: ${r}` : o.kind === 'call' ? `Llamada caducada: ${r}` : o.kind === 'special' ? `Falta táctica caducada: ${r}` : `Caducada: ${r}`;
     case 'rechazada': return `Cambio no aplicado: ${r}`;
     case 'cancelada': return 'Cancelada antes de aplicarse';
     case 'sustituida': return r.charAt(0).toUpperCase() + r.slice(1);
@@ -207,6 +230,12 @@ export function directionPanel(session, ui, rerender) {
       h('select', { disabled: dis, onchange: (e) => { d.lineup[slot] = e.target.value; d.dirty.lineup = true; rerender(); } },
         [proj[slot], ...tm.players.map((p) => p.id).filter((id) => !projSet.has(id))].map((id) => h('option', { value: id, selected: d.lineup[slot] === id }, `${optLabel(id)}${id === proj[slot] ? ' (en el quinteto previsto)' : ''}`)))))));
 
+  // saques de banda y fondo (MOTOR-06): mismos controles que la preparación, sobre el borrador
+  const throwIns = h('div', {}, throwInControls({ profile: m.profile, players: tm.players, rivals: rival.players, disabled: dis, coverage: d.def.coverage, idPrefix: 'live-thr', refresh: rerender, label: (id) => optLabelShort(id, m),
+    getPriority: (id) => d.throwIns.priorities[id], setPriority: (id, v) => { d.throwIns.priorities[id] = v; d.dirty.throwIns = true; },
+    getServer: (k, f) => d.throwIns.servers[k][f], setServer: (k, f, v) => { d.throwIns.servers[k][f] = v; if (f === 'preferred' && v && d.throwIns.servers[k].alternate === v) d.throwIns.servers[k].alternate = null; d.dirty.throwIns = true; },
+    getDef: (f) => d.throwIns.defense[f], setDef: (f, v) => { d.throwIns.defense[f] = v; d.dirty.throwIns = true; } }),
+    h('p', { class: 'small muted' }, 'El libro, los sacadores y la respuesta entran en el siguiente saque compatible aún no resuelto; no cambian un saque ya iniciado ni reescriben una resolución comprometida. La configuración conjunta se valida junta (por ejemplo, persecución o cambio exigen COB01 o COB02): si algo es imposible se rechaza con su motivo y se conserva la última válida.'));
   const specs = hasChanges(m, team, d) ? draftSpecs(m, team, d) : [];
   const applyRow = h('div', { class: 'row', style: 'margin-top:10px' },
     session.mode === 'cuartos' && session.state === 'revision'
@@ -241,9 +270,9 @@ export function directionPanel(session, ui, rerender) {
         msg(o.state === 'rechazada' ? `Cambio no aplicado: ${o.reason}` : 'Cambio solicitado: pendiente de oportunidad reglamentaria (no entra durante juego vivo).', o.state === 'rechazada' ? 'errbox' : 'pill ok');
       } }, 'Pedir cambio')),
     h('div', { class: 'row', style: 'margin-top:6px' }, h('button', { class: 'btn secondary', disabled: dis || view.lineupControl.mode !== 'manual', onclick: () => { const o = session.submit({ type: 'delegate', domain: 'lineup' }); msg(o.state === 'rechazada' ? o.reason : 'El quinteto volverá al entrenador básico en la siguiente decisión delegada (sin cambios retroactivos).', 'pill ok'); } }, 'Devolver el quinteto al entrenador')),
-    callSection(session, ui, dis, msg), tacticalFoulSection(session, ui, dis, msg));
+    callSection(session, ui, dis, msg), throwCallSection(session, ui, dis, msg), tacticalFoulSection(session, ui, dis, msg));
 
-  return h('div', { class: 'card' }, head, status, h('div', { class: 'grid2' }, h('div', {}, styles, book), h('div', {}, director, roles, lineup)), h('details', { open: ui.defOpen, ontoggle: (e) => { ui.defOpen = e.target.open; } }, h('summary', {}, h('strong', {}, 'Defensa'), ` — ${d.def.defense} · ${d.def.pressureHeight} · ${d.def.coverage}`), defense), applyRow, h('hr', { style: 'border:0;border-top:1px solid var(--line);margin:14px 0' }), quick);
+  return h('div', { class: 'card' }, head, status, h('div', { class: 'grid2' }, h('div', {}, styles, book), h('div', {}, director, roles, lineup)), h('details', { open: ui.defOpen, ontoggle: (e) => { ui.defOpen = e.target.open; } }, h('summary', {}, h('strong', {}, 'Defensa'), ` — ${d.def.defense} · ${d.def.pressureHeight} · ${d.def.coverage}`), defense), h('details', { open: ui.thrOpen, ontoggle: (e) => { ui.thrOpen = e.target.open; } }, h('summary', {}, h('strong', {}, 'Saques de banda y fondo'), ` — ${Object.values(d.throwIns.priorities).filter((v) => v != null).length} ficha(s) activa(s) · respuesta ${d.throwIns.defense.band} / ${d.throwIns.defense.endline}`), throwIns), applyRow, h('hr', { style: 'border:0;border-top:1px solid var(--line);margin:14px 0' }), quick);
 }
 
 function callSection(session, ui, dis, msg) {
@@ -265,6 +294,23 @@ function callSection(session, ui, dis, msg) {
         msg(o.state === 'rechazada' ? `Llamada no registrada: ${o.reason}` : `Llamada de ${c.playId} confirmada para ${c.target === 'current' ? 'la posesión actual' : 'la siguiente posesión propia'}: no garantiza que se inicie ni que se anote.`, o.state === 'rechazada' ? 'errbox' : 'pill ok');
       } }, 'Confirmar llamada')),
     h('p', { class: 'small muted' }, desc));
+}
+
+// Llamada puntual de saque (MOTOR-06): se dirige al SIGUIENTE saque compatible propio dentro del periodo actual; se consume al iniciar la ficha
+// y caduca al acabar el periodo. No la consume un saque de otro origen incompatible (p. ej. uno de banda no consume una llamada de fondo).
+function throwCallSection(session, ui, dis, msg) {
+  const m = session.match; const team = session.managedTeam; const rep = m.profile.throwInRepertoire;
+  const c = ui.tcall ??= { playId: m.profile.activeCatalog.throwInPlays[0] };
+  const pend = m.orders.find((o) => o.type === 'throwInCall' && o.team === team && o.state === 'pendiente');
+  return h('div', {}, h('h3', {}, 'Llamar un saque (siguiente saque compatible)'),
+    h('div', { class: 'row' },
+      h('select', { disabled: dis, 'aria-label': 'ficha de saque', onchange: (e) => { c.playId = e.target.value; } }, m.profile.activeCatalog.throwInPlays.map((p) => h('option', { value: p, selected: c.playId === p }, `${p} — ${rep.plays[p].name} (${rep.kinds[rep.plays[p].kind].label.toLowerCase()})${m.teams[team].plan.throwInBook.some((b) => b.playId === p) ? '' : ' (no activa en el libro)'}`))),
+      h('button', { class: 'btn secondary', disabled: dis, onclick: () => {
+        const o = session.submit({ type: 'throwInCall', playId: c.playId });
+        msg(o.state === 'rechazada' ? `Llamada de saque no registrada: ${o.reason}` : `Llamada de ${c.playId} confirmada para el siguiente saque ${rep.kinds[rep.plays[c.playId].kind].label.toLowerCase()} propio del periodo: caduca si no llega ese saque; no garantiza recepción ni canasta.`, o.state === 'rechazada' ? 'errbox' : 'pill ok');
+      } }, 'Confirmar llamada de saque'),
+      pend ? h('button', { class: 'btn danger', disabled: dis, onclick: () => { session.cancel(pend.id); msg('Llamada de saque retirada.'); } }, 'Retirar llamada pendiente') : null),
+    h('p', { class: 'small muted' }, pend ? `Pendiente: ${orderText(pend)}. ${pend.reason}.` : 'Sin llamada de saque pendiente. Un plan persistente de banda o fondo (libro y prioridades) es distinto de esta llamada puntual.'));
 }
 
 // ESPD01 · Falta táctica: orden puntual. No detiene el reloj; un ejecutor con acceso intenta la acción en una oportunidad pertinente de la

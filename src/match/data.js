@@ -9,9 +9,10 @@ export const ATTRS = [
 ];
 export const SLOTS = ['PG', 'SG', 'SF', 'PF', 'C'];
 export const ZONES = ['rim', 'inside', 'midrange', 'three'];
-export const ENGINE_VERSION = 'beM-motor-0.5.0-MOTOR05';
-export const INPUT_SCHEMA = 'beM-match-input/3';
-export const EXPORT_SCHEMA = 'beM-match-export/4'
+export const ENGINE_VERSION = 'beM-motor-0.6.0-MOTOR06';
+export const INPUT_SCHEMA = 'beM-match-input/4';
+export const EXPORT_SCHEMA = 'beM-match-export/5';
+export const EXPORT_SCHEMA_MOTOR05 = 'beM-match-export/4';
 export const EXPORT_SCHEMA_MOTOR04 = 'beM-match-export/3';
 export const EXPORT_SCHEMA_MOTOR02 = 'beM-match-export/2';
 export const MIDRANGE_POLICIES = ['avoid', 'openOnly', 'seek'];
@@ -180,6 +181,40 @@ export function validateDefensePlan(plan, team, rival, profile, tp, add) {
   }
 }
 
+// Libro, sacadores y respuesta defensiva de saque del plan (MOTOR-06). Una configuración imposible se rechaza entera con su motivo.
+export function validateThrowPlan(plan, team, rival, profile, tp, add) {
+  const cat = profile.activeCatalog; const rep = profile.throwInRepertoire;
+  const mine = new Set(team.players.map((p) => p.id)); const theirs = new Set(rival.players.map((p) => p.id));
+  if (!Array.isArray(plan.throwInBook)) add(`${tp}.plan.throwInBook`, 'el libro de saques es una lista (vacía si no se prepara ninguna ficha)');
+  else {
+    const seen = new Set();
+    plan.throwInBook.forEach((b, i) => {
+      if (!(cat.throwInPlays ?? []).includes(b.playId)) add(`${tp}.plan.throwInBook[${i}].playId`, `ficha de saque ${b.playId} fuera del catálogo activo`);
+      if (seen.has(b.playId)) add(`${tp}.plan.throwInBook[${i}].playId`, `ficha de saque ${b.playId} repetida`);
+      seen.add(b.playId);
+      if (!Number.isInteger(b.priority) || b.priority < 1 || b.priority > 5) add(`${tp}.plan.throwInBook[${i}].priority`, 'la prioridad es un entero 1-5 (compartida por banda y fondo)');
+    });
+  }
+  const sv = plan.throwInServers;
+  if (!sv || typeof sv !== 'object') add(`${tp}.plan.throwInServers`, 'faltan los sacadores (preferido y alternativa) de banda y fondo');
+  else for (const k of ['band', 'endline']) {
+    const c = sv[k];
+    if (!c || typeof c !== 'object') { add(`${tp}.plan.throwInServers.${k}`, 'falta la configuración del sacador'); continue; }
+    for (const f of ['preferred', 'alternate']) if (c[f] != null && !mine.has(c[f])) add(`${tp}.plan.throwInServers.${k}.${f}`, `el jugador ${c[f]} no pertenece al equipo`);
+    if (c.preferred != null && c.preferred === c.alternate) add(`${tp}.plan.throwInServers.${k}`, 'el sacador preferido y su alternativa deben ser distintos');
+  }
+  const df = plan.throwInDefense;
+  if (!df || typeof df !== 'object') { add(`${tp}.plan.throwInDefense`, 'falta la respuesta defensiva de saque de banda y de fondo'); return; }
+  for (const k of ['band', 'endline']) {
+    const r = rep.responses[df[k]];
+    if (!(cat.throwInResponses ?? []).includes(df[k]) || !r) add(`${tp}.plan.throwInDefense.${k}`, `respuesta ${df[k]} fuera del catálogo activo`);
+    else if (r.kind !== k) add(`${tp}.plan.throwInDefense.${k}`, `${df[k]} es una respuesta de ${rep.kinds[r.kind].label.toLowerCase()}, no de ${rep.kinds[k].label.toLowerCase()}`);
+    else if (r.chaseOrSwitch && !['COB01', 'COB02'].includes(plan.coverage)) add(`${tp}.plan.throwInDefense.${k}`, `${df[k]} necesita persecución o cambio y la cobertura declarada (${plan.coverage}) no es compatible`);
+  }
+  if (df.target != null && !theirs.has(df.target)) add(`${tp}.plan.throwInDefense.target`, 'el objetivo de saque debe ser un jugador rival');
+  if (df.endline === 'DSaqF02' && df.target == null) add(`${tp}.plan.throwInDefense.target`, 'DSaqF02 necesita un objetivo rival designado (visible); sin él no se puede negar');
+}
+
 // Devuelve una lista de { path, message }. Vacía = válida. No corrige ni completa nada.
 export function validateInput(input, profile) {
   const errs = [];
@@ -246,6 +281,7 @@ export function validateInput(input, profile) {
     if (plan.disposition && !(profile.activeCatalog.dispositions ?? []).includes(plan.disposition)) add(`${tp}.plan.disposition`, `disposición ${plan.disposition} fuera del catálogo activo`);
     if (!MIDRANGE_POLICIES.includes(plan.midrange)) add(`${tp}.plan.midrange`, `la media distancia es una de: ${MIDRANGE_POLICIES.join(', ')}`);
     validateDefensePlan(plan, t, input.teams[1 - ti], profile, tp, add);
+    validateThrowPlan(plan, t, input.teams[1 - ti], profile, tp, add);
     const roleDict = profile.fixtureContract.offensiveRoleDictionary;
     t.players.forEach((p, pi) => { if (!roleDict[p.offensiveRole?.code]) add(`${tp}.players[${pi}](${p.id}).offensiveRole`, `rol ofensivo ${p.offensiveRole?.code ?? 'ausente'} fuera del catálogo`); });
   });
@@ -319,6 +355,11 @@ export function upgradeInput(input, profile) {
     if (t.plan) {
       for (const f of ['defStyles', 'navigation', 'marks', 'target', 'targetAlt', 'fallbackOrg', 'specials']) if (t.plan[f] === undefined) { t.plan[f] = JSON.parse(JSON.stringify(p0[f])); added.push(`${t.id}: defensa ${f}`); }
       if (!t.plan.pressureHeight) { t.plan.pressureHeight = 'normal'; added.push(`${t.id}: altura de presión = normal`); }
+      // MOTOR-06: candidata explícita de saques (precarga de desarrollo, no una recomendación táctica): nunca sobrescribe un plan ya configurado
+      const ti = profile.throwIns;
+      if (t.plan.throwInBook === undefined) { t.plan.throwInBook = [{ playId: ti.defaultBandOffensivePlan, priority: 3 }, { playId: ti.defaultEndlineOffensivePlan, priority: 3 }]; added.push(`${t.id}: libro de saques con ${ti.defaultBandOffensivePlan} y ${ti.defaultEndlineOffensivePlan} a prioridad 3 (precarga explícita)`); }
+      if (t.plan.throwInServers === undefined) { t.plan.throwInServers = { band: { preferred: null, alternate: null }, endline: { preferred: null, alternate: null } }; added.push(`${t.id}: sacadores de banda y fondo por política funcional`); }
+      if (t.plan.throwInDefense === undefined) { t.plan.throwInDefense = { band: ti.defaultBandDefensiveResponse, endline: ti.defaultEndlineDefensiveResponse, target: null }; added.push(`${t.id}: respuestas defensivas de saque ${ti.defaultBandDefensiveResponse} y ${ti.defaultEndlineDefensiveResponse} (precarga explícita)`); }
       for (const p of t.players ?? []) if (!p.defensiveRole?.code) { const slot = SLOTS.find((s) => t.plan.starters?.[s] === p.id); const code = slot ? profile.defenseRepertoire.defaultRolesBySlot[slot] : null; if (code) { p.defensiveRole = { code, name: profile.fixtureContract.defensiveRoleDictionary[code] ?? null, preload: true }; added.push(`${t.id}: rol defensivo de ${p.id} precargado (${code}, editable)`); } }
     }
   }
