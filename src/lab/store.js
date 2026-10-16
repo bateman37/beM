@@ -1,9 +1,9 @@
 // Estado editable del laboratorio: carga de datos, edición para el próximo encuentro, restauración explícita,
 // aplicación de +1/+3/+5 y persistencia opcional (localStorage, con degradación segura).
-import { parsePlayersCsv, buildMatchInput, deepCopy, validateInput, ATTRS } from '../match/index.js';
+import { parsePlayersCsv, buildMatchInput, deepCopy, validateInput, applyExtension, ATTRS } from '../match/index.js';
 import { storage } from './dom.js';
 
-const KEY = 'beM.motor01.edit.v1';
+const KEY = 'beM.motor01.edit.v1'; // la entrada editable no cambia de formato en MOTOR-02: se conserva la clave
 export const ATTR_GROUPS = [
   ['Tiro', ['TEC01', 'TEC02', 'TEC03', 'TEC04', 'TEC05', 'TEC06']],
   ['Balón, pase y juego sin balón', ['TEC07', 'TEC08', 'TEC09', 'TEC10', 'TEC11']],
@@ -17,16 +17,18 @@ export const PLAY_NAMES = {
   POS09: 'Pase y corte', POS11: 'Poste bajo', POS14: 'Aclarado desde cabecera',
 };
 
-export const store = { profile: null, base: null, edit: null, labels: {}, catalog: null, last: null, persisted: false };
+export const store = { profile: null, baseProfile: null, extension: null, base: null, edit: null, labels: {}, catalog: null, last: null, persisted: false };
 
 export async function loadAll() {
-  const [profile, csv, catalog] = await Promise.all([
+  const [baseProfile, extension, csv, catalog] = await Promise.all([
     fetch('/data/match/motor01-seed-profile.json').then((r) => r.json()),
+    fetch('/data/match/motor02-seed-extension.json').then((r) => r.json()),
     fetch('/data/fixtures/reference-players-MOTOR01.csv').then((r) => r.text()),
     fetch('/data/catalog.json').then((r) => (r.ok ? r.json() : null)).catch(() => null),
   ]);
-  const players = parsePlayersCsv(csv, profile);
-  store.profile = profile; store.catalog = catalog;
+  const players = parsePlayersCsv(csv, baseProfile);
+  const profile = applyExtension(baseProfile, extension); // perfil efectivo: el original no se sobrescribe
+  store.profile = profile; store.baseProfile = baseProfile; store.extension = extension; store.catalog = catalog;
   store.labels = Object.fromEntries(profile.attributeDictionary.map((a) => [a.id, a.label]));
   store.base = buildMatchInput(profile, players);
   store.edit = restore() ?? deepCopy(store.base);

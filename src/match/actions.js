@@ -70,8 +70,9 @@ P.prefWeight = function prefWeight(ex) {
 // ---------------------------------------------------------------- director y selección de ficha
 P.pickDirector = function pickDirector(team) {
   const on = new Set(this.onCourt(team));
-  for (const id of this.teams[team].plan.directorPriority) if (on.has(id) && this.ps[id].available) return { id, fallback: false };
-  for (const s of SLOTS) { const id = this.lineup[team][s]; if (this.ps[id].available) return { id, fallback: true }; }
+  const list = this.teams[team].plan.directorPriority;
+  for (let rank = 0; rank < list.length; rank++) { const id = list[rank]; if (on.has(id) && this.ps[id].available) return { id, fallback: false, rank }; }
+  for (const s of SLOTS) { const id = this.lineup[team][s]; if (this.ps[id].available) return { id, fallback: true, rank: null }; }
   throw new Error('sin director disponible');
 };
 
@@ -262,7 +263,8 @@ P.resolveShot = function resolveShot(ex, base, contact) {
     const n = freeThrowsForShootingFoul(sh.points, made);
     const ev = this.emit('attempt', { ...base, stats, effects: { ...eff, falta: { de: committer, sobre: ex.actor, tirosLibres: n, canastaValida: made } } });
     this.foulAdmin(committer, ex.actor, { shooting: true, ftCount: n, shotTeam: ex.team, shotMade: made });
-    return this.afterFreeThrows(ex);
+    this.poss.pendingFT = ex; // la ventana de la falta es una frontera; la serie de libres se resuelve en la unidad siguiente
+    return { cont: 'foulWindow' };
   }
   this.emit('attempt', { ...base, stats, effects: eff });
   if (made) {
@@ -353,7 +355,8 @@ P.resolveDefensiveFoul = function resolveDefensiveFoul(ex, base) {
   this.cover('falta defensiva sin tiro');
   const ev = this.emit('attempt', { ...base, stats: [], effects: { faltaDefensiva: committer, sobre: ex.actor, tipo: 'sin tiro' } });
   this.foulAdmin(committer, ex.actor, { shooting: false, shotTeam: ex.team });
-  return this.afterFreeThrows(ex);
+  this.poss.pendingFT = ex;
+  return { cont: 'foulWindow' };
 };
 
 P.exclude = function exclude(pid) {
@@ -483,9 +486,10 @@ P.afterMiss = function afterMiss(ex, zone) {
 };
 
 // ---------------------------------------------------------------- fin de posesión y paso a la siguiente
+// Balón muerto: abre una ventana reglamentaria (tiempo muerto / sustitución) que se resuelve en la frontera siguiente.
 P.deadBall = function deadBall(reason) {
   this.clockRunning = false;
-  this.substitutionWindow(reason);
+  this.queueWindow({ reason, timeoutTeams: [0, 1], subs: true });
 };
 
 P.endPossession = function endPossession(kind, info) {
@@ -496,6 +500,7 @@ P.endPossession = function endPossession(kind, info) {
       const stops = clockStopsAfterGoal(this.period, this.clock, rules);
       this.clockRunning = !stops;
       if (stops) this.deadBall('canasta con reloj parado');
+      else this.queueWindow({ reason: 'canasta recibida', timeoutTeams: [opp], subs: false }); // solo el equipo que recibe la canasta
       this.nextPoss = { team: opp, entry: 'inbound', shotClock: toTenths(rules.shotClockSeconds) };
       break;
     }

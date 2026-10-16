@@ -2,6 +2,14 @@
 
 Registro breve de entregas. Una entrada por entrega; las más recientes primero.
 
+## MOTOR-02 — Tres modalidades y dirección manual — 2026-10-16
+
+- Avance por fronteras (`step()`), ventanas reglamentarias como frontera propia y `MatchSession` como único controlador: simulado total, por cuartos (con prórroga) y por tiempo a x2/x4/x8/x16 con pausa. Misma semilla y órdenes ⇒ mismo deporte en cualquier modalidad.
+- Órdenes con ciclo de vida (estilos, prioridades, director, llamada, sustitución/quinteto, delegación, tiempo muerto), precedencia, lotes atómicos y quinteto manual; tiempos muertos con cupos y recuperación única (extensión SEM `SEM-MOTOR02-20261016`).
+- JSON `beM-match-export/2` y reproducción desde archivo (`npm run replay`); laboratorio con panel de dirección.
+- Corrección B01: el lanzador de libres ya no sale antes de tirar (cambia resultados de referencia de MOTOR-01). 40 pruebas.
+- Documentación: [`docs/tecnico/motor02.md`](docs/tecnico/motor02.md), [recorrido manual](docs/prompts/MOTOR-02-recorrido-manual.md). Pendiente de validación de Dennis.
+
 ## MOTOR-01 — Primer partido completo y laboratorio inicial — 2026-10-16
 
 - Motor por acontecimientos en `src/match/` (azar xorshift32, energía, reglas FIBA 2026 del funcional, fichas POS01/05/07/09/11/14, continuaciones, recursos ESP, relevo básico) y laboratorio en `src/lab/` (`npm run dev`).

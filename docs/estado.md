@@ -1,6 +1,6 @@
 # Estado del proyecto
 
-Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANGELOG.md)). Última actualización: 2026-10-16, entrega MOTOR-01.
+Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANGELOG.md)). Última actualización: 2026-10-16, entrega MOTOR-02.
 
 ## Qué hay realmente en el repositorio
 
@@ -9,12 +9,19 @@ Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANG
 - **Copia original congelada** del funcional unificado y **exportado completo vigente** generado: ver [`historico/`](historico/README.md) y [`exportados/`](exportados/README.md).
 - **Utilidades documentales** en `scripts/docs/` (Python 3, librería estándar).
 
-## MOTOR-01 (ejecutado, pendiente de Dennis)
+## MOTOR-02 (ejecutado, pendiente de Dennis)
+
+- **Existe**: tres modalidades (total, por cuartos con prórrogas, por tiempo x2/x4/x8/x16 con pausa) sobre un único núcleo por fronteras; órdenes (estilos, prioridades, director, llamada, sustitución/quinteto, devolver al entrenador, tiempo muerto) con ciclo de vida; JSON ampliado y reproducción. 40 pruebas. Ver [`tecnico/motor02.md`](tecnico/motor02.md) y [recorrido manual](prompts/MOTOR-02-recorrido-manual.md).
+- **Provisional**: extensión `SEM-MOTOR02-20261016` (+1,5 de energía por tiempo muerto) y cupos de tiempos muertos: semilla/lectura propia, no calibradas ni contrastadas con el PDF FIBA (no accesible). No completa los 81 grupos.
+- **Cambio de resultados**: la corrección B01 (el lanzador de libres ya no sale antes de tirar) modifica los resultados de referencia de MOTOR-01 (p. ej. `20261016`: 98–85 → 94–89).
+- **Comprobado por Claude**: pruebas automáticas y recorrido en Chromium. **Pendiente de Dennis**: todo el recorrido manual. **No ejecutado**: Node 24, otros navegadores, contraste con el PDF FIBA.
+- Siguiente: lo que ordene Dennis (MOTOR-03 no iniciado).
+
+## MOTOR-01 (integrado en `main`; Dennis comunicó arranque local y recorrido manual correctos)
 
 - **Existe**: motor de partidos por acontecimientos (`src/match/`), laboratorio web local (`npm run dev`, <http://localhost:5173/>) con plantillas editables de EQ01/EQ02, +1/+3/+5, preparación, simulación completa, acta, relato, detalle y descarga JSON; 23 pruebas automáticas. Ver [`tecnico/motor01.md`](tecnico/motor01.md).
 - **Provisional**: perfil y fichas son SEM, no calibrados; no cierran los 81 grupos finales. Interpretaciones reglamentarias T01–T04 sin contrastar con el PDF FIBA (no accesible).
 - **Comprobado por Claude**: pruebas automáticas y recorrido en Chromium. **Pendiente de Dennis**: [recorrido manual](prompts/MOTOR-01-recorrido-manual.md). **No ejecutado**: Node 24, otros navegadores.
-- Siguiente: lo que ordene Dennis (MOTOR-02 no iniciado).
 
 ## Qué no existe todavía (histórico DOC-001, parcialmente superado)
 

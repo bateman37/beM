@@ -9,9 +9,10 @@ export const ATTRS = [
 ];
 export const SLOTS = ['PG', 'SG', 'SF', 'PF', 'C'];
 export const ZONES = ['rim', 'inside', 'midrange', 'three'];
-export const ENGINE_VERSION = 'beM-motor-0.1.0-MOTOR01';
+export const ENGINE_VERSION = 'beM-motor-0.2.0-MOTOR02';
 export const INPUT_SCHEMA = 'beM-match-input/1';
-export const EXPORT_SCHEMA = 'beM-match-export/1';
+export const EXPORT_SCHEMA = 'beM-match-export/2';
+export const EXPORT_SCHEMA_MOTOR01 = 'beM-match-export/1';
 
 const num = (v) => Number(v);
 
@@ -46,6 +47,28 @@ export function parsePlayersCsv(text, profile) {
 }
 
 export function deepCopy(o) { return JSON.parse(JSON.stringify(o)); }
+
+// Perfil efectivo = perfil SEM de MOTOR-01 (sin tocar) + extensión SEM de MOTOR-02 referenciada por su identidad.
+// El original no se sobrescribe: la extensión cuelga de `motor02` y queda listada en `extensions`.
+export function applyExtension(profile, ext) {
+  const problems = validateExtension(profile, ext);
+  if (problems.length) throw new Error(`Extensión de perfil no válida: ${problems.join('; ')}`);
+  const eff = deepCopy(profile);
+  eff.extensions = [{ id: ext.seedExtensionId, status: ext.status, basedOn: ext.basedOn }];
+  eff.effectiveId = `${profile.id}+${ext.seedExtensionId}`;
+  eff.motor02 = deepCopy(ext);
+  return eff;
+}
+export function validateExtension(profile, ext) {
+  const out = [];
+  if (!ext || typeof ext !== 'object') return ['extensión ausente'];
+  if (ext.basedOn !== profile.id) out.push(`la extensión se basa en ${ext.basedOn}, no en ${profile.id}`);
+  if (!(ext.timeOutRecoveryEnergyPoints >= 0)) out.push('timeOutRecoveryEnergyPoints');
+  const t = ext.timeOuts;
+  if (!t) out.push('falta timeOuts');
+  else for (const k of ['durationSeconds', 'firstHalf', 'secondHalf', 'perOvertime', 'finalWindowSeconds', 'maxInFinalWindow']) if (!Number.isInteger(t[k]) || t[k] < 0) out.push(`timeOuts.${k}`);
+  return out;
+}
 
 // Entrada de encuentro para los dos equipos del escenario del perfil.
 export function buildMatchInput(profile, allPlayers, { seed } = {}) {

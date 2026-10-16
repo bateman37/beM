@@ -1,83 +1,276 @@
-// Pantalla «Partido»: simulación completa, marcador, acta, quintetos, elecciones, relato por posesiones,
-// detalle calculado separado de la vista normal y descarga del encuentro en JSON.
+// Pantalla «Partido» (MOTOR-02): preparar el encuentro, elegir modalidad y equipo dirigido, jugarlo (total, por cuartos o por tiempo),
+// dirigirlo con órdenes, ver acta y relato, descargar el JSON y reproducir un encuentro exportado.
 import { h, clear, fmt, table } from './dom.js';
 import { store, PLAY_NAMES } from './store.js';
-import { runMatchAsync, validateInput, deepCopy, teamTotals } from '../match/index.js';
+import { validateInput, deepCopy, teamTotals, SLOTS } from '../match/index.js';
+import { MatchSession, MODES, SESSION_STATES, PRESENTATION } from '../match/session.js';
+import { replayMatch, validateReplayFile } from '../match/replay.js';
 import { describeEvent, clockText } from '../match/narrative.js';
+import { directionPanel, ordersCard, newDraft, syncDraft, draftSpecs } from './direction.js';
+import { styleLabels, STYLE_TITLES } from './prep.js';
 
-const ui = { running: false, progress: 0, filter: 'all', limit: 150, compare: null, error: null };
+const ui = { mode: 'total', managed: 0, speed: PRESENTATION.defaultSpeed, session: null, draft: null, msg: null, call: null, filter: 'all', limit: 150, showBox: false, storyLimit: 18, replay: null, compare: null, error: null, root: null };
+
+const MODE_TEXT = {
+  total: 'Los entrenadores básicos llevan el encuentro hasta el final sin clics entre periodos.',
+  cuartos: 'Se resuelve un periodo completo, se revisa lo ocurrido y se prepara el siguiente conservando el partido acumulado (incluye prórrogas).',
+  tiempo: 'Visionado a x2, x4, x8 o x16 con pausa; las órdenes afectan solo a lo que aún no se ha resuelto.',
+};
+const periodName = (p) => (p <= 4 ? `Cuarto ${p}` : `Prórroga ${p - 4}`);
+const sched = () => ({
+  setTimeout: (fn, ms) => setTimeout(fn, ms), clearTimeout: (x) => clearTimeout(x), now: () => Date.now(),
+  yield: async () => { paintProgress(); await new Promise((r) => setTimeout(r, 0)); }, // cesión por bloques, sin fotogramas ni hechos nuevos
+});
 
 export function renderGame(root) {
-  clear(root);
+  ui.root = root; clear(root);
+  root.append(h('h2', {}, 'Partido'), setupCard(), h('div', { id: 'live' }), h('div', { id: 'panel' }), h('div', { id: 'result' }));
+  paintLive(); paintPanel(); paintResult(); refreshReplay();
+}
+const rerender = () => { if (ui.root && document.getElementById('live')) { paintLive(); paintPanel(); paintResult(); } };
+
+// ---------------------------------------------------------------- preparación
+function setupCard() {
   const { edit, profile } = store;
   const errs = validateInput(edit, profile);
-  const bar = h('div', { class: 'bar' }, h('i', { id: 'progress-i', style: `width:${ui.progress}%` }));
-  root.append(h('h2', {}, 'Partido'),
-    h('div', { class: 'card' }, h('div', { class: 'row' },
-      h('button', { class: 'btn', id: 'simulate', disabled: ui.running || errs.length > 0, onclick: () => simulate(root, deepCopy(edit)) }, 'Simular partido'),
-      h('span', { class: 'muted' }, `${edit.teams[0].id} ${edit.teams[0].name} vs ${edit.teams[1].id} ${edit.teams[1].name} · semilla ${edit.seed}`),
-      h('span', { id: 'run-state', class: 'pill' }, ui.running ? 'Simulando…' : store.last ? 'Último resultado disponible' : 'Sin simular')),
-    ui.running ? bar : null,
-    errs.length ? h('div', { class: 'errbox' }, h('strong', { class: 'err' }, 'No se puede simular: entrada no válida.'), h('ul', {}, errs.map((e) => h('li', {}, h('code', {}, e.path), ' — ', e.message)))) : null,
-    ui.error ? h('div', { class: 'errbox' }, h('strong', { class: 'err' }, 'La simulación terminó con error: '), ui.error) : null));
-  if (store.last) renderResult(root, store.last);
+  const s = ui.session;
+  const live = s && !['finalizado', 'error'].includes(s.state);
+  return h('div', { class: 'card' },
+    h('h3', { style: 'margin-top:0' }, 'Preparar el encuentro'),
+    h('div', { class: 'grid2' },
+      h('div', {},
+        h('div', { class: 'small muted' }, 'Modalidad'),
+        h('div', { style: 'display:grid; gap:6px; margin:4px 0 10px' }, Object.entries(MODES).map(([k, label]) => h('label', { class: 'opt' },
+          h('input', { type: 'radio', name: 'mode', checked: ui.mode === k, onchange: () => { ui.mode = k; renderGame(ui.root); } }),
+          h('span', {}, h('strong', {}, label), h('br'), h('span', { class: 'small muted' }, MODE_TEXT[k]))))),
+        ui.mode === 'tiempo' ? h('div', { class: 'row' }, h('span', { class: 'small muted' }, 'Velocidad inicial'), speedChips((v) => { ui.speed = v; renderGame(ui.root); }, ui.speed)) : null),
+      h('div', {},
+        h('label', { class: 'row' }, 'Equipo dirigido manualmente ', h('select', { id: 'managed', onchange: (e) => { ui.managed = Number(e.target.value); } }, edit.teams.map((t, i) => h('option', { value: i, selected: ui.managed === i }, `${t.id} — ${t.name}`)))),
+        h('p', { class: 'small muted' }, 'El rival utiliza la delegación básica ya disponible (relevo del entrenador básico). Esa delegación no es un entrenador completo: no toma tiempos muertos ni cambia estilos (MOTOR-08).'),
+        h('p', { class: 'small' }, `Semilla ${edit.seed} · ${edit.teams[0].id} vs ${edit.teams[1].id} · perfil ${profile.id} + ${profile.extensions[0].id} `, h('span', { class: 'pill warn' }, profile.status)))),
+    errs.length ? h('div', { class: 'errbox' }, h('strong', { class: 'err' }, 'No se puede preparar: entrada no válida.'), h('ul', {}, errs.map((e) => h('li', {}, h('code', {}, e.path), ' — ', e.message)))) : null,
+    ui.error ? h('div', { class: 'errbox' }, h('strong', { class: 'err' }, ui.error)) : null,
+    h('div', { class: 'row' },
+      h('button', { class: 'btn', id: 'prepare', disabled: errs.length > 0, onclick: prepare }, s ? 'Preparar otro encuentro (entrada nueva)' : 'Preparar encuentro'),
+      live ? h('span', { class: 'small muted' }, 'Hay un encuentro en curso: preparar otro lo descarta junto con sus órdenes y temporizadores.') : null),
+    h('p', { class: 'small muted' }, 'Al preparar se congela una copia de la entrada: editar fichas o planes después solo afecta al siguiente encuentro.'),
+    replayCard());
 }
 
-async function simulate(root, input) {
-  ui.running = true; ui.progress = 0; ui.error = null; ui.compare = null; ui.filter = 'all'; ui.limit = 150;
-  renderGame(root);
-  const len = (p) => (p <= 4 ? 6000 : 3000);
+function prepare() {
+  const s0 = ui.session;
+  if (s0 && !['finalizado', 'error'].includes(s0.state) && s0.match.stepSeq > 0 && !confirm('Hay un encuentro en curso. ¿Descartarlo y preparar uno nuevo con la entrada actual?')) return;
+  if (s0) s0.dispose(); // invalida callbacks y temporizadores del anterior
+  ui.error = null; ui.draft = null; ui.msg = null; ui.compare = null; ui.call = null; ui.filter = 'all'; ui.limit = 150; ui.storyLimit = 18; ui.showBox = false;
   try {
-    const res = await runMatchAsync(input, store.profile, { detail: 'full' }, async (m) => {
-      const frac = m.period ? ((Math.min(m.period, 4) - 1) + (1 - m.clock / len(m.period))) / 4 : 0;
-      ui.progress = Math.round(Math.min(frac, 1) * 100);
-      const el = document.getElementById('progress-i'); if (el) el.style.width = `${ui.progress}%`;
-      await new Promise((r) => setTimeout(r, 0)); // cesión de ejecución entre posesiones, sin fotogramas
-    });
-    store.last = res;
-    if (res.status !== 'finished') ui.error = `${res.status}: ${res.errors.map((e) => e.message).join('; ')} (registro parcial disponible)`;
-  } catch (e) { ui.error = e.message; }
-  ui.running = false;
-  renderGame(root);
+    const s = new MatchSession({ input: deepCopy(store.edit), profile: store.profile, mode: ui.mode, managedTeam: ui.managed, speed: ui.speed, scheduler: sched() });
+    s.subscribe(onSession); ui.session = s;
+  } catch (e) { ui.error = `No se pudo preparar el encuentro: ${e.message}`; ui.session = null; }
+  renderGame(ui.root);
 }
 
-function renderResult(root, res) {
-  const name = (id) => id;
-  const teamName = (i) => `${res.teams[i].id}`;
-  const ot = res.periodScores.length > 4 ? res.periodScores.length - 4 : 0;
-  root.append(h('div', { class: 'card' },
-    h('div', { class: 'row' }, h('div', { class: 'score' }, `${res.teams[0].id} ${res.score[0]} – ${res.score[1]} ${res.teams[1].id}`), h('span', { class: `pill ${res.status === 'finished' ? 'ok' : 'bad'}` }, res.status === 'finished' ? 'Partido terminado' : res.status), ot ? h('span', { class: 'pill' }, `${ot} prórroga(s)`) : null),
-    h('p', { class: 'muted small' }, `Semilla ${res.meta.rng.initialSeed} · ${res.meta.rng.algorithm} · ${res.meta.rng.draws} sorteos deportivos · ${res.diagnostics.possessions} posesiones · ${res.events.length} acontecimientos · motor ${res.meta.engineVersion} · perfil ${res.meta.profileId} (${res.meta.profileStatus}) · reglas ${res.meta.rulesProfile}`),
-    table(['Periodo', ...res.teams.map((t) => t.id)], res.periodScores.map((p) => [p.period <= 4 ? `Cuarto ${p.period}` : `Prórroga ${p.period - 4}`, ...p.points]), { numeric: [1, 2] }),
-    h('div', { class: 'row', style: 'margin-top:10px' },
-      h('button', { class: 'btn secondary', onclick: () => download(res) }, 'Descargar encuentro (JSON)'),
-      h('button', { class: 'btn secondary', onclick: () => repeat(root, res) }, 'Repetir con la entrada congelada'),
-      ui.compare ? h('span', { class: `pill ${ui.compare.same ? 'ok' : 'bad'}` }, ui.compare.same ? `Repetición idéntica (${ui.compare.n} acontecimientos, mismo marcador)` : 'La repetición difiere') : null)));
-  root.append(h('div', { class: 'grid2' }, [0, 1].map((t) => boxCard(res, t))));
-  root.append(lineupsCard(res), choicesCard(res), storyCard(root, res, name, teamName));
+function onSession(s) {
+  if (s !== ui.session) return;
+  if (s.state === 'enMarcha' && s.mode === 'tiempo') { paintLive(); return; } // el visionado repinta solo la zona viva
+  renderGame(ui.root);
+}
+
+const speedChips = (onPick, cur) => h('span', { class: 'seg' }, PRESENTATION.speeds.map((v) => h('button', { type: 'button', 'aria-pressed': cur === v, onclick: () => onPick(v) }, `x${v}`)));
+
+// ---------------------------------------------------------------- zona viva
+function paintProgress() {
+  const s = ui.session; const el = document.getElementById('progress-i'); if (!s || !el) return;
+  const m = s.match; const len = (p) => (p <= 4 ? 6000 : 3000);
+  el.style.width = `${m.period ? Math.round(Math.min(((Math.min(m.period, 4) - 1) + (1 - m.clock / len(m.period))) / 4, 1) * 100) : 0}%`;
+}
+
+function paintLive() {
+  const box = document.getElementById('live'); const s = ui.session; if (!box) return;
+  clear(box); if (!s) return;
+  const m = s.match; const st = s.state;
+  const teamId = (i) => m.teams[i].id;
+  const attacking = m.poss && !m.poss.done ? teamId(m.poss.team) : null;
+  const periodLabel = m.period === 0 ? 'Sin empezar' : m.periodBreak != null ? `Final del ${periodName(m.period).toLowerCase()}` : periodName(m.period);
+  box.append(h('div', { class: 'card' },
+    h('div', { class: 'row' },
+      h('div', { class: 'score', id: 'score' }, `${teamId(0)} ${m.score[0]} – ${m.score[1]} ${teamId(1)}`),
+      h('span', { class: `pill ${st === 'finalizado' ? 'ok' : st === 'error' ? 'bad' : st === 'tiempoMuerto' || st === 'revision' ? 'warn' : ''}`, id: 'state' }, SESSION_STATES[st]),
+      h('span', { class: 'pill' }, MODES[s.mode]), s.mode === 'tiempo' ? h('span', { class: 'pill' }, `x${s.speed}`) : null,
+      h('span', { class: 'pill' }, `Dirige ${teamId(s.managedTeam)}`)),
+    h('div', { class: 'row', style: 'margin-top:6px' },
+      h('span', { id: 'period' }, h('strong', {}, periodLabel)), h('span', { id: 'clock' }, m.period ? `reloj ${clockText(m.clock)}` : ''),
+      h('span', { id: 'shot' }, m.poss && !m.poss.done ? `posesión ${fmt(m.shotClock / 10)} s` : ''), attacking ? h('span', {}, `ataca ${attacking}`) : null,
+      h('span', { class: 'small muted' }, `paso ${m.stepSeq} · ${m.events.length} acontecimientos`)),
+    controls(s),
+    st === 'enMarcha' && s.mode !== 'tiempo' ? h('div', { class: 'bar', style: 'margin-top:8px' }, h('i', { id: 'progress-i', style: 'width:0%' })) : null,
+    st === 'error' ? h('div', { class: 'errbox' }, h('strong', { class: 'err' }, 'La ejecución terminó con error: '), m.errors.map((e) => e.message).join('; '), ' Se conserva la última frontera válida y el registro parcial; no se certifica un partido terminado.') : null));
+  if (st === 'tiempoMuerto') {
+    const ev = [...m.events].reverse().find((e) => e.type === 'timeout');
+    box.append(h('div', { class: 'card', style: 'border-color:var(--warn)' }, h('strong', {}, `Tiempo muerto concedido a ${ev ? teamId(ev.team) : ''}.`), ' Es una parada deportiva (distinta de la pausa de pantalla): ya se aplicó su recuperación, una sola vez. Revisa el plan y pulsa «Reanudar»; no hace falta esperar el minuto real.'));
+  }
+  if (st === 'revision') box.append(reviewCard(s));
+  if (st === 'preparado') box.append(h('p', { class: 'small muted' }, 'Encuentro preparado con la entrada congelada. Quintetos y plan iniciales:'));
+  box.append(h('div', { class: 'grid2' }, teamCard(s, s.managedTeam), teamCard(s, 1 - s.managedTeam)));
+  box.append(planCard(s), ordersCard(s, rerender), storyBlock(s), boxBlock(s));
+  paintProgress();
+}
+
+function controls(s) {
+  const st = s.state; const m = s.match;
+  const row = [];
+  if (st === 'preparado') row.push(h('button', { class: 'btn', id: 'start', onclick: () => s.start() }, s.mode === 'total' ? 'Iniciar simulación completa' : s.mode === 'cuartos' ? 'Jugar primer cuarto' : 'Iniciar visionado'));
+  if (s.mode === 'tiempo' && st !== 'preparado' && st !== 'finalizado' && st !== 'error') {
+    if (st === 'enMarcha') row.push(h('button', { class: 'btn secondary', id: 'pause', onclick: () => s.pause() }, 'Pausar'));
+    else row.push(h('button', { class: 'btn', id: 'resume', onclick: () => s.resume() }, st === 'tiempoMuerto' ? 'Reanudar' : 'Continuar'));
+  }
+  if (s.mode === 'tiempo' && st !== 'finalizado' && st !== 'error') row.push(h('span', { class: 'row' }, h('span', { class: 'small muted' }, 'Velocidad'), speedChips((v) => { s.setSpeed(v); ui.speed = v; }, s.speed)));
+  if (st === 'revision') row.push(h('button', { class: 'btn', id: 'next-period', onclick: nextPeriod }, 'Aplicar plan y jugar siguiente periodo'));
+  if (st === 'enPausa' && s.mode === 'tiempo') row.push(h('span', { class: 'small muted' }, 'Pausa de pantalla: relojes, energía y hechos permanecen constantes; no hay descanso deportivo.'));
+  if (st === 'enMarcha' && s.mode === 'total') row.push(h('span', { class: 'muted' }, 'Simulando hasta el final…'));
+  if (st === 'enMarcha' && s.mode === 'cuartos') row.push(h('span', { class: 'muted' }, 'Jugando el periodo…'));
+  return h('div', { class: 'row', style: 'margin-top:8px' }, row);
+}
+
+async function nextPeriod() {
+  const s = ui.session; if (!s || s.busy) return;
+  const specs = ui.draft && ui.draft.team === s.managedTeam ? draftSpecs(s.match, s.managedTeam, syncDraft(s.match, s.managedTeam, ui.draft)) : [];
+  const p = s.match.periodBreak;
+  const r = await s.playNextPeriod(specs, `plan para ${periodName(p).toLowerCase()}`);
+  if (!r.ok) {
+    ui.msg = { text: `${r.reason}${r.orders ? `: ${r.orders.filter((o) => o.state === 'rechazada').map((o) => o.reason).join(' · ')}` : ''}. El periodo no ha empezado y el plan anterior sigue vigente.`, cls: 'errbox' };
+  } else { ui.draft = null; ui.msg = null; }
+  renderGame(ui.root);
+}
+
+function reviewCard(s) {
+  const m = s.match; const last = m.periodScores[m.periodScores.length - 1]; const acc = m.score;
+  const nextP = m.periodBreak; const tie = m.period >= 4 && m.score[0] === m.score[1];
+  return h('div', { class: 'card', style: 'border-color:var(--warn)' },
+    h('h3', { style: 'margin-top:0' }, `Revisión: final del ${periodName(m.period).toLowerCase()}`),
+    h('p', {}, `Parcial ${m.teams[0].id} ${last.points[0]}–${last.points[1]} ${m.teams[1].id} · acumulado ${acc[0]}–${acc[1]}. ${tie ? 'Empate tras el cuarto periodo: se juega una prórroga.' : ''}`),
+    table(['Periodo', m.teams[0].id, m.teams[1].id], m.periodScores.map((p) => [periodName(p.period), ...p.points]), { numeric: [1, 2] }),
+    h('p', { class: 'small', style: 'margin-top:8px' }, h('strong', {}, 'La energía mostrada es ANTERIOR al descanso reglado.'), ` La recuperación de intervalo se aplicará una sola vez al empezar ${nextP <= 4 ? 'el ' + periodName(nextP).toLowerCase() : 'la ' + periodName(nextP).toLowerCase()}. El tiempo que dediques a revisar no da descanso adicional.`),
+    ui.msg ? h('div', { class: ui.msg.cls }, ui.msg.text) : null);
+}
+
+// ---------------------------------------------------------------- equipos y plan
+function teamCard(s, t) {
+  const m = s.match; const tm = m.input.teams[t]; const mine = t === s.managedTeam;
+  const showEnergy = mine; // la energía interna rival no se muestra en la vista ordinaria
+  const row = (id, slot) => { const p = m.ps[id]; return { cls: !p.available ? 'muted' : '', cells: [slot ?? '—', id, showEnergy ? fmt(p.energy, 0) : '·', p.fouls, p.available ? (slot ? 'en pista' : 'banquillo') : 'excluido'] }; };
+  const onCourt = SLOTS.map((slot) => row(m.lineup[t][slot], slot));
+  const bench = tm.players.filter((p) => !SLOTS.some((sl) => m.lineup[t][sl] === p.id)).map((p) => row(p.id, null));
+  const before = m.periodBreak != null && m.period > 0;
+  return h('div', { class: 'card' }, h('h3', { style: 'margin-top:0' }, `${tm.id} — ${tm.name}${mine ? ' · dirigido' : ' · delegado'}`),
+    table(['Pos', 'Jugador', showEnergy ? `Energía${before ? ' (antes del descanso)' : ''}` : 'Energía', 'Faltas', 'Estado'], [...onCourt, ...bench], { numeric: [2, 3] }),
+    h('p', { class: 'small muted' }, `Faltas colectivas del periodo: ${m.teamFouls[t][Math.min(Math.max(m.period, 1), 4)] ?? 0}${showEnergy ? '' : ' · la energía interna del rival no se muestra'}.`));
+}
+
+function planCard(s) {
+  const m = s.match; const t = s.managedTeam; const v = m.planView(t); const labels = styleLabels(store.profile);
+  const tmx = v.timeouts;
+  const ctl = v.lineupControl.mode === 'manual' ? 'MANUAL — el entrenador básico no lo contradice por una revisión ordinaria; las exclusiones prevalecen.' : 'Automático (entrenador básico).';
+  const proj = SLOTS.some((sl) => v.projectedLineup[sl] !== v.lineup[sl]) ? ` · previsto tras la ventana: ${SLOTS.map((sl) => v.projectedLineup[sl].split('-')[1]).join(' ')}` : '';
+  return h('div', { class: 'card' }, h('h3', { style: 'margin-top:0' }, `Plan vigente de ${m.teams[t].id}`),
+    h('div', { class: 'kv' },
+      ...Object.keys(STYLE_TITLES).flatMap((k) => [h('span', { class: 'muted' }, STYLE_TITLES[k]), h('span', {}, labels[k][v.styles[k] - 1])]),
+      h('span', { class: 'muted' }, 'Director y alternativas'), h('span', {}, v.directorPriority.join(' › ')),
+      h('span', { class: 'muted' }, 'Libro (prioridad)'), h('span', {}, v.playbook.map((b) => `${b.playId}=${b.priority}`).join(' · ')),
+      h('span', { class: 'muted' }, 'Quinteto'), h('span', {}, `${ctl}${proj}`),
+      h('span', { class: 'muted' }, 'Sistema'), h('span', {}, 'DIS02 · defensa individual ORG01 · cobertura COB01 (contener/drop): únicos disponibles; no editables'),
+      h('span', { class: 'muted' }, 'Tiempos muertos'), h('span', {}, tmx ? `quedan ${tmx.remaining} en este bloque (cupo ${tmx.quota})${tmx.pending ? ' · solicitud pendiente' : ''}` : '—'),
+      h('span', { class: 'muted' }, 'Rival'), h('span', {}, `${m.teams[1 - t].id}: delegación básica (sin tiempos muertos ni ajustes automáticos)`)));
+}
+
+// ---------------------------------------------------------------- relato y acta parcial
+function storyBlock(s) {
+  const m = s.match; const name = (id) => id; const teamName = (i) => m.teams[i].id;
+  const evs = m.events.slice(-ui.storyLimit);
+  const body = h('ul', {});
+  let lastPoss = null;
+  for (const ev of evs) {
+    if (ev.possessionId && ev.possessionId !== lastPoss) { lastPoss = ev.possessionId; body.append(h('li', { class: 'poss' }, `Periodo ${ev.period} · posesión ${ev.possessionId} · ataca ${teamName(ev.team)} · marcador ${ev.score.join('–')}`)); }
+    body.append(h('li', {}, h('span', { class: 't' }, `${clockText(ev.clock.before)}→${clockText(ev.clock.after)}`), describeEvent(ev, { name, teamName }), ' ', h('button', { class: 'link small', onclick: () => showDetail(ev, m.teams) }, `detalle ${ev.id}`)));
+  }
+  const last = m.events[m.events.length - 1];
+  return h('div', { class: 'card story' }, h('h3', { style: 'margin-top:0' }, 'Último acontecimiento y relato'),
+    last ? h('p', { id: 'last-event' }, h('strong', {}, describeEvent(last, { name, teamName }))) : h('p', { class: 'neutral' }, 'Todavía no se ha resuelto ningún acontecimiento.'),
+    body, m.events.length > evs.length ? h('button', { class: 'btn secondary', style: 'margin-top:8px', onclick: () => { ui.storyLimit += 40; paintLive(); } }, `Mostrar más (${m.events.length - evs.length} anteriores)`) : null);
+}
+
+function boxBlock(s) {
+  const d = h('details', {}, h('summary', {}, 'Acta parcial y detalles de laboratorio'));
+  d.open = ui.showBox;
+  d.addEventListener('toggle', () => { ui.showBox = d.open; if (d.open) paintLive(); });
+  if (ui.showBox && s.match.events.length) { const res = s.result(); d.append(h('div', { class: 'grid2' }, [0, 1].map((t) => boxCard(res, t))), h('p', { class: 'small muted' }, 'El acta se proyecta desde los hechos ya resueltos. Los detalles calculados de cada acontecimiento están en «detalle» (laboratorio), no en el flujo ordinario.')); }
+  return h('div', { class: 'card' }, d);
 }
 
 function boxCard(res, t) {
   const rows = res.input.teams[t].players.map((p) => { const b = res.box.players[p.id]; return { cls: b.min === 0 ? 'muted' : '', cells: [p.id, fmt(b.min), b.pts, `${b.fg2m}/${b.fg2a}`, `${b.fg3m}/${b.fg3a}`, `${b.ftm}/${b.fta}`, b.oreb, b.dreb, b.tov, b.pf, b.stl, b.blk, fmt(res.diagnostics.finalEnergy[p.id], 0)] }; });
   const tt = teamTotals(res.box, res.input, t);
   rows.push({ cls: 'starter', cells: ['Total equipo', fmt(tt.min), tt.pts, `${tt.fg2m}/${tt.fg2a}`, `${tt.fg3m}/${tt.fg3a}`, `${tt.ftm}/${tt.fta}`, tt.oreb, tt.dreb, tt.tov, tt.pf, tt.stl, tt.blk, ''] });
-  return h('div', { class: 'card' }, h('h3', {}, `Acta — ${res.teams[t].id} ${res.teams[t].name}`),
-    table(['Jugador', 'Min', 'Pts', 'T2', 'T3', 'TL', 'RO', 'RD', 'Per', 'Fal', 'Rob', 'Tap', 'Energía final'], rows, { numeric: [1, 2, 6, 7, 8, 9, 10, 11, 12] }),
-    h('p', { class: 'small muted' }, `Pérdidas de equipo (violación de reloj de posesión, sin jugador): ${res.box.teams[t].teamTov}. Rebotes, robos y tapones solo constan cuando proceden de hechos reales. `, `Métricas aún no implementadas, omitidas (no son ceros observados): ${res.box.pending.join('; ')}.`));
+  return h('div', { class: 'card' }, h('h3', { style: 'margin-top:0' }, `Acta — ${res.teams[t].id} ${res.teams[t].name}`),
+    table(['Jugador', 'Min', 'Pts', 'T2', 'T3', 'TL', 'RO', 'RD', 'Per', 'Fal', 'Rob', 'Tap', 'Energía'], rows, { numeric: [1, 2, 6, 7, 8, 9, 10, 11, 12] }),
+    h('p', { class: 'small muted' }, `Pérdidas de equipo (violación de reloj de posesión, sin jugador): ${res.box.teams[t].teamTov}. Métricas aún no implementadas, omitidas (no son ceros observados): ${res.box.pending.join('; ')}.`));
+}
+
+function showDetail(ev, teams) {
+  const dlg = document.getElementById('detail');
+  document.getElementById('detail-title').textContent = `${ev.id} · ${ev.type} · periodo ${ev.period}`;
+  const body = document.getElementById('detail-body'); clear(body);
+  const sec = (t, o) => h('div', {}, h('h3', {}, t), h('pre', {}, JSON.stringify(o, null, 1)));
+  body.append(
+    h('p', { class: 'small muted' }, 'Vista de detalle calculado (laboratorio): no forma parte del relato normal. Incluye capacidades base y efectivas usadas, pesos, energía, probabilidades, sorteos y resultado.'),
+    sec('Hecho', { tipo: ev.type, periodo: ev.period, posesion: ev.possessionId, equipoEnAtaque: ev.team == null ? null : teams[ev.team].id, relojAntes: clockText(ev.clock.before), relojDespues: clockText(ev.clock.after), relojPosesion: [ev.shotClock.before / 10, ev.shotClock.after / 10], duracionSegundos: ev.durationTenths / 10, quintetos: ev.lineups, marcador: ev.score, ordenesVinculadas: ev.orders ?? [] }),
+    sec('Intención y procedencia', ev.intent), sec('Participantes', ev.participants), sec('Consecuencias', ev.effects), sec('Hechos de acta que produce', ev.stats),
+    sec('Cálculo (recetas, distribuciones, mezclas, binarias)', ev.calc ?? 'Sin detalle calculado (modo mínimo).'), sec('Sorteos deportivos consumidos', ev.draws));
+  dlg.showModal();
+}
+
+// ---------------------------------------------------------------- panel de dirección y resultado final
+function paintPanel() {
+  const box = document.getElementById('panel'); if (!box) return; clear(box);
+  const s = ui.session; if (!s || ['finalizado', 'error', 'preparado'].includes(s.state)) { if (s?.state === 'preparado') box.append(h('p', { class: 'small muted' }, 'La dirección se habilita al iniciar el encuentro (la preparación inicial se edita en «Preparación»).')); return; }
+  box.append(directionPanel(s, ui, rerender));
+}
+
+function paintResult() {
+  const box = document.getElementById('result'); if (!box) return; clear(box);
+  const s = ui.session; if (!s || !['finalizado', 'error'].includes(s.state)) return;
+  const res = s.result(); store.last = res;
+  renderResult(box, res, { live: true, refresh: paintResult });
+}
+
+function renderResult(root, res, { live = false, banner = null, refresh = paintResult } = {}) {
+  const teamName = (i) => `${res.teams[i].id}`;
+  const ot = res.periodScores.length > 4 ? res.periodScores.length - 4 : 0;
+  const finished = res.status === 'finished';
+  root.append(h('div', { class: 'card' },
+    banner,
+    h('div', { class: 'row' }, h('div', { class: 'score' }, `${res.teams[0].id} ${res.score[0]} – ${res.score[1]} ${res.teams[1].id}`), h('span', { class: `pill ${finished ? 'ok' : 'bad'}` }, finished ? 'Partido terminado' : `Ejecución incompleta (${res.status})`), ot ? h('span', { class: 'pill' }, `${ot} prórroga(s)`) : null),
+    h('p', { class: 'muted small' }, `Semilla ${res.meta.rng.initialSeed} · ${res.meta.rng.algorithm} · ${res.meta.rng.draws} sorteos deportivos · ${res.diagnostics.possessions} posesiones · ${res.diagnostics.steps} fronteras · ${res.events.length} acontecimientos · motor ${res.meta.engineVersion} · perfil ${res.meta.effectiveProfileId} (${res.meta.profileStatus}) · reglas ${res.meta.rulesProfile}`),
+    h('p', { class: 'muted small' }, `Órdenes manuales: ${res.orders.filter((o) => o.issuer === 'manual').length} · decisiones delegadas registradas: ${res.orders.filter((o) => o.issuer === 'auto').length} · comandos reproducibles: ${res.commands.length}${res.direction ? ` · modalidad ${MODES[res.direction.mode]}, dirige ${res.teams[res.direction.managedTeam].id}` : ''}`),
+    table(['Periodo', ...res.teams.map((t) => t.id)], res.periodScores.map((p) => [periodName(p.period), ...p.points]), { numeric: [1, 2] }),
+    h('div', { class: 'row', style: 'margin-top:10px' },
+      h('button', { class: 'btn secondary', id: 'download', onclick: () => download(res) }, 'Descargar encuentro (JSON)'),
+      live ? [h('button', { class: 'btn secondary', onclick: () => recompute(res) }, 'Reproducir este encuentro (recalcular)'),
+        ui.compare ? h('span', { class: `pill ${ui.compare.identical ? 'ok' : 'bad'}` }, ui.compare.identical ? 'Recálculo idéntico: mismos hechos, sorteos, acta y órdenes' : 'El recálculo difiere') : null] : null)));
+  root.append(h('div', { class: 'grid2' }, [0, 1].map((t) => boxCard(res, t))), lineupsCard(res), choicesCard(res), finalStory(refresh, res, teamName));
 }
 
 function lineupsCard(res) {
   const mins = {};
   for (const ev of res.events) if (ev.durationTenths) for (const lid of ev.lineups) mins[lid] = (mins[lid] ?? 0) + ev.durationTenths;
   const rows = res.lineups.filter((l) => mins[l.id]).map((l) => [res.teams[l.team].id, l.id, Object.entries(l.slots).map(([s, id]) => `${s}:${id.split('-')[1]}`).join(' '), fmt(mins[l.id] / 600, 1)]);
-  const subs = res.events.filter((e) => e.type === 'substitution');
+  const subs = res.events.filter((e) => e.type === 'substitution'); const tos = res.events.filter((e) => e.type === 'timeout');
   const used = res.input.teams.map((t) => t.players.filter((p) => res.box.players[p.id].min > 0).length);
-  return h('div', { class: 'card' }, h('h3', {}, 'Jugadores utilizados, quintetos y sustituciones'),
-    h('p', {}, `Jugadores utilizados: ${res.teams[0].id} ${used[0]} · ${res.teams[1].id} ${used[1]} · sustituciones: ${subs.length}`),
+  return h('div', { class: 'card' }, h('h3', {}, 'Jugadores utilizados, quintetos, sustituciones y tiempos muertos'),
+    h('p', {}, `Jugadores utilizados: ${res.teams[0].id} ${used[0]} · ${res.teams[1].id} ${used[1]} · sustituciones: ${subs.length} (${subs.filter((e) => e.intent.origen === 'orden manual').length} por orden manual) · tiempos muertos concedidos: ${tos.length}`),
     h('div', { class: 'grid2' },
       h('div', {}, h('h3', {}, 'Quintetos (minutos con el quinteto en pista)'), table(['Equipo', 'Quinteto', 'Posiciones', 'Min'], rows, { numeric: [3] })),
-      h('div', {}, h('h3', {}, 'Sustituciones'), table(['Periodo', 'Reloj', 'Equipo', 'Entra', 'Sale', 'Motivo', 'Ventana'], subs.map((e) => [e.period, clockText(e.clock.after), res.teams[e.team].id, e.participants.entra, e.participants.sale, e.intent.motivo, e.effects.ventana ?? '']))))
-  );
+      h('div', {}, h('h3', {}, 'Sustituciones'), table(['Periodo', 'Reloj', 'Equipo', 'Entra', 'Sale', 'Origen', 'Motivo', 'Ventana'], subs.map((e) => [e.period, clockText(e.clock.after), res.teams[e.team].id, e.participants.entra, e.participants.sale, e.intent.origen, e.intent.motivo, e.effects.ventana ?? '']))),
+      tos.length ? h('div', {}, h('h3', {}, 'Tiempos muertos'), table(['Periodo', 'Reloj', 'Equipo', 'Ventana', 'Restantes en el bloque'], tos.map((e) => [e.period, clockText(e.clock.after), res.teams[e.team].id, e.effects.ventana, e.effects.restantesBloque]))) : null));
 }
 
 function choicesCard(res) {
@@ -96,43 +289,70 @@ function choicesCard(res) {
       h('div', {}, table(['Desenlace de la acción', ...res.teams.map((t) => t.id)], catKeys.map((k) => [k, ...res.teams.map((t) => cats[t.id]?.[k] ?? 0)]), { numeric: [1, 2] }))));
 }
 
-function storyCard(root, res, name, teamName) {
-  const periods = res.periodScores.map((p) => p.period);
+function finalStory(refresh, res, teamName) {
+  const periods = res.periodScores.map((p) => p.period); const name = (id) => id;
   const evs = res.events.filter((e) => ui.filter === 'all' || e.period === Number(ui.filter));
   const shown = evs.slice(0, ui.limit);
   const body = h('ul', {}); let lastPoss = null;
   for (const ev of shown) {
     if (ev.possessionId && ev.possessionId !== lastPoss) { lastPoss = ev.possessionId; body.append(h('li', { class: 'poss' }, `Periodo ${ev.period} · posesión ${ev.possessionId} · ataca ${teamName(ev.team)} · marcador ${ev.score.join('–')}`)); }
-    body.append(h('li', {}, h('span', { class: 't' }, `${clockText(ev.clock.before)}→${clockText(ev.clock.after)} · pos. ${fmt(ev.shotClock.after / 10)}`), describeEvent(ev, { name, teamName }), ' ', h('button', { class: 'link small', onclick: () => showDetail(ev, res) }, `ver detalle ${ev.id}`)));
+    body.append(h('li', {}, h('span', { class: 't' }, `${clockText(ev.clock.before)}→${clockText(ev.clock.after)} · pos. ${fmt(ev.shotClock.after / 10)}`), describeEvent(ev, { name, teamName }), ' ', h('button', { class: 'link small', onclick: () => showDetail(ev, res.teams) }, `ver detalle ${ev.id}`)));
   }
   return h('div', { class: 'card story' }, h('h3', {}, 'Relato cronológico por periodos y posesiones'),
-    h('div', { class: 'row' }, h('label', {}, 'Periodo ', h('select', { onchange: (e) => { ui.filter = e.target.value; ui.limit = 150; renderGame(root); } }, h('option', { value: 'all', selected: ui.filter === 'all' }, 'Todos'), periods.map((p) => h('option', { value: p, selected: String(p) === String(ui.filter) }, p <= 4 ? `Cuarto ${p}` : `Prórroga ${p - 4}`)))), h('span', { class: 'muted small' }, `Mostrando ${shown.length} de ${evs.length} acontecimientos. El relato se pagina; la descarga JSON conserva todos los registros.`)),
-    body, evs.length > shown.length ? h('button', { class: 'btn secondary', style: 'margin-top:8px', onclick: () => { ui.limit += 200; renderGame(root); } }, 'Mostrar más') : null);
-}
-
-function showDetail(ev, res) {
-  const dlg = document.getElementById('detail');
-  document.getElementById('detail-title').textContent = `${ev.id} · ${ev.type} · periodo ${ev.period}`;
-  const body = document.getElementById('detail-body'); clear(body);
-  const sec = (t, o) => h('div', {}, h('h3', {}, t), h('pre', {}, JSON.stringify(o, null, 1)));
-  body.append(
-    h('p', { class: 'small muted' }, 'Vista de detalle calculado: no forma parte del relato normal. Incluye capacidades base y efectivas usadas, pesos, energía, probabilidades, sorteos y resultado.'),
-    sec('Hecho', { tipo: ev.type, periodo: ev.period, posesion: ev.possessionId, equipoEnAtaque: ev.team == null ? null : res.teams[ev.team].id, relojAntes: clockText(ev.clock.before), relojDespues: clockText(ev.clock.after), relojPosesion: [ev.shotClock.before / 10, ev.shotClock.after / 10], duracionSegundos: ev.durationTenths / 10, quintetos: ev.lineups, marcador: ev.score }),
-    sec('Intención y procedencia', ev.intent), sec('Participantes', ev.participants), sec('Consecuencias', ev.effects), sec('Hechos de acta que produce', ev.stats),
-    sec('Cálculo (recetas, distribuciones, mezclas, binarias)', ev.calc ?? 'Sin detalle calculado (modo mínimo).'), sec('Sorteos deportivos consumidos', ev.draws));
-  dlg.showModal();
+    h('div', { class: 'row' }, h('label', {}, 'Periodo ', h('select', { onchange: (e) => { ui.filter = e.target.value; ui.limit = 150; refresh(); } }, h('option', { value: 'all', selected: ui.filter === 'all' }, 'Todos'), periods.map((p) => h('option', { value: p, selected: String(p) === String(ui.filter) }, periodName(p))))), h('span', { class: 'muted small' }, `Mostrando ${shown.length} de ${evs.length} acontecimientos. El relato se pagina; la descarga JSON conserva todos los registros.`)),
+    body, evs.length > shown.length ? h('button', { class: 'btn secondary', style: 'margin-top:8px', onclick: () => { ui.limit += 200; refresh(); } }, 'Mostrar más') : null);
 }
 
 function download(res) {
   const blob = new Blob([JSON.stringify(res)], { type: 'application/json' });
-  const a = h('a', { href: URL.createObjectURL(blob), download: `beM-MOTOR01-${res.meta.rng.initialSeed}-${res.teams.map((t) => t.id).join('-')}.json` });
+  const a = h('a', { href: URL.createObjectURL(blob), download: `beM-MOTOR02-${res.meta.rng.initialSeed}-${res.teams.map((t) => t.id).join('-')}.json` });
   document.body.append(a); a.click(); a.remove();
 }
 
-async function repeat(root, res) {
-  ui.running = true; renderGame(root);
-  const again = await runMatchAsync(deepCopy(res.input), store.profile, { detail: 'full' });
-  const strip = (r) => JSON.stringify(r.events.map(({ calc, ...x }) => x));
-  ui.compare = { same: strip(again) === strip(res) && again.score.join() === res.score.join(), n: again.events.length };
-  ui.running = false; renderGame(root);
+function recompute(res) {
+  try { ui.compare = replayMatch(deepCopy(res)).comparison; } catch (e) { ui.compare = { identical: false, error: e.message }; }
+  paintResult();
+}
+
+// ---------------------------------------------------------------- reproducir un JSON exportado
+function replayCard() {
+  const r = ui.replay;
+  const input = h('input', { type: 'file', accept: '.json,application/json', id: 'replay-file', onchange: onReplayFile });
+  const body = [];
+  if (r?.error) body.push(h('div', { class: 'errbox' }, h('strong', { class: 'err' }, 'No se pudo leer el archivo: '), r.error));
+  else if (r) {
+    const v = r.validation;
+    body.push(h('p', { class: 'small' }, `Archivo: ${r.name} · formato ${r.file.schema ?? '—'} · motor ${r.file.meta?.engineVersion ?? '—'}`));
+    if (!v.reproducible) body.push(h('div', { class: 'errbox' }, h('strong', { class: 'err' }, v.legacy ? 'No reproducible con esta versión.' : 'No se puede reproducir.'), h('ul', {}, v.problems.map((p) => h('li', {}, p)))));
+    else body.push(h('div', { class: 'row' }, h('span', { class: 'pill ok' }, 'Formato, versión y referencias válidos'), h('button', { class: 'btn', id: 'replay-run', onclick: runReplay }, 'Reproducir (recalcular desde la entrada, la semilla y las órdenes)')));
+    if (r.error2) body.push(h('div', { class: 'errbox' }, r.error2));
+    if (r.run) {
+      const c = r.run.comparison;
+      body.push(h('p', {}, h('span', { class: `pill ${c.identical ? 'ok' : 'bad'}`, id: 'replay-verdict' }, c.identical ? 'Reproducción idéntica: mismos hechos, sorteos, acta, parciales y órdenes bajo la misma versión' : `La reproducción difiere (${Object.entries(c.parts).filter(([, ok]) => !ok).map(([k]) => k).join(', ')})`),
+        c.firstEventDifference ? h('span', { class: 'small muted' }, ` Primer hecho distinto: #${c.firstEventDifference.index + 1}`) : null));
+      body.push(h('div', { id: 'replay-result' }));
+    }
+  }
+  return h('details', { open: !!r, style: 'margin-top:8px' }, h('summary', {}, 'Reproducir partido desde JSON'),
+    h('p', { class: 'small muted' }, 'Acepta archivos exportados por esta versión del motor. Se valida formato, versión y referencias antes de ejecutar nada; el contenido del archivo se trata como datos. Se vuelve a calcular el deporte (no se muestra el acta guardada).'),
+    h('div', { class: 'row' }, input), body);
+}
+
+async function onReplayFile(e) {
+  const f = e.target.files?.[0]; if (!f) return;
+  try {
+    const file = JSON.parse(await f.text());
+    ui.replay = { name: f.name, file, validation: validateReplayFile(file), run: null, error: null };
+  } catch (err) { ui.replay = { name: f.name, file: {}, error: `JSON no válido (${err.message})` }; }
+  renderGame(ui.root);
+}
+function runReplay() {
+  const r = ui.replay;
+  try { r.run = replayMatch(deepCopy(r.file), { detail: 'full' }); r.error2 = null; } catch (err) { r.run = null; r.error2 = err.message; }
+  renderGame(ui.root);
+  refreshReplay();
+}
+function refreshReplay() {
+  const host = document.getElementById('replay-result'); const r = ui.replay; if (!host || !r?.run) return;
+  clear(host); renderResult(host, r.run.result, { refresh: refreshReplay, banner: h('p', { class: 'small muted' }, 'Resultado del recálculo desde el archivo (no el acta almacenada).') });
 }
