@@ -4,6 +4,7 @@ import { clamp, sigmoid, logit, round } from './mathx.js';
 import { SLOTS, ZONES } from './data.js';
 import { MatchCore } from './core.js';
 import { PLAY_SPEC, fit } from './plays.js';
+import { vocationFactor } from './formulas.js';
 import { toTenths, periodLengthTenths, isOvertime, foulPeriodKey } from './rules.js';
 
 const P = MatchCore.prototype;
@@ -72,7 +73,7 @@ P.scoreExits = function scoreExits(team, exits, shotWeights) {
   // coach: pesos de salida de la ficha * estilo * reparto entre los actores de esa zona (abilityFit y vocación)
   const byZone = {};
   for (const e of exits) {
-    const share = fit(this.profile, this.eff(e.actor, ZONE_TEC[e.zone])) * (0.35 + 0.65 * this.pl[e.actor].finishingVocation);
+    const share = fit(this.profile, this.eff(e.actor, ZONE_TEC[e.zone])) * vocationFactor(this.profile, this.pl[e.actor].finishingVocation);
     e._share = share; (byZone[e.zone] ??= []).push(e);
   }
   for (const e of exits) {
@@ -257,7 +258,7 @@ P.extraPassChain = function extraPassChain(ex, lq, entry) {
   const cp = this.profile.continuation; const d = this.profile.durationSeconds;
   const f = this.profile.selection.organizedDurationFactor[this.styleOf(ex.team).organizedPace - 1];
   ex.chain = ex.chain ?? []; ex.extraPasses = ex.extraPasses ?? 0;
-  for (let guard = 0; guard < 4; guard++) {
+  for (let guard = 0; guard < cp.maxExtraPasses; guard++) {
     const need = Math.round(d.organizedShot[0] * f * 10) + (ex.extraPasses + 1) * Math.round(d.continuation[0] * 10) + 1;
     if (this.limit() <= need) return;
     const touched = new Set([ex.actor, ex.passer, ex.holder]);
@@ -285,7 +286,7 @@ P.simpleResource = function simpleResource(poss, { origin, denied, safety = null
   if (safety) { // CONT08: pase de seguridad a un compañero con balón seguro; él decide el recurso
     passer = safety;
     const cands = this.onCourt(team).filter((id) => id !== safety);
-    holder = this.pick(cands.map((id) => ({ key: id, w: this.eff(id, 'TEC07') + this.eff(id, 'MEN05') })), 'CONT08:receptor_seguro').key;
+    holder = this.pick(cands.map((id) => ({ key: id, w: this.weightedSum(id, this.profile.selection.safeReceiverWeights) })), 'CONT08:receptor_seguro').key;
     this.cover('CONT08 salida segura');
   }
   const marker = this.markerOf(holder);
@@ -317,7 +318,7 @@ P.transitionPhase = function transitionPhase(poss) {
   const unopposed = this.bernoulli(steal ? sel.unopposedChanceAfterSteal : sel.unopposedChanceAfterRebound, 'transición:sin_oposición');
   let defender = null;
   if (!unopposed) {
-    const defs = this.onCourt(1 - team).map((id) => ({ key: id, w: Math.max(0.01, this.eff(id, 'FIS01') + this.eff(id, 'FIS02')) }));
+    const defs = this.onCourt(1 - team).map((id) => ({ key: id, w: Math.max(sel.defenderArrivalMinimumWeight, this.weightedSum(id, sel.defenderArrival)) }));
     defender = this.pick(defs, 'transición:defensor_que_llega').key;
   }
   const exits = [];

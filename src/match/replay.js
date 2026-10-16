@@ -41,7 +41,7 @@ export function validateReplayFile(file) {
 // Proyección deportiva: excluye fechas reales, duración de ejecución, detalle calculado, relato y metadatos de presentación.
 export function sportsProjection(res) {
   return {
-    events: res.events.map(({ calc, ...e }) => e),
+    events: res.events.map(({ calc, params, ...e }) => e),
     score: res.score, periodScores: res.periodScores,
     box: projectBox(res.events, res.lineups, res.input),
     orders: res.orders, commands: res.commands,

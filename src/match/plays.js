@@ -1,14 +1,15 @@
 // Especificación estructural de las seis fichas activas de MOTOR-01 (POS01, POS05, POS07, POS09, POS11, POS14).
 // Aquí no hay coeficientes deportivos: los pesos, recetas y probabilidades viven en el perfil (data/match).
 // Lo que sí fija este fichero es la asignación de funciones del encargo §5.3 y qué salidas tiene cada ficha.
-import { clamp } from './mathx.js';
+// Cada función apunta a un grupo de posiciones de `profile.participantSlots` (MOTOR-03); 'director' = el director de la posesión.
+import { abilityFit, vocationFactor } from './formulas.js';
 import { MatchCore } from './core.js';
 
 const P = MatchCore.prototype;
 
 export const PLAY_SPEC = {
   POS01: {
-    roles: { handler: 'director', screener: ['C', 'PF'], receiver: ['SG', 'SF', 'PF'] },
+    roles: { handler: 'director', screener: 'screener', receiver: 'receiver' },
     screen: { role: 'screener', tech: 'TEC09' },
     exits: [
       { role: 'handler', zones: ['rim', 'inside', 'midrange', 'three'], exec: 'dribble', defend: 'primary', icpt: 'primary', moved: ['midrange', 'three'], pen: ['rim', 'inside'], pullupK: ['midrange', 'three'] },
@@ -17,14 +18,14 @@ export const PLAY_SPEC = {
     ],
   },
   POS05: {
-    roles: { hub: ['PF', 'C'], receiver: ['SG', 'SF', 'PF'] },
+    roles: { hub: 'hub', receiver: 'receiver' },
     initialPasserToHub: true,
     exits: [
       { role: 'receiver', zones: ['rim', 'inside', 'midrange', 'three'], exec: 'pass', from: 'hub', defend: 'receiverMarker', icpt: 'receiverMarker', moved: ['midrange', 'three'] },
     ],
   },
   POS07: {
-    roles: { receiver: ['SG', 'SF', 'PF'], screener: ['C', 'PF'] },
+    roles: { receiver: 'receiver', screener: 'screener' },
     screen: { role: 'screener', tech: 'TEC09' },
     exits: [
       { role: 'receiver', zones: ['rim', 'inside', 'midrange', 'three'], exec: 'pass', from: 'director', defend: 'receiverMarker', icpt: 'receiverMarker', moved: ['midrange', 'three'] },
@@ -32,14 +33,14 @@ export const PLAY_SPEC = {
     ],
   },
   POS09: {
-    roles: { cutter: 'director', passer: ['SG', 'SF', 'PF'] },
+    roles: { cutter: 'director', passer: 'receiver' },
     exits: [
       { role: 'cutter', zones: ['rim', 'inside'], exec: 'pass', from: 'passer', defend: 'cutterMarker', icpt: 'cutterMarker' },
       { role: 'passer', zones: ['midrange', 'three'], exec: 'pass', from: 'director', defend: 'receiverMarker', icpt: 'receiverMarker' },
     ],
   },
   POS11: {
-    roles: { post: ['C', 'PF'], receiver: ['SG', 'SF', 'PF'] },
+    roles: { post: 'post', receiver: 'receiver' },
     post: { role: 'post', tech: 'TEC11' },
     exits: [
       { role: 'post', zones: ['rim', 'inside', 'midrange'], exec: 'pass', from: 'director', defend: 'postMarker', icpt: 'postMarker' },
@@ -47,7 +48,7 @@ export const PLAY_SPEC = {
     ],
   },
   POS14: {
-    roles: { handler: ['PG', 'SG', 'SF'], receiver: ['SG', 'SF', 'PF'] },
+    roles: { handler: 'isolationHandler', receiver: 'receiver' },
     exits: [
       { role: 'handler', zones: ['rim', 'inside', 'midrange', 'three'], exec: 'auto', defend: 'primary', icpt: 'primary', moved: ['midrange', 'three'], pen: ['rim', 'inside'] },
       { role: 'receiver', zones: ['three'], exec: 'pass', from: 'handler', defend: 'receiverMarker', icpt: 'receiverMarker', label: 'CONT05' },
@@ -57,10 +58,7 @@ export const PLAY_SPEC = {
 
 const FINISHER_ROLES = new Set(['receiver', 'post', 'handler', 'screener', 'cutter', 'passer', 'hub']);
 
-export const fit = (profile, x) => {
-  const f = profile.selection.abilityFit;
-  return clamp(1 + f.slope * (x - 16), f.min, f.max);
-};
+export const fit = abilityFit;
 
 // Peso de un candidato para un rol: términos del rol en qualityAttack normalizados + abilityFit
 // (+ vocación de finalización en receptor/poste/finalizador). Si el rol no figura en la receta (p. ej.
@@ -71,7 +69,7 @@ P.actorWeight = function actorWeight(pid, role, play, finisher) {
   let num = 0; let den = 0;
   for (const [, attr, w] of terms) { num += w * this.eff(pid, attr); den += w; }
   let wgt = fit(this.profile, num / den);
-  if (finisher) wgt *= 0.35 + 0.65 * this.pl[pid].finishingVocation;
+  if (finisher) wgt *= vocationFactor(this.profile, this.pl[pid].finishingVocation);
   return wgt;
 };
 
@@ -83,7 +81,8 @@ P.assignRoles = function assignRoles(team, playId, director) {
   const taken = new Set([director]);
   for (const [role, source] of Object.entries(spec.roles)) {
     if (source === 'director') { roles[role] = director; continue; }
-    const slots = source;
+    const slots = this.profile.participantSlots[source];
+    if (!slots) throw new Error(`perfil: falta participantSlots.${source} (ficha ${playId}, función ${role})`);
     let cands = this.playersAtSlots(team, slots).filter((id) => !taken.has(id));
     if (!cands.length) return null;
     const items = cands.map((id) => ({ key: id, w: this.actorWeight(id, role, play, FINISHER_ROLES.has(role)) }));

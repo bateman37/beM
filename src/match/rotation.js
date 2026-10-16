@@ -10,8 +10,9 @@ P.slotUtility = function slotUtility(pid, slot) {
   const rot = this.profile.rotation;
   const sev = interpolate(this.profile.energy.severityNodes, this.ps[pid].energy);
   let u = 0;
+  const [lo, hi] = this.profile.abilityBounds;
   for (const [attr, w] of Object.entries(rot.slotAbilityWeights[slot])) {
-    u += w * clamp(this.pl[pid].abilities[attr] - sev * rot.utilityMaxEnergyPenalty, 1, 30);
+    u += w * clamp(this.pl[pid].abilities[attr] - sev * rot.utilityMaxEnergyPenalty, lo, hi);
   }
   return u;
 };

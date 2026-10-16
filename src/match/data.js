@@ -9,7 +9,7 @@ export const ATTRS = [
 ];
 export const SLOTS = ['PG', 'SG', 'SF', 'PF', 'C'];
 export const ZONES = ['rim', 'inside', 'midrange', 'three'];
-export const ENGINE_VERSION = 'beM-motor-0.2.0-MOTOR02';
+export const ENGINE_VERSION = 'beM-motor-0.3.0-MOTOR03';
 export const INPUT_SCHEMA = 'beM-match-input/1';
 export const EXPORT_SCHEMA = 'beM-match-export/2';
 export const EXPORT_SCHEMA_MOTOR01 = 'beM-match-export/1';
@@ -48,21 +48,40 @@ export function parsePlayersCsv(text, profile) {
 
 export function deepCopy(o) { return JSON.parse(JSON.stringify(o)); }
 
-// Perfil efectivo = perfil SEM de MOTOR-01 (sin tocar) + extensión SEM de MOTOR-02 referenciada por su identidad.
-// El original no se sobrescribe: la extensión cuelga de `motor02` y queda listada en `extensions`.
-export function applyExtension(profile, ext) {
-  const problems = validateExtension(profile, ext);
-  if (problems.length) throw new Error(`Extensión de perfil no válida: ${problems.join('; ')}`);
+// Perfil efectivo = perfil SEM de MOTOR-01 (sin tocar) + extensiones SEM referenciadas por su identidad, en orden.
+// El original no se sobrescribe: cada extensión queda listada en `extensions`. La de MOTOR-02 cuelga de `motor02`;
+// la de MOTOR-03 aporta filas nuevas (`additions`, por ruta con puntos) que antes eran literales del código.
+export function applyExtension(profile, ...exts) {
   const eff = deepCopy(profile);
-  eff.extensions = [{ id: ext.seedExtensionId, status: ext.status, basedOn: ext.basedOn }];
-  eff.effectiveId = `${profile.id}+${ext.seedExtensionId}`;
-  eff.motor02 = deepCopy(ext);
+  eff.extensions = [];
+  const ids = [profile.id];
+  for (const ext of exts) {
+    const problems = validateExtension(profile, ext);
+    if (problems.length) throw new Error(`Extensión de perfil no válida: ${problems.join('; ')}`);
+    eff.extensions.push({ id: ext.seedExtensionId, status: ext.status, basedOn: ext.basedOn });
+    ids.push(ext.seedExtensionId);
+    if (ext.additions) {
+      for (const [path, value] of Object.entries(ext.additions)) {
+        const keys = path.split('.');
+        let o = eff;
+        for (const k of keys.slice(0, -1)) { if (!o[k] || typeof o[k] !== 'object') throw new Error(`Extensión ${ext.seedExtensionId}: no existe ${k} en ${path}`); o = o[k]; }
+        const last = keys[keys.length - 1];
+        if (last in o) throw new Error(`Extensión ${ext.seedExtensionId}: ${path} ya existe en el perfil base; no se sobrescribe`);
+        o[last] = deepCopy(value);
+      }
+    } else eff.motor02 = deepCopy(ext);
+  }
+  eff.effectiveId = ids.join('+');
   return eff;
 }
 export function validateExtension(profile, ext) {
   const out = [];
   if (!ext || typeof ext !== 'object') return ['extensión ausente'];
   if (ext.basedOn !== profile.id) out.push(`la extensión se basa en ${ext.basedOn}, no en ${profile.id}`);
+  if (ext.additions) {
+    if (!ext.additions || typeof ext.additions !== 'object' || !Object.keys(ext.additions).length) out.push('additions vacías');
+    return out;
+  }
   if (!(ext.timeOutRecoveryEnergyPoints >= 0)) out.push('timeOutRecoveryEnergyPoints');
   const t = ext.timeOuts;
   if (!t) out.push('falta timeOuts');
