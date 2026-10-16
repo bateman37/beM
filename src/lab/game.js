@@ -11,6 +11,7 @@ import { styleLevelLabels, STYLE_DEFS, MIDRANGE_LABEL } from './styles.js';
 import { defenseSummary, defStyleLabels, DEF_STYLE_DEFS } from './defense-ui.js';
 import { rowsOf, valueText, unitText } from './panel/common.js';
 import { openRow } from './panel/rowdialog.js';
+import { coachLiveCard, coachDiagnosticCard } from './coach-ui.js';
 
 const ui = { mode: 'total', managed: 0, speed: PRESENTATION.defaultSpeed, session: null, draft: null, msg: null, call: null, filter: 'all', limit: 150, showBox: false, storyLimit: 18, replay: null, compare: null, error: null, root: null };
 
@@ -119,7 +120,7 @@ function paintLive() {
   if (st === 'revision') box.append(reviewCard(s));
   if (st === 'preparado') box.append(h('p', { class: 'small muted' }, 'Encuentro preparado con la entrada congelada. Quintetos y plan iniciales:'));
   box.append(h('div', { class: 'grid2' }, teamCard(s, s.managedTeam), teamCard(s, 1 - s.managedTeam)));
-  box.append(planCard(s), ordersCard(s, rerender), storyBlock(s), boxBlock(s));
+  box.append(planCard(s), coachLiveCard(s, rerender), ordersCard(s, rerender), storyBlock(s), boxBlock(s));
   paintProgress();
 }
 
@@ -201,7 +202,7 @@ function planCard(s) {
       ...DEF_STYLE_DEFS.flatMap((x) => [h('span', { class: 'muted' }, `Defensa · ${x.title}`), h('span', {}, dlabels[x.key][dv.plan.styles[x.key] - 1])]),
       h('span', { class: 'muted' }, 'Pendientes defensivos'), h('span', {}, (v.pending.filter((o) => /^def/.test(o.type)).map((o) => o.reason ?? o.state).join(' · ')) || '—'),
       h('span', { class: 'muted' }, 'Tiempos muertos'), h('span', {}, tmx ? `quedan ${tmx.remaining} en este bloque (cupo ${tmx.quota})${tmx.pending ? ' · solicitud pendiente' : ''}` : '—'),
-      h('span', { class: 'muted' }, 'Rival'), h('span', {}, `${m.teams[1 - t].id}: delegación básica (sin tiempos muertos ni ajustes automáticos)`)));
+      h('span', { class: 'muted' }, 'Rival'), h('span', {}, `${m.teams[1 - t].id}: entrenador automático ${m.coachState?.[1 - t]?.policy ?? ''} (MOTOR-08)`)));
 }
 
 // ---------------------------------------------------------------- relato y acta parcial
@@ -290,7 +291,7 @@ function renderResult(root, res, { live = false, banner = null, refresh = paintR
       h('button', { class: 'btn secondary', id: 'download', onclick: () => download(res) }, 'Descargar encuentro (JSON)'),
       live ? [h('button', { class: 'btn secondary', onclick: () => recompute(res) }, 'Reproducir este encuentro (recalcular)'),
         ui.compare ? h('span', { class: `pill ${ui.compare.identical ? 'ok' : 'bad'}` }, ui.compare.identical ? 'Recálculo idéntico: mismos hechos, sorteos, acta y órdenes' : 'El recálculo difiere') : null] : null)));
-  root.append(h('div', { class: 'grid2' }, [0, 1].map((t) => boxCard(res, t))), lineupsCard(res), choicesCard(res), opportunitiesCard(res), statesDiagnosticCard(res), finalStory(refresh, res, teamName));
+  root.append(h('div', { class: 'grid2' }, [0, 1].map((t) => boxCard(res, t))), lineupsCard(res), choicesCard(res), opportunitiesCard(res), statesDiagnosticCard(res), coachDiagnosticCard(res), finalStory(refresh, res, teamName));
 }
 
 // Diagnóstico ampliable de oportunidades y saques (MOTOR-06): ejes separados (procedencia, contexto, calidad previa, resultado) con numerador

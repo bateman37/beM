@@ -66,7 +66,8 @@ export function sportsProjection(res) {
     box: projectBox(res.events, res.lineups, res.input),
     orders: res.orders, commands: res.commands,
     states: res.diagnostics?.states ?? null, episodes: res.diagnostics?.episodes ?? null, // MOTOR-07: estados y timestamps comprometidos y episodios (reproducibles)
-    coach: res.diagnostics?.coach?.decisions ?? null, memory: res.diagnostics?.memory ?? null, // MOTOR-08: decisiones del entrenador y memoria (se regeneran y se contrastan; no se reinyectan)
+    coach: (res.diagnostics?.coach?.decisions ?? null)?.map((d) => ({ ...d, version: d.version ? { ...d.version, versionDeLaBiblioteca: undefined } : d.version })), // la etiqueta de biblioteca es procedencia del perfil, no un hecho deportivo
+     memory: res.diagnostics?.memory ?? null, // MOTOR-08: decisiones del entrenador y memoria (se regeneran y se contrastan; no se reinyectan)
     status: res.status, steps: res.result?.stepCount ?? res.diagnostics?.steps,
   };
 }

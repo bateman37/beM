@@ -212,7 +212,7 @@ test('6. una causa se cobra una vez: tiempo y riesgo por resolución compuesta, 
   input.teams.forEach((t) => { t.plan.playbook = [{ playId: 'POS04', priority: 1 }, { playId: 'POS13', priority: 1 }]; });
   const res = runMatch(input, profile, { detail: 'full', check: true });
   assert.deepEqual(res.errors, []);
-  const attempts = res.events.filter((e) => e.type === 'attempt' && /^POS(04|13)$/.test(e.intent.origen ?? ''));
+  const attempts = res.events.filter((e) => e.type === 'attempt' && !e.intent.especial && /^POS(04|13)$/.test(e.intent.origen ?? '')); // MOTOR-08: la falta táctica ordenada por el entrenador no es una resolución compuesta
   assert.ok(attempts.length > 10);
   let staged = 0;
   for (const e of attempts) {
