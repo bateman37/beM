@@ -1,0 +1,1131 @@
+{
+ "seedExtensionId": "SEM-MOTOR06-20261016",
+ "status": "SEM: provisional, no calibrado",
+ "basedOn": "SEM-MOTOR01-20261016",
+ "origin": "docs/prompts/MOTOR-06-transicion-y-saques.md (anexo A): cifras SEM propuestas por ChatGPT, copiadas literalmente; contenido declarativo del catálogo ESP, las fichas de saque y las respuestas defensivas: lectura de Claude de los anexos B y C, a revisar por Dennis",
+ "additions": {
+  "opportunities": {
+   "newEligibleActionBaseWeight": 1,
+   "perceivedQualityChoiceWeight": {
+    "comfortable": 1.5,
+    "normal": 1,
+    "forced": 0.6
+   },
+   "sharedSituationLabelsMultiplyWeight": false,
+   "independentRandomOpportunityPerEspId": false,
+   "newUrgencyReferenceSeconds": 5,
+   "newUrgencyContinuationWeightFactor": 0.4
+  },
+  "throwIns": {
+   "newOptionPreparationSeconds": [
+    0.2,
+    1,
+    2.5
+   ],
+   "newReleasePassSeconds": [
+    0.1,
+    0.3,
+    0.7
+   ],
+   "eligibleVariantBaseWeight": 1,
+   "priorityWeights": [
+    8,
+    5,
+    3,
+    2,
+    1
+   ],
+   "defaultBandOffensivePlan": "SaqB01",
+   "defaultEndlineOffensivePlan": "SaqF03",
+   "defaultBandDefensiveResponse": "DSaqB01",
+   "defaultEndlineDefensiveResponse": "DSaqF01",
+   "pointCallScope": "next_compatible_own_throw_in_within_current_period",
+   "directSequenceEnd": "resolved_outcome_or_relevant_new_organization_not_fixed_seconds"
+  },
+  "sharedResolution": {
+   "newSymmetricAccessTaskReferenceP0": 0.5,
+   "inheritTaskSensitivityAndActorRecipes": true,
+   "newShotConversionBonus": 0,
+   "newGlobalStealTarget": null
+  },
+  "existingPlans": {
+   "overwriteSavedPlayerRoles": false,
+   "activateNewProfileSilently": false,
+   "independentDefensivePriorityTotals": false
+  },
+  "repertoire.plays.POS14.roles.handler.directorOk": true,
+  "repertoire.plays.POS05.coverage": {
+   "type": "handoff",
+   "ball": "hub",
+   "mover": "receiver",
+   "navigator": "receiver",
+   "screenerRole": "hub",
+   "allowed": [
+    "COB01",
+    "COB02",
+    "COB04"
+   ]
+  },
+  "repertoire.plays.POS06.coverage": {
+   "type": "handoff",
+   "ball": "hub",
+   "mover": "receiver",
+   "navigator": "receiver",
+   "screenerRole": "hub",
+   "allowed": [
+    "COB01",
+    "COB02",
+    "COB04"
+   ]
+  },
+  "repertoire.plays.POS07.coverage": {
+   "type": "indirect",
+   "ball": "receiver",
+   "mover": "screener",
+   "navigator": "receiver",
+   "screenerRole": "screener",
+   "allowed": [
+    "COB01",
+    "COB02"
+   ]
+  },
+  "repertoire.plays.POS08.coverage": {
+   "type": "indirect",
+   "ball": "receiver",
+   "mover": "screener",
+   "navigator": "receiver",
+   "screenerRole": "screener",
+   "allowed": [
+    "COB01",
+    "COB02"
+   ]
+  },
+  "activeCatalog.throwInPlays": [
+   "SaqB01",
+   "SaqB02",
+   "SaqB03",
+   "SaqF01",
+   "SaqF02",
+   "SaqF03"
+  ],
+  "activeCatalog.throwInResponses": [
+   "DSaqB01",
+   "DSaqB02",
+   "DSaqB03",
+   "DSaqF01",
+   "DSaqF02",
+   "DSaqF03"
+  ],
+  "rules.throwInReleaseSeconds": 5,
+  "spontaneousRepertoire": {
+   "note": "Catálogo ESP01–ESP20 (anexo B del encargo MOTOR-06). Contenido declarativo: ninguna fila tiene operación ni probabilidad propia; cada situación se IDENTIFICA sobre una opción física ya existente por sus requisitos (`when`) y se registra como etiqueta diagnóstica. Lectura de Claude de la columna «Condición pertinente», a revisar por Dennis.",
+   "situations": {
+    "ESP01": {
+     "name": "Recuperación con camino al aro",
+     "options": "Finalizar, avanzar o pasar al mejor situado",
+     "condition": "Control, balance rival, velocidad y reloj",
+     "decider": "el poseedor que recupera",
+     "tasks": [
+      "TAR02",
+      "TAR07"
+     ],
+     "frontier": [
+      "arrival"
+     ],
+     "when": {
+      "zone": [
+       "rim",
+       "inside"
+      ]
+     },
+     "closes": "canasta, pérdida, falta o continuación organizada"
+    },
+    "ESP02": {
+     "name": "Triple en transición",
+     "options": "Tirar, conducir o dar pase adicional",
+     "condition": "Espacio percibido, técnica y oposición que llega",
+     "decider": "el poseedor que recupera",
+     "tasks": [
+      "TAR02",
+      "TAR03",
+      "TAR07"
+     ],
+     "frontier": [
+      "arrival"
+     ],
+     "when": {
+      "zone": [
+       "three"
+      ]
+     },
+     "closes": "tiro, pérdida o continuación organizada"
+    },
+    "ESP03": {
+     "name": "Llegada temprana con espacio exterior",
+     "options": "Triple o media inmediata, o continuidad",
+     "condition": "Preparación, riesgo de esperar y perfil",
+     "decider": "quien tiene el balón a la llegada",
+     "tasks": [
+      "TAR02",
+      "TAR03",
+      "TAR11"
+     ],
+     "frontier": [
+      "organizedStart"
+     ],
+     "when": {
+      "early": true,
+      "zone": [
+       "three",
+       "midrange"
+      ]
+     },
+     "closes": "tiro temprano o continuidad organizada"
+    },
+    "ESP04": {
+     "name": "Pequeña separación tras bote",
+     "options": "Suspensión de dos/tres, nuevo bote o pase",
+     "condition": "Preparación en movimiento, distancia y contención",
+     "decider": "el manejador",
+     "tasks": [
+      "TAR02",
+      "TAR11"
+     ],
+     "frontier": [
+      "organizedStart"
+     ],
+     "when": {
+      "actorRole": [
+       "holder"
+      ],
+      "exec": [
+       "dribble"
+      ],
+      "zone": [
+       "midrange",
+       "three"
+      ]
+     },
+     "closes": "suspensión, pérdida o continuación"
+    },
+    "ESP05": {
+     "name": "Primer paso disponible",
+     "options": "Penetrar, parar y tirar o dividir/descargar",
+     "condition": "Manejo, aceleración, defensor y ayuda",
+     "decider": "el manejador",
+     "tasks": [
+      "TAR02",
+      "TAR06",
+      "TAR09"
+     ],
+     "frontier": [
+      "organizedStart"
+     ],
+     "when": {
+      "actorRole": [
+       "holder"
+      ],
+      "exec": [
+       "dribble"
+      ]
+     },
+     "closes": "finalización, descarga o continuación"
+    },
+    "ESP06": {
+     "name": "Recepción liberada sin llamada",
+     "options": "Tirar o atacar recuperación",
+     "condition": "Preparación, cierre defensivo y decisión",
+     "decider": "el receptor",
+     "tasks": [
+      "TAR03",
+      "TAR11"
+     ],
+     "frontier": [
+      "organizedStart",
+      "afterPlay"
+     ],
+     "when": {
+      "window": true,
+      "exec": [
+       "pass"
+      ]
+     },
+     "closes": "tiro o ataque a la recuperación"
+    },
+    "ESP07": {
+     "name": "Recuperación defensiva tardía",
+     "options": "Atacar espacio o pasar hacia la ayuda abandonada",
+     "condition": "Relación actual y ejecución pertinente",
+     "decider": "el poseedor",
+     "tasks": [
+      "TAR02",
+      "TAR03",
+      "TAR09"
+     ],
+     "frontier": [
+      "organizedStart"
+     ],
+     "when": {
+      "lateRecovery": true
+     },
+     "closes": "ataque al espacio o pase al abandonado"
+    },
+    "ESP08": {
+     "name": "Corte espontáneo",
+     "options": "Cortar/recibir o fijar sin recibir",
+     "condition": "Movimiento, lectura y responsabilidad rival",
+     "decider": "el cortador y el poseedor",
+     "tasks": [
+      "TAR03",
+      "TAR07"
+     ],
+     "frontier": [
+      "organizedStart"
+     ],
+     "when": {
+      "actorRole": [
+       "cutter"
+      ]
+     },
+     "closes": "recepción en el aro o fijación sin recibir"
+    },
+    "ESP09": {
+     "name": "Desajuste reconocido sin aclarado llamado",
+     "options": "Atacar, buscar posición o continuar el plan",
+     "condition": "Desajuste pertinente y ayuda disponible",
+     "decider": "el poseedor",
+     "tasks": [
+      "TAR02",
+      "TAR05",
+      "TAR09"
+     ],
+     "frontier": [
+      "organizedStart"
+     ],
+     "when": {
+      "switched": true
+     },
+     "closes": "ataque al desajuste o continuación del plan"
+    },
+    "ESP10": {
+     "name": "Poste disponible tras transición o cambio",
+     "options": "Sellar/recibir, finalizar o sacar balón",
+     "condition": "Posición, pase y defensa actual",
+     "decider": "el poseedor",
+     "tasks": [
+      "TAR05",
+      "TAR07"
+     ],
+     "frontier": [
+      "organizedStart"
+     ],
+     "when": {
+      "actorRole": [
+       "post"
+      ],
+      "anyOf": [
+       "early",
+       "switched"
+      ]
+     },
+     "closes": "recepción de poste, finalización o balón fuera"
+    },
+    "ESP11": {
+     "name": "Presión superada",
+     "options": "Finalizar ventaja, pasar o asegurar",
+     "condition": "Control y defensores recuperando",
+     "decider": "el poseedor",
+     "tasks": [
+      "TAR02",
+      "TAR07"
+     ],
+     "frontier": [
+      "organizedStart"
+     ],
+     "when": {
+      "recovery": [
+       "pressBeaten"
+      ]
+     },
+     "closes": "ventaja finalizada, pase o posesión asegurada"
+    },
+    "ESP12": {
+     "name": "Rebote ofensivo próximo",
+     "options": "Palmar/finalizar, asegurar o pasar fuera",
+     "condition": "Control, oposición y reloj",
+     "decider": "el captor",
+     "tasks": [
+      "TAR05",
+      "TAR17"
+     ],
+     "frontier": [
+      "afterOreb"
+     ],
+     "when": {
+      "zone": [
+       "rim",
+       "inside"
+      ],
+      "exec": [
+       "none"
+      ]
+     },
+     "closes": "finalización, balón asegurado o pase fuera"
+    },
+    "ESP13": {
+     "name": "Rebote ofensivo con exterior disponible",
+     "options": "Pase fuera y tiro, circulación o reorganización",
+     "condition": "Captura, envío, recepción y recuperación rival",
+     "decider": "el captor",
+     "tasks": [
+      "TAR03",
+      "TAR07"
+     ],
+     "frontier": [
+      "afterOreb"
+     ],
+     "when": {
+      "zone": [
+       "three"
+      ],
+      "exec": [
+       "pass"
+      ]
+     },
+     "closes": "tiro exterior, circulación o reorganización"
+    },
+    "ESP14": {
+     "name": "Balón suelto o desvío recuperado",
+     "options": "Finalizar si procede, proteger/pasar o reorganizar",
+     "condition": "Control realmente obtenido",
+     "decider": "quien recupera",
+     "tasks": [
+      "TAR17",
+      "TAR05",
+      "TAR07"
+     ],
+     "frontier": [
+      "afterRecovery"
+     ],
+     "when": {
+      "recovery": [
+       "loose",
+       "block"
+      ]
+     },
+     "closes": "finalización, balón protegido o reorganización"
+    },
+    "ESP15": {
+     "name": "Sistema negado o roto",
+     "options": "Recurso sencillo, penetración, seguridad o emergencia",
+     "condition": "Tiempo, capacidades y presión",
+     "decider": "el poseedor",
+     "tasks": [
+      "TAR02",
+      "TAR07"
+     ],
+     "frontier": [
+      "simple"
+     ],
+     "when": {
+      "denied": true
+     },
+     "closes": "recurso sencillo o salida segura"
+    },
+    "ESP16": {
+     "name": "Final de posesión",
+     "options": "Tiro viable, penetración corta, pase realizable o agotamiento",
+     "condition": "Reloj real",
+     "decider": "el poseedor",
+     "tasks": [
+      "TAR02"
+     ],
+     "frontier": [
+      "simple"
+     ],
+     "when": {
+      "clock": [
+       "possession"
+      ]
+     },
+     "closes": "tiro urgente o violación de reloj"
+    },
+    "ESP17": {
+     "name": "Última acción de periodo",
+     "options": "Consumir tiempo pertinente, anticipar o pasar",
+     "condition": "Ambos relojes, margen y órdenes",
+     "decider": "el poseedor",
+     "tasks": [
+      "TAR02"
+     ],
+     "frontier": [
+      "simple"
+     ],
+     "when": {
+      "clock": [
+       "period"
+      ]
+     },
+     "closes": "tiro final o bocina"
+    },
+    "ESP18": {
+     "name": "Oportunidad muy clara antes de colocación",
+     "options": "Aprovechar aro o recepción inmediata",
+     "condition": "Permiso, percepción y seguridad",
+     "decider": "quien tiene el balón",
+     "tasks": [
+      "TAR02",
+      "TAR03"
+     ],
+     "frontier": [
+      "organizedStart",
+      "arrival"
+     ],
+     "when": {
+      "early": true,
+      "window": true
+     },
+     "closes": "aprovechamiento inmediato"
+    },
+    "ESP19": {
+     "name": "Precipitación sin buena ventaja",
+     "options": "Tiro temprano forzado o penetración mal escogida",
+     "condition": "Decisiones, iniciativa, presión y límites",
+     "decider": "quien tiene el balón",
+     "tasks": [
+      "TAR02",
+      "TAR03"
+     ],
+     "frontier": [
+      "organizedStart",
+      "arrival"
+     ],
+     "when": {
+      "early": true,
+      "quality": [
+       "forced"
+      ]
+     },
+     "closes": "elección temprana con calidad previa forzada (etiqueta diagnóstica; no un fallo automático)"
+    },
+    "ESP20": {
+     "name": "Recurso autónomo colectivo sencillo",
+     "options": "Entrega, pantalla de llegada o pase y corte conocidos",
+     "condition": "Funciones comprensibles y capacidades reales",
+     "decider": "quien inicia la interacción",
+     "tasks": [
+      "TAR01",
+      "TAR04",
+      "TAR07"
+     ],
+     "frontier": [
+      "organizedStart"
+     ],
+     "when": {
+      "autonomous": true
+     },
+     "closes": "la interacción sencilla iniciada"
+    }
+   },
+   "autonomous": [
+    {
+     "id": "entrega",
+     "label": "Entrega",
+     "candidates": [
+      "POS05",
+      "POS06"
+     ],
+     "when": {}
+    },
+    {
+     "id": "pantallaDeLlegada",
+     "label": "Pantalla de llegada",
+     "candidates": [
+      "POS02",
+      "POS01"
+     ],
+     "when": {
+      "early": true
+     }
+    },
+    {
+     "id": "paseYCorte",
+     "label": "Pase y corte",
+     "candidates": [
+      "POS09"
+     ],
+     "when": {}
+    }
+   ],
+   "arrivalOrigins": {
+    "robo": "steal",
+    "rebote": "dreb",
+    "pérdida": "loose",
+    "tapón": "block",
+    "balón suelto": "loose"
+   }
+  },
+  "throwInRepertoire": {
+   "note": "Seis fichas de saque (SaqB01–SaqB03, SaqF01–SaqF03) y seis respuestas defensivas (DSaqB01–DSaqB03, DSaqF01–DSaqF03) del anexo C del encargo MOTOR-06. Contenido declarativo: todas usan las mismas tareas de recepción, desmarque, pantalla, pase, negación y finalización (TAR03/TAR04/TAR07…); ninguna lleva probabilidad de recepción ni de canasta propia. Lectura de Claude, a revisar por Dennis.",
+   "kinds": {
+    "band": {
+     "label": "Banda"
+    },
+    "endline": {
+     "label": "Fondo"
+    }
+   },
+   "approaches": {
+    "free": "desmarque",
+    "screen": "desmarque con pantalla del compañero (si hay un bloqueador compatible; si no, desmarque)",
+    "cut": "corte al aro"
+   },
+   "continuations": {
+    "secure": "el receptor controla y se organiza o ataca temprano según la situación creada",
+    "shot": "el receptor puede tirar si acepta la oportunidad inmediata (ESP06); si no, continúa",
+    "rim": "el receptor del corte puede finalizar en el aro si acepta la oportunidad inmediata; si no, continúa"
+   },
+   "plays": {
+    "SaqB01": {
+     "kind": "band",
+     "name": "Recepción segura de banda",
+     "family": "B01",
+     "intent": "Poner balón en control de un receptor compatible y continuar.",
+     "entryReferences": [
+      "box",
+      "stack"
+     ],
+     "roles": {
+      "receiver": {
+       "task": "TAR03",
+       "tags": [
+        "safety",
+        "outsideSupport"
+       ],
+       "label": "receptor principal"
+      },
+      "alt": {
+       "task": "TAR03",
+       "tags": [
+        "safety",
+        "outsideSupport"
+       ],
+       "label": "receptor alternativo"
+      }
+     },
+     "first": {
+      "role": "receiver",
+      "approach": "free",
+      "cont": "secure"
+     },
+     "alternative": {
+      "role": "alt",
+      "approach": "free",
+      "cont": "secure"
+     },
+     "safety": {
+      "cont": "secure"
+     },
+     "limit": "No inventar una recepción si se niegan ambas; presión y plazo pueden provocar error o infracción.",
+     "record": [
+      "objetivo previsto",
+      "recepción real",
+      "negación",
+      "control posterior"
+     ]
+    },
+    "SaqB02": {
+     "kind": "band",
+     "name": "Liberación de tirador desde banda",
+     "family": "B02",
+     "intent": "Obtener recepción preparada para un finalizador exterior.",
+     "entryReferences": [
+      "box",
+      "stack",
+      "diamond"
+     ],
+     "roles": {
+      "receiver": {
+       "task": "TAR03",
+       "tags": [
+        "catchShooter",
+        "outsideFinisher"
+       ],
+       "finisher": true,
+       "label": "tirador"
+      },
+      "screener": {
+       "task": "TAR04",
+       "tags": [
+        "screener",
+        "screenerOpens"
+       ],
+       "opt": true,
+       "label": "bloqueador"
+      },
+      "alt": {
+       "task": "TAR03",
+       "tags": [
+        "cutter",
+        "rimReceiver"
+       ],
+       "label": "cortador alternativo"
+      }
+     },
+     "first": {
+      "role": "receiver",
+      "approach": "screen",
+      "screener": "screener",
+      "cont": "shot",
+      "zones": [
+       "three",
+       "midrange"
+      ]
+     },
+     "alternative": {
+      "role": "alt",
+      "approach": "cut",
+      "cont": "rim"
+     },
+     "safety": {
+      "cont": "secure"
+     },
+     "limit": "El tirador puede no liberarse; enviar a seguridad dentro del plazo si existe.",
+     "record": [
+      "pantalla",
+      "salida",
+      "recepción",
+      "preparación",
+      "producción directa de saque"
+     ]
+    },
+    "SaqB03": {
+     "kind": "band",
+     "name": "Corte al aro desde banda",
+     "family": "B03",
+     "intent": "Aprovechar corte y relación de pase hacia aro.",
+     "entryReferences": [
+      "box",
+      "stack"
+     ],
+     "roles": {
+      "receiver": {
+       "task": "TAR03",
+       "tags": [
+        "cutter",
+        "rimReceiver"
+       ],
+       "label": "cortador"
+      },
+      "screener": {
+       "task": "TAR04",
+       "tags": [
+        "screener"
+       ],
+       "opt": true,
+       "label": "pantalla"
+      },
+      "alt": {
+       "task": "TAR03",
+       "tags": [
+        "safety",
+        "outsideSupport"
+       ],
+       "label": "receptor liberado por la ayuda o seguridad"
+      }
+     },
+     "first": {
+      "role": "receiver",
+      "approach": "cut",
+      "cont": "rim"
+     },
+     "alternative": {
+      "role": "alt",
+      "approach": "free",
+      "cont": "secure"
+     },
+     "safety": {
+      "cont": "secure"
+     },
+     "limit": "La protección interior puede negar el corte; no se fuerza el pase automáticamente.",
+     "record": [
+      "corte ofrecido/negado",
+      "ayudante",
+      "receptor real"
+     ]
+    },
+    "SaqF01": {
+     "kind": "endline",
+     "name": "Corte al aro desde fondo",
+     "family": "F01",
+     "intent": "Crear recepción próxima desde la relación de fondo.",
+     "entryReferences": [
+      "stack",
+      "diamond"
+     ],
+     "roles": {
+      "receiver": {
+       "task": "TAR03",
+       "tags": [
+        "cutter",
+        "rimReceiver"
+       ],
+       "label": "cortador"
+      },
+      "screener": {
+       "task": "TAR04",
+       "tags": [
+        "screener"
+       ],
+       "opt": true,
+       "label": "bloqueador"
+      },
+      "alt": {
+       "task": "TAR03",
+       "tags": [
+        "safety",
+        "outsideSupport",
+        "catchShooter"
+       ],
+       "label": "salida exterior o referencia segura"
+      }
+     },
+     "first": {
+      "role": "receiver",
+      "approach": "cut",
+      "cont": "rim"
+     },
+     "alternative": {
+      "role": "alt",
+      "approach": "free",
+      "cont": "shot",
+      "zones": [
+       "three"
+      ]
+     },
+     "safety": {
+      "cont": "secure"
+     },
+     "limit": "La proximidad no garantiza entrada; pueden intervenir negación, contacto, desvío o plazo.",
+     "record": [
+      "primera opción",
+      "respuesta interior",
+      "continuidad del ataque"
+     ]
+    },
+    "SaqF02": {
+     "kind": "endline",
+     "name": "Salida de tirador desde fondo",
+     "family": "F02",
+     "intent": "Liberar recepción exterior mediante funciones compatibles de salida.",
+     "entryReferences": [
+      "stack",
+      "diamond"
+     ],
+     "roles": {
+      "receiver": {
+       "task": "TAR03",
+       "tags": [
+        "catchShooter",
+        "outsideFinisher"
+       ],
+       "finisher": true,
+       "label": "receptor de tiro"
+      },
+      "screener": {
+       "task": "TAR04",
+       "tags": [
+        "screener",
+        "screenerOpens"
+       ],
+       "opt": true,
+       "label": "bloqueador"
+      },
+      "alt": {
+       "task": "TAR03",
+       "tags": [
+        "cutter",
+        "rimReceiver"
+       ],
+       "label": "corte o apoyo"
+      }
+     },
+     "first": {
+      "role": "receiver",
+      "approach": "screen",
+      "screener": "screener",
+      "cont": "shot",
+      "zones": [
+       "three",
+       "midrange"
+      ]
+     },
+     "alternative": {
+      "role": "alt",
+      "approach": "cut",
+      "cont": "rim"
+     },
+     "safety": {
+      "cont": "secure"
+     },
+     "limit": "No se concede oposición ficticia ni liberación automática.",
+     "record": [
+      "seguimiento/cambio ejecutado",
+      "receptor",
+      "preparación final"
+     ]
+    },
+    "SaqF03": {
+     "kind": "endline",
+     "name": "Seguridad para organizar desde fondo",
+     "family": "F03",
+     "intent": "Obtener control y entrada viable al ataque.",
+     "entryReferences": [
+      "box"
+     ],
+     "roles": {
+      "receiver": {
+       "task": "TAR03",
+       "tags": [
+        "safety",
+        "outsideSupport"
+       ],
+       "label": "receptor seguro"
+      },
+      "alt": {
+       "task": "TAR03",
+       "tags": [
+        "safety",
+        "outsideSupport"
+       ],
+       "label": "alternativa"
+      }
+     },
+     "first": {
+      "role": "receiver",
+      "approach": "free",
+      "cont": "secure"
+     },
+     "alternative": {
+      "role": "alt",
+      "approach": "free",
+      "cont": "secure"
+     },
+     "safety": {
+      "cont": "secure"
+     },
+     "limit": "La seguridad es intención; una presión bien ejecutada puede dificultarla.",
+     "record": [
+      "recepción",
+      "avance posterior",
+      "frontera de nueva organización"
+     ]
+    }
+   },
+   "responses": {
+    "DSaqB01": {
+     "kind": "band",
+     "name": "Negar primera recepción de banda",
+     "denyFirst": true,
+     "concedes": "corte o segunda recepción"
+    },
+    "DSaqB02": {
+     "kind": "band",
+     "name": "Perseguir o cambiar bloqueos de banda",
+     "chaseOrSwitch": true,
+     "concedes": "según la cobertura declarada (persecución o cambio)"
+    },
+    "DSaqB03": {
+     "kind": "band",
+     "name": "Presión al sacador de banda",
+     "pressServer": true,
+     "concedes": "la ayuda del defensor del sacador en otra tarea"
+    },
+    "DSaqF01": {
+     "kind": "endline",
+     "name": "Proteger aro desde fondo",
+     "protectRim": true,
+     "concedes": "recepción exterior"
+    },
+    "DSaqF02": {
+     "kind": "endline",
+     "name": "Negar objetivo principal desde fondo",
+     "denyTarget": true,
+     "concedes": "las demás recepciones"
+    },
+    "DSaqF03": {
+     "kind": "endline",
+     "name": "Perseguir o cambiar bloqueos de fondo",
+     "chaseOrSwitch": true,
+     "concedes": "según la cobertura declarada (persecución o cambio)"
+    }
+   }
+  },
+  "scenario.plans.0.throwInBook": [
+   {
+    "playId": "SaqB01",
+    "priority": 3
+   },
+   {
+    "playId": "SaqF03",
+    "priority": 3
+   }
+  ],
+  "scenario.plans.0.throwInServers": {
+   "band": {
+    "preferred": null,
+    "alternate": null
+   },
+   "endline": {
+    "preferred": null,
+    "alternate": null
+   }
+  },
+  "scenario.plans.0.throwInDefense": {
+   "band": "DSaqB01",
+   "endline": "DSaqF01",
+   "target": null
+  },
+  "scenario.plans.1.throwInBook": [
+   {
+    "playId": "SaqB01",
+    "priority": 3
+   },
+   {
+    "playId": "SaqF03",
+    "priority": 3
+   }
+  ],
+  "scenario.plans.1.throwInServers": {
+   "band": {
+    "preferred": null,
+    "alternate": null
+   },
+   "endline": {
+    "preferred": null,
+    "alternate": null
+   }
+  },
+  "scenario.plans.1.throwInDefense": {
+   "band": "DSaqB01",
+   "endline": "DSaqF01",
+   "target": null
+  },
+  "scenario.demoPlans.0.throwInBook": [
+   {
+    "playId": "SaqB01",
+    "priority": 3
+   },
+   {
+    "playId": "SaqB02",
+    "priority": 3
+   },
+   {
+    "playId": "SaqB03",
+    "priority": 3
+   },
+   {
+    "playId": "SaqF01",
+    "priority": 3
+   },
+   {
+    "playId": "SaqF02",
+    "priority": 3
+   },
+   {
+    "playId": "SaqF03",
+    "priority": 3
+   }
+  ],
+  "scenario.demoPlans.0.throwInServers": {
+   "band": {
+    "preferred": null,
+    "alternate": null
+   },
+   "endline": {
+    "preferred": null,
+    "alternate": null
+   }
+  },
+  "scenario.demoPlans.0.throwInDefense": {
+   "band": "DSaqB01",
+   "endline": "DSaqF01",
+   "target": null
+  },
+  "scenario.demoPlans.1.throwInBook": [
+   {
+    "playId": "SaqB01",
+    "priority": 3
+   },
+   {
+    "playId": "SaqB02",
+    "priority": 3
+   },
+   {
+    "playId": "SaqB03",
+    "priority": 3
+   },
+   {
+    "playId": "SaqF01",
+    "priority": 3
+   },
+   {
+    "playId": "SaqF02",
+    "priority": 3
+   },
+   {
+    "playId": "SaqF03",
+    "priority": 3
+   }
+  ],
+  "scenario.demoPlans.1.throwInServers": {
+   "band": {
+    "preferred": null,
+    "alternate": null
+   },
+   "endline": {
+    "preferred": null,
+    "alternate": null
+   }
+  },
+  "scenario.demoPlans.1.throwInDefense": {
+   "band": "DSaqB01",
+   "endline": "DSaqF01",
+   "target": null
+  }
+ },
+ "replacements": {
+  "repertoire.plays.POS14.roles.handler.fn": [
+   "top",
+   "wing",
+   "corner",
+   "elbow"
+  ],
+  "activeCatalog.spontaneous": [
+   "ESP01",
+   "ESP02",
+   "ESP03",
+   "ESP04",
+   "ESP05",
+   "ESP06",
+   "ESP07",
+   "ESP08",
+   "ESP09",
+   "ESP10",
+   "ESP11",
+   "ESP12",
+   "ESP13",
+   "ESP14",
+   "ESP15",
+   "ESP16",
+   "ESP17",
+   "ESP18",
+   "ESP19",
+   "ESP20"
+  ]
+ },
+ "replacementNotes": {
+  "repertoire.plays.POS14.roles.handler.fn": "Antes solo wing/corner/elbow (MOTOR-04). El director (función «top») pasa a ser candidato válido a aislador (decisión de producto del encargo, §2.2).",
+  "activeCatalog.spontaneous": "Antes ESP01, ESP02, ESP06, ESP12, ESP13, ESP15, ESP16 y ESP17 (MOTOR-01). MOTOR-06 completa ESP01–ESP20."
+ }
+}

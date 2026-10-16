@@ -7,6 +7,8 @@ import './actions.js';
 import './flow.js';
 import './defense-actions.js';
 import './defense-specials.js';
+import './spontaneous.js';
+import './throwin.js';
 import './orders.js';
 import { projectBox, teamTotals } from './box.js';
 import { deepCopy, validateInput, buildMatchInput, parsePlayersCsv, validateProfileAndFixtures, applyExtension, validateExtension, upgradeInput, ENGINE_VERSION, EXPORT_SCHEMA, EXPORT_SCHEMA_MOTOR01, EXPORT_SCHEMA_MOTOR02, EXPORT_SCHEMA_MOTOR04, MIDRANGE_POLICIES, ATTRS, SLOTS } from './data.js';
@@ -22,7 +24,7 @@ export const COVERAGE = {
     alturasDePresion: ['normal (avance existente)', 'tres cuartos', 'total (interacción de avance con demora, superación, pérdida o contacto; violación de 8 s)'],
     estilosDefensivos: ['ayudas', 'presión al balón', 'defensa de receptores', 'riesgo de robo', 'protección del tiro (5 niveles cada uno)'],
     rolesDefensivos: 'doce roles defensivos (orientan asignación y ayuda; no tocan capacidades)',
-    especialesDefensivas: ['ESPD01 falta táctica (orden puntual; sanción ordinaria o antideportiva administrada)', 'ESPD02 doble a jugador (compromiso de dos compartido con COB04)', 'ESPD03 no abandonar tirador'],
+    especialesDefensivas: ['ESPD01 falta táctica (orden puntual; sanción ordinaria o disruptiva administrada)', 'ESPD02 doble a jugador (compromiso de dos compartido con COB04)', 'ESPD03 no abandonar tirador'],
     estilos: ['ritmo del ataque organizado', 'transición', 'elaboración', 'prioridad de finalización', 'libertad', 'riesgo ofensivo', 'después del tiro'], mediaDistancia: ['evitar', 'aceptar si está liberada', 'buscar con jugadores adecuados'],
     roles: 'quince roles ofensivos (orientan candidatos; no tocan capacidades)',
     fichas: ['POS01–POS15 (bloqueo directo ×4, mano a mano ×2, indirecto ×2, pase y corte ×2, poste ×3, aclarado ×2)'],

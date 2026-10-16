@@ -44,7 +44,8 @@ P.mixIntention = function mixIntention(items, { L, q, team }, label) {
   const st = this.styleOf(team);
   const ef = sel.elaborationContinuationWeightFactor[st.elaboration - 1];
   const tilt = sel.offensiveRiskPreferenceTilt[st.offensiveRisk - 1];
-  const scaled = items.map((i) => (i.cont && ef !== 1 ? { ...i, coach: i.coach == null ? i.coach : i.coach * ef, pref: (i.pref ?? 0) * ef, adapt: (i.adapt ?? 0) * ef } : i));
+  const uf = this.urgencyFactor(); const cf = ef * uf; // elaboración y urgencia (SEM) actúan sobre las continuaciones viables, una vez cada una
+  const scaled = items.map((i) => (i.cont && cf !== 1 ? { ...i, coach: i.coach == null ? i.coach : i.coach * cf, pref: (i.pref ?? 0) * cf, adapt: (i.adapt ?? 0) * cf } : i));
   const hasCoach = scaled.some((i) => i.coach != null && i.coach > 0);
   const pc = hasCoach ? normalize(scaled, (i) => i.coach ?? 0) : null;
   const pp = normalize(scaled, (i) => i.pref ?? 0);
@@ -57,7 +58,7 @@ P.mixIntention = function mixIntention(items, { L, q, team }, label) {
     p *= rf * mf;
     return { ...it, w: p, parts: { entrenador: pc ? round(pc[k]) : null, adaptacion: round(pa[k]), preferencias: round(pp[k]), riesgo: rf === 1 ? null : round(rf, 4), media: mf === 1 ? null : round(mf, 4), mezcla: round(p) } };
   });
-  this.note(`mezcla:${label}`, { L: round(L, 4), q: round(q, 4), elaboracion: ef === 1 ? null : ef, opciones: out.map((o) => ({ clave: o.key, ...o.parts })) });
+  this.note(`mezcla:${label}`, { L: round(L, 4), q: round(q, 4), elaboracion: ef === 1 ? null : ef, urgencia: uf === 1 ? null : uf, opciones: out.map((o) => ({ clave: o.key, ...o.parts })) });
   return out;
 };
 
@@ -275,7 +276,7 @@ P.expire = function expire(ex, reason) {
 };
 
 P.participantsOf = function participantsOf(ex) {
-  return { ...(ex.roles ?? {}), actor: ex.actor, pasador: ex.passer ?? null, defensor: ex.defend ?? null, interceptor: ex.icpt ?? null, ayudante: ex.helper ?? null, ventanaLibre: ex.window ? ex.actor : null };
+  return { ...(ex.roles ?? {}), pasadorInicial: ex.initialPass?.de ?? null, receptorInicial: ex.initialPass?.a ?? null, actor: ex.actor, pasador: ex.passer ?? null, defensor: ex.defend ?? null, interceptor: ex.icpt ?? null, ayudante: ex.helper ?? null, ventanaLibre: ex.window ? ex.actor : null };
 };
 
 // ---------------------------------------------------------------- tiro
@@ -299,6 +300,7 @@ P.resolveShot = function resolveShot(ex, base, contact) {
   const A = this.shotAbility(ex);
   const defender = ex.defend;
   let K = ex.quality ? ex.quality.K : 0;
+  K += this.profile.sharedResolution.newShotConversionBonus; // MOTOR-06: 0 por definición (ninguna situación ESP ni saque suma una prima de acierto)
   if (ex.moved && (ex.zone === 'three' || ex.zone === 'midrange')) {
     const sp = this.profile.shotPreparation;
     const prep = this.taskValue('TAR11', 'attack', { shooter: ex.actor });
@@ -351,6 +353,7 @@ P.resolveBlocked = function resolveBlocked(ex, base, blocker) {
     this.cover('tapón fuera sin aro');
     this.deadBall('tapón fuera');
     this.poss.advanced = true; this.clockRunning = false;
+    this.poss.pendingThrowIn = { kind: 'band', origin: 'saque de banda en ataque tras tapón fuera', frontcourt: true };
     return { cont: 'blockedOOB' };
   }
   const defenseGets = this.bernoulli(b.blockedLooseControlDefenseProbability, 'tapón:balón_vivo');
@@ -360,7 +363,7 @@ P.resolveBlocked = function resolveBlocked(ex, base, blocker) {
     this.endPossession('live', { team: ex.team, origin: 'tapón', carrier, deficit: this.reboundCommitments(ex.team, ex, ex.zone).deficit });
     return { end: 'blockRecovery' };
   }
-  this.poss.disorganized = true;
+  this.poss.disorganized = true; this.poss.recovery = { kind: 'block', holder: this.pickRecoverer(ex.team, null) };
   return { cont: 'blockedLive' };
 };
 
@@ -377,21 +380,24 @@ P.resolveTurnover = function resolveTurnover(ex, base) {
   const stats = [{ k: 'tov', p: ex.exec === 'pass' ? ex.passer : ex.actor, team: ex.team, cause: ex.exec === 'pass' ? 'pase' : 'balón' }];
   let stealer = null;
   if (ex.icpt && ex.stealAttempt !== false && this.bernoulli(o.stealGivenTurnover, 'robo')) { stealer = ex.icpt; stats.push({ k: 'stl', p: stealer, team: 1 - ex.team }); }
+  // Cadena del robo (trazable): acceso (hay interceptor) → decisión de intervenir (una vez, referencia 0,25 de nivel 3) → ejecución (la pérdida de esta
+  // categoría ya incorpora la interferencia solo si hubo intento) → control (el interceptor recupera el balón vivo). El crédito del robo es el control: no hay otro sorteo.
+  const cadena = { acceso: !!ex.icpt, intento: ex.stealAttempt ?? null, pIntento: ex.stealDecisionP == null ? null : round(ex.stealDecisionP, 4), control: !!stealer };
   if (stealer) {
-    this.emit('attempt', { ...base, stats, effects: { perdida: true, robo: stealer, balonVivo: true } });
+    this.emit('attempt', { ...base, stats, effects: { perdida: true, robo: stealer, balonVivo: true, cadenaRobo: cadena } });
     this.cover('robo');
     this.endPossession('live', { team: ex.team, origin: 'robo', carrier: stealer });
     return { end: 'steal' };
   }
   const oob = this.bernoulli(o.turnoverOutOfBoundsIfNotSteal, 'pérdida:fuera');
   if (oob) {
-    this.emit('attempt', { ...base, stats, effects: { perdida: true, fuera: true, robo: null } });
+    this.emit('attempt', { ...base, stats, effects: { perdida: true, fuera: true, robo: null, cadenaRobo: cadena } });
     this.cover('pérdida fuera');
     this.endPossession('deadTurnover', { team: ex.team });
     return { end: 'deadTurnover' };
   }
   const carrier = this.pickRecoverer(1 - ex.team, ex.icpt);
-  this.emit('attempt', { ...base, stats, effects: { perdida: true, robo: null, balonVivo: true, recupera: carrier } });
+  this.emit('attempt', { ...base, stats, effects: { perdida: true, robo: null, balonVivo: true, recupera: carrier, cadenaRobo: cadena } });
   this.cover('pérdida viva sin robo');
   this.endPossession('live', { team: ex.team, origin: 'pérdida', carrier });
   return { end: 'liveTurnover' };
@@ -464,6 +470,7 @@ P.afterFreeThrows = function afterFreeThrows(ex) {
   this.shotClock = shotClockAfterDefensiveStoppage(this.shotClock, this.profile.rules);
   this.poss.advanced = true; this.clockRunning = false;
   this.cover('saque de banda tras falta');
+  this.poss.pendingThrowIn = { kind: 'band', origin: 'saque de banda en ataque tras falta', frontcourt: true };
   return { cont: 'inboundAfterFoul' };
 };
 
@@ -482,9 +489,9 @@ P.shootFreeThrows = function shootFreeThrows(shooter, n, f, ex) {
       stats: [{ k: 'ft', p: shooter, team: f.shotTeam, made }],
       effects: { pLibre: round(p, 5), entra: made, ultimo: last },
     });
-    if (last && f.retain) { // falta antideportiva: la posesión sigue en el equipo del lanzador (saque en ataque, reloj de ataque)
+    if (last && f.retain) { // falta disruptiva: la posesión sigue en el equipo del lanzador (saque en ataque, reloj de ataque)
       this.shotClock = shotClockAfterDefensiveStoppage(this.shotClock, this.profile.rules); this.poss.advanced = true; this.clockRunning = false;
-      this.cover('posesión conservada tras antideportiva'); return { cont: 'inboundAfterFoul' };
+      this.cover('posesión conservada tras disruptiva'); this.poss.pendingThrowIn = { kind: 'band', origin: 'saque en ataque tras falta disruptiva', frontcourt: true }; return { cont: 'inboundAfterFoul' };
     }
     if (last && made) { this.cover('último libre anotado'); this.endPossession('ftMade', { team: f.shotTeam }); return { end: 'ftMade' }; }
     if (last && !made) return this.afterMiss({ ...ex, team: f.shotTeam, actor: shooter }, 'freeThrow');
@@ -507,7 +514,7 @@ P.resolveLooseBall = function resolveLooseBall(ex, base) {
   this.cover('balón suelto');
   if (off) {
     this.emit('loose_ball', { t, team: ex.team, participants: { disputa: [ex.actor, opposer] }, effects: { pControlAtaque: round(p, 4), control: 'ataque' } });
-    this.poss.disorganized = true;
+    this.poss.disorganized = true; this.poss.recovery = { kind: 'loose', holder: ex.actor };
     return { cont: 'looseKept' };
   }
   this.emit('loose_ball', { t, team: ex.team, participants: { disputa: [ex.actor, opposer] }, stats: [{ k: 'tov', p: ex.actor, team: ex.team, cause: 'balón suelto perdido' }], effects: { pControlAtaque: round(p, 4), control: 'defensa', recupera: opposer } });
@@ -633,11 +640,11 @@ P.endPossession = function endPossession(kind, info) {
       this.clockRunning = !stops;
       if (stops) this.deadBall('canasta con reloj parado');
       else this.queueWindow({ reason: 'canasta recibida', timeoutTeams: [opp], subs: false }); // solo el equipo que recibe la canasta
-      this.nextPoss = { team: opp, entry: 'inbound', shotClock: toTenths(rules.shotClockSeconds) };
+      this.nextPoss = { team: opp, entry: 'inbound', shotClock: toTenths(rules.shotClockSeconds), throwIn: { kind: 'endline', origin: 'canasta recibida' } };
       break;
     }
-    case 'ftMade': this.deadBall('último libre'); this.nextPoss = { team: opp, entry: 'inbound', shotClock: toTenths(rules.shotClockSeconds) }; break;
-    case 'deadTurnover': this.deadBall('balón muerto'); this.nextPoss = { team: opp, entry: 'inbound', shotClock: toTenths(rules.shotClockSeconds) }; break;
+    case 'ftMade': this.deadBall('último libre'); this.nextPoss = { team: opp, entry: 'inbound', shotClock: toTenths(rules.shotClockSeconds), throwIn: { kind: 'endline', origin: 'último libre anotado' } }; break;
+    case 'deadTurnover': this.deadBall('balón muerto'); this.nextPoss = { team: opp, entry: 'inbound', shotClock: toTenths(rules.shotClockSeconds), throwIn: { kind: 'band', origin: 'balón fuera o infracción' } }; break;
     case 'live': this.nextPoss = { team: opp, entry: 'live', origin: info.origin, carrier: info.carrier, deficit: info.deficit ?? 0, shotClock: toTenths(rules.shotClockSeconds) }; this.clockRunning = true; break;
     default: throw new Error(`fin de posesión desconocido ${kind}`);
   }

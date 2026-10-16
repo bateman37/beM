@@ -284,5 +284,5 @@ function tacticalFoulSection(session, ui, dis, msg) {
         const o = session.submit({ type: 'defSpecial', special: 'ESPD01', scope: c.scope, target: c.target, executor: c.executor || null });
         msg(o.state === 'rechazada' ? `Falta táctica no registrada: ${o.reason}` : 'Falta táctica solicitada: no detiene el reloj. Un ejecutor con acceso intentará el contacto en una oportunidad pertinente; puede no llegar o caducar al terminar la posesión.', o.state === 'rechazada' ? 'errbox' : 'pill ok');
       } }, 'Pedir falta táctica')),
-    h('p', { class: 'small muted' }, 'La sanción depende del contacto representado (falta personal ordinaria o antideportiva con dos libres y posesión), nunca de preferir una falta barata. Aplica el perfil FIBA del proyecto (lectura propia: el PDF no es accesible desde el entorno).'));
+    h('p', { class: 'small muted' }, 'La sanción depende del contacto representado (falta personal ordinaria o disruptiva con dos libres y posesión), nunca de preferir una falta barata. Aplica el perfil FIBA del proyecto (lectura propia: el PDF no es accesible desde el entorno).'));
 }

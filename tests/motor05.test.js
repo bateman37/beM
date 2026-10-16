@@ -236,7 +236,7 @@ test('8. falta táctica: la solicitud no para el reloj; ejecutor con acceso; cla
   const o = m.submit({ team: 0, type: 'defSpecial', special: 'ESPD01', scope: 'current', target: 'holder' });
   assert.equal(o.state, 'pendiente'); assert.equal(m.clock, clock, 'pedirla no detiene ni consume el reloj'); assert.equal(m.events.length, evCount, 'no se narra nada que el motor no resolvió');
   assert.equal(m.submit({ team: 0, type: 'defSpecial', special: 'ESPD01', scope: 'current', target: 'EQ01-J01' }).state, 'rechazada', 'el objetivo es el poseedor o un jugador RIVAL');
-  // ejecución controlada: intento sí, contacto no legítimo → antideportiva con dos libres y posesión
+  // ejecución controlada: intento sí, contacto no legítimo → disruptiva con dos libres y posesión (MOTOR-06: categoría propia, no «antideportiva» genérica)
   const input = inputFor(33); const g = createMatch(input, profile, { detail: 'full', check: true }); g.init(); g.startPossession({ team: 1, entry: 'deadFront', shotClock: 240 });
   for (const id of Object.keys(g.ps)) g.ps[id].energy = 100;
   const ord = g.submit({ team: 0, type: 'defSpecial', special: 'ESPD01', scope: 'current', target: 'holder' }); assert.equal(ord.state, 'pendiente');
@@ -244,8 +244,8 @@ test('8. falta táctica: la solicitud no para el reloj; ejecutor con acceso; cla
   const holder = g.onCourt(1)[0]; const ex = { team: 1, origin: 'PRUEBA', kind: 'organized', actor: holder, holder, exec: 'dribble', zone: 'three', defend: g.defenderFor(holder), icpt: g.defenderFor(holder), quality: { cls: 'normal', K: 0 } };
   const seq = [true, false]; g.bernoulli = () => seq.shift() ?? false; // intenta; el contacto NO es legítimo
   const res = g.tacticalFoul(ex); assert.deepEqual(res, { cont: 'foulWindow' }); assert.equal(ord.state, 'consumida');
-  const foul = g.events.find((e) => e.type === 'foul'); assert.equal(foul.effects.tirosLibres, 2); assert.equal(foul.intent.tipo, 'antideportiva'); assert.equal(g.pendingFoul.retain, true);
-  assert.equal(g.uf[ord.execution.ejecutor], 1);
+  const foul = g.events.find((e) => e.type === 'foul'); assert.equal(foul.effects.tirosLibres, 2); assert.equal(foul.intent.tipo, 'disruptiva'); assert.equal(g.pendingFoul.retain, true);
+  assert.equal(g.sanctions(ord.execution.ejecutor).disruptive, 1);
   // los dos libres se tiran y la posesión sigue en el equipo del lanzador (no hay rebote ni cambio de posesión)
   g.poss.pendingFT = ex; let r = g.afterFreeThrows(ex); assert.deepEqual(r, { cont: 'inboundAfterFoul' }); assert.equal(g.events.filter((e) => e.type === 'free_throw').length, 2);
   // contacto legítimo: falta personal ordinaria; sin penalización colectiva solo hay saque (no se otorgan libres por bonus sin bonus)
@@ -258,9 +258,12 @@ test('8. falta táctica: la solicitud no para el reloj; ejecutor con acceso; cla
   const k = createMatch(inputFor(35), profile, { detail: 'full', check: true }); k.init(); k.startPossession({ team: 1, entry: 'deadFront', shotClock: 240 });
   const o3 = k.submit({ team: 0, type: 'defSpecial', special: 'ESPD01', scope: 'current', target: 'holder' }); k.activateSpecialOrders(k.poss); k.expireSpecialOrdersFor(k.poss);
   assert.equal(o3.state, 'caducada'); assert.match(o3.reason, /terminó la posesión/);
-  // dos antideportivas del mismo jugador: descalificación
-  k.uf = { [o3.team === 0 ? 'EQ01-J05' : 'x']: 1 }; k.unsportsmanlikeAdmin('EQ01-J05', 'EQ02-J01', 1);
-  assert.equal(k.ps['EQ01-J05'].available, false);
+  // dos disruptivas del mismo jugador NO descalifican por sí solas (Arts. 38.2.3/41.4); dos flagrantes, dos técnicas de categoría 1 o una de cada, sí
+  k.disruptiveAdmin('EQ01-J05', 'EQ02-J01', 1); k.disruptiveAdmin('EQ01-J05', 'EQ02-J01', 1);
+  assert.equal(k.sanctions('EQ01-J05').disruptive, 2); assert.equal(k.disqualifies('EQ01-J05'), false);
+  k.sanctions('EQ01-J06').flagrant = 2; assert.equal(k.disqualifies('EQ01-J06'), true);
+  k.sanctions('EQ01-J07').flagrant = 1; k.sanctions('EQ01-J07').technicalCat1 = 1; assert.equal(k.disqualifies('EQ01-J07'), true);
+  k.sanctions('EQ01-J08').technicalCat1 = 2; assert.equal(k.disqualifies('EQ01-J08'), true);
   assert.deepEqual(g.errors, []);
 });
 

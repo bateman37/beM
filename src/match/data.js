@@ -59,7 +59,7 @@ export function applyExtension(profile, ...exts) {
   eff.extensions = [];
   const ids = [profile.id];
   for (const ext of exts) {
-    const problems = validateExtension(profile, ext);
+    const problems = validateExtension(profile, ext, eff); // los reemplazos se comprueban contra el perfil ya extendido por las anteriores
     if (problems.length) throw new Error(`Extensión de perfil no válida: ${problems.join('; ')}`);
     eff.extensions.push({ id: ext.seedExtensionId, status: ext.status, basedOn: ext.basedOn });
     ids.push(ext.seedExtensionId);
@@ -90,14 +90,14 @@ export function applyExtension(profile, ...exts) {
   eff.effectiveId = ids.join('+');
   return eff;
 }
-export function validateExtension(profile, ext) {
+export function validateExtension(profile, ext, effective = profile) {
   const out = [];
   if (!ext || typeof ext !== 'object') return ['extensión ausente'];
   if (ext.basedOn !== profile.id) out.push(`la extensión se basa en ${ext.basedOn}, no en ${profile.id}`);
   if (ext.additions) {
     if (!ext.additions || typeof ext.additions !== 'object' || !Object.keys(ext.additions).length) out.push('additions vacías');
     for (const path of Object.keys(ext.replacements ?? {})) {
-      let o = profile;
+      let o = effective;
       for (const k of path.split('.')) { if (o == null || typeof o !== 'object' || !(k in o)) { out.push(`replacements: no existe ${path}`); o = undefined; break; } o = o[k]; }
     }
     return out;

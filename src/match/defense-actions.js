@@ -82,8 +82,10 @@ P.defenseIntent = function defenseIntent(ex) {
   const trace = {};
   if (ex.window) return trace;
   if (ex.exec === 'pass' && ex.defend && ex.actor !== ex.holder) {
-    const p = oddsAdjust(refs.receiverDenialChoiceP0, d.styles.receiverDenialChoiceOddsRatio[lv.receivers - 1]);
-    const deny = this.bernoulli(p, 'defensa:negar');
+    // una respuesta de saque (DSaq) asigna la negación o la concede; en cualquier otro caso decide el estilo como siempre
+    let deny;
+    if (ex.forceDeny || ex.forceConcede) { deny = !!ex.forceDeny; trace.respuestaDeSaque = deny ? 'asigna la negación' : 'concede la recepción'; }
+    else deny = this.bernoulli(oddsAdjust(refs.receiverDenialChoiceP0, d.styles.receiverDenialChoiceOddsRatio[lv.receivers - 1]), 'defensa:negar');
     ex.denier = deny ? (ex.icpt ?? ex.defend) : null; ex.noDenial = !deny;
     trace.receptor = deny ? 'niega la recepción' : 'facilita la ayuda';
   }
@@ -92,21 +94,30 @@ P.defenseIntent = function defenseIntent(ex) {
     ex.pressureClose = this.bernoulli(p, 'defensa:presión');
     trace.balon = ex.pressureClose ? 'presión cercana' : 'distancia concedida';
   }
-  if ((ex.exec === 'dribble' || ex.exec === 'pass') && ex.icpt) {
-    const p = oddsAdjust(refs.stealAttemptGivenAccessP0, d.styles.stealAttemptChoiceOddsRatio[lv.steal - 1]);
-    ex.stealAttempt = this.bernoulli(p, 'defensa:robo');
-    trace.robo = ex.stealAttempt ? 'intenta intervenir' : 'contiene';
-  }
+  if ((ex.exec === 'dribble' || ex.exec === 'pass') && ex.icpt && !ex.deferSteal) this.decideSteal(ex, trace);
+  return trace;
+};
+// Decisión de intervenir sobre el balón (acceso → decisión). La referencia se aplica UNA vez por interacción, aquí; la ejecución, el control y el crédito se distinguen después.
+// Un envío de saque la difiere (`deferSteal`): solo importa si el envío forzado llega a competir como pérdida.
+P.decideSteal = function decideSteal(ex, trace = {}) {
+  const defT = 1 - ex.team; const d = this.dcfg(); const lv = this.defPlan(defT).defStyles; const refs = d.choiceReferences;
+  const p = oddsAdjust(refs.stealAttemptGivenAccessP0, d.styles.stealAttemptChoiceOddsRatio[lv.steal - 1]);
+  ex.stealAttempt = this.bernoulli(p, 'defensa:robo'); ex.stealDecisionP = p;
+  trace.robo = ex.stealAttempt ? 'intenta intervenir' : 'contiene';
   return trace;
 };
 
 // ---------------------------------------------------------------- coberturas del bloqueo
 // Dos participantes identificables y una responsabilidad abandonada. No sustituye una cobertura por otra: si falta la pareja funcional, se
 // declara la limitación y la interacción se resuelve sin efecto de cobertura.
+// MOTOR-06 (§2.3): la misma respuesta defensiva compartida sirve a bloqueos directos (todas las coberturas), entregas (seguimiento/contención,
+// cambio, compromiso de dos) y bloqueos indirectos (seguimiento/navegación y cambio). Una cobertura incompatible se declara; no se sustituye.
+const PNR_SPEC = { type: 'pnr', ball: 'handler', mover: 'screener', navigator: 'handler', screenerRole: 'screener', allowed: ['COB01', 'COB02', 'COB03', 'COB04'] };
+P.coverageSpec = function coverageSpec(entry) { const c = entry.spec.coverage; return !c ? null : c === true ? PNR_SPEC : c; };
 P.screenPair = function screenPair(entry) {
-  const r = entry.roles; if (!entry.spec.coverage || !r.handler || !r.screener) return null;
-  const D1 = this.defenderFor(r.handler); const D2 = this.defenderFor(r.screener);
-  return { handler: r.handler, screener: r.screener, D1, D2 };
+  const sp = this.coverageSpec(entry); const r = entry.roles; if (!sp || !r[sp.ball] || !r[sp.mover]) return null;
+  const D1 = this.defenderFor(r[sp.ball]); const D2 = this.defenderFor(r[sp.mover]);
+  return { handler: r[sp.ball], screener: r[sp.mover], screenerPid: r[sp.screenerRole] ?? r[sp.mover], D1, D2, spec: sp };
 };
 const hp = (m, p, q) => sigmoid(logit(p) + m.profile.opportunity.helpDifferenceSensitivity * q);
 
@@ -123,9 +134,25 @@ P.beginCoverage = function beginCoverage(entry, poss) {
   if ((cob === 'COB03' || cob === 'COB04') && protectedScreener) { info.limitada = `${cob === 'COB04' ? 'Trampa' : 'Show'} no ejecutada: sin ayudante compatible con no abandonar`; this.cover('cobertura limitada por no abandonar'); return { info, pair, cob, none: true }; }
   if (cob === 'COB04' && poss.trapBy && poss.trapBy !== 'COB04') { info.limitada = 'ya hay un compromiso de dos activo (no se duplica la trampa)'; return { info, pair, cob, none: true }; }
   const { D1, D2 } = pair; const o = this.profile.opportunity; const refs = d.choiceReferences;
+  if (!pair.spec.allowed.includes(cob)) { info.limitada = `${cob} no es una respuesta compatible con ${{ handoff: 'una entrega', indirect: 'un bloqueo indirecto', pnr: 'un bloqueo directo' }[pair.spec.type]}: se resuelve sin efecto de cobertura (no se sustituye por otra)`; this.cover('cobertura incompatible declarada'); return { info, pair, cob, none: true }; }
   const c = { info, pair, cob, nav, D1, D2, handlerExit: {}, screenerExit: {}, kHandler: 0, kRoller: 0, mix: null };
   info.defensores = { delBalon: D1, delBloqueador: D2 };
-  if (cob === 'COB01') {
+  const light = pair.spec.type !== 'pnr';
+  if (light && cob === 'COB01') {
+    // seguimiento/contención: el defensor del que navega sigue por la interacción (TAR04 defensa frente al bloqueo del compañero); si no la supera, el que navega gana espacio
+    const Dn = pair.spec.navigator === pair.spec.ball ? D1 : D2;
+    const p = hp(this, refs.symmetricTaskP0, this.taskValue('TAR04', 'defense', { primary: Dn }) - this.taskValue('TAR04', 'attack', { screener: pair.screenerPid }));
+    c.follows = this.bernoulli(p, 'COB01:seguimiento'); info.seguimiento = { sigue: c.follows, p: round(p, 4) };
+    c.kNav = c.follows ? 0 : o.coverageContainment.handlerPullupQualityLogit;
+    this.cover(c.follows ? 'COB01 seguimiento supera la interacción' : 'COB01 seguimiento superado');
+  } else if (light && cob === 'COB02') {
+    const A = (this.taskValue('TAR04', 'defense', { primary: D1 }) + this.taskValue('TAR04', 'defense', { primary: D2 })) / 2;
+    const p = hp(this, refs.symmetricTaskP0, A - this.taskValue('TAR04', 'attack', { screener: pair.screenerPid }));
+    c.exchanged = this.bernoulli(p, 'COB02:cambio_completa'); info.cambio = { completa: c.exchanged, p: round(p, 4) };
+    if (c.exchanged) { this.setCurrent(pair.handler, D2); this.setCurrent(pair.screener, D1); this.cover('COB02 cambio completado'); }
+    else { c.kNav = o.coverageContainment.handlerPullupQualityLogit; this.cover('COB02 cambio no completado'); }
+    this.commit(D1, 'cambio'); this.commit(D2, 'cambio');
+  } else if (cob === 'COB01') {
     const cv = o.coverageContainment;
     c.kHandler = cv.handlerPullupQualityLogit; c.kRoller = cv.rollerQualityLogit; // drop: espacio al manejador, el bloqueador defiende al continuador
     if (nav === 'under') { // por debajo: el seguimiento recupera tras el tiro; puede dejar el tiro libre antes de recuperar
@@ -164,7 +191,14 @@ P.beginCoverage = function beginCoverage(entry, poss) {
 P.coverageForExit = function coverageForExit(ex, c) {
   const out = { k: 0, spaceFromCoverage: false };
   if (!c || c.none) return out;
-  const isHandler = ex.role === 'handler'; const isScreener = ex.role === 'screener';
+  const sp = c.pair.spec;
+  const isHandler = ex.role === sp.ball; const isScreener = ex.role === sp.mover;
+  if (sp.type !== 'pnr' && (c.cob === 'COB01' || c.cob === 'COB02')) {
+    if (c.cob === 'COB02' && c.exchanged) { if (isHandler) { ex.defend = c.D2; ex.icpt = c.D2; } else if (isScreener) { ex.defend = c.D1; ex.icpt = c.D1; } }
+    else if (ex.role === sp.navigator && c.kNav) { out.k += c.kNav; out.spaceFromCoverage = true; }
+    ex.cobertura = { id: c.cob, ...c.info };
+    return out;
+  }
   if (c.cob === 'COB01') {
     if (isHandler && ex.pullup) { out.k += c.kHandler; out.spaceFromCoverage = true; }
     if (isScreener && ex.roller) out.k += c.kRoller;
@@ -298,6 +332,7 @@ P.pressedAdvance = function pressedAdvance(poss, height) {
     const left = support ? this.responsibilityOf(support) : null;
     if (support) { this.setCurrent(handler, support); if (left) this.setCurrent(left, presser); this.commit(presser, 'superado'); trace.retorno = { asume: support, recupera: left }; }
     this.cover('presión superada');
+    poss.carrierPid = handler; poss.early = true; poss.recovery = { kind: 'pressBeaten', holder: handler, presser }; // ESP11: ventaja real mientras los defensores recuperan
   }
   this.emit('advance', { ...base, intent: { origen: 'avance a pista de ataque', ...trace } });
   poss.advanced = true; this.clockRunning = true;
