@@ -9,9 +9,10 @@ export const ATTRS = [
 ];
 export const SLOTS = ['PG', 'SG', 'SF', 'PF', 'C'];
 export const ZONES = ['rim', 'inside', 'midrange', 'three'];
-export const ENGINE_VERSION = 'beM-motor-0.4.0-MOTOR04';
-export const INPUT_SCHEMA = 'beM-match-input/2';
-export const EXPORT_SCHEMA = 'beM-match-export/3';
+export const ENGINE_VERSION = 'beM-motor-0.5.0-MOTOR05';
+export const INPUT_SCHEMA = 'beM-match-input/3';
+export const EXPORT_SCHEMA = 'beM-match-export/4'
+export const EXPORT_SCHEMA_MOTOR04 = 'beM-match-export/3';
 export const EXPORT_SCHEMA_MOTOR02 = 'beM-match-export/2';
 export const MIDRANGE_POLICIES = ['avoid', 'openOnly', 'seek'];
 export const EXPORT_SCHEMA_MOTOR01 = 'beM-match-export/1';
@@ -124,6 +125,61 @@ export function buildMatchInput(profile, allPlayers, { seed } = {}) {
   };
 }
 
+// Defensa del plan (MOTOR-05): organización, cobertura, altura, cinco estilos, marcas, objetivo y especiales persistentes.
+// Una configuración conjunta irrealizable se rechaza entera con su motivo; nada se corrige en silencio.
+export const DEFENSE_STYLE_KEYS = ['help', 'pressure', 'receivers', 'steal', 'protection'];
+function validateDefensePlan(plan, team, rival, profile, tp, add) {
+  const cat = profile.activeCatalog; const rep = profile.defenseRepertoire;
+  if (!(cat.defenses ?? []).includes(plan.defense)) add(`${tp}.plan.defense`, `organización ${plan.defense} fuera del catálogo activo`);
+  if (!(cat.coverage ?? []).includes(plan.coverage)) add(`${tp}.plan.coverage`, `cobertura ${plan.coverage} fuera del catálogo activo`);
+  if (!(cat.pressureHeights ?? []).includes(plan.pressureHeight)) add(`${tp}.plan.pressureHeight`, `altura de presión ${plan.pressureHeight} fuera del catálogo activo`);
+  for (const k of DEFENSE_STYLE_KEYS) { const v = plan.defStyles?.[k]; if (!Number.isInteger(v) || v < 1 || v > 5) add(`${tp}.plan.defStyles.${k}`, 'los estilos defensivos son enteros 1-5'); }
+  const nav = plan.navigation ?? null;
+  if (nav !== null && !(rep.coverages[plan.coverage]?.navigation ?? []).includes(nav)) add(`${tp}.plan.navigation`, `la navegación «${nav}» no es compatible con ${plan.coverage}`);
+  const mine = new Set(team.players.map((p) => p.id)); const theirs = new Set(rival.players.map((p) => p.id));
+  const fns = Object.keys(rep.attackerFunctions);
+  if (!Array.isArray(plan.marks)) add(`${tp}.plan.marks`, 'las marcas son una lista');
+  else {
+    const ds = new Set(); const as = new Set();
+    plan.marks.forEach((m, i) => {
+      if (!mine.has(m.defender)) add(`${tp}.plan.marks[${i}].defender`, `el defensor ${m.defender} no pertenece al equipo`);
+      if (!(theirs.has(m.attacker) || (!m.attacker && fns.includes(m.fn)))) add(`${tp}.plan.marks[${i}]`, 'la marca necesita un atacante rival o una función ofensiva conocida');
+      if (!['game', 'period'].includes(m.scope ?? 'game')) add(`${tp}.plan.marks[${i}].scope`, 'ámbito: game o period');
+      if (ds.has(m.defender)) add(`${tp}.plan.marks[${i}].defender`, `${m.defender} ya tiene otra marca`);
+      const key = m.attacker ?? m.fn; if (as.has(key)) add(`${tp}.plan.marks[${i}]`, `${key} ya está marcado por otra marca`);
+      ds.add(m.defender); as.add(key);
+    });
+  }
+  const org = rep.organizations[plan.defense];
+  if (org?.kind === 'boxAndOne') {
+    if (!theirs.has(plan.target)) add(`${tp}.plan.target`, 'box and one necesita un objetivo rival designado');
+    if (plan.targetAlt != null && (!theirs.has(plan.targetAlt) || plan.targetAlt === plan.target)) add(`${tp}.plan.targetAlt`, 'la alternativa individual debe ser otro jugador rival');
+    if (!(cat.defenses ?? []).includes(plan.fallbackOrg) || rep.organizations[plan.fallbackOrg]?.kind === 'boxAndOne') add(`${tp}.plan.fallbackOrg`, 'la alternativa debe ser otra organización admitida y realizable');
+  } else {
+    if (plan.target != null && !theirs.has(plan.target)) add(`${tp}.plan.target`, 'objetivo no válido');
+  }
+  const seenSp = new Set();
+  (plan.specials ?? []).forEach((sp, i) => {
+    const sp0 = `${tp}.plan.specials[${i}]`;
+    if (!['ESPD02', 'ESPD03'].includes(sp.id)) add(`${sp0}.id`, 'solo ESPD02 y ESPD03 son instrucciones persistentes del plan (ESPD01 es una orden puntual)');
+    if (seenSp.has(sp.id)) add(`${sp0}.id`, `${sp.id} repetida`); seenSp.add(sp.id);
+    if (sp.id === 'ESPD02') {
+      if (!theirs.has(sp.principal)) add(`${sp0}.principal`, 'doble: falta el jugador principal rival');
+      if (sp.alternate != null && (!theirs.has(sp.alternate) || sp.alternate === sp.principal)) add(`${sp0}.alternate`, 'la alternativa individual debe ser otro rival');
+      if (!['reception', 'firstDribble'].includes(sp.activation)) add(`${sp0}.activation`, 'activación: recepción o primer bote');
+      for (const k of ['executor', 'executorAlt']) if (sp[k] != null && !mine.has(sp[k])) add(`${sp0}.${k}`, 'el ejecutor debe ser del equipo');
+    }
+    if (sp.id === 'ESPD03' && !theirs.has(sp.protected)) add(`${sp0}.protected`, 'no abandonar: falta el tirador rival protegido');
+  });
+  // conjunto: el ejecutor preferido de la doble no puede ser el defensor marcado sobre el tirador protegido
+  const d2 = (plan.specials ?? []).find((x) => x.id === 'ESPD02'); const d3 = (plan.specials ?? []).find((x) => x.id === 'ESPD03');
+  if (d2 && d3) {
+    const execs = [d2.executor, d2.executorAlt].filter(Boolean);
+    const bad = execs.length && execs.every((e) => (plan.marks ?? []).some((m) => m.attacker === d3.protected && m.defender === e));
+    if (bad) add(`${tp}.plan.specials`, `conjunto irrealizable: ${execs.join(', ')} está marcado sobre ${d3.protected}, a quien no se puede abandonar`);
+  }
+}
+
 // Devuelve una lista de { path, message }. Vacía = válida. No corrige ni completa nada.
 export function validateInput(input, profile) {
   const errs = [];
@@ -189,8 +245,7 @@ export function validateInput(input, profile) {
     }
     if (plan.disposition && !(profile.activeCatalog.dispositions ?? []).includes(plan.disposition)) add(`${tp}.plan.disposition`, `disposición ${plan.disposition} fuera del catálogo activo`);
     if (!MIDRANGE_POLICIES.includes(plan.midrange)) add(`${tp}.plan.midrange`, `la media distancia es una de: ${MIDRANGE_POLICIES.join(', ')}`);
-    if (plan.defense !== 'ORG01') add(`${tp}.plan.defense`, 'solo ORG01 está activa hasta MOTOR-05');
-    if (plan.coverage !== 'COB01') add(`${tp}.plan.coverage`, 'solo COB01 está activa hasta MOTOR-05');
+    validateDefensePlan(plan, t, input.teams[1 - ti], profile, tp, add);
     const roleDict = profile.fixtureContract.offensiveRoleDictionary;
     t.players.forEach((p, pi) => { if (!roleDict[p.offensiveRole?.code]) add(`${tp}.players[${pi}](${p.id}).offensiveRole`, `rol ofensivo ${p.offensiveRole?.code ?? 'ausente'} fuera del catálogo`); });
   });
@@ -251,14 +306,21 @@ export function validateProfileAndFixtures(profile, allPlayers) {
   return errs;
 }
 
-// Migración EXPLÍCITA de una entrada editada con una versión anterior: añade solo los campos nuevos de MOTOR-04 con su valor SEM inicial
-// (media distancia «aceptar si está liberada»). Devuelve { input, added } para informar; no cambia ningún otro valor.
+// Migración EXPLÍCITA de una entrada editada con una versión anterior: añade solo los campos nuevos (MOTOR-04: media distancia «aceptar si está
+// liberada»; MOTOR-05: estilos, marcas, objetivo y especiales defensivos) con su valor SEM inicial. Devuelve { input, added } para informar; no cambia ningún otro valor.
 export function upgradeInput(input, profile) {
   const out = deepCopy(input); const added = [];
   const mid = profile.scenario?.plans?.[0]?.midrange ?? 'openOnly';
   for (const t of out.teams ?? []) {
     if (t.plan && !t.plan.midrange) { t.plan.midrange = mid; added.push(`${t.id}: media distancia = ${mid}`); }
     for (const k of Object.keys(profile.scenario.plans[0].styles)) if (t.plan?.styles && t.plan.styles[k] == null) { t.plan.styles[k] = profile.scenario.plans[0].styles[k]; added.push(`${t.id}: estilo ${k}`); }
+    // MOTOR-05: campos defensivos nuevos con su valor inicial (ORG01/COB01 siguen válidos; no se cambia a una zona por actualizar el código)
+    const p0 = profile.scenario.plans[0];
+    if (t.plan) {
+      for (const f of ['defStyles', 'navigation', 'marks', 'target', 'targetAlt', 'fallbackOrg', 'specials']) if (t.plan[f] === undefined) { t.plan[f] = JSON.parse(JSON.stringify(p0[f])); added.push(`${t.id}: defensa ${f}`); }
+      if (!t.plan.pressureHeight) { t.plan.pressureHeight = 'normal'; added.push(`${t.id}: altura de presión = normal`); }
+      for (const p of t.players ?? []) if (!p.defensiveRole?.code) { const slot = SLOTS.find((s) => t.plan.starters?.[s] === p.id); const code = slot ? profile.defenseRepertoire.defaultRolesBySlot[slot] : null; if (code) { p.defensiveRole = { code, name: profile.fixtureContract.defensiveRoleDictionary[code] ?? null, preload: true }; added.push(`${t.id}: rol defensivo de ${p.id} precargado (${code}, editable)`); } }
+    }
   }
   out.schema = INPUT_SCHEMA;
   return { input: out, added };

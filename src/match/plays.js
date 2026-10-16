@@ -172,9 +172,13 @@ P.buildExits = function buildExits(team, playId, roles, def, list = null, stage 
       if (!stage && spec.screen) offContact = { pid: roles[spec.screen.role], tech: spec.screen.tech, kind: 'pantalla' };
       if (!stage && spec.post) offContact = { pid: roles[spec.post.role], tech: spec.post.tech, kind: 'poste' };
       if (e.pen && e.pen.includes(zone) && (exec !== 'pass' || e.catchDrive)) offContact = { pid: actor, tech: 'TEC07', kind: 'penetración' };
+      // Defensa (MOTOR-05): el atacante abierto (sin función que lo cubra) recibe sin oposición; en zona, la finalización en el aro la
+      // defiende la función de protección del aro y no cualquier marcador (la amenaza de la interacción, no la posición nominal).
+      const open = this.isOpen(actor);
+      const shotDef = open ? null : (this.shotDefenderFor(actor, zone) ?? def[e.defend] ?? null);
       exits.push({
         key: `${e.role}:${zone}${e.stage ? `:${e.stage}` : ''}`, role: e.role, actor, zone, exec, passer,
-        icpt: def[e.icpt] ?? null, defend: def[e.defend] ?? null,
+        icpt: open ? null : (def[e.icpt] ?? null), defend: shotDef, ...(open ? { window: true, helpWindow: 'abierto por la estructura defensiva' } : {}),
         label: e.label ?? null, moved: !!(e.moved && e.moved.includes(zone)),
         offContact, pullup: !!(e.pullupK && e.pullupK.includes(zone)), roller: !!e.rollerK,
         holder: exec === 'pass' ? passer : actor, stage: e.stage ?? null, qual: e.qual ?? null, cont: !!e.label,

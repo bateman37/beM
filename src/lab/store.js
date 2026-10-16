@@ -18,25 +18,26 @@ export const PLAY_NAMES = {};
 
 // `profile` es el perfil EFECTIVO de la versión ACTIVA (MOTOR-03): lo que usarán los próximos encuentros. Los encuentros ya
 // iniciados llevan su propia copia congelada y no se ven afectados por activar otra versión.
-export const store = { baseProfile: null, extension: null, extension3: null, extension4: null, base: null, edit: null, labels: {}, catalog: null, last: null, persisted: false, library: null, matchRef: null,
+export const store = { baseProfile: null, extension: null, extension3: null, extension4: null, extension5: null, base: null, edit: null, labels: {}, catalog: null, last: null, persisted: false, library: null, matchRef: null,
   get profile() { return this.library ? this.library.activeVersion().effective : null; },
   get profileRef() { return this.library ? this.library.profileRef(this.library.activeId) : null; } };
 
 export async function loadAll() {
-  const [baseProfile, extension, extension3, extension4, csv, catalog] = await Promise.all([
+  const [baseProfile, extension, extension3, extension4, extension5, csv, catalog] = await Promise.all([
     fetch('/data/match/motor01-seed-profile.json').then((r) => r.json()),
     fetch('/data/match/motor02-seed-extension.json').then((r) => r.json()),
     fetch('/data/match/motor03-seed-extension.json').then((r) => r.json()),
     fetch('/data/match/motor04-seed-extension.json').then((r) => r.json()),
+    fetch('/data/match/motor05-seed-extension.json').then((r) => r.json()),
     fetch('/data/fixtures/reference-players-MOTOR01.csv').then((r) => r.text()),
     fetch('/data/catalog.json').then((r) => (r.ok ? r.json() : null)).catch(() => null),
   ]);
   const players = parsePlayersCsv(csv, baseProfile);
-  const profile = applyExtension(baseProfile, extension, extension3, extension4); // perfil efectivo base: el original no se sobrescribe
-  store.baseProfile = baseProfile; store.extension = extension; store.extension3 = extension3; store.extension4 = extension4; store.catalog = catalog;
+  const profile = applyExtension(baseProfile, extension, extension3, extension4, extension5); // perfil efectivo base: el original no se sobrescribe
+  store.baseProfile = baseProfile; store.extension = extension; store.extension3 = extension3; store.extension4 = extension4; store.extension5 = extension5; store.catalog = catalog;
   store.library = new ProfileLibrary({ storage: storage(), base: profile });
   store.labels = Object.fromEntries(profile.attributeDictionary.map((a) => [a.id, a.label]));
-  store.baseNew = profile; // perfil efectivo de MOTOR-04: siempre disponible para construir la entrada, aunque el activo sea anterior
+  store.baseNew = profile; // perfil efectivo de MOTOR-05: siempre disponible para construir la entrada, aunque el activo sea anterior
   for (const [id, p] of Object.entries(profile.repertoire.plays)) PLAY_NAMES[id] = p.name;
   store.base = buildMatchInput(profile, players);
   store.edit = restore() ?? deepCopy(store.base);

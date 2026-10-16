@@ -147,7 +147,7 @@ P.coachPlayDistribution = function coachPlayDistribution(el) {
 // ---------------------------------------------------------------- calidad de oportunidad
 // Distribución de la calidad previa (cómoda / normal / forzada). Una sola implementación para qualityOf y para la estimación de
 // «calidad previa cómoda» de la media distancia (selección), de modo que no pueden divergir.
-P.qualityDistribution = function qualityDistribution(caRaw, cdRaw, kctx, hasOpposition) {
+P.qualityDistribution = function qualityDistribution(caRaw, cdRaw, kctx, hasOpposition, noForced = false) {
   const opp = this.profile.opportunity;
   const kc = clamp(kctx, -opp.maximumQualityContextLogit, opp.maximumQualityContextLogit);
   const z = hasOpposition ? opp.advantageSensitivity * (caRaw - cdRaw) + kc : opp.maximumQualityContextLogit; // ventana libre: extremo favorable declarado
@@ -155,14 +155,14 @@ P.qualityDistribution = function qualityDistribution(caRaw, cdRaw, kctx, hasOppo
   const items = [
     { key: 'comfortable', w: base.comfortable * Math.exp(z) },
     { key: 'normal', w: base.normal },
-    { key: 'forced', w: base.forced * Math.exp(-z) },
+    { key: 'forced', w: noForced ? 0 : base.forced * Math.exp(-z) }, // sin negación defendida (facilita la ayuda): no hay clase forzada por negación
   ];
   const tot = items.reduce((a, b) => a + b.w, 0);
   return { z, kc, items, tot, p: Object.fromEntries(items.map((i) => [i.key, i.w / tot])) };
 };
 P.qualityOf = function qualityOf(ex, caRaw, cdRaw, kctx, hasOpposition) {
   const opp = this.profile.opportunity;
-  const d = this.qualityDistribution(caRaw, cdRaw, kctx, hasOpposition);
+  const d = this.qualityDistribution(caRaw, cdRaw, kctx, hasOpposition, !!ex?.noDenial);
   this.note('calidad', { z: round(d.z, 4), kContexto: round(d.kc, 4), CA: round(caRaw, 3), CD: hasOpposition ? round(cdRaw, 3) : null, pesos: d.items.map((i) => ({ clase: i.key, p: round(i.w / d.tot) })) });
   const chosen = this.pick(d.items, 'calidad');
   return { cls: chosen.key, K: opp.qualityShotLogit[chosen.key], z: d.z };
@@ -189,12 +189,13 @@ P.categoryWeights = function categoryWeights(ex) {
   // pérdida
   if (ex.exec !== 'none') {
     let off; let def = null;
+    const attempts = ex.stealAttempt !== false; // contener (sin intento de intervención) no aplica la receta de interferencia activa
     if (ex.exec === 'dribble') {
       off = this.taskValue('TAR06', 'attack', { handler: ex.actor });
-      if (ex.icpt) def = this.taskValue('TAR06', 'defense', { primary: ex.icpt });
+      if (ex.icpt && attempts) def = ex.defMix ? this.mixedValue(ex, (id) => this.taskValue('TAR06', 'defense', { primary: id })) : this.taskValue('TAR06', 'defense', { primary: ex.icpt });
     } else {
       off = this.taskValue('TAR07', 'attack', { passer: ex.passer });
-      if (ex.icpt) def = this.taskValue('TAR07', 'defense', { interceptor: ex.icpt });
+      if (ex.icpt && attempts) def = this.taskValue('TAR07', 'defense', { interceptor: ex.icpt });
     }
     z.turnover = def != null ? o.controlSensitivity * (def - off) : -o.controlSensitivity * (off - this.profile.neutralAbility);
     w.turnover = base.turnover * Math.exp(z.turnover);
@@ -219,6 +220,11 @@ P.categoryWeights = function categoryWeights(ex) {
   }
   if (ex.exec === 'dribble') w.ballViolation = base.ballViolation;
   w.fieldShot = base.fieldShot;
+  // presión cercana: pondera una vez la exposición a pérdida y a contacto de esta interacción (no la conversión)
+  if (ex.pressureClose) {
+    const f = this.profile.defense.pressure.closePressureExposureWeightFactor;
+    for (const k of ['turnover', 'defensiveNonShootingFoul', 'shootingFoul']) if (w[k] != null) w[k] *= f;
+  }
   const tot = Object.values(w).reduce((a, b) => a + b, 0);
   const probs = {}; for (const k of Object.keys(w)) probs[k] = w[k] / tot;
   this.note('categorías', { z: Object.fromEntries(Object.entries(z).map(([k, v]) => [k, round(v, 4)])), p: Object.fromEntries(Object.entries(probs).map(([k, v]) => [k, round(v, 5)])) });
@@ -308,7 +314,10 @@ P.resolveShot = function resolveShot(ex, base, contact) {
     const pB = sigmoid(logit(sh.blockP0) + b.sA * (blk - N) - b.sD * (resist - N));
     if (this.bernoulli(pB, 'tapón')) return this.resolveBlocked(ex, base, defender);
   }
-  const p = sigmoid(shotLogit(this.profile, sh, A, defender ? this.shotDefense(ex.zone, defender, ex.actor) : null, K));
+  // un intento de intervención que no produjo pérdida deja la posición comprometida (mismo espacio que el drop, valor ya aceptado)
+  if (ex.stealAttempt === true && ex.exec !== 'none') { K += this.profile.opportunity.coverageContainment.handlerPullupQualityLogit; this.note('intento_de_robo_fallido', { contextoLogit: this.profile.opportunity.coverageContainment.handlerPullupQualityLogit }); }
+  const D = defender ? (ex.defMix ? this.mixedValue(ex, (id) => this.shotDefense(ex.zone, id, ex.actor)) : this.shotDefense(ex.zone, defender, ex.actor)) : null;
+  const p = sigmoid(shotLogit(this.profile, sh, A, D, K));
   const made = this.bernoulli(p, `conversión:${ex.zone}`);
   const shotFact = { k: 'shot', p: ex.actor, team: ex.team, zone: ex.zone, points: sh.points, made, fromFoul: contact };
   stats.push(shotFact);
@@ -366,7 +375,7 @@ P.resolveTurnover = function resolveTurnover(ex, base) {
   const o = this.profile.outcomes;
   const stats = [{ k: 'tov', p: ex.exec === 'pass' ? ex.passer : ex.actor, team: ex.team, cause: ex.exec === 'pass' ? 'pase' : 'balón' }];
   let stealer = null;
-  if (ex.icpt && this.bernoulli(o.stealGivenTurnover, 'robo')) { stealer = ex.icpt; stats.push({ k: 'stl', p: stealer, team: 1 - ex.team }); }
+  if (ex.icpt && ex.stealAttempt !== false && this.bernoulli(o.stealGivenTurnover, 'robo')) { stealer = ex.icpt; stats.push({ k: 'stl', p: stealer, team: 1 - ex.team }); }
   if (stealer) {
     this.emit('attempt', { ...base, stats, effects: { perdida: true, robo: stealer, balonVivo: true } });
     this.cover('robo');

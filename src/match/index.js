@@ -1,9 +1,11 @@
 // API pública del motor de MOTOR-01. El núcleo se ejecuta sin DOM ni base de datos.
 import { MatchCore } from './core.js';
 import './rotation.js';
+import './defense.js';
 import './plays.js';
 import './actions.js';
 import './flow.js';
+import './defense-actions.js';
 import './orders.js';
 import { projectBox, teamTotals } from './box.js';
 import { deepCopy, validateInput, buildMatchInput, parsePlayersCsv, validateProfileAndFixtures, applyExtension, validateExtension, upgradeInput, ENGINE_VERSION, EXPORT_SCHEMA, EXPORT_SCHEMA_MOTOR01, EXPORT_SCHEMA_MOTOR02, MIDRANGE_POLICIES, ATTRS, SLOTS } from './data.js';
