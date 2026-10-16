@@ -10,15 +10,17 @@ export const EXTENSION_PATH = join(ROOT, 'data/match/motor02-seed-extension.json
 export const EXTENSION3_PATH = join(ROOT, 'data/match/motor03-seed-extension.json');
 export const EXTENSION4_PATH = join(ROOT, 'data/match/motor04-seed-extension.json');
 export const EXTENSION5_PATH = join(ROOT, 'data/match/motor05-seed-extension.json');
+export const EXTENSION6_PATH = join(ROOT, 'data/match/motor06-seed-extension.json');
 export const PLAYERS_PATH = join(ROOT, 'data/fixtures/reference-players-MOTOR01.csv');
 
-// `profile` es el perfil EFECTIVO (SEM de MOTOR-01 + extensiones SEM de MOTOR-02 a MOTOR-05); `baseProfile` es el original sin tocar.
+// `profile` es el perfil EFECTIVO (SEM de MOTOR-01 + extensiones SEM de MOTOR-02 a MOTOR-06); `baseProfile` es el original sin tocar.
 export function loadData() {
   const baseProfile = JSON.parse(readFileSync(PROFILE_PATH, 'utf8'));
   const extension = JSON.parse(readFileSync(EXTENSION_PATH, 'utf8'));
   const extension3 = JSON.parse(readFileSync(EXTENSION3_PATH, 'utf8'));
   const extension4 = JSON.parse(readFileSync(EXTENSION4_PATH, 'utf8'));
   const extension5 = JSON.parse(readFileSync(EXTENSION5_PATH, 'utf8'));
+  const extension6 = JSON.parse(readFileSync(EXTENSION6_PATH, 'utf8'));
   const players = parsePlayersCsv(readFileSync(PLAYERS_PATH, 'utf8'), baseProfile);
-  return { profile: applyExtension(baseProfile, extension, extension3, extension4, extension5), baseProfile, extension, extension3, extension4, extension5, players };
+  return { profile: applyExtension(baseProfile, extension, extension3, extension4, extension5, extension6), baseProfile, extension, extension3, extension4, extension5, extension6, players };
 }

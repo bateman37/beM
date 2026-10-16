@@ -51,6 +51,7 @@ export class MatchCore {
     this.poss = null; this.nextPoss = null; this.possSeq = 0; this.eventSeq = 0;
     this.events = []; this.calcBuf = []; this.status = 'created'; this.errors = [];
     this.coverageObserved = {};
+    this.oppLog = []; this.throwChains = []; this.chainSeq = 0; // MOTOR-06: decisiones/oportunidades y cadenas de saque (diagnóstico; solo datos calculados)
     this.openingWinner = null;
     // avance incremental (MOTOR-02): fronteras, ventanas reglamentarias pendientes y estado de periodo
     this.stepSeq = 0; this.lastStep = null;
@@ -221,6 +222,7 @@ export class MatchCore {
       score: [...this.score],
       draws: this.rng.drain(),
     };
+    this.chainHook?.(ev); // MOTOR-06: la cadena de saque abierta asocia el hecho y acumula la producción directa
     if (this.tracker) ev.params = this.tracker.drain();
     if (this.pendingLinks.length) { ev.orders = this.pendingLinks; this.pendingLinks = []; }
     if (this.opts.detail === 'full') { ev.calc = this.calcBuf; }

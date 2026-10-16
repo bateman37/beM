@@ -4,6 +4,7 @@
 import { h, table } from '../dom.js';
 import { ps, ctx, repaint } from './common.js';
 import { FAMILY_NAMES, FAMILY_ORDER } from '../styles.js';
+import { store } from '../store.js';
 
 export function renderRepertorio() {
   const c = ctx(); const eff = c.consult.effective; const rep = eff.repertoire;
@@ -63,6 +64,25 @@ export function renderRepertorio() {
       table(['ID', 'Instrucción', 'Campos'], Object.entries(dr.specials).map(([id, d]) => [id, d.name, d.fields.join(', ')])),
       h('p', { class: 'small muted' }, 'Pendientes de cobertura posterior (DEF08 defensas de saque, DEF09 memoria): sus filas de catálogo no marcan «defensa completa».'),
       goRow(Object.keys(eff.defense.specials).map((k) => `defense.specials.${k}`), 'Instrucciones especiales')));
+  }
+  // ---------------------------------------------------------------- MOTOR-06: situaciones espontáneas y saques
+  const sr = eff.spontaneousRepertoire; const tr = eff.throwInRepertoire;
+  const seen = (key) => { const c = store.last?.diagnostics?.coverageObserved ?? {}; const n = Object.entries(c).filter(([k]) => k === key || k.startsWith(`${key} `)).reduce((a, [, v]) => a + v, 0); return store.last ? n : '—'; };
+  if (sr) {
+    root.append(h('div', { class: 'card' }, h('h2', { style: 'margin:0' }, `Situaciones espontáneas ESP01–ESP20 de ${eff.effectiveId}`),
+      h('p', { class: 'small muted' }, sr.note),
+      table(['ID', 'Situación', 'Opciones que deben poder elegirse', 'Condición pertinente', 'Decide', 'Tareas', 'Se reconoce en', 'Veces en el último encuentro'],
+        Object.entries(sr.situations).map(([id, x]) => [id, x.name, x.options, x.condition, x.decider, x.tasks.join(', '), `${x.frontier.join(', ')} · ${Object.entries(x.when).map(([k, v]) => `${k}=${Array.isArray(v) ? v.join('/') : v}`).join(', ')}`, seen(id)])),
+      h('p', { class: 'small muted' }, 'No hay una probabilidad ni una operación por ID: una opción con varias etiquetas es una sola opción (misma masa, un sorteo) y se ejecuta con las mismas operaciones que una ficha. La calidad percibida, la libertad, la lectura del que decide y la urgencia son filas del perfil. Recurso autónomo (ESP20): ', sr.autonomous.map((a) => `${a.label} → ${a.candidates.join('/')}`).join(' · '), '.'),
+      goRow(['opportunities', 'throwIns.priorityWeights'], 'Oportunidades espontáneas')));
+  }
+  if (tr) {
+    root.append(h('div', { class: 'card' }, h('h2', { style: 'margin:0' }, `Saques de banda y fondo de ${eff.effectiveId}`), h('p', { class: 'small muted' }, tr.note),
+      table(['ID', 'Tipo', 'Ficha', 'Funciones', 'Primera opción', 'Alternativa', 'Continuidad', 'Límite', 'Veces en el último encuentro'],
+        Object.entries(tr.plays).map(([id, p]) => [id, tr.kinds[p.kind].label, p.name, Object.values(p.roles).map((r) => r.label).join(' · '), `${p.roles[p.first.role].label} (${tr.approaches[p.first.approach].split(' (')[0]})`, `${p.roles[p.alternative.role].label} (${tr.approaches[p.alternative.approach].split(' (')[0]})`, tr.continuations[p.first.cont], p.limit, seen(id)])),
+      table(['ID', 'Tipo', 'Respuesta defensiva', 'Concede', 'Veces en el último encuentro'], Object.entries(tr.responses).map(([id, r]) => [id, tr.kinds[r.kind].label, r.name, r.concedes, seen(id)])),
+      h('p', { class: 'small muted' }, `Todas las fichas usan las mismas tareas de recepción, desmarque, pantalla, pase, negación y finalización; ninguna lleva probabilidad de recepción ni de canasta propia. Plazo del sacador: ${eff.rules.throwInReleaseSeconds} s (obligación reglamentaria del perfil). Box/stack/diamond son referencias de entrada internas, no disposiciones del selector.`),
+      goRow(['throwIns', 'rules.throwInReleaseSeconds', 'sharedResolution'], 'Saques')));
   }
   return root;
 }

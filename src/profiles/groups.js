@@ -19,6 +19,7 @@ export const VIEWS = {
   estadistica: 'Estadística e información',
   laboratorio: 'Laboratorio',
   versiones: 'Versiones e intercambio',
+  saques: 'Saques de banda y fondo',
 };
 
 // [id, responsabilidad, resultado/contrato de referencia, entrega prevista]

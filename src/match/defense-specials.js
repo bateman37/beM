@@ -89,18 +89,18 @@ P.tacticalFoul = function tacticalFoul(ex) {
   const d = this.dcfg().specials;
   const attempt = this.bernoulli(d.tacticalFoulAttemptGivenAccessP0, 'ESPD01:intento');
   if (!attempt) { this.noteCall(o, 'el ejecutor no llegó a intentar el contacto'); return null; }
-  // clasificación del contacto: legítimo (ordinaria) o no legítimo (antideportiva). Referencia simétrica y sensibilidad compartida.
+  // clasificación del contacto: legítimo (ordinaria) o no legítimo (disruptiva). Referencia simétrica y sensibilidad compartida.
   const inner = ex.zone === 'rim' || ex.zone === 'inside';
   const legal = this.defensiveLegality(exe, inner ? 'TEC13' : 'TEC12');
   const pLegit = sigmoid(logit(this.dcfg().choiceReferences.symmetricTaskP0) + this.profile.outcomes.defensiveFoulSensitivity * (legal - this.profile.neutralAbility));
   const legit = this.bernoulli(pLegit, 'ESPD01:contacto_legítimo');
   const dur = this.sampleDuration(this.profile.durationSeconds.organizedFoul, 'falta táctica', { factor: this.profile.selection.organizedDurationFactor[this.styleOf(ex.team).organizedPace - 1], limit: this.limit() });
   const t = this.consume(dur, 'organized');
-  const cls = legit ? 'personal ordinaria' : 'antideportiva';
-  this.cover(legit ? 'ESPD01 falta ordinaria' : 'ESPD01 antideportiva');
+  const cls = legit ? 'personal ordinaria' : 'disruptiva';
+  this.cover(legit ? 'ESPD01 falta ordinaria' : 'ESPD01 disruptiva');
   this.emit('attempt', { t, team: ex.team, intent: { origen: ex.origin, especial: 'ESPD01', clasificacion: cls, pContactoLegitimo: round(pLegit, 4) }, participants: { actor: ex.actor, poseedor: ex.holder, ejecutor: exe, objetivo: target }, effects: { faltaTactica: true, faltaDefensiva: exe, sobre: target, tipo: cls } });
   if (legit) this.foulAdmin(exe, target, { shooting: false, shotTeam: ex.team });
-  else this.unsportsmanlikeAdmin(exe, target, ex.team);
+  else this.disruptiveAdmin(exe, target, ex.team);
   o.execution = { possession: this.poss.id, ejecutor: exe, objetivo: target, clasificacion: cls, step: this.stepSeq };
   this.setState(o, 'consumida', `ejecutada en ${this.poss.id}: falta ${cls}`);
   this.linkOrder(o.id, 'falta táctica ejecutada');
@@ -108,22 +108,30 @@ P.tacticalFoul = function tacticalFoul(ex) {
   return { cont: 'foulWindow' };
 };
 
-// Falta antideportiva (lectura propia de FIBA 2026 v1.1, PDF no accesible): falta personal y de equipo, dos tiros libres y posesión para
-// el equipo del lanzador (saque en pista de ataque con reloj de posesión de ataque); descalificación con la segunda antideportiva.
-P.unsportsmanlikeAdmin = function unsportsmanlikeAdmin(committer, fouled, shotTeam) {
+// Faltas con categoría propia (FIBA Official Basketball Rules 2026 v1.1, Arts. 37–38 y 41.4; resumen contrastado del encargo MOTOR-06 §8.2: el
+// PDF sigue sin ser accesible desde el entorno). «Disruptiva» y «flagrante» son categorías DISTINTAS: interrumpir la transición o el reloj con
+// un contacto innecesario (ESPD01) es disruptiva, no una «antideportiva» genérica heredada. La descalificación se cuenta por categoría
+// (Arts. 38.2.3/41.4): dos flagrantes, dos técnicas de categoría 1 o una de cada; dos disruptivas NO descalifican por sí solas.
+// Hoy solo se produce la disruptiva (ESPD01); los contadores de las demás existen para que la regla no dependa de un único contador.
+P.sanctions = function sanctions(pid) { return ((this.sanc ??= {})[pid] ??= { disruptive: 0, flagrant: 0, technicalCat1: 0 }); };
+P.disqualifies = function disqualifies(pid) { const s = this.sanctions(pid); return s.flagrant >= 2 || s.technicalCat1 >= 2 || (s.flagrant >= 1 && s.technicalCat1 >= 1); };
+// Administración de la falta disruptiva: falta personal y de equipo, dos tiros libres y posesión para el equipo del lanzador con saque en pista de
+// ataque. Esa administración (número de libres «según el hecho y el acto de tiro», lugar y reloj de la reanudación: Arts. 37.2/38.2/17.2.7/29.2.6)
+// es una LECTURA PROPIA no contrastada con el texto exacto: ver DECISIÓN REQUERIDA en docs/tecnico/motor06.md.
+P.disruptiveAdmin = function disruptiveAdmin(committer, fouled, shotTeam) {
   const rules = this.profile.rules; const defTeam = 1 - shotTeam; const key = foulPeriodKey(this.period, rules);
   this.ps[committer].fouls += 1;
   this.teamFouls[defTeam][key] = (this.teamFouls[defTeam][key] ?? 0) + 1;
-  this.uf ??= {}; this.uf[committer] = (this.uf[committer] ?? 0) + 1;
-  const dq = this.uf[committer] >= 2; const out = this.ps[committer].fouls >= rules.foulOut;
+  const sc = this.sanctions(committer); sc.disruptive += 1;
+  const dq = this.disqualifies(committer); const out = this.ps[committer].fouls >= rules.foulOut;
   if (dq || out) this.exclude(committer);
   this.emit('foul', {
-    team: shotTeam, intent: { origen: 'falta defensiva', tipo: 'antideportiva' },
+    team: shotTeam, intent: { origen: 'falta defensiva', tipo: 'disruptiva' },
     participants: { infractor: committer, sobre: fouled },
-    stats: [{ k: 'foul', p: committer, team: defTeam, kind: 'antideportiva', teamFoul: true }],
-    effects: { faltasPersonales: this.ps[committer].fouls, faltasColectivasPeriodo: this.teamFouls[defTeam][key], tirosLibres: 2, antideportivas: this.uf[committer], descalificado: dq, excluido: out || dq, causaTirosLibres: 'falta antideportiva: dos libres y posesión' },
+    stats: [{ k: 'foul', p: committer, team: defTeam, kind: 'disruptiva', teamFoul: true }],
+    effects: { faltasPersonales: this.ps[committer].fouls, faltasColectivasPeriodo: this.teamFouls[defTeam][key], tirosLibres: 2, categoria: 'disruptiva', disruptivasDelJugador: sc.disruptive, descalificado: dq, excluido: out || dq, causaTirosLibres: 'falta disruptiva: dos libres y posesión (administración sin contrastar con el texto exacto)' },
   });
-  this.cover('falta antideportiva');
-  this.pendingFoul = { fouled, n: 2, shotTeam, shooting: false, shotMade: false, kind: 'falta antideportiva', retain: true };
-  this.deadBall('falta antideportiva');
+  this.cover('falta disruptiva');
+  this.pendingFoul = { fouled, n: 2, shotTeam, shooting: false, shotMade: false, kind: 'falta disruptiva', retain: true };
+  this.deadBall('falta disruptiva');
 };

@@ -2,7 +2,7 @@
 // dirigirlo con órdenes, ver acta y relato, descargar el JSON y reproducir un encuentro exportado.
 import { h, clear, fmt, table } from './dom.js';
 import { store, PLAY_NAMES } from './store.js';
-import { validateInput, deepCopy, teamTotals, SLOTS } from '../match/index.js';
+import { validateInput, deepCopy, teamTotals, SLOTS, diagnosticQueries } from '../match/index.js';
 import { MatchSession, MODES, SESSION_STATES, PRESENTATION } from '../match/session.js';
 import { replayMatch, validateReplayFile } from '../match/replay.js';
 import { describeEvent, clockText } from '../match/narrative.js';
@@ -36,7 +36,7 @@ const rerender = () => { if (ui.root && document.getElementById('live')) { paint
 function setupCard() {
   const { edit, profile } = store;
   const errs = validateInput(edit, profile);
-  if (!profile.defense) errs.push({ path: 'perfil activo', message: 'es anterior a MOTOR-05: activa la base de MOTOR-05 o una candidata explícita en el Panel de ajustes' });
+  if (!profile.throwInRepertoire) errs.push({ path: 'perfil activo', message: 'es anterior a MOTOR-06: activa la base de MOTOR-06 o una candidata explícita en el Panel de ajustes' });
   const s = ui.session;
   const live = s && !['finalizado', 'error'].includes(s.state);
   return h('div', { class: 'card' },
@@ -277,7 +277,32 @@ function renderResult(root, res, { live = false, banner = null, refresh = paintR
       h('button', { class: 'btn secondary', id: 'download', onclick: () => download(res) }, 'Descargar encuentro (JSON)'),
       live ? [h('button', { class: 'btn secondary', onclick: () => recompute(res) }, 'Reproducir este encuentro (recalcular)'),
         ui.compare ? h('span', { class: `pill ${ui.compare.identical ? 'ok' : 'bad'}` }, ui.compare.identical ? 'Recálculo idéntico: mismos hechos, sorteos, acta y órdenes' : 'El recálculo difiere') : null] : null)));
-  root.append(h('div', { class: 'grid2' }, [0, 1].map((t) => boxCard(res, t))), lineupsCard(res), choicesCard(res), finalStory(refresh, res, teamName));
+  root.append(h('div', { class: 'grid2' }, [0, 1].map((t) => boxCard(res, t))), lineupsCard(res), choicesCard(res), opportunitiesCard(res), finalStory(refresh, res, teamName));
+}
+
+// Diagnóstico ampliable de oportunidades y saques (MOTOR-06): ejes separados (procedencia, contexto, calidad previa, resultado) con numerador
+// y denominador; un denominador cero es «no calculable». No es el catálogo estadístico avanzado ni una calibración.
+function opportunitiesCard(res) {
+  let q; try { q = diagnosticQueries(res); } catch { return null; }
+  const pct = (r) => (r.calculable ? `${r.num}/${r.den} (${fmt(r.tasa * 100, 1)} %)` : `${r.num}/${r.den} — no calculable`);
+  const proc = {}; const tags = {}; const ctx = {};
+  for (const ev of res.events) if (ev.type === 'attempt' && ev.intent?.procedencia) { proc[ev.intent.procedencia] = (proc[ev.intent.procedencia] ?? 0) + 1; ctx[ev.intent.contexto ?? '—'] = (ctx[ev.intent.contexto ?? '—'] ?? 0) + 1; for (const t of ev.intent.etiquetasESP ?? []) tags[t] = (tags[t] ?? 0) + 1; }
+  const s = q.primeraOpcionDeSaque;
+  const rows = [
+    [q.usoDirectoInicial.todos.nombre, `${pct(q.usoDirectoInicial.todos)} · temprano ${pct(q.usoDirectoInicial.temprano)} · organizado ${pct(q.usoDirectoInicial.organizado)}`, q.usoDirectoInicial.todos.definicion],
+    [q.tripleDeTransicion.nombre, pct(q.tripleDeTransicion), q.tripleDeTransicion.definicion],
+    [q.aceptacionInmediata.nombre, `${pct(q.aceptacionInmediata)} · ${Object.entries(q.aceptacionInmediata.porSituacion).map(([k, v]) => `${k} ${v.num}/${v.den}`).join(', ') || '—'}`, q.aceptacionInmediata.definicion],
+    [q.familiaAutonoma.nombre, `${pct(q.familiaAutonoma)} · ${Object.entries(q.familiaAutonoma.porFamilia).map(([k, v]) => `${k} ${v.num}/${v.den}`).join(', ') || '—'}`, q.familiaAutonoma.definicion],
+    [q.tempranoForzado.nombre, pct(q.tempranoForzado), q.tempranoForzado.definicion],
+    [s.nombre, `inicios ${s.inicios} · primera opción recibida ${s.primeraOpcionRecibida}, negada ${s.primeraOpcionNegada} (${pct(s)}) · alternativa ${s.alternativaUsada} · seguridad ${s.seguridadUsada} · infracción de plazo ${s.infraccionDePlazo} · solicitudes de llamada ${s.solicitudes.llamadas} (consumidas ${s.solicitudes.consumidas}, caducadas ${s.solicitudes.caducadas}) · producción directa ${s.produccionDirecta.puntos} pts`, s.definicion],
+  ];
+  const chains = res.diagnostics.throwInChains ?? [];
+  return h('details', { class: 'card' }, h('summary', {}, h('strong', {}, 'Oportunidades, procedencia y saques (diagnóstico)')),
+    h('p', { class: 'small muted' }, 'Ejes separados: procedencia de la decisión (llamada/libro, recurso autónomo, decisión directa, saque), contexto de entrada, calidad previa y resultado. Una opción con varias etiquetas ESP cuenta una vez. Capas: ', Object.entries(q.capas).map(([k, v]) => `${k}: ${v}`).join(' · ')),
+    table(['Consulta', 'Resultado', 'Definición'], rows),
+    h('p', { class: 'small' }, `Procedencia de los intentos: ${Object.entries(proc).map(([k, v]) => `${k} ${v}`).join(' · ') || '—'} · contexto: ${Object.entries(ctx).map(([k, v]) => `${k} ${v}`).join(' · ') || '—'}`),
+    h('p', { class: 'small' }, `Situaciones etiquetadas: ${Object.entries(tags).sort().map(([k, v]) => `${k} ${v}`).join(' · ') || 'ninguna'}`),
+    chains.length ? table(['Saque', 'Posesión', 'Ficha', 'Sacador', 'Respuesta', 'Intentos', 'Cierre', 'Puntos directos'], chains.map((c) => [c.id, c.possession, c.ficha, c.sacador, c.respuesta, c.intentos.map((x) => `${x.opcion}${x.negada ? ' (negada)' : ''}`).join(' → '), c.cierre ?? 'abierta', c.puntosDirectos])) : h('p', { class: 'small muted' }, 'Sin saques de banda o fondo con ficha en este encuentro.'));
 }
 
 function lineupsCard(res) {

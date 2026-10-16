@@ -17,6 +17,7 @@ Directorio de los encargos a Claude Code. **El texto original de un prompt ejecu
 | MOTOR-03 | Panel administrable, perfiles y comparación de ajustes | [`MOTOR-03-panel-y-perfiles.md`](MOTOR-03-panel-y-perfiles.md) · [recorrido manual](MOTOR-03-recorrido-manual.md) | Ejecutado, **pendiente de revisión de Dennis** | 2026-10-16 (intento 1) | — |
 | MOTOR-04 | Ataque posicional completo: siete estilos, seis disposiciones, roles, libro de quince fichas y nueve continuaciones | [`MOTOR-04-ataque-posicional.md`](MOTOR-04-ataque-posicional.md) · [recorrido manual](MOTOR-04-recorrido-manual.md) | Ejecutado, **pendiente de revisión de Dennis** | 2026-10-16 (intento 1) | — |
 | MOTOR-05 | Defensa completa: seis organizaciones, cinco estilos defensivos, tres alturas, cuatro coberturas, doce roles, tres especiales y cierre de salvedades de MOTOR-04 | [`MOTOR-05-defensa-completa.md`](MOTOR-05-defensa-completa.md) · [recorrido manual](MOTOR-05-recorrido-manual.md) | Ejecutado, **pendiente de revisión de Dennis** | 2026-10-16 (intento 1) | — |
+| MOTOR-06 | Transición, decisiones espontáneas ESP01–ESP20 y saques de banda y fondo (seis jugadas y seis respuestas), con cierre de salvedades de MOTOR-05 | [`MOTOR-06-transicion-y-saques.md`](MOTOR-06-transicion-y-saques.md) · [recorrido manual](MOTOR-06-recorrido-manual.md) | Ejecutado, **pendiente de revisión de Dennis** | 2026-10-16 (intento 1) | — |
 
 ## Fichas de ejecución
 
@@ -129,3 +130,17 @@ Comprobación local de enlaces: hecha por Claude. Presentación en GitHub: no co
 | Comprobaciones realizadas | `npm test` (75 pruebas, 12 nuevas), `npm run data:check`, cinco partidos completos de cierre, matriz organización×cobertura de desarrollo, recorrido de interfaz con Chromium automatizado. No ejecutado: Node 24, otros navegadores, contraste con el PDF FIBA (no accesible). |
 | Limitaciones | Todo SEM (anexo A) y contenido declarativo de lectura de Claude (D01); lecturas FIBA propias (antideportiva, 8 s); sin presiones zonales específicas, saques tácticos, memoria, Forma ni cierre extraordinario; V01 con POS05/06 y POS14 pendientes de decisión. |
 | Pendientes | Validación de Dennis ([recorrido manual](MOTOR-05-recorrido-manual.md)) y decisiones listadas en [`../tecnico/motor05.md`](../tecnico/motor05.md). |
+
+### MOTOR-06
+
+| Campo | Valor |
+|---|---|
+| Objetivo | Transición y decisiones espontáneas sobre un único flujo de oportunidades (ESP01–ESP20 con tres orígenes: llamada del plan, recurso autónomo y decisión directa), saques de banda y fondo (SaqB01–03, SaqF01–03 y DSaqB01–03, DSaqF01–03) con plazo único de 5 s y tres relojes separados, y cierre de salvedades de MOTOR-05 (POS05/06, POS14, coberturas de mano a mano e indirectos, robos, antideportiva/descalificante). |
+| Medio de entrada del texto | Archivo `.md` adjunto (`beM-PROMPT-MOTOR-06-TRANSICION-ESPONTANEAS-Y-SAQUES.md`). Copia archivada íntegra (con anexo): [`MOTOR-06-transicion-y-saques.md`](MOTOR-06-transicion-y-saques.md). |
+| Fecha real de ejecución | 2026-10-16 · intento 1 |
+| Rama | `claude/busy-edison-b1fmnc` (rama designada por el entorno). Parte de MOTOR-05. |
+| PR | Ver la PR abierta contra `main` (sin fusionar); el enlace consta en la respuesta final de la entrega. |
+| Resultado breve | Capa declarativa ESP sobre las opciones físicas, mezcla única con opciones directas y recurso autónomo, saques con sacador fuera de pista, llamadas de punto con vigencia «siguiente saque propio compatible del periodo», órdenes de saque y respuesta defensiva, filas con consumidor, `export/5`, rechazo de `export/4` y diagnóstico con numerador y denominador. |
+| Comprobaciones realizadas | `npm test` (20 pruebas nuevas, parametrizadas y acotadas), `npm run data:check`, cinco partidos completos de cierre, recorrido de interfaz con Chromium automatizado. No ejecutado: Node 24, otros navegadores, contraste con el PDF FIBA (403, no accesible). |
+| Limitaciones | Todo SEM (anexo A) y contenido declarativo de lectura de Claude; lecturas FIBA propias (antideportiva/descalificante); el tiempo de sesión y la cuota no son medibles. |
+| Pendientes | Validación de Dennis ([recorrido manual](MOTOR-06-recorrido-manual.md)) y decisiones listadas en [`../tecnico/motor06.md`](../tecnico/motor06.md). |

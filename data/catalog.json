@@ -1,6 +1,6 @@
 {
   "description": "Catálogo de datos: identidad y estado de los materiales (MOTOR-01 cargados literalmente de los anexos del prompt; extensión de MOTOR-02 aparte, sin tocar el perfil original).",
-  "source": "docs/prompts/MOTOR-01-primer-partido-completo.md (Anexo A y Anexo B); docs/prompts/MOTOR-02-modos-y-direccion.md (apartado 8.4); docs/prompts/MOTOR-03-panel-y-perfiles.md (apartado 4.1); docs/prompts/MOTOR-04-ataque-posicional.md (anexo A); docs/prompts/MOTOR-05-defensa-completa.md (anexo A)",
+  "source": "docs/prompts/MOTOR-01-primer-partido-completo.md (Anexo A y Anexo B); docs/prompts/MOTOR-02-modos-y-direccion.md (apartado 8.4); docs/prompts/MOTOR-03-panel-y-perfiles.md (apartado 4.1); docs/prompts/MOTOR-04-ataque-posicional.md (anexo A); docs/prompts/MOTOR-05-defensa-completa.md (anexo A); docs/prompts/MOTOR-06-transicion-y-saques.md (anexo A)",
   "files": {
     "data/match/motor01-seed-profile.json": {
       "id": "SEM-MOTOR01-20261016",
@@ -34,6 +34,13 @@
       "sha256": "c6797df3b03554619f0201efbdfe9fd533531ea349f5ed2447541fdb96078305",
       "origin": "Anexo A del prompt de MOTOR-05 (cifras SEM, literales) + contenido declarativo de organizaciones, funciones, responsabilidades, roles y coberturas: lectura de Claude, a revisar por Dennis",
       "state": "SEM provisional, no calibrado; amplía el catálogo activo de defensas y coberturas"
+    },
+    "data/match/motor06-seed-extension.json": {
+      "id": "SEM-MOTOR06-20261016",
+      "status": "SEM: provisional, no calibrado",
+      "sha256": "f5ed22ef4d6d6dbe8c9a595974f51718c687cc4e96f5ff671e5fcbfe615810cd",
+      "origin": "Anexo A del prompt de MOTOR-06 (cifras SEM, literales) + contenido declarativo del catálogo ESP01–ESP20, seis fichas de saque y seis respuestas defensivas (anexos B y C): lectura de Claude, a revisar por Dennis",
+      "state": "SEM provisional, no calibrado; completa el catálogo espontáneo activo y añade saques de banda y fondo"
     },
     "data/match/motor04-seed-extension.json": {
       "id": "SEM-MOTOR04-20261016",

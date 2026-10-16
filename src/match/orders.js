@@ -2,7 +2,7 @@
 // Núcleo sin DOM ni reloj de ordenador. Toda intervención entra por submit / submitBatch / cancel, que se registran como
 // «comandos» ancladas a la frontera de avance (`afterStep`), no a una hora: son lo que permite reproducir el encuentro.
 import { MatchCore } from './core.js';
-import { SLOTS, deepCopy, MIDRANGE_POLICIES, DEFENSE_STYLE_KEYS, validateDefensePlan } from './data.js';
+import { SLOTS, deepCopy, MIDRANGE_POLICIES, DEFENSE_STYLE_KEYS, validateDefensePlan, validateThrowPlan } from './data.js';
 import { ORDER_TYPES, EDITABLE_STYLES, TERMINAL_STATES, ENTRY_TYPES } from './order-types.js';
 import { newTimeoutLedger, timeoutAllowance, chargeTimeout } from './admin.js';
 
@@ -135,6 +135,9 @@ P.projectDefensePlan = function projectDefensePlan(team, orders) {
   for (const o of orders) {
     if (o.type === 'defStyles') plan.defStyles = { ...plan.defStyles, ...o.content.defStyles };
     else if (o.type === 'defCoverage') { plan.coverage = o.content.coverage ?? plan.coverage; plan.navigation = o.content.navigation ?? (o.content.coverage && o.content.coverage !== plan.coverage ? null : plan.navigation); }
+    else if (o.type === 'throwInBook') { const b = (plan.throwInBook ?? []).map((x) => ({ ...x })); for (const [k, v] of Object.entries(o.content.priorities)) { const i = b.findIndex((x) => x.playId === k); if (v === null) { if (i >= 0) b.splice(i, 1); } else if (i >= 0) b[i].priority = v; else b.push({ playId: k, priority: v }); } plan.throwInBook = b; }
+    else if (o.type === 'throwInServers') { plan.throwInServers = { band: { ...plan.throwInServers.band, ...(o.content.band ?? {}) }, endline: { ...plan.throwInServers.endline, ...(o.content.endline ?? {}) } }; }
+    else if (o.type === 'defThrowIn') { plan.throwInDefense = { ...plan.throwInDefense, ...Object.fromEntries(['band', 'endline', 'target'].filter((f) => f in o.content).map((f) => [f, o.content[f]])) }; }
     else if (o.type === 'defSpecial' && o.content.special !== 'ESPD01') { plan.specials = (plan.specials ?? []).filter((x) => x.id !== o.content.special); if (o.content.config) plan.specials.push({ id: o.content.special, ...o.content.config }); }
     else if (DEF_FIELDS[o.type]) for (const f of DEF_FIELDS[o.type]) if (f in o.content) plan[f] = deepCopy(o.content[f]);
   }
@@ -142,8 +145,13 @@ P.projectDefensePlan = function projectDefensePlan(team, orders) {
 };
 P.checkDefensePlan = function checkDefensePlan(team, orders) {
   const errs = [];
-  const plan = this.projectDefensePlan(team, orders);
-  validateDefensePlan(plan, this.input.teams[team], this.input.teams[1 - team], this.profile, 'plan', (path, message) => errs.push(`${path.replace(/^plan\./, '')}: ${message}`));
+  // la configuración conjunta incluye las solicitudes de plan del equipo aún pendientes (p. ej. una cobertura nueva no deja incompatible una respuesta de saque ya solicitada)
+  const PROJ = new Set(['defOrg', 'defHeight', 'defStyles', 'defCoverage', 'defMarks', 'defSpecial', 'throwInBook', 'throwInServers', 'defThrowIn']);
+  const pend = this.orders.filter((x) => x.team === team && x.kind === 'plan' && x.state === 'pendiente' && PROJ.has(x.type) && !orders.includes(x) && !(x.type === 'defSpecial' && x.content.special === 'ESPD01'));
+  const plan = this.projectDefensePlan(team, [...pend, ...orders]);
+  const add = (path, message) => errs.push(`${path.replace(/^plan\./, '')}: ${message}`);
+  validateDefensePlan(plan, this.input.teams[team], this.input.teams[1 - team], this.profile, 'plan', add);
+  validateThrowPlan(plan, this.input.teams[team], this.input.teams[1 - team], this.profile, 'plan', add); // una cobertura nueva no deja incompatible la respuesta de saque vigente
   return errs;
 };
 const defValidate = (field) => function defValidated(o) {
@@ -207,6 +215,42 @@ P.validate_defSpecial = function validate_defSpecial(o) {
   const errs = this.checkDefensePlan(o.team, [o]);
   if (errs.length) return fail(errs[0]);
   o.scope = this.planScope(); o.liveFields = [`special.${id}`];
+  return ok();
+};
+
+// ---------------------------------------------------------------- saques (MOTOR-06): libro, sacadores, respuesta y llamada puntual
+const throwValidate = (field, liveFields) => function throwValidated(o) {
+  const errs = this.checkDefensePlan(o.team, [o]);
+  if (errs.length) return fail(errs[0]);
+  o.scope = this.planScope(); o.liveFields = liveFields(o);
+  return ok();
+};
+P.validate_throwInBook = function validate_throwInBook(o) {
+  const pr = o.content.priorities;
+  if (!pr || typeof pr !== 'object' || !Object.keys(pr).length) return fail('indica al menos una prioridad de saque');
+  for (const [k, v] of Object.entries(pr)) {
+    if (!this.profile.activeCatalog.throwInPlays.includes(k)) return fail(`la ficha de saque ${k} no está activa`);
+    if (v !== null && (!Number.isInteger(v) || v < 1 || v > 5)) return fail(`${k}: la prioridad es un entero de 1 a 5 (o nula para desactivar la ficha)`);
+  }
+  return throwValidate('throwInBook', () => Object.keys(pr).map((k) => `throwBook.${k}`)).call(this, o);
+};
+P.validate_throwInServers = function validate_throwInServers(o) {
+  const c = o.content;
+  if (!c.band && !c.endline) return fail('indica el sacador de banda o el de fondo');
+  return throwValidate('throwInServers', () => [...(c.band ? ['throwServer.band'] : []), ...(c.endline ? ['throwServer.endline'] : [])]).call(this, o);
+};
+P.validate_defThrowIn = function validate_defThrowIn(o) {
+  const c = o.content;
+  if (!('band' in c) && !('endline' in c) && !('target' in c)) return fail('indica la respuesta de banda, la de fondo o el objetivo');
+  return throwValidate('defThrowIn', () => ['band', 'endline', 'target'].filter((f) => f in c).map((f) => `defThrow.${f}`)).call(this, o);
+};
+P.validate_throwInCall = function validate_throwInCall(o) {
+  const { playId } = o.content;
+  if (!this.profile.activeCatalog.throwInPlays.includes(playId)) return fail(`la ficha de saque ${playId} no está activa`);
+  if (this.tcfg().pointCallScope !== 'next_compatible_own_throw_in_within_current_period') return fail('el ámbito de la llamada puntual de saque del perfil no está soportado por esta versión');
+  const period = this.periodBreak != null ? this.periodBreak : this.period;
+  if (this.periodBreak == null && this.clock <= 0) return fail('no queda tiempo en el periodo: la llamada caducaría sin poder consumirse');
+  o.scope = { kind: 'periodo', period, throwKind: this.tr().plays[playId].kind };
   return ok();
 };
 
@@ -299,6 +343,7 @@ P.validate_timeout = function validate_timeout(o) {
 const WAIT = {
   plan: (o) => (o.scope.kind === 'periodo' ? `vigente desde el inicio del ${ordinal(o.scope.targetPeriod)} periodo` : 'vigente desde la próxima elección'),
   special: (o) => (o.scope.target === 'current' ? 'pendiente de una oportunidad pertinente en la posesión rival actual' : 'pendiente de la siguiente posesión rival'),
+  tcall: (o) => `pendiente del siguiente saque compatible propio (${o.scope.throwKind === 'band' ? 'banda' : 'fondo'}) del ${ordinal(o.scope.period)} periodo; caduca con él`,
   call: (o) => (o.scope.target === 'current' ? 'pendiente de la selección de inicio de la posesión actual' : 'pendiente de la siguiente posesión ofensiva propia'),
   lineup: () => 'pendiente de oportunidad reglamentaria',
   timeout: () => 'pendiente de oportunidad reglamentaria',
@@ -312,6 +357,11 @@ P.acceptOrder = function acceptOrder(o) {
       if (old === o || old.kind !== 'plan' || old.team !== o.team || old.state !== 'pendiente' || !old.liveFields) continue;
       old.liveFields = old.liveFields.filter((f) => !o.liveFields.includes(f));
       if (!old.liveFields.length) { old.supersededBy = o.id; o.replaces.push(old.id); this.setState(old, 'sustituida', `sustituida por ${o.id} antes de activarse`); }
+    }
+  } else if (o.kind === 'tcall') {
+    for (const old of this.orders) {
+      if (old === o || old.kind !== 'tcall' || old.team !== o.team || old.state !== 'pendiente' || old.scope.throwKind !== o.scope.throwKind) continue;
+      old.supersededBy = o.id; o.replaces.push(old.id); this.setState(old, 'sustituida', `sustituida por ${o.id} (la última solicitud válida prevalece)`);
     }
   } else if (o.kind === 'call' || o.kind === 'lineup' || o.kind === 'special') {
     for (const old of this.orders) {
@@ -387,6 +437,15 @@ P.applyPlanOrder = function applyPlanOrder(o) {
   else if (o.type === 'director') plan.directorPriority = [...o.content.directorPriority];
   else if (o.type === 'disposition') { plan.disposition = o.content.disposition; if (this.poss && !this.poss.done) { this.poss.disposition = null; this.poss.layout = null; } }
   else if (o.type === 'roles') for (const [pid, code] of Object.entries(o.content.roles)) { if (o.liveFields.includes(`roles.${pid}`)) this.roleOf[pid] = code; }
+  else if (o.type === 'throwInBook') {
+    for (const [k, v] of Object.entries(o.content.priorities)) {
+      if (!o.liveFields.includes(`throwBook.${k}`)) continue;
+      const i = plan.throwInBook.findIndex((b) => b.playId === k);
+      if (v === null) { if (i >= 0) plan.throwInBook.splice(i, 1); } else if (i >= 0) plan.throwInBook[i].priority = v; else plan.throwInBook.push({ playId: k, priority: v });
+    }
+  }
+  else if (o.type === 'throwInServers') { for (const k of ['band', 'endline']) if (o.liveFields.includes(`throwServer.${k}`)) plan.throwInServers[k] = { ...plan.throwInServers[k], ...deepCopy(o.content[k]) }; }
+  else if (o.type === 'defThrowIn') { for (const f of ['band', 'endline', 'target']) if (o.liveFields.includes(`defThrow.${f}`)) plan.throwInDefense[f] = o.content[f]; }
   else if (o.type === 'defOrg') { for (const f of DEF_FIELDS.defOrg) if (f in o.content) plan[f] = deepCopy(o.content[f]); this.defPlanVer[o.team] += 1; this.def[o.team].eff = null; }
   else if (o.type === 'defHeight') plan.pressureHeight = o.content.pressureHeight;
   else if (o.type === 'defStyles') { for (const [k, v] of Object.entries(o.content.defStyles)) if (o.liveFields.includes(`defStyles.${k}`)) plan.defStyles[k] = v; }
@@ -514,6 +573,7 @@ P.planView = function planView(team) {
   const plan = this.teams[team].plan;
   const pending = this.orders.filter((o) => o.team === team && (o.state === 'pendiente' || o.state === 'vigente') && o.kind !== 'plan' || (o.team === team && o.kind === 'plan' && o.state === 'pendiente'));
   return {
+    throwIns: { book: (plan.throwInBook ?? []).map((b) => ({ ...b })), servers: deepCopy(plan.throwInServers ?? null), defense: deepCopy(plan.throwInDefense ?? null) },
     styles: { ...plan.styles }, midrange: plan.midrange, disposition: plan.disposition, roles: { ...this.roleOf }, playbook: plan.playbook.map((b) => ({ ...b })), directorPriority: [...plan.directorPriority],
     lineup: { ...this.lineup[team] }, projectedLineup: this.projectedLineup(team), lineupControl: { ...this.lineupControl[team] },
     timeouts: this.timeoutStatus(team), pending,
@@ -534,6 +594,10 @@ P.describeOrder = function describeOrder(o) {
     case 'defRoles': return `Roles defensivos: ${Object.entries(c.roles).map(([k, v]) => `${k} = ${v}`).join(', ')}`;
     case 'defMarks': return `Marcas: ${c.marks.length ? c.marks.map((m) => `${m.defender} → ${m.attacker ?? m.fn}`).join(', ') : 'ninguna'}`;
     case 'defSpecial': return c.special === 'ESPD01' ? `Falta táctica (${c.scope === 'current' ? 'posesión rival actual' : 'siguiente posesión rival'})${c.target && c.target !== 'holder' ? ` sobre ${c.target}` : ' sobre el poseedor'}${c.executor ? ` · ejecutor ${c.executor}` : ''}` : `${c.special === 'ESPD02' ? 'Doble a jugador' : 'No abandonar tirador'}: ${c.config ? JSON.stringify(c.config) : 'retirada'}`;
+    case 'throwInBook': return `Libro de saques: ${Object.entries(c.priorities).map(([k, v]) => `${k} = ${v === null ? 'desactivada' : v}`).join(', ')}`;
+    case 'throwInServers': return `Sacadores: ${['band', 'endline'].filter((k) => c[k]).map((k) => `${k === 'band' ? 'banda' : 'fondo'} ${c[k].preferred ?? 'política'}${c[k].alternate ? ` / alternativo ${c[k].alternate}` : ''}`).join(' · ')}`;
+    case 'defThrowIn': return `Respuesta de saque: ${['band', 'endline'].filter((k) => c[k]).map((k) => `${k === 'band' ? 'banda' : 'fondo'} ${c[k]}`).join(' · ')}${'target' in c ? ` · objetivo ${c.target ?? 'ninguno'}` : ''}`;
+    case 'throwInCall': return `Llamar ${c.playId} (próximo saque compatible propio, periodo ${o.scope?.period ?? '—'})`;
     case 'delegate': return 'Devolver la gestión del quinteto al entrenador básico';
     case 'call': return `Llamar ${c.playId} (${c.target === 'current' ? 'posesión actual' : 'siguiente posesión propia'})`;
     case 'substitution': return `Cambio: ${(c.swaps ?? []).map((s) => `sale ${s.out}, entra ${s.in}`).join('; ')}`;

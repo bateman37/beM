@@ -123,7 +123,9 @@ P.assignRoles = function assignRoles(team, playId, director, layout, poss, { dry
   for (const [role, def] of Object.entries(spec.roles)) if (def.src === 'director') roles[role] = director;
   const pools = Object.entries(spec.roles).filter(([, d]) => d.src === 'pool');
   const needed = pools.filter(([, d]) => !d.opt).map(([r]) => r);
-  const candOf = (r) => this.roleCandidates(team, spec.roles[r], layout, taken);
+  // MOTOR-06: un rol con `directorOk` (aislador de POS14) admite al director como candidato más, sin prioridad por identidad; si lo elige,
+  // el director cumple ambas funciones (aísla él mismo y no necesita pasarse el balón).
+  const candOf = (r) => this.roleCandidates(team, spec.roles[r], layout, spec.roles[r].directorOk ? new Set([...taken].filter((x) => x !== director)) : taken);
   if (!matchable(needed, candOf)) {
     const missing = needed.find((r) => !candOf(r).length) ?? needed[0];
     const d = spec.roles[missing];
@@ -137,7 +139,7 @@ P.assignRoles = function assignRoles(team, playId, director, layout, poss, { dry
     // no consumir a quien otra función obligatoria pendiente necesita
     const pending = needed.filter((r) => roles[r] == null && r !== role);
     if (pending.length) {
-      const keep = cands.filter((id) => { taken.add(id); const ok = matchable(pending, candOf); taken.delete(id); return ok; });
+      const keep = cands.filter((id) => { const had = taken.has(id); taken.add(id); const ok = matchable(pending, candOf); if (!had) taken.delete(id); return ok; });
       if (keep.length) cands = keep;
     }
     if (!cands.length) { if (def.opt) continue; return { fail: `falta una función «${role}»` }; }

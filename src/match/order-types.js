@@ -66,6 +66,22 @@ export const ORDER_TYPES = {
     kind: 'plan', label: 'Instrucción especial defensiva', scope: 'según la instrucción: persistente (ESPD02/03) o una posesión rival (ESPD01)',
     boundary: 'ESPD02/03: próxima asignación de referencias; ESPD01: próxima oportunidad pertinente de la posesión rival (no detiene el reloj)',
   },
+  throwInBook: {
+    kind: 'plan', label: 'Libro de saques (banda y fondo)', scope: 'persistente hasta sustitución válida',
+    boundary: 'siguiente saque compatible aún no resuelto; no cambia un saque ya iniciado',
+  },
+  throwInServers: {
+    kind: 'plan', label: 'Sacador preferido y alternativo', scope: 'persistente hasta sustitución válida',
+    boundary: 'siguiente saque compatible; si el sacador ya no está en pista se revalida (alternativo o política funcional)',
+  },
+  defThrowIn: {
+    kind: 'plan', label: 'Respuesta defensiva de saque', scope: 'persistente hasta sustitución válida',
+    boundary: 'siguiente saque rival compatible aún no resuelto',
+  },
+  throwInCall: {
+    kind: 'tcall', label: 'Llamada puntual de saque', scope: 'el siguiente saque compatible propio dentro del periodo actual (caduca al acabar el periodo)',
+    boundary: 'inicio efectivo de la ficha; no lo consume un saque de otro origen incompatible',
+  },
   delegate: {
     kind: 'plan', label: 'Devolver el quinteto al entrenador', scope: 'ámbito «quinteto»',
     boundary: 'siguiente decisión delegada de ese ámbito; no dispara cambios retroactivos',
