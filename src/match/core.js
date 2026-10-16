@@ -58,6 +58,7 @@ export class MatchCore {
     this.pendingWindows = []; this.periodBreak = null; this.periodStartPending = false; this.pendingFoul = null;
     this.initDirection();
     this.initDefense();
+    this.initStates(); // MOTOR-07: Forma, momentos y T (estado deportivo recibido en la entrada)
   }
 
   reachOf(p) {
@@ -190,6 +191,7 @@ export class MatchCore {
       }
     }
     this.clock = Math.max(0, this.clock - dur);
+    this.sportT += dur; // reloj deportivo de los estados: solo cuenta juego vivo
     if (this.shotClockOn) this.shotClock = Math.max(0, this.shotClock - dur);
     return { dur, clockBefore: t0.clock, clockAfter: this.clock, shotBefore: t0.shot, shotAfter: this.shotClock };
   }

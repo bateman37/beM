@@ -1,6 +1,6 @@
 # Estado del proyecto
 
-Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANGELOG.md)). Última actualización: 2026-10-16, entrega MOTOR-06.
+Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANGELOG.md)). Última actualización: 2026-10-16, entrega MOTOR-07.
 
 ## Qué hay realmente en el repositorio
 
@@ -8,6 +8,14 @@ Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANG
 - **Diseño funcional del motor y del primer laboratorio**, organizado por temas en [`motor/`](motor/README.md) (34 capítulos). Es **especificación**: está *definida*, no implementada.
 - **Copia original congelada** del funcional unificado y **exportado completo vigente** generado: ver [`historico/`](historico/README.md) y [`exportados/`](exportados/README.md).
 - **Utilidades documentales** en `scripts/docs/` (Python 3, librería estándar).
+
+## MOTOR-07 (ejecutado, pendiente de Dennis)
+
+- **Existe**: mapa causal de las 32 capacidades con sondas, Forma estable, presión (máximo de importancia y tensión, MEN07), tres momentos individuales con Consistencia y actualización perezosa, T colectivo sin conversión directa, pausas, episodios EPI01–EPI06 con evidencia, perturbación neutral de la salida final, copias de contraste C00–C06, vistas propia/rival/diagnóstico y `export/6`. 11 pruebas nuevas (106 en total) y cinco partidos completos de cierre. Ver [`tecnico/motor07.md`](tecnico/motor07.md) y [recorrido manual](prompts/MOTOR-07-recorrido-manual.md).
+- **Provisional**: cifras del anexo A (SEM), tablas declarativas de tareas con estados y episodios (lectura de Claude); nada calibrado ni validado. **Cambia los resultados** (referencia `20261016`: 82–97 → 83–97); el `export/5` se rechaza sin reproducirse.
+- **Salvedades de MOTOR-06**: corregidos ESP15 y el envío forzado de saque; pendientes COB04 en entregas, libres de la disruptiva (PDF FIBA inaccesible, 403) y etiquetas ESP: cuatro `DECISIÓN REQUERIDA` en `motor07.md`.
+- **Comprobado por Claude**: pruebas automáticas y recorrido en Chromium. **Pendiente de Dennis**: todo el recorrido manual y las decisiones. **No ejecutado**: Node 24, otros navegadores.
+- Siguiente: lo que ordene Dennis (MOTOR-08: memoria y entrenador estratégico; no iniciado).
 
 ## MOTOR-06 (ejecutado, pendiente de Dennis)
 

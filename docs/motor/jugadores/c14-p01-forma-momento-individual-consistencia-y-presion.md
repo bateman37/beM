@@ -306,5 +306,9 @@ Una ventaja grande, un parcial o un mal porcentaje no activan por sí solos un a
 
 Los equipos pueden responder tácticamente a una racha, cambiar quinteto, pedir tiempo muerto o asumir más riesgo. Esas respuestas sí modifican el partido mediante decisiones y ejecución reales.
 
+#### Estado de implementación (MOTOR-07)
+
+Implementado como SEM no calibrado en el laboratorio: Forma estable, presión como máximo de importancia y tensión, M-TIR/M-OFE/M-DEF con actualización perezosa y Consistencia, T con efecto solo en la calidad previa de la oportunidad (sin aporte directo a la conversión), perturbación `p + α·Z·min(p, 1−p)` sobre la salida final y episodios EPI01–EPI06 con evidencia representada. Detalle y decisiones pendientes: `docs/tecnico/motor07.md`. No cambia el diseño funcional.
+
 <!-- beM:pie-inicio -->
 > [Índice del tema](README.md) · Anterior: [c13-tiempo-esfuerzo-y-energia](../simulacion/c13-tiempo-esfuerzo-y-energia.md) · Siguiente: [c14-p02-catalogo-de-episodios-y-actualizacion-de-estados](c14-p02-catalogo-de-episodios-y-actualizacion-de-estados.md)

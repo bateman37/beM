@@ -28,7 +28,7 @@ const fail = (message, extra = {}) => ({ ok: false, error: message, ...extra });
 const okr = (extra = {}) => ({ ok: true, ...extra });
 
 export class ProfileLibrary {
-  // base: perfil efectivo base (SEM-MOTOR01 + MOTOR-02 a MOTOR-06). Se registra protegido como V0.
+  // base: perfil efectivo base (SEM-MOTOR01 + MOTOR-02 a MOTOR-07). Se registra protegido como V0.
   constructor({ storage = null, base, now = () => new Date().toISOString(), players = null, validateFixtures = null } = {}) {
     this.storage = storage; this.now = now; this.players = players; this.validateFixtures = validateFixtures;
     this.baseEffective = deepCopy(base); this.baseHash = contentHash(this.baseEffective);
@@ -181,13 +181,13 @@ export class ProfileLibrary {
   // Una versión anterior a SEM-MOTOR04 conserva su identidad y no se migra en silencio. Esta operación explícita crea un BORRADOR sobre la
   // base nueva con los valores que esa versión había cambiado respecto a su base legada (solo filas que siguen existiendo y no han sido
   // sustituidas por la extensión). El resultado hay que validarlo y publicarlo como cualquier candidata.
-  isLegacy(versionId) { const v = this.version(versionId); return !!v && !v.effective?.throwInRepertoire; }
+  isLegacy(versionId) { const v = this.version(versionId); return !!v && !v.effective?.moment; } // MOTOR-07: sin Forma/momentos/presión no puede jugar el motor actual
   upgradeCandidate(oldVersionId) {
     const old = this.version(oldVersionId);
     if (!old) return fail(`versión desconocida: ${oldVersionId}`);
-    if (!this.isLegacy(oldVersionId)) return fail('esa versión ya incluye el repertorio de MOTOR-06 (ESP y saques)');
+    if (!this.isLegacy(oldVersionId)) return fail('esa versión ya incluye los estados de MOTOR-07 (Forma, momentos, presión y episodios)');
     const newBase = this.version(this.state.baseId);
-    if (!newBase || this.isLegacy(newBase.id)) return fail('no hay una base de MOTOR-06 protegida en la biblioteca');
+    if (!newBase || this.isLegacy(newBase.id)) return fail('no hay una base de MOTOR-07 protegida en la biblioteca');
     const legacyBase = this.versions().find((v) => v.kind === 'base' && this.isLegacy(v.id));
     const replaced = new Set((newBase.effective.extensions ?? []).flatMap((e) => (e.replaced ?? []).map((r) => r.path)));
     const carried = {}; const skipped = [];
@@ -200,7 +200,7 @@ export class ProfileLibrary {
         carried[c.id] = deepCopy(c.after);
       }
     }
-    const made = this.createDraft(newBase.id, { name: `Candidata MOTOR-06 desde ${old.id} «${old.label}»`, reason: `Valores de ${old.id} llevados a la base de MOTOR-06 (${Object.keys(carried).length} filas${skipped.length ? `; ${skipped.length} no se trasladan: sustituidas por la extensión o inexistentes` : ''}). Pendiente de validar y publicar.` });
+    const made = this.createDraft(newBase.id, { name: `Candidata MOTOR-07 desde ${old.id} «${old.label}»`, reason: `Valores de ${old.id} llevados a la base de MOTOR-07 (${Object.keys(carried).length} filas${skipped.length ? `; ${skipped.length} no se trasladan: sustituidas por la extensión o inexistentes` : ''}). Pendiente de validar y publicar.` });
     if (!made.ok) return made;
     if (Object.keys(carried).length) { const e = this.editDraft(made.draft.id, carried, `traslado desde ${old.id}`); if (!e.ok) return e; }
     return { ok: true, draft: this.draft(made.draft.id), carried: Object.keys(carried), skipped };

@@ -24,9 +24,9 @@ function compat(profile, edit) {
 export function renderPrep(root) {
   clear(root);
   const { edit } = store; const profile = prepProfile();
-  const legacy = !store.profile.throwInRepertoire;
+  const legacy = !store.profile.moment;
   root.append(h('h2', {}, 'Preparación del encuentro'));
-  if (legacy) root.append(h('div', { class: 'errbox' }, h('strong', { class: 'err' }, 'El perfil activo es anterior a MOTOR-06. '), 'Puedes preparar la entrada (se valida con el perfil de MOTOR-06), pero no se podrá jugar hasta activar la base de MOTOR-06 o una candidata explícita (Panel de ajustes › Inicio).'));
+  if (legacy) root.append(h('div', { class: 'errbox' }, h('strong', { class: 'err' }, 'El perfil activo es anterior a MOTOR-07. '), 'Puedes preparar la entrada (se valida con el perfil de MOTOR-07), pero no se podrá jugar hasta activar la base de MOTOR-07 o una candidata explícita (Panel de ajustes › Inicio).'));
   if (store.upgradeNotes?.length) root.append(h('p', { class: 'small muted' }, `Entrada guardada con una versión anterior: se añadieron explícitamente los campos nuevos con su valor inicial (${store.upgradeNotes.join('; ')}).`));
   root.append(h('div', { class: 'card' },
     h('div', { class: 'row' },

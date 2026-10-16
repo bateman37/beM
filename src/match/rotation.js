@@ -44,6 +44,7 @@ P.relevoReason = function relevoReason(pid) {
 // Aplica la sustitución: el entrante hereda la posición del saliente (asignación explícita).
 P.substitute = function substitute(team, slot, outId, inId, reason, ctx = {}) {
   const outS = this.ps[outId]; const inS = this.ps[inId];
+  this.beforeStatusChange(outId); this.beforeStatusChange(inId); // MOTOR-07: el intervalo pendiente se procesa con la situación anterior (pista/banquillo)
   outS.onCourt = false; outS.slot = null; outS.benchTenths = 0; outS.stintTenths = 0;
   inS.onCourt = true; inS.slot = slot; inS.stintTenths = 0; inS.benchTenths = 0;
   outS.locked = true; inS.locked = true; // reentrada inmediata: hasta que corra el reloj no se vuelve a cambiar a ninguno de los dos

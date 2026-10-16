@@ -12,7 +12,7 @@ Este documento reúne el diseño por materias. Para utilizarlo no es necesario r
 
 La experiencia buscada es un partido completo de baloncesto, con jugadores diferentes y decisiones tácticas reconocibles. El cálculo avanza por acontecimientos pertinentes dentro de posesiones, conserva un contexto activo pequeño y reutiliza operaciones compartidas. El primer resultado deportivo que debe demostrarse es el partido completo con motor, tácticas, capacidades, dirección, administración y estadísticas conectados.
 
-> **Exportado generado: no editar a mano.** Reconstruido con `python3 scripts/docs/build_engine_docs.py` a partir de las secciones de [`docs/motor/`](../motor/README.md), en el orden de [`manifest.json`](../motor/manifest.json). La referencia congelada de la importación es [`unificado-original.md`](../historico/motor/unificado-original.md) (SHA-256 `df05edda480c7da556ba6a24009bedcd0a7f96c25e54f57c983951e63fc01fdd`). Revisión de composición: `DOC-001-r1`. Huella SHA-256 del contenido compuesto (sin esta nota): `a6e742c6df626c11727a6c16ddb7c3915359a55652de69388bc9fda6c1e26c22`. Los índices de este archivo se generan a partir de los encabezados; el índice original se conserva solo en la copia histórica. Diseño definido no equivale a implementado, validado ni calibrado.
+> **Exportado generado: no editar a mano.** Reconstruido con `python3 scripts/docs/build_engine_docs.py` a partir de las secciones de [`docs/motor/`](../motor/README.md), en el orden de [`manifest.json`](../motor/manifest.json). La referencia congelada de la importación es [`unificado-original.md`](../historico/motor/unificado-original.md) (SHA-256 `df05edda480c7da556ba6a24009bedcd0a7f96c25e54f57c983951e63fc01fdd`). Revisión de composición: `DOC-001-r1`. Huella SHA-256 del contenido compuesto (sin esta nota): `e15be3b1c2818aefdfe21c64b7188c877ccd4fe63e7c72afef070f77fad37ec3`. Los índices de este archivo se generan a partir de los encabezados; el índice original se conserva solo en la copia histórica. Diseño definido no equivale a implementado, validado ni calibrado.
 
 ## Índice general
 
@@ -5394,6 +5394,10 @@ La contribución del jugador que salió puede persistir brevemente a través del
 Una ventaja grande, un parcial o un mal porcentaje no activan por sí solos un aumento compensatorio de T para quien pierde. No hay un mecanismo de remontada destinado a corregir el marcador.
 
 Los equipos pueden responder tácticamente a una racha, cambiar quinteto, pedir tiempo muerto o asumir más riesgo. Esas respuestas sí modifican el partido mediante decisiones y ejecución reales.
+
+#### Estado de implementación (MOTOR-07)
+
+Implementado como SEM no calibrado en el laboratorio: Forma estable, presión como máximo de importancia y tensión, M-TIR/M-OFE/M-DEF con actualización perezosa y Consistencia, T con efecto solo en la calidad previa de la oportunidad (sin aporte directo a la conversión), perturbación `p + α·Z·min(p, 1−p)` sobre la salida final y episodios EPI01–EPI06 con evidencia representada. Detalle y decisiones pendientes: `docs/tecnico/motor07.md`. No cambia el diseño funcional.
 
 <a id="grupo-14-06"></a>
 

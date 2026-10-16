@@ -68,6 +68,7 @@ export function valueText(row, v) {
   if (row.type === 'triangular') return `${n(v[0])} · ${n(v[1])} · ${n(v[2])} s`;
   if (row.type === 'curve') return `${v.length} nodos: ${v.map(([x, y]) => `${n(x)}→${n(y)}`).join('; ')}`;
   if (row.type === 'slots' || row.type === 'strlist') return v.join(', ');
+  if (row.type === 'thresholds') return `[${v.map((x) => n(x)).join(' · ')}]`;
   if (row.type === 'bool') return v ? 'Sí' : 'No';
   if (row.type === 'text' || row.type === 'declarado') return String(v);
   if (PCT.has(row.type)) return pc(v);

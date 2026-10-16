@@ -10,6 +10,7 @@ Cómo está **realmente implementado** el proyecto. Distingue lo documentado de 
 - **MOTOR-04** (repertorio ofensivo, disposiciones, estilos, roles, rebote/balance): [`motor04.md`](motor04.md).
 - **MOTOR-05** (defensa por funciones, coberturas, alturas de presión, especiales y cierre de salvedades de MOTOR-04): [`motor05.md`](motor05.md).
 - **MOTOR-06** (transición, decisiones espontáneas ESP01–ESP20, saques de banda y fondo y cierre de salvedades de MOTOR-05): [`motor06.md`](motor06.md).
+- **MOTOR-07** (capacidades, energía, Forma, presión, momentos, T y episodios, con cierre acotado de salvedades de MOTOR-06): [`motor07.md`](motor07.md).
 - **Utilidades documentales** (`scripts/docs/`): descritas en [`../exportados/README.md`](../exportados/README.md).
 
 ## Pendiente (no existe aún)

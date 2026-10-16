@@ -1,9 +1,9 @@
 // Pantalla «Plantillas»: dos plantillas, ficha de jugador, +1/+3/+5 al conjunto seleccionado, restauración y energía.
 import { h, clear, fmt } from './dom.js';
-import { store, ATTR_GROUPS, planBulk, applyChanges, persist, restoreInitial } from './store.js';
-import { ATTRS, SLOTS } from '../match/index.js';
+import { store, ATTR_GROUPS, planBulk, applyChanges, persist, restoreInitial, prepProfile } from './store.js';
+import { ATTRS, SLOTS, momentCategory, CATEGORY_LABELS, buildContrastScenario, CONTRAST_SCENARIOS } from '../match/index.js';
 
-const ui = { team: 0, openPlayer: null, selPlayers: new Set(), selAttrs: new Set(), delta: 3, preview: null, msg: '' };
+const ui = { diag: false, scen: null, team: 0, openPlayer: null, selPlayers: new Set(), selAttrs: new Set(), delta: 3, preview: null, msg: '' };
 
 export function renderTeams(root) {
   clear(root);
@@ -15,9 +15,11 @@ export function renderTeams(root) {
     h('button', { class: 'btn danger', onclick: () => { if (confirm('¿Restaurar las fichas y planes iniciales suministrados de ambos equipos? Se perderán las ediciones.')) { restoreInitial(); ui.selPlayers.clear(); ui.preview = null; ui.msg = 'Fichas y planes iniciales restaurados.'; renderTeams(root); } } }, 'Restaurar fichas iniciales')));
   if (ui.msg) root.append(h('p', { class: 'pill ok' }, ui.msg));
   const team = edit.teams[ui.team];
+  root.append(statesCard(team, root));
   root.append(rosterCard(team, root));
   root.append(bulkCard(root));
   if (ui.openPlayer) { const p = team.players.find((x) => x.id === ui.openPlayer); if (p) root.append(playerCard(p, team, root)); }
+  root.append(contrastCard(root));
 }
 
 function rosterCard(team, root) {
@@ -79,9 +81,42 @@ function playerCard(p, team, root) {
       h('div', {}, h('h3', {}, 'Tendencias'),
         h('div', { class: 'kv' }, kv('Iniciativa', p.initiative), kv('Vocación de finalización', p.finishingVocation), kv('Preferencia aro', p.zonePreference.rim), kv('Preferencia media distancia', p.zonePreference.midrange), kv('Preferencia triple', p.zonePreference.three), kv('Rol ofensivo', `${p.offensiveRole.code} ${p.offensiveRole.name}`), kv('Rol defensivo', `${p.defensiveRole.code} ${p.defensiveRole.name}`))),
       h('div', {}, h('h3', {}, 'Estados de entrada'),
-        h('div', { class: 'kv' }, kv('Energía inicial', p.state.energy), kv('Forma', neutral()), kv('Momento de tiro / ofensivo / defensivo', neutral()), kv('Faltas', p.state.fouls), kv('Disponible', p.state.available ? 'Sí' : 'No')),
-        h('p', { class: 'small muted' }, 'Forma y momento se conservan como entrada neutral; su dinámica completa, Consistencia y Presión llegan en MOTOR-07. No son controles funcionales.'))),
+        h('div', { class: 'kv' }, kv('Energía inicial', p.state.energy), kv('Forma', stateEdit(p, 'form', 'forma')), kv('M-TIR (tiro)', stateEdit(p, 'M_TIR', 'momento')), kv('M-OFE (control y ejecución ofensiva)', stateEdit(p, 'M_OFE', 'momento')), kv('M-DEF (defensa y disputa)', stateEdit(p, 'M_DEF', 'momento')), kv('Faltas', p.state.fouls), kv('Disponible', p.state.available ? 'Sí' : 'No')),
+        h('p', { class: 'small muted' }, 'La Forma se recibe al empezar y no cambia durante el partido; los momentos son altibajos breves por ámbito. Se muestran como categorías; el número exacto se edita solo en el modo diagnóstico de laboratorio (no son instrucciones del entrenador ni capacidades: los botones +1/+3/+5 no los tocan).'))),
     groups);
 }
 const kv = (k, v) => [h('div', { class: 'muted' }, k), h('div', {}, v)];
-const neutral = () => h('span', { class: 'neutral' }, 'neutral — pendiente (MOTOR-07)');
+// Categoría cualitativa de un estado de entrada; con el modo diagnóstico activo, además, el valor numérico editable (−1…1).
+const catOf = (kind, v) => CATEGORY_LABELS[kind][momentCategory(prepProfile(), v)];
+function stateEdit(p, key, kind) {
+  const prof = prepProfile(); const [lo, hi] = key === 'form' ? prof.form.range : prof.moment.range;
+  if (!ui.diag) return `${catOf(kind, p.state[key])}`;
+  return h('span', {}, h('input', { type: 'number', min: lo, max: hi, step: 0.05, value: p.state[key], 'aria-label': `${key} inicial de ${p.id}`, onchange: (e) => { const v = Number(e.target.value); if (Number.isFinite(v) && v >= lo && v <= hi) { p.state[key] = v; persist(); } else e.target.value = p.state[key]; } }), ` ${catOf(kind, p.state[key])}`);
+}
+
+// Estados de equipo y modo diagnóstico: T inicial (conexión del equipo) e importancia del encuentro.
+function statesCard(team, root) {
+  const prof = prepProfile(); const [lo, hi] = prof.teamMoment.range;
+  return h('div', { class: 'card' }, h('h3', { style: 'margin-top:0' }, 'Estados de entrada del equipo'),
+    h('label', { class: 'row' }, h('input', { type: 'checkbox', id: 'diag-mode', checked: ui.diag, onchange: (e) => { ui.diag = e.target.checked; renderTeams(root); } }), ' Modo diagnóstico de laboratorio: editar los números de Forma, momentos y T (entrada controlada; no es una orden de entrenador)'),
+    h('div', { class: 'row', style: 'margin-top:6px' }, h('span', {}, 'Conexión del equipo (T) inicial: '),
+      ui.diag ? h('input', { type: 'number', min: lo, max: hi, step: 0.05, value: team.plan.initialTeamMoment, 'aria-label': 'T inicial', onchange: (e) => { const v = Number(e.target.value); if (Number.isFinite(v) && v >= lo && v <= hi) { team.plan.initialTeamMoment = v; persist(); } else e.target.value = team.plan.initialTeamMoment; } }) : null,
+      h('span', { class: 'pill' }, CATEGORY_LABELS.equipo[momentCategory(prof, team.plan.initialTeamMoment)]), h('span', { class: 'small muted' }, 'Respuesta y coordinación del equipo, no un multiplicador de tiro. Una sustitución no la borra.')),
+    h('p', { class: 'small muted' }, 'La importancia del encuentro (ordinario, importante, decisivo) se elige en «Partido». La edad y el peso de las fichas no tienen efecto deportivo directo.'));
+}
+
+// Escenarios de contraste: COPIAS identificadas de la entrada actual con cambios listados. No sobrescriben las fichas ni los planes editados.
+function contrastCard(root) {
+  const prof = prepProfile();
+  const cards = CONTRAST_SCENARIOS.map((sc) => {
+    const prev = ui.scen === sc.id ? buildContrastScenario(sc.id, store.edit, prof) : null;
+    return h('div', { class: 'card', style: 'margin:6px 0' }, h('strong', {}, `${sc.id} · ${sc.name}`), h('p', { class: 'small' }, sc.summary),
+      h('div', { class: 'row' },
+        h('button', { class: 'btn secondary', type: 'button', onclick: () => { ui.scen = ui.scen === sc.id ? null : sc.id; renderTeams(root); } }, ui.scen === sc.id ? 'Ocultar cambios' : 'Ver los cambios de la copia'),
+        h('button', { class: 'btn', type: 'button', id: `scen-${sc.id}`, onclick: () => { store.scenario = buildContrastScenario(sc.id, store.edit, prof); window.dispatchEvent(new CustomEvent('beM:goto', { detail: 'game' })); } }, 'Usar esta copia en «Partido»')),
+      prev ? h('div', { class: 'scroll', style: 'max-height:220px' }, h('table', {}, h('thead', {}, h('tr', {}, ['Sujeto', 'Campo', 'Antes', 'Después'].map((x) => h('th', {}, x)))), h('tbody', {}, prev.changes.length ? prev.changes.map((c) => h('tr', {}, h('td', {}, c.jugador ?? c.equipo ?? 'encuentro'), h('td', {}, c.campo), h('td', { class: 'num' }, String(Number(Number(c.antes).toFixed(3)) || c.antes)), h('td', { class: 'num' }, String(Number(Number(c.despues).toFixed(3)) || c.despues)))) : [h('tr', {}, h('td', { colspan: 4 }, 'Sin cambios: la base neutral declarada.'))]))) : null);
+  });
+  return h('div', { class: 'card' }, h('h3', { style: 'margin-top:0' }, 'Escenarios de contraste (copias identificadas)'),
+    h('p', { class: 'small muted' }, 'Cada copia parte de tu entrada actual, lista exactamente lo que cambia y no modifica tus fichas ni tus planes. Sirven para observar mecanismos; el marcador de una copia con varios cambios no atribuye causas.'),
+    store.scenario ? h('p', { class: 'pill warn' }, `Copia activa para el próximo partido: ${store.scenario.scenario.id} · ${store.scenario.scenario.name}`) : null, ...cards);
+}

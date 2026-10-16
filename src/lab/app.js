@@ -16,6 +16,7 @@ function paint() {
   TABS.find((t) => t[0] === current)[2](root);
 }
 
+window.addEventListener('beM:goto', (e) => { current = e.detail; paint(); });
 document.getElementById('detail-close').addEventListener('click', () => document.getElementById('detail').close());
 document.getElementById('rowdlg-close').addEventListener('click', () => document.getElementById('rowdlg').close());
 try {

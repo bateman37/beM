@@ -260,7 +260,7 @@ P.throwInPhase = function throwInPhase(poss, spec) {
     if (ex.icpt) this.decideSteal(ex, ex.defTrace ?? {});
     ex.quality = { cls: 'forced', K: this.profile.opportunity.qualityShotLogit.forced, z: d.q.z };
     const w = this.categoryWeights(ex);
-    const items = [{ key: 'turnover', w: w.turnover ?? 0 }, { key: 'foul', w: (w.defensiveNonShootingFoul ?? 0) + (w.shootingFoul ?? 0) }, { key: 'looseBall', w: w.looseBall ?? 0 }, { key: 'delivered', w: w.fieldShot ?? 0 }].filter((i) => i.w > 0);
+    const items = [{ key: 'turnover', w: w.turnover ?? 0 }, { key: 'foul', w: (w.defensiveNonShootingFoul ?? 0) }, { key: 'looseBall', w: w.looseBall ?? 0 }, { key: 'delivered', w: w.fieldShot ?? 0 }].filter((i) => i.w > 0);
     const cat = this.pick(items, 'saque:envío forzado').key;
     const base = { t, team, intent: { ...traceBase, categoria: cat, ejecucion: 'pase', calidad: 'forced', negadas: options.length }, participants: { sacador: server, receptor: d.pid, defensor: ex.defend ?? null, interceptor: ex.icpt ?? null } };
     if (cat === 'turnover') { this.closeChain(poss, 'resultado: pérdida en el saque'); return this.resolveTurnover(ex, base); }
