@@ -13,7 +13,8 @@ Directorio de los encargos a Claude Code. **El texto original de un prompt ejecu
 |---|---|---|---|---|---|
 | DOC-001 | Organización documental de beM y normas de trabajo | [`DOC-001-organizacion-documental-y-normas.md`](DOC-001-organizacion-documental-y-normas.md) | Ejecutado, **pendiente de revisión de Dennis** | 2026-10-16 (intento 1) | — |
 | MOTOR-01 | Primer partido completo y laboratorio inicial | [`MOTOR-01-primer-partido-completo.md`](MOTOR-01-primer-partido-completo.md) | Integrado en `main`; Dennis comunicó (en el prompt de MOTOR-02) arranque local y recorrido manual correctos | 2026-10-16 (intento 1) | — |
-| MOTOR-02 | Tres modalidades y dirección manual del partido | [`MOTOR-02-modos-y-direccion.md`](MOTOR-02-modos-y-direccion.md) | Ejecutado, **pendiente de revisión de Dennis** | 2026-10-16 (intento 1) | — |
+| MOTOR-02 | Tres modalidades y dirección manual del partido | [`MOTOR-02-modos-y-direccion.md`](MOTOR-02-modos-y-direccion.md) | Integrado en `main` (Dennis comunicó la integración; sin auditoría de su código por parte de ChatGPT) | 2026-10-16 (intento 1) | — |
+| MOTOR-03 | Panel administrable, perfiles y comparación de ajustes | [`MOTOR-03-panel-y-perfiles.md`](MOTOR-03-panel-y-perfiles.md) · [recorrido manual](MOTOR-03-recorrido-manual.md) | Ejecutado, **pendiente de revisión de Dennis** | 2026-10-16 (intento 1) | — |
 
 ## Fichas de ejecución
 
@@ -82,3 +83,19 @@ Comprobación local de enlaces: hecha por Claude. Presentación en GitHub: no co
 | Comprobaciones realizadas | `npm test` (40), `npm run data:check`, recorrido de la interfaz con Chromium automatizado, barrido de desarrollo de 39 partidos con órdenes aleatorias (no parte de la entrega). |
 | Limitaciones | PDF FIBA no accesible (403): U01–U03 sin contrastar. Corrección B01 cambia resultados de referencia de MOTOR-01. Consumo de cuota no medible. |
 | Pendientes | [Recorrido manual](MOTOR-02-recorrido-manual.md) y validación de Dennis; decisión de fusión. MOTOR-03 no iniciado. |
+
+
+### MOTOR-03
+
+| Campo | Valor |
+|---|---|
+| Objetivo | Panel de ajustes con diccionario, tabla maestra, mesa por preguntas, perfiles con herencia, validación, publicación/activación, comparación de un partido por perfil e intercambio. |
+| Medio de entrada del texto | Archivo `.md` adjunto (`e75129d2-beM-PROMPT-MOTOR-03-PANEL-ADMINISTRABLE-Y-PERFILES.md`). La copia archivada es idéntica byte a byte. |
+| Fecha real de ejecución | 2026-10-16 · intento 1 |
+| Revisión de partida | `d05fe73` (`main` con MOTOR-02 integrado). |
+| Rama | `claude/busy-edison-b1fmnc` (designada por el entorno; el prompt proponía `feature/MOTOR-03-panel-y-perfiles`), reiniciada desde `main` tras fusionarse la PR anterior. |
+| PR | Ver la PR abierta contra `main` (sin fusionar). |
+| Resultado breve | Ver [`../tecnico/motor03.md`](../tecnico/motor03.md). Motor `beM-motor-0.3.0-MOTOR03`; perfil base `SEM-MOTOR01+02+03`; semilla de referencia 20261016 (94–89, idéntica a la anterior a MOTOR-03). |
+| Comprobaciones realizadas | `npm test` (53), `npm run data:check`, equivalencia deportiva con la referencia previa, recorrido de interfaz con Chromium automatizado (flujo completo). |
+| Limitaciones | PDF FIBA no accesible; asignación fila→grupo y entregas previstas son propuesta de Claude; consumo de cuota no medible; Node 22. |
+| Pendientes | [Recorrido manual](MOTOR-03-recorrido-manual.md) y validación de Dennis; decisión de fusión. MOTOR-04 no iniciado. |

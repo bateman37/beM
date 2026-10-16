@@ -1,4 +1,7 @@
 // Utilidades mínimas de DOM (sin dependencias).
+// `Element.append(null)` escribiría el texto «null»: se ignoran los huecos (null/false) y se aplanan las listas.
+const nativeAppend = Element.prototype.append;
+Element.prototype.append = function append(...kids) { return nativeAppend.apply(this, kids.flat(2).filter((k) => k != null && k !== false)); };
 export function h(tag, props = {}, ...kids) {
   const el = document.createElement(tag);
   for (const [k, v] of Object.entries(props ?? {})) {

@@ -41,14 +41,14 @@ export const COVERAGE = {
       'Mensajes, orden y claridad del panel de dirección',
     ],
     noImplementado: [
-      ['Panel completo y perfiles editables', 'MOTOR-03'], ['Repertorio ofensivo ampliado', 'MOTOR-04'], ['Defensas, marcas, dobles y roles individuales', 'MOTOR-05'],
+      ['Repertorio ofensivo ampliado', 'MOTOR-04'], ['Defensas, marcas, dobles y roles individuales', 'MOTOR-05'],
       ['Saques tácticos y ampliación espontánea', 'MOTOR-06'], ['Forma y momentos (la pausa no atenúa nada todavía)', 'MOTOR-07'],
       ['Políticas avanzadas del entrenador y tiempos muertos automáticos', 'MOTOR-08'], ['Cierre reglamentario extraordinario', 'MOTOR-09'],
     ],
   },
   pendientes: [
     'Resto del repertorio y disposiciones', 'Zonas y otras coberturas', 'Forma, momento, Consistencia y Presión (entrada neutral; la pausa no atenúa el momento hasta MOTOR-07)',
-    'Memoria rival', 'Panel completo y perfiles editables (MOTOR-03)', 'Defensas, marcas, dobles y roles individuales editables (MOTOR-05/08)',
+    'Memoria rival', 'Defensas, marcas, dobles y roles individuales editables (MOTOR-05/08)',
     'Políticas completas del entrenador, incluidos tiempos muertos automáticos (MOTOR-08)', 'Cierre reglamentario extraordinario (MOTOR-09)',
     'Atribución exhaustiva del acta y estadísticas avanzadas (MOTOR-09)', 'Generador y lotes', 'Guardado de carreras y persistencia entre sesiones',
     'Estilos transición, elaboración, riesgo ofensivo y tras tiro: valor declarado, sin control',
