@@ -56,7 +56,10 @@ export function renderBatch(root) {
 let painting = false;
 // Repintado a prueba de reentrada: un `change` pendiente se dispara al quitar un campo enfocado (blur) y volvería a repintar en mitad del repintado.
 function repaint() {
-  const root = ui.root; if (!root || painting) return; painting = true; const y = window.scrollY;
+  const root = ui.root; if (!root || painting) return;
+  // MOTOR-15 (defecto hallado en el recorrido de navegador): una consulta de progreso en vuelo no debe repintar «Lotes» encima de otra pestaña que ya ocupa la vista compartida.
+  if (root.childElementCount && !root.querySelector('#b-preview')) return;
+  painting = true; const y = window.scrollY;
   try { paint(root); } finally { painting = false; }
   window.scrollTo(0, y);
 }
