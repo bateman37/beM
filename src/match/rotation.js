@@ -36,6 +36,26 @@ P.substitute = function substitute(team, slot, outId, inId, reason, ctx = {}) {
   return ev;
 };
 
+// MOTOR-14 (RG-D02, inferioridad natural): la posición del saliente queda VACANTE cuando no existe un sustituto elegible. No se mantiene al excluido en pista ni se inventa un sexto
+// jugador; el equipo continúa con los participantes presentes (la reorganización de tareas y responsabilidades usa `onCourt`). Un solo hecho `substitution` con `entra: null`.
+P.vacate = function vacate(team, slot, outId, reason, ctx = {}) {
+  const outS = this.ps[outId];
+  this.beforeStatusChange(outId);
+  outS.onCourt = false; outS.slot = null; outS.benchTenths = 0; outS.stintTenths = 0; outS.locked = true;
+  delete this.lineup[team][slot];
+  this.registerLineups();
+  this.cover('inferioridad: posición vacante sin sustituto');
+  const dec = ctx.decision ?? null;
+  const ev = this.emit('substitution', {
+    team,
+    intent: { origen: 'administración reglamentaria', motivo: reason, ...(dec ? { decision: dec.id, politica: dec.politica, regla: dec.regla } : {}) },
+    participants: { sale: outId, entra: null, posicion: slot },
+    effects: { sinSustituto: true, inferioridad: this.onCourt(team).length, ventana: ctx.window ?? null, energiaSale: round(outS.energy, 2), foulsSale: outS.fouls, regla: 'RG-D02' },
+  });
+  if (dec) this.dset(dec, 'ejecutada', `retirada sin sustituto en ${ctx.window ?? 'ventana reglamentaria'}: ${this.onCourt(team).length} jugadores en pista`, { hecho: ev.id, participantes: { ...dec.participantes, despues: this.onCourt(team).slice() } });
+  return ev;
+};
+
 // Ventana legal de sustitución (balón muerto con reloj parado, o intervalo de periodo).
 // Nunca se llama entre tiros libres de una misma serie.
 P.substitutionWindow = function substitutionWindow(window) {

@@ -8,6 +8,7 @@ import { mkdtempSync, rmSync, writeFileSync, readFileSync, mkdirSync, readdirSyn
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { createHash } from 'node:crypto';
+import { applyExtension } from '../src/match/data.js';
 import { data } from './helpers.js';
 import * as P from '../src/population/index.js';
 import { runMatch, buildMatchInput } from '../src/match/index.js';
@@ -219,8 +220,8 @@ test('10. abrir un partido del lote lo reproduce con su entrada efectiva y coinc
   const { store, id } = F; const exec = new InlineExecutor({ store }); const r = await exec.replay(id, 'M000002'); const rec = F.snap.info.get('M000002').canonical.facts; assert.equal(r.trajectory_fp, rec.trajectory_fp); assert.equal(r.status, 'finished');
   const file = JSON.parse(r.json); assert.deepEqual(file.score, [rec.score_home, rec.score_away]); assert.equal(file.diagnostics.sportingDraws, rec.draws); assert.equal(file.input.seed, F.snap.info.get('M000002').ex.seed);
   assert.equal(replayMatch(file).comparison.identical, true, 'el export reproducible del partido del lote se reproduce idéntico'); assert.equal(reconcileAnalysis(file).ok, true);
-  const html = readFileSync(new URL('../src/lab/index.html', import.meta.url), 'utf8'); assert.match(html, /rel="icon"/, 'el favicon se declara en la propia página (sin petición 404)'); assert.equal(APP_VERSION, 'MOTOR-13');
-  assert.deepEqual(checkMotor12(JSON.parse(readFileSync(new URL('../data/match/motor12-seed-extension.json', import.meta.url), 'utf8')), data.baseProfile, [data.extension, data.extension3, data.extension4, data.extension5, data.extension6, data.extension7, data.extension8, data.extension9, data.extension10, data.extension11], profile), []);
+  const html = readFileSync(new URL('../src/lab/index.html', import.meta.url), 'utf8'); assert.match(html, /rel="icon"/, 'el favicon se declara en la propia página (sin petición 404)'); assert.equal(APP_VERSION, 'MOTOR-14');
+  assert.deepEqual(checkMotor12(JSON.parse(readFileSync(new URL('../data/match/motor12-seed-extension.json', import.meta.url), 'utf8')), data.baseProfile, [data.extension, data.extension3, data.extension4, data.extension5, data.extension6, data.extension7, data.extension8, data.extension9, data.extension10, data.extension11], applyExtension(data.baseProfile, data.extension, data.extension3, data.extension4, data.extension5, data.extension6, data.extension7, data.extension8, data.extension9, data.extension10, data.extension11, data.extension12, data.extension13)), []);
   assert.equal(JSON.stringify(Object.keys(profile.batch)), JSON.stringify(Object.keys(JSON.parse(readFileSync(new URL('../data/match/motor12-seed-extension.json', import.meta.url), 'utf8')).additions.batch)));
   void readdirSync; void existsSync; void MemProvider; void ZipWriter; void TABLES;
 });

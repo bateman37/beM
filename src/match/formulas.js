@@ -47,6 +47,11 @@ export function perturbCategories(probs, favorable, Z, alpha) {
 export const consistencySigmaAt = (profile, c) => profile.moment.innovationSigmaLowConsistency - (profile.moment.innovationSigmaLowConsistency - profile.moment.innovationSigmaHighConsistency) * a01(c);
 // Pérdida de referencia por presión (logit) del ejecutante: k·P·(1 − a(MEN07)); MEN07 reduce la pérdida, no añade talento.
 export const pressureLossLogit = (profile, scope, P, men07) => profile.pressure.taskMaxLogitLoss[scope] * P * (1 - a01(men07));
+// MOTOR-14: operaciones puras comunes del productor y del contraste (sin partido, sin azar). Misma aritmética que usaba el núcleo.
+// Factor de gasto de energía por Resistencia (FIS06): acotado.
+export const enduranceFactorAt = (profile, fis06) => { const e = profile.energy; return Math.min(e.enduranceFactorBounds[1], Math.max(e.enduranceFactorBounds[0], 1 - e.enduranceSlope * (fis06 - e.baseEnduranceReference))); };
+// Lectura q de la selección: (MEN02·a + MEN03·b − 1)/29 con MEN03 ya penalizado por la presión; sin acotar (el llamante acota a [0,1]).
+export const readingQRaw = (profile, men02Eff, men03Eff) => (profile.selection.readingMix.MEN02 * men02Eff + profile.selection.readingMix.MEN03 * men03Eff - 1) / 29;
 // Categoría cualitativa (0 = la más baja) según las cuatro fronteras declaradas.
 export function momentCategory(profile, v) {
   const b = profile.moment.categoryBoundaries; let i = 0;

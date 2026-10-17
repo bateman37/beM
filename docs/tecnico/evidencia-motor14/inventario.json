@@ -1,0 +1,1243 @@
+{
+ "generatedFrom": "src/profiles/groups.js + buildRows",
+ "effectiveId": "SEM-MOTOR01-20261016+SEM-MOTOR02-20261016+SEM-MOTOR03-20261016+SEM-MOTOR04-20261016+SEM-MOTOR05-20261016+SEM-MOTOR06-20261016+SEM-MOTOR07-20261016+SEM-MOTOR08-20261016+SEM-MOTOR09-20261016+SEM-MOTOR10-20261016+SEM-MOTOR11-20261017+SEM-MOTOR12-20261017+SEM-MOTOR13-20261017+SEM-MOTOR14-20261017",
+ "groups": [
+  {
+   "id": "SEL01",
+   "soporte": false,
+   "responsabilidad": "Pesos 1–5, agregación por familia y selección de variante elegible.",
+   "entrega": "MOTOR-04",
+   "filas": 5,
+   "filasConsumidas": 5,
+   "filasSinConsumidor": 0,
+   "mecanismos": [
+    "coachPlayDistribution",
+    "roleBias",
+    "throwInPhase"
+   ],
+   "nota": null
+  },
+  {
+   "id": "SEL02",
+   "soporte": false,
+   "responsabilidad": "Mapeo de cada nivel de los 12 estilos a preferencias, condiciones o límites pertinentes.",
+   "entrega": "MOTOR-04",
+   "filas": 4,
+   "filasConsumidas": 4,
+   "filasSinConsumidor": 0,
+   "mecanismos": [
+    "zoneStyleMult",
+    "durationKindFor",
+    "mixIntention"
+   ],
+   "nota": null
+  },
+  {
+   "id": "SEL03",
+   "soporte": false,
+   "responsabilidad": "Origen, organización rival y condiciones de transición, temprano u organizado.",
+   "entrega": "MOTOR-04",
+   "filas": 8,
+   "filasConsumidas": 8,
+   "filasSinConsumidor": 0,
+   "mecanismos": [
+    "transitionPhase"
+   ],
+   "nota": null
+  },
+  {
+   "id": "SEL04",
+   "soporte": false,
+   "responsabilidad": "Prioridad interior/exterior y tres instrucciones de media distancia.",
+   "entrega": "MOTOR-04",
+   "filas": 29,
+   "filasConsumidas": 29,
+   "filasSinConsumidor": 0,
+   "mecanismos": [
+    "midrangeFactor",
+    "scoreExits"
+   ],
+   "nota": null
+  },
+  {
+   "id": "SEL05",
+   "soporte": false,
+   "responsabilidad": "Plan, libertad, Iniciativa y procedencia llamada/autonomía/directo.",
+   "entrega": "MOTOR-04",
+   "filas": 2,
+   "filasConsumidas": 2,
+   "filasSinConsumidor": 0,
+   "mecanismos": [
+    "libertyAndReading"
+   ],
+   "nota": null
+  },
+  {
+   "id": "SEL06",
+   "soporte": false,
+   "responsabilidad": "Percepción y elección con Visión, Decisiones, contexto y reloj.",
+   "entrega": "MOTOR-04",
+   "filas": 8,
+   "filasConsumidas": 6,
+   "filasSinConsumidor": 2,
+   "mecanismos": [
+    "libertyAndReading",
+    "perceivedFactor"
+   ],
+   "nota": null
+  },
+  {
+   "id": "SEL07",
+   "soporte": false,
+   "responsabilidad": "Funciones, disponibilidad, roles, capacidades pertinentes y ocupación de tareas.",
+   "entrega": "MOTOR-04",
+   "filas": 13,
+   "filasConsumidas": 11,
+   "filasSinConsumidor": 2,
+   "mecanismos": [
+    "abilityFit",
+    "vocationFactor",
+    "assignRoles",
+    "roleBias"
+   ],
+   "nota": null
+  },
+  {
+   "id": "SEL08",
+   "soporte": false,
+   "responsabilidad": "Aceptación de oportunidad inmediata según calidad percibida, preparación y alternativa.",
+   "entrega": "MOTOR-04",
+   "filas": 4,
+   "filasConsumidas": 4,
+   "filasSinConsumidor": 0,
+   "mecanismos": [
+    "estimateValue",
+    "acceptance"
+   ],
+   "nota": null
+  },
+  {
+   "id": "SEL09",
+   "soporte": false,
+   "responsabilidad": "Preferencias de riesgo y decisiones precipitadas dentro del contexto.",
+   "entrega": "MOTOR-04",
+   "filas": 1,
+   "filasConsumidas": 1,
+   "filasSinConsumidor": 0,
+   "mecanismos": [
+    "mixIntention"
+   ],
+   "nota": null
+  },
+  {
+   "id": "SEL10",
+   "soporte": false,
+   "responsabilidad": "Conservación, salida segura y reorganización elegibles.",
+   "entrega": "MOTOR-04",
+   "filas": 5,
+   "filasConsumidas": 5,
+   "filasSinConsumidor": 0,
+   "mecanismos": [
+    "simpleResource",
+    "extraPassChain",
+    "runPlay"
+   ],
+   "nota": null
+  },
+  {
+   "id": "SEL11",
+   "soporte": false,
+   "responsabilidad": "Objetivo de reloj/marcador y necesidad temporal.",
+   "entrega": "MOTOR-08",
+   "filas": 2,
+   "filasConsumidas": 2,
+   "filasSinConsumidor": 0,
+   "mecanismos": [
+    "urgencyFactor"
+   ],
+   "nota": null
+  },
+  {
+   "id": "SEL12",
+   "soporte": false,
+   "responsabilidad": "Ejecutor preferido, sustituto funcional y prioridad manual válida.",
+   "entrega": "MOTOR-04",
+   "filas": 0,
+   "filasConsumidas": 0,
+   "filasSinConsumidor": 0,
+   "mecanismos": [],
+   "nota": null
+  },
+  {
+   "id": "DEF01",
+   "soporte": false,
+   "responsabilidad": "Funciones de individual, 2–3, 3–2, 1–3–1, 1–2–2 y box and one.",
+   "entrega": "MOTOR-05",
+   "filas": 17,
+   "filasConsumidas": 16,
+   "filasSinConsumidor": 1,
+   "mecanismos": [
+    "defScore"
+   ],
+   "nota": null
+  },
+  {
+   "id": "DEF02",
+   "soporte": false,
+   "responsabilidad": "Mapeo de ayudas, presión al balón, receptores, riesgo de robo y protección.",
+   "entrega": "MOTOR-05",
+   "filas": 9,
+   "filasConsumidas": 9,
+   "filasSinConsumidor": 0,
+   "mecanismos": [
+    "tryHelp",
+    "defenseIntent",
+    "beginCoverage"
+   ],
+   "nota": null
+  },
+  {
+   "id": "DEF03",
+   "soporte": false,
+   "responsabilidad": "Altura normal, tres cuartos y total, con intensidad separada.",
+   "entrega": "MOTOR-05",
+   "filas": 15,
+   "filasConsumidas": 13,
+   "filasSinConsumidor": 2,
+   "mecanismos": [
+    "advancePhase",
+    "pressedAdvance",
+    "categoryWeights"
+   ],
+   "nota": null
+  },
+  {
+   "id": "DEF04",
+   "soporte": false,
+   "responsabilidad": "Drop, cambio, show y atrapar; navegación compatible.",
+   "entrega": "MOTOR-05",
+   "filas": 12,
+   "filasConsumidas": 12,
+   "filasSinConsumidor": 0,
+   "mecanismos": [
+    "runPlay",
+    "dutyFor",
+    "mixedValue",
+    "beginCoverage"
+   ],
+   "nota": null
+  },
+  {
+   "id": "DEF05",
+   "soporte": false,
+   "responsabilidad": "Elegibilidad, compromiso y recuperación de ayuda.",
+   "entrega": "MOTOR-05",
+   "filas": 4,
+   "filasConsumidas": 4,
+   "filasSinConsumidor": 0,
+   "mecanismos": [
+    "tryHelp",
+    "runPlay"
+   ],
+   "nota": null
+  },
+  {
+   "id": "DEF06",
+   "soporte": false,
+   "responsabilidad": "Objetivo principal, alternativa, doble y no abandonar.",
+   "entrega": "MOTOR-05",
+   "filas": 5,
+   "filasConsumidas": 3,
+   "filasSinConsumidor": 2,
+   "mecanismos": [
+    "resolveEffectiveOrg",
+    "validate_defSpecial",
+    "tacticalFoul"
+   ],
+   "nota": null
+  },
+  {
+   "id": "DEF07",
+   "soporte": false,
+   "responsabilidad": "Decisión de contener o intentar intervención sobre balón/tiro.",
+   "entrega": "MOTOR-05",
+   "filas": 1,
+   "filasConsumidas": 1,
+   "filasSinConsumidor": 0,
+   "mecanismos": [
+    "defenseIntent"
+   ],
+   "nota": null
+  },
+  {
+   "id": "DEF08",
+   "soporte": false,
+   "responsabilidad": "Plantillas defensivas de saque y necesidades de último ataque.",
+   "entrega": "MOTOR-06",
+   "filas": 0,
+   "filasConsumidas": 0,
+   "filasSinConsumidor": 0,
+   "mecanismos": [],
+   "nota": null
+  },
+  {
+   "id": "DEF09",
+   "soporte": false,
+   "responsabilidad": "Respuestas compatibles sugeridas por memoria.",
+   "entrega": "MOTOR-08",
+   "filas": 2,
+   "filasConsumidas": 2,
+   "filasSinConsumidor": 0,
+   "mecanismos": [
+    "preparedCoverage"
+   ],
+   "nota": null
+  },
+  {
+   "id": "RES01",
+   "soporte": false,
+   "responsabilidad": "Principal, apoyos y contraparte por tarea; propiedad de cada capacidad.",
+   "entrega": "MOTOR-04",
+   "filas": 85,
+   "filasConsumidas": 82,
+   "filasSinConsumidor": 3,
+   "mecanismos": [
+    "taskValue",
+    "shotAbility",
+    "shotDefense",
+    "resolveShot",
+    "eff",
+    "longTravelAccess"
+   ],
+   "nota": null
+  },
+  {
+   "id": "RES02",
+   "soporte": false,
+   "responsabilidad": "Referencia binaria por situación y población identificadas.",
+   "entrega": "MOTOR-04",
+   "filas": 5,
+   "filasConsumidas": 5,
+   "filasSinConsumidor": 0,
+   "mecanismos": [
+    "resolveShot"
+   ],
+   "nota": null
+  },
+  {
+   "id": "RES03",
+   "soporte": false,
+   "responsabilidad": "Normalización, sensibilidades, límites y correcciones pertinentes.",
+   "entrega": "MOTOR-04",
+   "filas": 22,
+   "filasConsumidas": 18,
+   "filasSinConsumidor": 4,
+   "mecanismos": [
+    "categoryWeights",
+    "resolveShot",
+    "afterMiss",
+    "shotLogit"
+   ],
+   "nota": null
+  },
+  {
+   "id": "RES04",
+   "soporte": false,
+   "responsabilidad": "Alternativas excluyentes y su universo.",
+   "entrega": "MOTOR-04",
+   "filas": 7,
+   "filasConsumidas": 7,
+   "filasSinConsumidor": 0,
+   "mecanismos": [
+    "categoryWeights"
+   ],
+   "nota": null
+  },
+  {
+   "id": "RES05",
+   "soporte": false,
+   "responsabilidad": "Contacto, canasta y sanción compatibles bajo condición.",
+   "entrega": "MOTOR-04",
+   "filas": 7,
+   "filasConsumidas": 7,
+   "filasSinConsumidor": 0,
+   "mecanismos": [
+    "resolveShot",
+    "categoryWeights"
+   ],
+   "nota": null
+  },
+  {
+   "id": "RES06",
+   "soporte": false,
+   "responsabilidad": "Preparación por recepción, bote, desplazamiento y estabilidad.",
+   "entrega": "MOTOR-04",
+   "filas": 1,
+   "filasConsumidas": 1,
+   "filasSinConsumidor": 0,
+   "mecanismos": [
+    "resolveShot"
+   ],
+   "nota": null
+  },
+  {
+   "id": "RES07",
+   "soporte": false,
+   "responsabilidad": "Catálogo de gesto y principal de tiro.",
+   "entrega": "MOTOR-04",
+   "filas": 0,
+   "filasConsumidas": 0,
+   "filasSinConsumidor": 0,
+   "mecanismos": [],
+   "nota": null
+  },
+  {
+   "id": "RES08",
+   "soporte": false,
+   "responsabilidad": "Creación mediante balón, poste, corte, pantalla o entrega.",
+   "entrega": "MOTOR-04",
+   "filas": 42,
+   "filasConsumidas": 42,
+   "filasSinConsumidor": 0,
+   "mecanismos": [
+    "playQuality"
+   ],
+   "nota": null
+  },
+  {
+   "id": "RES09",
+   "soporte": false,
+   "responsabilidad": "Riesgo por ejecución o exposición y causas de interrupción.",
+   "entrega": "MOTOR-04",
+   "filas": 7,
+   "filasConsumidas": 6,
+   "filasSinConsumidor": 1,
+   "mecanismos": [
+    "resolveTurnover",
+    "resolveShot"
+   ],
+   "nota": null
+  },
+  {
+   "id": "RES10",
+   "soporte": false,
+   "responsabilidad": "Participación, cierre, acceso, disputa, captura y salida.",
+   "entrega": "MOTOR-04",
+   "filas": 24,
+   "filasConsumidas": 18,
+   "filasSinConsumidor": 6,
+   "mecanismos": [
+    "reboundCommitments",
+    "transitionPhase",
+    "afterMiss"
+   ],
+   "nota": null
+  },
+  {
+   "id": "RES11",
+   "soporte": false,
+   "responsabilidad": "Uso y recuperación de relaciones activas.",
+   "entrega": "MOTOR-05",
+   "filas": 0,
+   "filasConsumidas": 0,
+   "filasSinConsumidor": 0,
+   "mecanismos": [],
+   "nota": null
+  },
+  {
+   "id": "RES12",
+   "soporte": false,
+   "responsabilidad": "Condiciones de calidad previa.",
+   "entrega": "MOTOR-04",
+   "filas": 8,
+   "filasConsumidas": 8,
+   "filasSinConsumidor": 0,
+   "mecanismos": [
+    "qualityOf",
+    "resolveShot"
+   ],
+   "nota": null
+  },
+  {
+   "id": "RES13",
+   "soporte": false,
+   "responsabilidad": "Incidencias condicionadas menos frecuentes.",
+   "entrega": "MOTOR-04",
+   "filas": 3,
+   "filasConsumidas": 2,
+   "filasSinConsumidor": 1,
+   "mecanismos": [
+    "resolveBlocked"
+   ],
+   "nota": null
+  },
+  {
+   "id": "COR01",
+   "soporte": false,
+   "responsabilidad": "Derivación de alcance funcional desde altura y envergadura; referencias, normalización y límites.",
+   "entrega": "MOTOR-05",
+   "filas": 3,
+   "filasConsumidas": 3,
+   "filasSinConsumidor": 0,
+   "mecanismos": [
+    "reachOf"
+   ],
+   "nota": null
+  },
+  {
+   "id": "COR02",
+   "soporte": false,
+   "responsabilidad": "Pertinencia y sensibilidad por tarea del alcance y del componente dinámico separado.",
+   "entrega": "MOTOR-05",
+   "filas": 5,
+   "filasConsumidas": 3,
+   "filasSinConsumidor": 2,
+   "mecanismos": [
+    "shotDefense",
+    "afterMiss"
+   ],
+   "nota": null
+  },
+  {
+   "id": "ACT01",
+   "soporte": false,
+   "responsabilidad": "Duración por contexto y desenlace: mínimo, habitual y máximo.",
+   "entrega": "cada entrega que añada hechos",
+   "filas": 13,
+   "filasConsumidas": 13,
+   "filasSinConsumidor": 0,
+   "mecanismos": [
+    "sampleDuration",
+    "throwInPhase"
+   ],
+   "nota": null
+  },
+  {
+   "id": "ACT02",
+   "soporte": false,
+   "responsabilidad": "Unidad y referencia de exposición sostenida.",
+   "entrega": "MOTOR-07",
+   "filas": 0,
+   "filasConsumidas": 0,
+   "filasSinConsumidor": 0,
+   "mecanismos": [],
+   "nota": null
+  },
+  {
+   "id": "ACT03",
+   "soporte": false,
+   "responsabilidad": "Gasto por intervalo/carga y sensibilidad a Resistencia.",
+   "entrega": "cada entrega que añada tareas",
+   "filas": 9,
+   "filasConsumidas": 9,
+   "filasSinConsumidor": 0,
+   "mecanismos": [
+    "consume",
+    "enduranceFactor"
+   ],
+   "nota": null
+  },
+  {
+   "id": "ACT04",
+   "soporte": false,
+   "responsabilidad": "Recuperación por banquillo y pausas, con límites.",
+   "entrega": "cada entrega que añada pausas",
+   "filas": 5,
+   "filasConsumidas": 5,
+   "filasSinConsumidor": 0,
+   "mecanismos": [
+    "consume",
+    "beginPeriod",
+    "grantTimeouts"
+   ],
+   "nota": null
+  },
+  {
+   "id": "ACT05",
+   "soporte": false,
+   "responsabilidad": "Curva de energía y deterioro máximo por tarea.",
+   "entrega": "cada entrega que añada tareas",
+   "filas": 20,
+   "filasConsumidas": 19,
+   "filasSinConsumidor": 1,
+   "mecanismos": [
+    "taskValue",
+    "resolveShot",
+    "categoryWeights",
+    "afterMiss",
+    "consume",
+    "severity"
+   ],
+   "nota": null
+  },
+  {
+   "id": "ACT06",
+   "soporte": false,
+   "responsabilidad": "Efecto de Forma por ámbito y contrato de entrada.",
+   "entrega": "MOTOR-07",
+   "filas": 11,
+   "filasConsumidas": 10,
+   "filasSinConsumidor": 1,
+   "mecanismos": [
+    "validateInput",
+    "upgradeInput",
+    "formPressure"
+   ],
+   "nota": null
+  },
+  {
+   "id": "ACT07",
+   "soporte": false,
+   "responsabilidad": "Persistencia, variación e impulsos de tres ámbitos individuales.",
+   "entrega": "MOTOR-07",
+   "filas": 5,
+   "filasConsumidas": 5,
+   "filasSinConsumidor": 0,
+   "mecanismos": [
+    "flushMoment",
+    "momentCategory"
+   ],
+   "nota": null
+  },
+  {
+   "id": "ACT08",
+   "soporte": false,
+   "responsabilidad": "Efecto de Consistencia y control de neutralidad.",
+   "entrega": "MOTOR-07",
+   "filas": 2,
+   "filasConsumidas": 2,
+   "filasSinConsumidor": 0,
+   "mecanismos": [
+    "consistencySigma"
+   ],
+   "nota": null
+  },
+  {
+   "id": "ACT09",
+   "soporte": false,
+   "responsabilidad": "Exigencia e influencia de presión por tarea.",
+   "entrega": "MOTOR-07",
+   "filas": 12,
+   "filasConsumidas": 12,
+   "filasSinConsumidor": 0,
+   "mecanismos": [
+    "pressureNow",
+    "formPressure",
+    "choicePenalty"
+   ],
+   "nota": null
+  },
+  {
+   "id": "ACT10",
+   "soporte": false,
+   "responsabilidad": "Momento colectivo: límites, persistencia y episodios.",
+   "entrega": "MOTOR-07",
+   "filas": 43,
+   "filasConsumidas": 25,
+   "filasSinConsumidor": 18,
+   "mecanismos": [
+    "teamMomentOf",
+    "episode",
+    "episodeShot"
+   ],
+   "nota": null
+  },
+  {
+   "id": "ACT11",
+   "soporte": false,
+   "responsabilidad": "Combinación de estados y presupuesto por tarea.",
+   "entrega": "MOTOR-07",
+   "filas": 65,
+   "filasConsumidas": 47,
+   "filasSinConsumidor": 18,
+   "mecanismos": [
+    "formPressure",
+    "perturbBinary",
+    "momentMix",
+    "stateTask",
+    "perturbCategories"
+   ],
+   "nota": null
+  },
+  {
+   "id": "ACT12",
+   "soporte": false,
+   "responsabilidad": "Pausa y reorganización aplicables.",
+   "entrega": "MOTOR-07",
+   "filas": 9,
+   "filasConsumidas": 6,
+   "filasSinConsumidor": 3,
+   "mecanismos": [
+    "pauseMarker"
+   ],
+   "nota": null
+  },
+  {
+   "id": "ENT01",
+   "soporte": false,
+   "responsabilidad": "Participación prevista, funciones esenciales y alternativas.",
+   "entrega": "MOTOR-08",
+   "filas": 4,
+   "filasConsumidas": 4,
+   "filasSinConsumidor": 0,
+   "mecanismos": [
+    "validateParticipation",
+    "defaultParticipationPlan",
+    "decideRotation"
+   ],
+   "nota": null
+  },
+  {
+   "id": "ENT02",
+   "soporte": false,
+   "responsabilidad": "Revisión de descanso/retorno, estabilidad y excepciones.",
+   "entrega": "MOTOR-08",
+   "filas": 97,
+   "filasConsumidas": 87,
+   "filasSinConsumidor": 10,
+   "mecanismos": [
+    "relevoReason",
+    "substitutionWindow",
+    "slotUtility",
+    "decideRotation",
+    "coachRespond",
+    "memoryProposals"
+   ],
+   "nota": null
+  },
+  {
+   "id": "ENT03",
+   "soporte": false,
+   "responsabilidad": "Librillo por periodo, faltas, urgencia y recambio.",
+   "entrega": "MOTOR-08",
+   "filas": 47,
+   "filasConsumidas": 44,
+   "filasSinConsumidor": 3,
+   "mecanismos": [
+    "relevoReason",
+    "foulBookRow",
+    "decideSteal"
+   ],
+   "nota": null
+  },
+  {
+   "id": "ENT04",
+   "soporte": false,
+   "responsabilidad": "Pausas por intención, señales, recursos y reserva.",
+   "entrega": "MOTOR-08",
+   "filas": 13,
+   "filasConsumidas": 13,
+   "filasSinConsumidor": 0,
+   "mecanismos": [
+    "runAlarm",
+    "timeoutCauses",
+    "decideTimeout"
+   ],
+   "nota": null
+  },
+  {
+   "id": "ENT05",
+   "soporte": false,
+   "responsabilidad": "Ajustes autorizados, evidencia y estabilidad.",
+   "entrega": "MOTOR-08",
+   "filas": 2,
+   "filasConsumidas": 2,
+   "filasSinConsumidor": 0,
+   "mecanismos": [
+    "coachMemoryAdjust",
+    "coachBuildResponse"
+   ],
+   "nota": null
+  },
+  {
+   "id": "ENT06",
+   "soporte": false,
+   "responsabilidad": "Prioridades de final por reloj, margen, bonus y control.",
+   "entrega": "MOTOR-08",
+   "filas": 59,
+   "filasConsumidas": 59,
+   "filasSinConsumidor": 0,
+   "mecanismos": [
+    "endgameState",
+    "decideEndgame"
+   ],
+   "nota": null
+  },
+  {
+   "id": "ENT07",
+   "soporte": false,
+   "responsabilidad": "Delegación y ciclo de órdenes, ámbitos y conflictos.",
+   "entrega": "MOTOR-08",
+   "filas": 10,
+   "filasConsumidas": 4,
+   "filasSinConsumidor": 6,
+   "mecanismos": [
+    "validate_throwInCall",
+    "throwInPhase",
+    "validate_coachDelegation",
+    "coachVersion"
+   ],
+   "nota": null
+  },
+  {
+   "id": "MEM01",
+   "soporte": false,
+   "responsabilidad": "Identidad semántica general/específica del patrón.",
+   "entrega": "MOTOR-08",
+   "filas": 25,
+   "filasConsumidas": 25,
+   "filasSinConsumidor": 0,
+   "mecanismos": [
+    "memKey",
+    "observableOpportunity",
+    "memUpdate"
+   ],
+   "nota": null
+  },
+  {
+   "id": "MEM02",
+   "soporte": false,
+   "responsabilidad": "Capacidad, recencia, saturación, decaimiento y reemplazo.",
+   "entrega": "MOTOR-08",
+   "filas": 10,
+   "filasConsumidas": 8,
+   "filasSinConsumidor": 2,
+   "mecanismos": [
+    "memUpdate",
+    "memTrim",
+    "coachVersion"
+   ],
+   "nota": null
+  },
+  {
+   "id": "MEM03",
+   "soporte": false,
+   "responsabilidad": "Reconocimiento y respuestas compatibles.",
+   "entrega": "MOTOR-08",
+   "filas": 103,
+   "filasConsumidas": 103,
+   "filasSinConsumidor": 0,
+   "mecanismos": [
+    "memoryProposals",
+    "coachMemoryAdjust",
+    "coachBuildResponse"
+   ],
+   "nota": null
+  },
+  {
+   "id": "MEM04",
+   "soporte": false,
+   "responsabilidad": "Aplicabilidad tras cambios, pausas y continuidad.",
+   "entrega": "MOTOR-08",
+   "filas": 5,
+   "filasConsumidas": 1,
+   "filasSinConsumidor": 4,
+   "mecanismos": [
+    "coachRespond"
+   ],
+   "nota": null
+  },
+  {
+   "id": "CON01",
+   "soporte": false,
+   "responsabilidad": "15 fichas posicionales y relaciones con familia/situación.",
+   "entrega": "MOTOR-04",
+   "filas": 15,
+   "filasConsumidas": 15,
+   "filasSinConsumidor": 0,
+   "mecanismos": [
+    "validateInput"
+   ],
+   "nota": null
+  },
+  {
+   "id": "CON02",
+   "soporte": false,
+   "responsabilidad": "Seis disposiciones, roles y compatibilidades.",
+   "entrega": "MOTOR-05",
+   "filas": 0,
+   "filasConsumidas": 0,
+   "filasSinConsumidor": 0,
+   "mecanismos": [],
+   "nota": null
+  },
+  {
+   "id": "CON03",
+   "soporte": false,
+   "responsabilidad": "ESP01–ESP20 y procedencia de decisión.",
+   "entrega": "MOTOR-06",
+   "filas": 0,
+   "filasConsumidas": 0,
+   "filasSinConsumidor": 0,
+   "mecanismos": [],
+   "nota": null
+  },
+  {
+   "id": "CON04",
+   "soporte": false,
+   "responsabilidad": "Seis fichas ofensivas y seis respuestas de saque.",
+   "entrega": "MOTOR-06",
+   "filas": 4,
+   "filasConsumidas": 4,
+   "filasSinConsumidor": 0,
+   "mecanismos": [
+    "upgradeInput",
+    "throwDefense"
+   ],
+   "nota": null
+  },
+  {
+   "id": "POB01",
+   "soporte": false,
+   "responsabilidad": "Doce equipos manuales de doce plazas.",
+   "entrega": "por asignar (población)",
+   "filas": 0,
+   "filasConsumidas": 0,
+   "filasSinConsumidor": 0,
+   "mecanismos": [],
+   "nota": null
+  },
+  {
+   "id": "POB02",
+   "soporte": false,
+   "responsabilidad": "Generación ficticia correlacionada.",
+   "entrega": "por asignar (población)",
+   "filas": 45,
+   "filasConsumidas": 45,
+   "filasSinConsumidor": 0,
+   "mecanismos": [
+    "population/generator.js"
+   ],
+   "nota": null
+  },
+  {
+   "id": "POB03",
+   "soporte": false,
+   "responsabilidad": "Tres grupos de tendencias y perfiles funcionales.",
+   "entrega": "por asignar (población)",
+   "filas": 4,
+   "filasConsumidas": 4,
+   "filasSinConsumidor": 0,
+   "mecanismos": [
+    "population/generator.js"
+   ],
+   "nota": null
+  },
+  {
+   "id": "EST01",
+   "soporte": false,
+   "responsabilidad": "Acta, sujetos, créditos, anulaciones y correspondencia normativa.",
+   "entrega": "MOTOR-09",
+   "filas": 1,
+   "filasConsumidas": 1,
+   "filasSinConsumidor": 0,
+   "mecanismos": [
+    "formulas (estimaciones convencionales)"
+   ],
+   "nota": null
+  },
+  {
+   "id": "EST02",
+   "soporte": false,
+   "responsabilidad": "Posesiones, F, puntos ligados, sanción y administración.",
+   "entrega": "MOTOR-09",
+   "filas": 0,
+   "filasConsumidas": 0,
+   "filasSinConsumidor": 0,
+   "mecanismos": [],
+   "nota": null
+  },
+  {
+   "id": "EST03",
+   "soporte": false,
+   "responsabilidad": "Sectores, calidad, origen, preparación y ejecución.",
+   "entrega": "MOTOR-10",
+   "filas": 1,
+   "filasConsumidas": 1,
+   "filasSinConsumidor": 0,
+   "mecanismos": [
+    "shooting.production"
+   ],
+   "nota": null
+  },
+  {
+   "id": "EST04",
+   "soporte": false,
+   "responsabilidad": "Presencia, tramos, completas, mixtas y on/off.",
+   "entrega": "MOTOR-10",
+   "filas": 4,
+   "filasConsumidas": 4,
+   "filasSinConsumidor": 0,
+   "mecanismos": [
+    "presence.groupReading",
+    "summary.keyCandidates"
+   ],
+   "nota": "Estado propio por tramo (energía, Forma, momentos en cada tramo de presencia): NO implementado como consulta histórica propia; solo muestras en fronteras (pendiente declarado)."
+  },
+  {
+   "id": "EST05",
+   "soporte": false,
+   "responsabilidad": "Utilidad sin balón y exposición.",
+   "entrega": "MOTOR-10",
+   "filas": 0,
+   "filasConsumidas": 0,
+   "filasSinConsumidor": 0,
+   "mecanismos": [],
+   "nota": "Asistencia con ruptura causal/desvío: sin productor de la interacción (pendiente declarado); lateralidad desconocida = simplificación aceptada."
+  },
+  {
+   "id": "EST06",
+   "soporte": false,
+   "responsabilidad": "Final ajustado, muestras, líderes y consultas especiales.",
+   "entrega": "MOTOR-10",
+   "filas": 5,
+   "filasConsumidas": 5,
+   "filasSinConsumidor": 0,
+   "mecanismos": [
+    "evolution.inAdjustedFinal",
+    "filters (antes/después)",
+    "catalog.runIndicator",
+    "evolution.unansweredRuns"
+   ],
+   "nota": null
+  },
+  {
+   "id": "EST07",
+   "soporte": false,
+   "responsabilidad": "Permisos y naturaleza de la información.",
+   "entrega": "MOTOR-10",
+   "filas": 0,
+   "filasConsumidas": 0,
+   "filasSinConsumidor": 0,
+   "mecanismos": [],
+   "nota": null
+  },
+  {
+   "id": "EST08",
+   "soporte": false,
+   "responsabilidad": "Resumen, informes, presentación y exportación.",
+   "entrega": "MOTOR-10",
+   "filas": 12,
+   "filasConsumidas": 12,
+   "filasSinConsumidor": 0,
+   "mecanismos": [
+    "summary.selectKeys",
+    "summary.keyCandidates",
+    "recommend.rec01",
+    "recommend.rec02"
+   ],
+   "nota": null
+  },
+  {
+   "id": "REG01",
+   "soporte": false,
+   "responsabilidad": "Edición, constantes y parámetros del perfil reglamentario.",
+   "entrega": "MOTOR-09",
+   "filas": 16,
+   "filasConsumidas": 16,
+   "filasSinConsumidor": 0,
+   "mecanismos": [
+    "rules.js",
+    "resolveAttempt",
+    "step"
+   ],
+   "nota": null
+  },
+  {
+   "id": "REG02",
+   "soporte": false,
+   "responsabilidad": "Consecuencias, relojes, control, anotación y reanudaciones.",
+   "entrega": "MOTOR-09",
+   "filas": 6,
+   "filasConsumidas": 6,
+   "filasSinConsumidor": 0,
+   "mecanismos": [
+    "resolveShot",
+    "shootFreeThrows"
+   ],
+   "nota": "Tiro en vuelo/interferencia: administrador no generable sin fila numérica (vuelo, frecuencia de interferencia): contenido pendiente declarado."
+  },
+  {
+   "id": "REG03",
+   "soporte": false,
+   "responsabilidad": "Ventanas de solicitud/concesión/cierre y elegibilidad.",
+   "entrega": "MOTOR-09",
+   "filas": 7,
+   "filasConsumidas": 6,
+   "filasSinConsumidor": 1,
+   "mecanismos": [
+    "timeoutAllowance"
+   ],
+   "nota": null
+  },
+  {
+   "id": "REG04",
+   "soporte": false,
+   "responsabilidad": "Sanciones combinadas, correcciones, inferioridad y terminaciones especiales.",
+   "entrega": "MOTOR-09",
+   "filas": 7,
+   "filasConsumidas": 5,
+   "filasSinConsumidor": 2,
+   "mecanismos": [
+    "availability.js · checkAvailability",
+    "regs.terminate",
+    "MatchCore.disqualifies",
+    "availability.js · checkAvailability → regs.terminate"
+   ],
+   "nota": "Inferioridad y terminación (art. 21) implementadas en el flujo natural; técnicas/antideportivas (RG-F07), compensación (RG-C02) y art. 45 (RG-R01) siguen PENDIENTES por falta del texto normativo; flagrante sin generación natural."
+  },
+  {
+   "id": "REF01",
+   "soporte": false,
+   "responsabilidad": "Fuente, fecha, población, definición, muestra, numerador, denominador y comparabilidad.",
+   "entrega": "MOTOR-13",
+   "filas": 0,
+   "filasConsumidas": 0,
+   "filasSinConsumidor": 0,
+   "mecanismos": [],
+   "nota": null
+  },
+  {
+   "id": "REF02",
+   "soporte": false,
+   "responsabilidad": "Bandas u objetivos provisionales, contexto y motivo.",
+   "entrega": "MOTOR-13",
+   "filas": 0,
+   "filasConsumidas": 0,
+   "filasSinConsumidor": 0,
+   "mecanismos": [],
+   "nota": null
+  },
+  {
+   "id": "LAB01",
+   "soporte": false,
+   "responsabilidad": "Escenario, entradas, pregunta, comparación, métricas, tolerancias y evidencia.",
+   "entrega": "MOTOR-12 / MOTOR-13",
+   "filas": 36,
+   "filasConsumidas": 35,
+   "filasSinConsumidor": 1,
+   "mecanismos": [
+    "createRng",
+    "batch/runner.js",
+    "audit/index.js"
+   ],
+   "nota": null
+  },
+  {
+   "id": "SUP01",
+   "soporte": true,
+   "responsabilidad": "Diccionario",
+   "entrega": "MOTOR-03 (continuidad en cada entrega)",
+   "filas": 0,
+   "filasConsumidas": 0,
+   "filasSinConsumidor": 0,
+   "mecanismos": [],
+   "nota": null
+  },
+  {
+   "id": "SUP02",
+   "soporte": true,
+   "responsabilidad": "Perfiles/versiones",
+   "entrega": "MOTOR-03 (continuidad en cada entrega)",
+   "filas": 3,
+   "filasConsumidas": 0,
+   "filasSinConsumidor": 3,
+   "mecanismos": [],
+   "nota": null
+  },
+  {
+   "id": "SUP03",
+   "soporte": true,
+   "responsabilidad": "Historial",
+   "entrega": "MOTOR-03 (continuidad en cada entrega)",
+   "filas": 0,
+   "filasConsumidas": 0,
+   "filasSinConsumidor": 0,
+   "mecanismos": [],
+   "nota": null
+  },
+  {
+   "id": "SUP04",
+   "soporte": true,
+   "responsabilidad": "Cobertura/validación",
+   "entrega": "MOTOR-03 (continuidad en cada entrega)",
+   "filas": 0,
+   "filasConsumidas": 0,
+   "filasSinConsumidor": 0,
+   "mecanismos": [],
+   "nota": null
+  }
+ ],
+ "families": {
+  "SEL": {
+   "grupos": 12,
+   "filas": 81,
+   "sinFilas": 1
+  },
+  "DEF": {
+   "grupos": 9,
+   "filas": 65,
+   "sinFilas": 1
+  },
+  "RES": {
+   "grupos": 13,
+   "filas": 211,
+   "sinFilas": 2
+  },
+  "COR": {
+   "grupos": 2,
+   "filas": 8,
+   "sinFilas": 0
+  },
+  "ACT": {
+   "grupos": 12,
+   "filas": 194,
+   "sinFilas": 1
+  },
+  "ENT": {
+   "grupos": 7,
+   "filas": 232,
+   "sinFilas": 0
+  },
+  "MEM": {
+   "grupos": 4,
+   "filas": 143,
+   "sinFilas": 0
+  },
+  "CON": {
+   "grupos": 4,
+   "filas": 19,
+   "sinFilas": 2
+  },
+  "POB": {
+   "grupos": 3,
+   "filas": 49,
+   "sinFilas": 1
+  },
+  "EST": {
+   "grupos": 8,
+   "filas": 23,
+   "sinFilas": 3
+  },
+  "REG": {
+   "grupos": 4,
+   "filas": 36,
+   "sinFilas": 0
+  },
+  "REF": {
+   "grupos": 2,
+   "filas": 0,
+   "sinFilas": 2
+  },
+  "LAB": {
+   "grupos": 1,
+   "filas": 36,
+   "sinFilas": 0
+  },
+  "SUP": {
+   "grupos": 4,
+   "filas": 3,
+   "sinFilas": 3
+  }
+ }
+}

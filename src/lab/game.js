@@ -16,7 +16,7 @@ import { actaCards, casesCard } from './acta-ui.js';
 import { LAB_CASES } from '../match/cases.js';
 import { srcText } from './population-ui.js';
 
-const ui = { mode: 'total', managed: 0, speed: PRESENTATION.defaultSpeed, session: null, draft: null, msg: null, call: null, filter: 'all', limit: 150, showBox: false, storyLimit: 18, replay: null, compare: null, error: null, root: null };
+const ui = { saves: { list: null, msg: null, err: null, label: '', busy: false }, mode: 'total', managed: 0, speed: PRESENTATION.defaultSpeed, session: null, draft: null, msg: null, call: null, filter: 'all', limit: 150, showBox: false, storyLimit: 18, replay: null, compare: null, error: null, root: null };
 
 const MODE_TEXT = {
   total: 'Los entrenadores básicos llevan el encuentro hasta el final sin clics entre periodos.',
@@ -67,6 +67,7 @@ function setupCard() {
       h('button', { class: 'btn', id: 'prepare', disabled: errs.length > 0, onclick: prepare }, s ? 'Preparar otro encuentro (entrada nueva)' : 'Preparar encuentro'),
       live ? h('span', { class: 'small muted' }, 'Hay un encuentro en curso: preparar otro lo descarta junto con sus órdenes y temporizadores.') : null),
     h('p', { class: 'small muted' }, 'Al preparar se congela una copia de la entrada: editar fichas o planes después solo afecta al siguiente encuentro.'),
+    savesCard(),
     replayCard());
 }
 
@@ -126,6 +127,8 @@ function paintLive() {
   if (st === 'preparado') box.append(h('p', { class: 'small muted' }, 'Encuentro preparado con la entrada congelada. Quintetos y plan iniciales:'));
   box.append(h('div', { class: 'grid2' }, teamCard(s, s.managedTeam), teamCard(s, 1 - s.managedTeam)));
   box.append(planCard(s), coachLiveCard(s, rerender), ordersCard(s, rerender), storyBlock(s), boxBlock(s));
+  if (s.log.restoredFrom) box.prepend(h('p', { class: 'pill warn', id: 'restored-badge' }, `Rama de laboratorio continuada desde el guardado ${s.log.restoredFrom.saveId ?? ''} (paso ${s.log.restoredFrom.stepSeq}${s.log.restoredFrom.period ? `, periodo ${s.log.restoredFrom.period}` : ''})`));
+  if (st !== 'preparado' && st !== 'finalizado' && st !== 'error') box.append(h('div', { class: 'small muted' }, 'Guardar y continuar: sección «Guardar y continuar» de la preparación (frontera: entre dos acontecimientos; no avanza el partido).'));
   paintProgress();
 }
 
@@ -398,6 +401,56 @@ function recompute(res) {
 }
 
 // ---------------------------------------------------------------- reproducir un JSON exportado
+// ---------------------------------------------------------------- guardar y continuar (MOTOR-14 §10)
+const savedLine = (m) => `${m.teams.map((t) => t.id).join(' – ')} · ${m.position.period ? (m.position.period <= 4 ? `C${m.position.period}` : `P${m.position.period - 4}`) : 'sin empezar'} ${clockText(m.position.clockTenths)} · ${m.position.score.join('–')} · paso ${m.position.stepSeq}`;
+async function refreshSaves() {
+  try { const r = await fetch('/api/saves'); ui.saves.list = (await r.json()).saves; ui.saves.err = null; } catch (e) { ui.saves.err = `No se pudo leer el almacén de guardados: ${e.message}`; }
+  renderGame(ui.root);
+}
+async function saveNow() {
+  const s = ui.session; if (!s || ui.saves.busy || ['preparado', 'finalizado', 'error'].includes(s.state)) return;
+  ui.saves.busy = true; ui.saves.msg = null;
+  try {
+    const snap = s.snapshot({ label: ui.saves.label || null });
+    const r = await fetch('/api/saves', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ snapshot: snap, label: ui.saves.label || null, branchOf: s.log.restoredFrom?.saveId ?? null }) });
+    const j = await r.json();
+    ui.saves.msg = j.ok ? `Guardado ${j.save.id} (${savedLine(j.save)}). La partida sigue en su estado actual.` : `No se guardó: ${j.reason}`;
+  } catch (e) { ui.saves.msg = `No se guardó: ${e.message}`; }
+  ui.saves.busy = false; await refreshSaves();
+}
+async function continueSave(id) {
+  ui.saves.busy = true; ui.saves.msg = null;
+  try {
+    const r = await fetch(`/api/saves/${id}`); const j = await r.json();
+    if (!j.ok) { ui.saves.msg = `No se puede continuar: ${j.reason}`; }
+    else {
+      const s0 = ui.session; if (s0) s0.dispose();
+      const s = MatchSession.fromSnapshot(j.snapshot, { scheduler: sched() }); s.log.restoredFrom.saveId = id;
+      ui.mode = s.mode; ui.managed = s.managedTeam; ui.draft = null; ui.compare = null; ui.call = null;
+      store.matchRef = j.snapshot.identity.profileRef ?? store.profileRef; // el perfil congelado es el del guardado, no el activo
+      s.subscribe(onSession); ui.session = s;
+      ui.saves.msg = `Continuando ${id} como rama de laboratorio: el guardado original no se modifica. Perfil congelado del guardado: ${j.snapshot.identity.effectiveProfileId}.`;
+    }
+  } catch (e) { ui.saves.msg = `No se puede continuar: ${e.message}`; }
+  ui.saves.busy = false; renderGame(ui.root);
+}
+function savesCard() {
+  const s = ui.session; const canSave = s && !['preparado', 'finalizado', 'error'].includes(s.state);
+  const list = ui.saves.list;
+  return h('details', { id: 'saves', open: !!ui.saves.msg || !!canSave, style: 'margin-top:8px', ontoggle: (e) => { if (e.target.open && list == null) refreshSaves(); } }, h('summary', {}, 'Guardar y continuar'),
+    h('p', { class: 'small muted' }, 'Guardar conserva el estado deportivo exacto del encuentro (azar, relojes, órdenes, energía, memoria y consecuencias pendientes) en la frontera actual, sin avanzarlo. Continuar retoma ese mismo encuentro con SU entrada y SU perfil congelados; cerrar la aplicación o pausar el visionado no crea una suspensión reglamentaria. Una continuación es una rama de laboratorio: el guardado original no se modifica.'),
+    h('div', { class: 'row' },
+      h('input', { type: 'text', id: 'save-label', placeholder: 'Etiqueta (opcional)', value: ui.saves.label, oninput: (e) => { ui.saves.label = e.target.value; } }),
+      h('button', { class: 'btn', id: 'save-now', disabled: !canSave || ui.saves.busy, onclick: saveNow }, 'Guardar ahora'),
+      h('button', { class: 'btn secondary', id: 'saves-refresh', onclick: refreshSaves }, 'Actualizar lista'),
+      canSave ? null : h('span', { class: 'small muted' }, 'Se guarda un encuentro iniciado y no terminado.')),
+    ui.saves.msg ? h('p', { id: 'saves-msg', class: 'small' }, ui.saves.msg) : null, ui.saves.err ? h('div', { class: 'errbox' }, ui.saves.err) : null,
+    list == null ? h('p', { class: 'small muted' }, 'Abra la sección o pulse «Actualizar lista».') : !list.length ? h('p', { class: 'small muted' }, 'Sin guardados.') :
+      table(['Guardado', 'Encuentro', 'Archivo', 'Motor · perfil', 'Estado', ''], list.map((m) => [m.label ? `${m.id} · ${m.label}` : m.id, m.position ? savedLine(m) : '—', m.savedAt ? m.savedAt.replace('T', ' ').slice(0, 19) : '—', m.engineVersion ? `${m.engineVersion} · ${m.effectiveProfileId}` : '—',
+        m.complete && m.compatible ? h('span', { class: 'pill ok' }, 'Continuable') : h('span', { class: 'pill bad', title: m.problem ?? '' }, m.problem ?? 'No continuable'),
+        h('span', { class: 'row' }, h('button', { class: 'btn secondary', disabled: !(m.complete && m.compatible) || ui.saves.busy, onclick: () => continueSave(m.id) }, 'Continuar'), m.complete ? h('a', { href: `/api/saves/${m.id}/download`, class: 'small' }, 'Descargar') : null)])));
+}
+
 function replayCard() {
   const r = ui.replay;
   const input = h('input', { type: 'file', accept: '.json,application/json', id: 'replay-file', onchange: onReplayFile });

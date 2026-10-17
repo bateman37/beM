@@ -12,6 +12,7 @@ import { referencesFile } from './references.js';
 import { experimentCatalog } from './experiments.js';
 import { sha, mean } from './util.js';
 import { ROOT } from '../../scripts/node-data.js';
+import { loadEquivalenceReports } from './equivalence.js';
 
 export const AUDIT_RESULT_SCHEMA = 'beM-audit-result/1';
 export const DEFAULT_AUDIT_ROOT = process.env.BEM_AUDIT_ROOT ?? join(ROOT, 'out', 'audit');
@@ -47,7 +48,8 @@ export function runAudit(specs, opts = {}) {
   const rel = reliability(diagProjs, params); const conc = concentration(projs, params); const matrix = capabilityMatrix(diagProjs, prof, sens, exps); const energy = energyCurve(diagProjs);
   const teamProfiles = []; const seenT = new Set(); for (const s of sources) for (const f of s.listFrozen?.('entradas/equipos') ?? []) { const t = s.frozenFile(f); if (!t || seenT.has(t.id)) continue; seenT.add(t.id); const vals = t.players.flatMap((p) => CAPABILITY_IDS.map((c) => p.abilities[c])); teamProfiles.push({ team: t.id, mean: Math.round(mean(vals) * 100) / 100 }); }
   const cost = { projections_ms: Math.round(proj.ms), projection_bytes_read: proj.bytes, cache_hits: proj.hits, attempts: attempts.length, per_attempt_ms: attempts.length - proj.hits ? Math.round(proj.ms / (attempts.length - proj.hits)) : null, note: 'medido en este entorno, no extrapolable; la proyección se reutiliza por huella (caché)' };
-  const ctx = { projs, matrix, sens, rel, conc, energy, integrity, cost, audiences: sources.flatMap((s) => s.audiences?.() ?? []), teamProfiles, params };
+  const equivalence = opts.equivalence ?? loadEquivalenceReports(opts.equivalenceDir ?? join(auditRoot, '..', 'equivalence'));
+  const ctx = { projs, matrix, sens, rel, conc, energy, integrity, cost, equivalence, audiences: sources.flatMap((s) => s.audiences?.() ?? []), teamProfiles, params };
   // 4. evaluadores
   const ids = opts.ids ?? AUDIT_CATALOG.map((a) => a.id); const runs = []; const findings = [];
   for (const id of ids) {

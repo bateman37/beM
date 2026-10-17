@@ -10,11 +10,18 @@ import { deepFreeze } from '../profiles/util.js';
 
 // Operación PURA de la capacidad efectiva (MOTOR-13 §7.3): capacidad base, energía actual, capacidad y tope de penalización de la tarea → valor efectivo. `MatchCore.eff` la usa sin
 // cambiar su semántica; la auditoría de sensibilidad la invoca con las entradas registradas de un contexto, sin partido, sin RNG y sin estado.
+// MOTOR-14 (coste): la curva de severidad es una función pura de la energía; el resultado se reutiliza por nodos y energía (misma aritmética, mismo valor exacto). Memoria acotada.
+const SEV = new WeakMap();
+function severityAt(nodes, energy) {
+  let m = SEV.get(nodes); if (!m) { m = new Map(); SEV.set(nodes, m); }
+  let v = m.get(energy); if (v === undefined) { v = interpolate(nodes, energy); if (m.size > 4096) m.clear(); m.set(energy, v); }
+  return v;
+}
 export function effectiveAbility(profile, base, energy, attr, taskMax = null) {
   const e = profile.energy;
   const pen = taskMax != null ? taskMax : (attr.startsWith('FIS') ? e.defaultPhysicalTaskMax : e.defaultTechnicalTaskMax);
   const [lo, hi] = profile.abilityBounds;
-  return clamp(base - interpolate(e.severityNodes, energy) * pen, lo, hi);
+  return clamp(base - severityAt(e.severityNodes, energy) * pen, lo, hi);
 }
 
 export class MatchCore {
@@ -63,7 +70,7 @@ export class MatchCore {
     this.oppLog = []; this.throwChains = []; this.chainSeq = 0; // MOTOR-06: decisiones/oportunidades y cadenas de saque (diagnóstico; solo datos calculados)
     this.openingWinner = null;
     // avance incremental (MOTOR-02): fronteras, ventanas reglamentarias pendientes y estado de periodo
-    this.stepSeq = 0; this.lastStep = null;
+    this.stepSeq = 0; this.lastStep = null; this.administrative = null; this.withdrawals = []; this.deferredWithdrawals = [];
     this.pendingWindows = []; this.periodBreak = null; this.periodStartPending = false; this.pendingFoul = null;
     this.initDirection();
     this.initDefense();
@@ -81,7 +88,7 @@ export class MatchCore {
   // ---------- lineups ----------
   registerLineups() {
     for (let t = 0; t < 2; t++) {
-      const players = SLOTS.map((s) => this.lineup[t][s]);
+      const players = SLOTS.map((s) => this.lineup[t][s]).filter(Boolean); // MOTOR-14: una vacante (inferioridad sin sustituto) no es un jugador: no se inventa uno
       const key = players.join('|');
       const prev = this.lineupTable.filter((l) => l.team === t);
       const found = prev.find((l) => l.key === key);
@@ -91,10 +98,10 @@ export class MatchCore {
       this.lineupId[t] = id;
     }
   }
-  onCourt(t) { return SLOTS.map((s) => this.lineup[t][s]); }
+  onCourt(t) { return SLOTS.map((s) => this.lineup[t][s]).filter(Boolean); } // solo los presentes (MOTOR-14: una posición vacante no aporta participante)
   slotOf(pid) { return this.ps[pid].slot; }
   oppIdx(t) { return 1 - t; }
-  playersAtSlots(t, slots) { return slots.map((s) => this.lineup[t][s]).filter((id) => this.ps[id].available); }
+  playersAtSlots(t, slots) { return slots.map((s) => this.lineup[t][s]).filter((id) => id && this.ps[id].available); }
 
   // ---------- azar ----------
   draw(purpose) { return this.rng.next(purpose); }
@@ -174,7 +181,7 @@ export class MatchCore {
   limit() { return this.shotClockOn ? Math.min(this.clock, this.shotClock) : this.clock; }
   enduranceFactor(pid) {
     const e = this.profile.energy;
-    return clamp(1 - e.enduranceSlope * (this.pl[pid].abilities.FIS06 - e.baseEnduranceReference), e.enduranceFactorBounds[0], e.enduranceFactorBounds[1]);
+    return clamp(1 - e.enduranceSlope * (this.pl[pid].abilities.FIS06 - e.baseEnduranceReference), e.enduranceFactorBounds[0], e.enduranceFactorBounds[1]); // = enduranceFactorAt (formulas.js)
   }
   // Consume `dur` décimas de juego real: reloj, energía de los que están en pista y recuperación del banquillo.
   consume(dur, loadKind = 'organized') {
@@ -183,6 +190,7 @@ export class MatchCore {
     const mins = dur / 600;
     if (dur > 0) for (const id of Object.keys(this.ps)) this.ps[id].locked = false; // corre el reloj: cesa la restricción de reentrada inmediata
     const load = clamp(e.load[loadKind] ?? e.load.organized, e.loadBounds[0], e.loadBounds[1]);
+    const trace = dur > 0 && this.opts.detail === 'full' ? [] : null; // MOTOR-14: registro de FIS06 (solo lectura del cálculo existente)
     for (let t = 0; t < 2; t++) {
       for (const id of this.teams[t].ids) {
         const s = this.ps[id];
@@ -190,7 +198,9 @@ export class MatchCore {
         if (s.onCourt) {
           // carga por encargo: el comprometido paga clamp(carga · factor) una sola vez por el intervalo (máximo, no producto)
           const l = this.duty?.[id] ? clamp(load * this.duty[id], e.loadBounds[0], e.loadBounds[1]) : load;
+          const before = s.energy;
           s.energy = clamp(s.energy - e.costPerLiveMinute * mins * l * this.enduranceFactor(id), e.range[0], e.range[1]);
+          if (trace) trace.push({ rol: 'en_pista', jugador: id, cap: 'FIS06', base: this.pl[id].abilities.FIS06, efectiva: this.pl[id].abilities.FIS06, peso: 1, energia: round(before, 2), carga: round(l, 4), factor: round(this.enduranceFactor(id), 5), gasto: round(before - s.energy, 5) });
           s.stintTenths += dur; s.playedTenths += dur;
         } else {
           s.energy = clamp(s.energy + e.benchRecoveryPerLiveMinute * mins, e.range[0], e.range[1]);
@@ -198,6 +208,7 @@ export class MatchCore {
         }
       }
     }
+    if (trace && trace.length) { const tw = trace.map((x) => ({ ...x, peso: round(1 / trace.length, 6) })); this.note('receta:gasto_resistencia', { valor: round(tw.reduce((a, x) => a + x.efectiva, 0) / tw.length, 4), intervaloDecimas: dur, claseDeCarga: loadKind, cargaBase: round(load, 4), costePorMinutoVivo: e.costPerLiveMinute, terminos: tw }); }
     this.clock = Math.max(0, this.clock - dur);
     this.sportT += dur; // reloj deportivo de los estados: solo cuenta juego vivo
     if (this.shotClockOn) this.shotClock = Math.max(0, this.shotClock - dur);

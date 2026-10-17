@@ -50,7 +50,7 @@ P.flushMoment = function flushMoment(pid, scope) {
   const half = playing ? cfg.playingHalfLifeSeconds : cfg.benchHalfLifeSeconds;
   const sigma = playing ? this.consistencySigma(pid) : 0; // el banquillo solo atenúa: sin variación aleatoria ni impulsos por hechos ajenos
   const [lo, hi] = cfg.range; const nu = cfg.neutral;
-  const prev = st.v; const t0 = st.t; const innov = []; const paused = [];
+  const prev = st.v; const t0 = st.t; const innov = []; const paused = []; const steps = [];
   const advance = (to) => {
     const d = (to - st.t) / 10;
     if (d > 0) {
@@ -58,7 +58,7 @@ P.flushMoment = function flushMoment(pid, scope) {
       let e = 0;
       if (sigma > 0) { // Δ = 0 no crea innovación; una frontera ya procesada no vuelve a sortear
         const U = (2 * this.draw(`momento:${pid}:${scope}`) - 1) * SQRT3;
-        e = sigma * Math.sqrt(1 - rho * rho) * U; innov.push(round(U, 4));
+        e = sigma * Math.sqrt(1 - rho * rho) * U; innov.push(round(U, 4)); steps.push({ U: round(U, 4), rho: round(rho, 6), e: round(e, 6) });
       }
       st.v = clamp(nu + rho * (st.v - nu) + e, lo, hi);
     }
@@ -71,6 +71,8 @@ P.flushMoment = function flushMoment(pid, scope) {
     st.pi += 1;
   }
   advance(this.sportT);
+  // MOTOR-14 (MEN06): amplitud usada, innovaciones ya sorteadas, límites y valores anterior/posterior; solo lectura del cálculo existente
+  if (this.opts.detail === 'full' && innov.length) this.note('receta:momento.consistencia', { valor: round(this.eff(pid, 'MEN06', 0), 3), ambito: scope, amplitud: round(sigma, 5), innovaciones: innov, pasos: steps, limites: [lo, hi], previo: round(prev, 4), nuevo: round(st.v, 4), intervaloDecimas: this.sportT - t0, terminos: [{ rol: 'jugador', jugador: pid, cap: 'MEN06', base: this.pl[pid].abilities.MEN06, efectiva: round(this.eff(pid, 'MEN06', 0), 3), peso: 1, energia: round(this.ps[pid].energy, 2), tope: 0 }] });
   if (this.opts.detail === 'full' && (st.t !== t0 || paused.length)) this.stateLog.push({ quien: pid, ambito: scope, desde: t0 / 10, hasta: this.sportT / 10, previo: round(prev, 4), nuevo: round(st.v, 4), variacion: innov, pausas: paused, estadoDelJugador: playing ? 'en pista' : 'banquillo' });
   return st.v;
 };
@@ -158,6 +160,8 @@ P.formPressure = function formPressure(taskKey, own, counter, { executants = own
   }
   const [lo, hi] = this.profile.pressure.combinedFormPressureLogitBounds;
   const delta = clamp(form - loss, lo, hi);
+  // MOTOR-14 (MEN07): contexto/importancia, exposición, aportación y ámbito de la pérdida por presión (mismas entradas que ya se usan)
+  if (this.opts.detail === 'full' && pressure && exIds.length) this.note(`receta:presion.perdida:${taskKey}`, { valor: round(mean(exIds, (id) => this.eff(id, 'MEN07', 0)), 4), ambito: scope, presion: round(pressure.P, 4), importancia: round(pressure.importance, 4), tension: round(pressure.tension, 4), perdidaLogit: round(loss, 5), topeDeAmbitoLogit: this.profile.pressure.taskMaxLogitLoss[scope], terminos: exIds.map((id) => ({ rol: 'ejecutante', jugador: id, cap: 'MEN07', base: this.pl[id].abilities.MEN07, efectiva: round(this.eff(id, 'MEN07', 0), 3), peso: round(1 / exIds.length, 6), energia: round(this.ps[id].energy, 2), tope: 0 })) });
   if (this.opts.detail === 'full' && (ownIds.length || cIds.length)) this.note(`estados:forma_presion:${taskKey}`, { ambito: scope, propios: ownIds, contraparte: cIds, ejecutan: exIds, formaPropia: round(fOwn, 4), formaContraparte: round(fCounter, 4), forma: round(form, 4), exigencia: pressure ? { P: round(pressure.P, 4), importancia: pressure.importance, tension: round(pressure.tension, 4), margen: pressure.margen, segundosRestantes: pressure.segundosRestantes } : null, perdidaPorPresion: round(loss, 4), ajusteConjuntoLogit: round(delta, 4), limites: [lo, hi] });
   return { delta, form, loss, pressure };
 };
@@ -191,8 +195,13 @@ P.perturbNote = function perturbNote(taskKey, mz, extra) {
 // La presión reduce solo la valoración de Decisiones (no la nota). Devuelve la capacidad efectiva de lectura del DEFENSOR real.
 P.defensiveReading = function defensiveReading(pid) {
   const w = this.profile.missingTaskConnections.defensiveOptionReading; const tm = this.profile.energy.defaultTechnicalTaskMax; const lo = this.profile.abilityBounds[0];
-  let s = 0;
-  for (const [cap, wt] of Object.entries(w)) s += wt * (cap === 'MEN03' ? Math.max(lo, this.eff(pid, 'MEN03', tm) - this.choicePenalty(pid)) : this.eff(pid, cap, tm));
+  let s = 0; const terminos = [];
+  for (const [cap, wt] of Object.entries(w)) {
+    const v = cap === 'MEN03' ? Math.max(lo, this.eff(pid, 'MEN03', tm) - this.choicePenalty(pid)) : this.eff(pid, cap, tm);
+    s += wt * v;
+    if (this.opts.detail === 'full') terminos.push({ rol: 'lector', jugador: pid, cap, base: this.pl[pid].abilities[cap], efectiva: round(v, 3), peso: wt, energia: round(this.ps[pid].energy, 2) });
+  }
+  if (this.opts.detail === 'full') { const W = terminos.reduce((a, x) => a + x.peso, 0) || 1; this.note('receta:lectura_defensiva', { valor: round(s / W, 4), suma: round(s, 4), terminos }); } // MOTOR-14 (MEN02/MEN03/MEN04 del defensor)
   return s;
 };
 // Recorrido largo de ataque (acceso a la ventaja de transición): receta del anexo A con el deterioro físico máximo declarado.
