@@ -491,6 +491,12 @@ const isLeaf = (v) => v === null || typeof v !== 'object';
 export function buildRows(profile, { presentation = null } = {}) {
   const A = attrLabelFn(profile);
   const rows = []; const seen = new Map();
+  // MOTOR-15: una fila cuya estructura falta en el perfil (módulo posterior a su versión) no puede consultar el perfil para
+  // construir su rótulo. Se rotula por su ruta y queda marcada como ausente: no se inventa contenido ni se oculta el hueco.
+  const text = (fn, m, base) => {
+    try { return fn(m, A, profile); } catch (e) { if (base?.missing && e instanceof TypeError) return `${f0(base)} (ausente en este perfil)`; throw e; }
+  };
+  const f0 = (base) => base.id ?? base.path.join('.');
   const push = (f, base, m, extra) => {
     const type = resolveVal(f.type, m);
     const v = f.variant?.(m) ?? {};
@@ -500,7 +506,7 @@ export function buildRows(profile, { presentation = null } = {}) {
     if (seen.has(id)) throw new Error(`diccionario: fila duplicada ${id}`);
     const row = {
       id, path: base.path, family: f.path, type, pair: f.pair ?? null, elem: f.elem ?? null, order: resolveVal(f.order, m) ?? null, elems: f.elems ?? null,
-      unit: resolveVal(f.unit, m), cls, label: f.label(m, A, profile), desc: f.desc(m, A, profile), effect: f.effect(m, A, profile), note: v.note ?? null,
+      unit: resolveVal(f.unit, m), cls, label: text(f.label, m, base), desc: text(f.desc, m, base), effect: text(f.effect, m, base), note: v.note ?? null,
       grp: f.grp, views: f.views, mech: resolveVal(f.mech, m) ?? null, group: f.group ? f.group(m) : null, sum: f.sum ?? null, ext: f.ext ?? 'SEM-MOTOR01/02',
       coverage, locked: !!f.locked, required: !!base.required, missing: !!base.missing, value: base.missing ? undefined : getAt(profile, base.path), params: { ...m, ...extra },
       editable: (cls === 'balance' || cls === 'contenido') && coverage === 'consumido' && !f.locked,

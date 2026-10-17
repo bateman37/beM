@@ -6,6 +6,7 @@ import { validateProfile } from './validate.js';
 import { resolveOverrides, overridesBetween, diffEffective } from './model.js';
 import { deepCopy, contentHash, canonical, getAt } from './util.js';
 import { ENGINE_VERSION } from '../match/data.js';
+import { assessProfile } from './compat.js';
 
 export const LIBRARY_FORMAT = 'beM-profiles/1';
 export const PROFILE_EXPORT_FORMAT = 'beM-profile-export/1';
@@ -185,10 +186,10 @@ export class ProfileLibrary {
   upgradeCandidate(oldVersionId) {
     const old = this.version(oldVersionId);
     if (!old) return fail(`versión desconocida: ${oldVersionId}`);
-    if (!this.isLegacy(oldVersionId)) return fail('esa versión ya incluye el reglamento y el acta de MOTOR-09');
+    if (assessProfile(old.effective).ready) return fail('esa versión ya es compatible con el motor actual');
     const newBase = this.version(this.state.baseId);
-    if (!newBase || this.isLegacy(newBase.id)) return fail('no hay una base de MOTOR-09 protegida en la biblioteca');
-    const legacyBase = this.versions().find((v) => v.kind === 'base' && this.isLegacy(v.id));
+    if (!newBase || !assessProfile(newBase.effective).ready) return fail('no hay una base actual protegida y compatible en la biblioteca');
+    const legacyBase = this.versions().find((v) => v.kind === 'base' && v.id !== newBase.id && !assessProfile(v.effective).ready);
     const replaced = new Set((newBase.effective.extensions ?? []).flatMap((e) => (e.replaced ?? []).map((r) => r.path)));
     const carried = {}; const skipped = [];
     if (legacyBase && old.id !== legacyBase.id) {
@@ -200,7 +201,7 @@ export class ProfileLibrary {
         carried[c.id] = deepCopy(c.after);
       }
     }
-    const made = this.createDraft(newBase.id, { name: `Candidata MOTOR-09 desde ${old.id} «${old.label}»`, reason: `Valores de ${old.id} llevados a la base de MOTOR-09 (${Object.keys(carried).length} filas${skipped.length ? `; ${skipped.length} no se trasladan: sustituidas por la extensión o inexistentes` : ''}). Pendiente de validar y publicar.` });
+    const made = this.createDraft(newBase.id, { name: `Candidata compatible (base actual) desde ${old.id} «${old.label}»`, reason: `Valores de ${old.id} llevados a la base actual (${Object.keys(carried).length} filas${skipped.length ? `; ${skipped.length} no se trasladan: sustituidas por la extensión o inexistentes` : ''}). Pendiente de validar y publicar.` });
     if (!made.ok) return made;
     if (Object.keys(carried).length) { const e = this.editDraft(made.draft.id, carried, `traslado desde ${old.id}`); if (!e.ok) return e; }
     return { ok: true, draft: this.draft(made.draft.id), carried: Object.keys(carried), skipped };
