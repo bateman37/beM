@@ -63,7 +63,7 @@ export class MatchCore {
     this.oppLog = []; this.throwChains = []; this.chainSeq = 0; // MOTOR-06: decisiones/oportunidades y cadenas de saque (diagnóstico; solo datos calculados)
     this.openingWinner = null;
     // avance incremental (MOTOR-02): fronteras, ventanas reglamentarias pendientes y estado de periodo
-    this.stepSeq = 0; this.lastStep = null;
+    this.stepSeq = 0; this.lastStep = null; this.administrative = null; this.withdrawals = []; this.deferredWithdrawals = [];
     this.pendingWindows = []; this.periodBreak = null; this.periodStartPending = false; this.pendingFoul = null;
     this.initDirection();
     this.initDefense();
@@ -81,7 +81,7 @@ export class MatchCore {
   // ---------- lineups ----------
   registerLineups() {
     for (let t = 0; t < 2; t++) {
-      const players = SLOTS.map((s) => this.lineup[t][s]);
+      const players = SLOTS.map((s) => this.lineup[t][s]).filter(Boolean); // MOTOR-14: una vacante (inferioridad sin sustituto) no es un jugador: no se inventa uno
       const key = players.join('|');
       const prev = this.lineupTable.filter((l) => l.team === t);
       const found = prev.find((l) => l.key === key);
@@ -91,10 +91,10 @@ export class MatchCore {
       this.lineupId[t] = id;
     }
   }
-  onCourt(t) { return SLOTS.map((s) => this.lineup[t][s]); }
+  onCourt(t) { return SLOTS.map((s) => this.lineup[t][s]).filter(Boolean); } // solo los presentes (MOTOR-14: una posición vacante no aporta participante)
   slotOf(pid) { return this.ps[pid].slot; }
   oppIdx(t) { return 1 - t; }
-  playersAtSlots(t, slots) { return slots.map((s) => this.lineup[t][s]).filter((id) => this.ps[id].available); }
+  playersAtSlots(t, slots) { return slots.map((s) => this.lineup[t][s]).filter((id) => id && this.ps[id].available); }
 
   // ---------- azar ----------
   draw(purpose) { return this.rng.next(purpose); }

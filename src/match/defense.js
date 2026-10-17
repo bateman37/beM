@@ -105,6 +105,7 @@ function bestAssignment(defs, slots, score, forced) {
   const rec = (i, used, acc, v) => {
     if (i === freeSlots.length) { if (v > bestV + 1e-12) { bestV = v; best = { ...acc }; } return; }
     for (const d of freeDefs) { if (used.has(d)) continue; used.add(d); acc[freeSlots[i]] = d; rec(i + 1, used, acc, v + score(freeSlots[i], d)); used.delete(d); delete acc[freeSlots[i]]; }
+    if (freeDefs.length < freeSlots.length) rec(i + 1, used, acc, v - 1e6); // MOTOR-14 (inferioridad): con menos defensores que ranuras una queda SIN defensor (concesión estructural); con los cinco completos esta rama nunca se explora
   };
   rec(0, new Set(), {}, 0);
   return { ...out, ...best };

@@ -1,0 +1,94 @@
+{
+ "seedExtensionId": "SEM-MOTOR14-20261017",
+ "status": "SEM: provisional, no calibrado. Solo contenido NORMATIVO de terminación por falta de jugadores (art. 21, lectura del encargo MOTOR-14 §7.3) y su trazabilidad; ningún coeficiente deportivo nuevo ni cambio de probabilidades.",
+ "basedOn": "SEM-MOTOR01-20261016",
+ "origin": "docs/prompts/MOTOR-14-rendimiento-cierre-y-motor-v1.md (§7.2–§7.4, §8). Lectura de ChatGPT de F14-01 (Official Basketball Rules 2026 v1.1) del 17-10-2026; Claude no tuvo acceso al PDF (HTTP 403 del proxy del entorno en dos intentos acotados).",
+ "additions": {
+  "regulation.termination.insufficientPlayers": {
+   "retainLeadingScore": true,
+   "otherwiseWinnerPoints": 2,
+   "otherwiseLoserPoints": 0,
+   "contrast": "contrastada",
+   "note": "F14-01 art. 21 según el encargo MOTOR-14 §7.3: «menos de cinco» NO es terminación; termina el encuentro cuando un equipo no tiene al menos dos jugadores listos. El beneficiario conserva su marcador si va por delante; si no va por delante se adjudica 2–0. Es un resultado ADJUDICADO distinto del tanteo de cancha. La incomparecencia (20–0) conserva su convención provisional de MOTOR-09."
+  },
+  "regulation.matrix.19": {
+   "id": "RG-T02",
+   "family": "Terminaciones",
+   "group": "REG04",
+   "edition": "OBR 2026 v1.1",
+   "source": {
+    "doc": "S09-01",
+    "article": "21 (partido perdido por falta de jugadores durante el encuentro)",
+    "case": null,
+    "reading": "contrastada con el encargo MOTOR-14 §7.3 (lectura de ChatGPT de F14-01; Claude no leyó el PDF)",
+    "note": "Menos de dos jugadores listos: el beneficiario conserva su marcador si va por delante; si no, 2–0. No se identifica «menos de cinco» con terminación. No resuelve por sí sola otros supuestos del artículo (p. ej. descalificación del último jugador en una situación no descrita en el encargo)."
+   },
+   "contrast": "contrastada",
+   "priority": 10,
+   "when": {
+    "termination": "insufficientPlayers"
+   },
+   "consequence": {
+    "uses": "regulation.termination.insufficientPlayers"
+   },
+   "explanation": "Terminación administrativa por falta de jugadores durante el encuentro: se conserva lo disputado (marcador de cancha) y el resultado adjudicado es un dato distinto.",
+   "coverage": {
+    "admin": "ejecutable",
+    "exposure": "natural (retirada sin sustituto por exclusión o indisponibilidad externa) y escenario preparado",
+    "natural": "implementada",
+    "consume": "availability.js checkAvailability → regs.terminate",
+    "verify": "tests/motor14 grupo «Inferioridad y terminación»"
+   }
+  },
+  "regulation.sources.4": {
+   "id": "F14-01",
+   "title": "FIBA Official Basketball Rules 2026 v1.1 (arts. 17, 20–21, 29, 31, 36–45)",
+   "url": "https://assets.fiba.basketball/image/upload/documents-corporate-fiba-official-rules-2026-v1-1.pdf",
+   "use": "Fuente de la matriz; mismo documento que S09-01.",
+   "access": "Leído selectivamente por ChatGPT el 2026-10-17 (encargo MOTOR-14 §7.2–7.3). Claude: HTTP 403 del proxy del entorno (assets.fiba.basketball y www.fiba.basketball rechazados en dos intentos acotados); sin lectura directa."
+  },
+  "regulation.sources.5": {
+   "id": "F14-02",
+   "title": "FIBA Official Basketball Rules 2026 — Interpretations v1.0",
+   "url": "https://assets.fiba.basketball/image/upload/documents-corporate-fiba-official-rules-2026-interpretations-v1-0.pdf",
+   "use": "Ejemplos 36-4/36-5 (técnica de categoría 2 fuera de la acumulación de categoría 1).",
+   "access": "Lectura de ChatGPT; Claude no leyó el PDF (HTTP 403 del proxy del entorno)."
+  },
+  "regulation.sources.6": {
+   "id": "F14-03",
+   "title": "FIBA Statisticians’ Manual 2024 v1.0 (capítulo 6)",
+   "url": "https://assets.fiba.basketball/image/upload/documents-corporate-fiba-statisticians-manual-2024.pdf",
+   "use": "Política de asistencias (contraste de MOTOR-09/10).",
+   "access": "Lectura de ChatGPT; Claude no leyó el PDF (HTTP 403 del proxy del entorno)."
+  }
+ },
+ "replacements": {
+  "regulation.version": "REG-MOTOR14-R1",
+  "regulation.availability.contrast": "contrastada",
+  "regulation.availability.note": "Umbral mínimo de jugadores listos para continuar (2): F14-01 art. 21 según el encargo MOTOR-14 §7.3 (lectura de ChatGPT; no lectura directa del PDF por Claude). «Menos de cinco» es inferioridad legal, no terminación.",
+  "regulation.matrix.10.source.article": "21 (continuación con menos de cinco jugadores; terminación con menos de dos listos)",
+  "regulation.matrix.10.source.reading": "contrastada con el encargo MOTOR-14 §7.3 (lectura de ChatGPT de F14-01; Claude no leyó el PDF)",
+  "regulation.matrix.10.source.note": "Cuatro, tres o dos jugadores continúan: la posición queda vacante, sin jugador ficticio ni bonus de inferioridad. Con menos de dos listos termina el encuentro (RG-T02).",
+  "regulation.matrix.10.contrast": "contrastada",
+  "regulation.matrix.10.coverage": {
+   "admin": "ejecutable",
+   "exposure": "natural (exclusión o retirada externa sin sustituto elegible) y escenario preparado",
+   "natural": "implementada",
+   "consume": "coach.js coachMandatory → rotation.js vacate; availability.js",
+   "verify": "tests/motor14 grupo «Inferioridad y terminación»"
+  },
+  "regulation.matrix.11.source.note": "Solo incomparecencia (resultado fijo, convención provisional de MOTOR-09). La falta de jugadores durante el encuentro es RG-T02 (art. 21). El resultado adjudicado no se mezcla con el tanteo de cancha.",
+  "regulation.matrix.11.coverage": {
+   "admin": "ejecutable (caso preparado)",
+   "exposure": "caso preparado (incomparecencia)",
+   "natural": "sin generación natural",
+   "consume": "regs.terminate (kind forfeit)",
+   "verify": "tests/motor09 grupo «Terminación»"
+  }
+ },
+ "replacementNotes": {
+  "regulation.availability.contrast": "MOTOR-14 §7.3: art. 21 contrastado por ChatGPT",
+  "regulation.matrix.10.contrast": "MOTOR-14 §7.3: art. 21 contrastado por ChatGPT",
+  "regulation.matrix.11.source.note": "MOTOR-14: se separa la incomparecencia (RG-T01) de la falta de jugadores durante el encuentro (RG-T02)"
+ }
+}

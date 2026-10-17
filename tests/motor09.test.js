@@ -22,12 +22,12 @@ const shot = (p, team, zone, points, made, extra = {}) => ({ k: 'shot', p, team,
 const ft = (p, team, i, n, made, series, extra = {}) => ({ k: 'ft', p, team, made, series, i, n, cause: 'falta en acto de tiro', shooting: true, shotEvent: 'E0003', shotMade: false, feed: null, ...extra });
 
 test('1. perfil MOTOR-09: matriz normativa coherente, estado de contraste por fila y una candidata ambigua no es activable', () => {
-  assert.match(profile.effectiveId, /\+SEM-MOTOR09-20261016(\+SEM-MOTOR10-20261016)?(\+SEM-MOTOR11-20261017)?(\+SEM-MOTOR12-20261017)?(\+SEM-MOTOR13-20261017)?$/);
+  assert.match(profile.effectiveId, /\+SEM-MOTOR09-20261016(\+SEM-MOTOR10-20261016)?(\+SEM-MOTOR11-20261017)?(\+SEM-MOTOR12-20261017)?(\+SEM-MOTOR13-20261017)?(\+SEM-MOTOR14-20261017)?$/);
   assert.deepEqual(validateMatrix(profile), []);
   const reg = profile.regulation;
-  // honestidad de fuentes: ninguna fila se presenta como lectura directa de un PDF inaccesible; lo contrastado remite al encargo §4.3
+  // honestidad de fuentes: ninguna fila se presenta como lectura directa de un PDF inaccesible; lo contrastado remite al encargo §4.3 (MOTOR-09) o §7.3 (MOTOR-14)
   assert.ok(reg.sources.every((s) => /403|no/.test(s.access)));
-  for (const r of reg.matrix) { assert.ok(['contrastada', 'heredada', 'provisional', 'pendiente'].includes(r.contrast), r.id); if (r.contrast === 'contrastada') assert.match(r.source.reading, /§4\.3/); if (r.contrast === 'pendiente') assert.equal(r.consequence, null); }
+  for (const r of reg.matrix) { assert.ok(['contrastada', 'heredada', 'provisional', 'pendiente'].includes(r.contrast), r.id); if (r.contrast === 'contrastada') assert.match(r.source.reading, /§4\.3|MOTOR-14 §7\.3/); if (r.contrast === 'pendiente') assert.equal(r.consequence, null); }
   // una fila incompatible con la misma prioridad: la matriz no es válida y no se desempata alfabéticamente
   const bad = deepCopy(profile); bad.regulation.matrix.push({ ...deepCopy(bad.regulation.matrix.find((r) => r.id === 'RG-F02')), id: 'RG-FX', consequence: { ft: 1, shooter: 'fouled', playerFoul: true, teamFoul: true, resume: { kind: 'afterSeries' } } });
   assert.ok(validateMatrix(bad).some((i) => i.rule === 'ambigüedad'));
@@ -230,11 +230,12 @@ test('10. terminación: el resultado adjudicado no se mezcla con la cancha y una
   assert.deepEqual(c.administrative.awarded, [20, 0]); assert.notDeepEqual(c.administrative.awarded, c.acta.score); assert.equal(c.administrative.awardedIsCourtScore, false);
   assert.equal(terminate(profile, { favored: 1, played: [3, 4], reason: 'x' }).awarded[1], 20);
   assert.equal(availability(profile, Array.from({ length: 12 }, (_, i) => ({ available: i < 12, excluded: i === 3 }))).eligible, 11);
-  // el motor natural exige cinco elegibles: sin sustituto, error identificable (no un sexto jugador ni un acta final plausible)
+  // MOTOR-14: sin sustituto elegible la posición queda VACANTE (inferioridad natural), sin error ni sexto jugador; el equipo sigue con los presentes
   const m = freshMatch(17);
   for (const id of m.teams[1].ids) if (!m.ps[id].onCourt) m.ps[id].available = false;
   m.ps['EQ02-J11'].fouls = 5; m.ps['EQ02-J11'].available = false;
-  assert.throws(() => m.coachMandatory(1, 'falta', new Set()), /inferioridad no simulada/);
+  m.coachMandatory(1, 'falta', new Set());
+  assert.equal(m.onCourt(1).length, 4); assert.equal(m.lineup[1].C, undefined); assert.ok(m.events.some((e) => e.type === 'substitution' && e.participants.entra === null && e.participants.sale === 'EQ02-J11'));
   const res = reference(); const bad = { ...res, status: 'error' };
   assert.equal(buildActa(bad, profile.statsPolicy).status.definitive, false, 'una ejecución con error no produce un acta definitiva');
   assert.equal(buildActa(bad, profile.statsPolicy).status.partial, true);

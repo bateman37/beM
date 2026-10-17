@@ -294,6 +294,7 @@ P.projectedLineup = function projectedLineup(team) {
   return pend ? { ...pend.content.target } : { ...this.lineup[team] };
 };
 P.validateTarget = function validateTarget(o, base, target) {
+  if (SLOTS.some((s) => !base[s])) return fail('el equipo juega en inferioridad (sin jugadores elegibles para completar el quinteto): las órdenes de quinteto y de cambio no están disponibles en esta situación (RG-D02)');
   const ids = SLOTS.map((s) => target[s]);
   if (ids.some((id) => !id)) return fail('falta un jugador en alguna posición');
   if (new Set(ids).size !== 5) return fail('el quinteto necesita cinco jugadores distintos');
@@ -427,6 +428,7 @@ P.applyCommand = function applyCommand(c) {
   if (c.kind === 'submit') return this.submit(c.payload.spec);
   if (c.kind === 'batch') return this.submitBatch(c.payload.specs, c.payload.label);
   if (c.kind === 'cancel') return this.cancel(c.payload.orderId);
+  if (c.kind === 'withdraw') return this.withdrawPlayer(c.payload.pid, { cause: c.payload.cause });
   throw new Error(`comando desconocido: ${c.kind}`);
 };
 

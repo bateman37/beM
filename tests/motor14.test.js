@@ -4,6 +4,7 @@
 //  3 · almacén de guardados: escritura atómica confirmada, copia alterada/incompatible/incompleta rechazada sin tocarla y sin duplicados.
 //  4 · equivalencia: modalidades, velocidades y niveles de registro con las mismas entradas; entradas distintas = incompatible; informe de AUD29 leído, no simulado.
 //  5 · contrato para el manager y aislamiento: sin navegador, autoridad de órdenes, dos encuentros alternados independientes.
+//  6 · inferioridad natural y terminación (art. 21): retirada sin sustituto, vacantes sin jugadores fantasma, acta/análisis conciliados, reproducción y adjudicado distinto del marcador de cancha.
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtempSync, rmSync, readFileSync, writeFileSync, existsSync, readdirSync, mkdirSync } from 'node:fs';
@@ -26,9 +27,12 @@ import { runAudit } from '../src/audit/index.js';
 import { EQUIVALENCE_SCHEMA, sealReport, verifyReport, evaluateEquivalence } from '../src/audit/equivalence.js';
 import { EVALUATORS } from '../src/audit/evaluators.js';
 import { ENGINE_VERSION } from '../src/match/data.js';
+import { replayMatch } from '../src/match/replay.js';
+import { terminate } from '../src/match/regs.js';
+import { reconcileAnalysis } from '../src/analysis/reconcile.js';
 
 const { profile, players } = data; const REF = 20261016;
-const baseline = JSON.parse(readFileSync(new URL('./fixtures/baseline-motor13.json', import.meta.url), 'utf8'))[String(REF)];
+const baseline = JSON.parse(readFileSync(new URL('./fixtures/baseline-motor14.json', import.meta.url), 'utf8'))[String(REF)];
 const root = mkdtempSync(join(tmpdir(), 'bem-m14-'));
 const SCRIPT = [
   { period: 1, label: 'guion P1', specs: [{ team: 0, type: 'styles', styles: { freedom: 5, organizedPace: 4 } }] },
@@ -173,4 +177,51 @@ test('5 · contrato para el manager: sin navegador, autoridad sobre las órdenes
   while (!a.done || !b.done) { for (let i = 0; i < 7; i++) if (!a.done) a.advance({ until: 'step' }); for (let i = 0; i < 5; i++) if (!b.done) { b.advance({ until: 'step' }); b.query({ audience: 'diagnostic' }); } }
   assert.equal(a.result().fingerprints.trajectory, solo(7)); assert.equal(b.result().fingerprints.trajectory, solo(8));
   assert.ok(ENGINE_VERSION && existsSync(root) && readdirSync(root).length > 0);
+});
+
+// ------------------------------------------------------------------------------------------------------------------------------ 6
+// Los jugadores que aparecen en un hecho deben estar en la alineación registrada de ese hecho (sin «jugador fantasma» en inferioridad).
+function phantoms(r) {
+  const onBy = Object.fromEntries(r.lineups.map((l) => [l.id, new Set(Object.values(l.slots))])); const bad = [];
+  for (const e of r.events) {
+    if (['substitution', 'termination', 'tipoff', 'period_start', 'period_end', 'interval', 'timeout', 'defense'].includes(e.type)) continue;
+    const on = new Set(e.lineups.flatMap((l) => [...onBy[l]])); const ids = new Set();
+    const walk = (v) => { if (typeof v === 'string' && /-J\d\d$/.test(v)) ids.add(v); else if (Array.isArray(v)) v.forEach(walk); else if (v && typeof v === 'object') Object.values(v).forEach(walk); };
+    walk(e.participants); for (const st of e.stats ?? []) walk(st.p);
+    for (const id of ids) if (!on.has(id)) bad.push(`${e.id}:${e.type}:${id}`);
+  }
+  return bad;
+}
+test('6 · inferioridad natural: retirada sin sustituto, vacantes sin jugador fantasma, conciliación, reproducción y terminación del art. 21 con resultado adjudicado distinto del de cancha', () => {
+  // Equipo 0 sin banquillo elegible; cuatro retiradas externas escalonadas (indisponibilidad recibida del manager): 4 → 3 → 2 en pista y, con menos de dos listos, terminación administrativa.
+  const input = inputFor(11); const t0 = input.teams[0]; const starters = Object.values(t0.plan.starters); t0.players.forEach((p) => { if (!starters.includes(p.id)) p.state.available = false; });
+  const e = createEncounter({ input, profile, detail: 'reduced' }); const plan = { 40: starters[0], 90: starters[1], 140: starters[2], 400: starters[3] }; let n = 0; const refused = [];
+  while (!e.done) { e.advance({ until: 'step' }); n += 1; if (plan[n]) { const r = e.retirePlayer(plan[n]); if (!r.ok) refused.push(r.reason); } }
+  assert.deepEqual(refused, []); const res = e.result().result;
+  const vac = res.events.filter((x) => x.type === 'substitution' && x.participants.entra === null); assert.ok(vac.length >= 3 && vac.every((x) => x.effects.sinSustituto === true && x.effects.regla === 'RG-D02'));
+  assert.deepEqual(vac.map((x) => x.effects.inferioridad).slice(0, 3), [4, 3, 2], 'la ocupación baja con cada retirada: sin sexto jugador ni relleno');
+  assert.deepEqual(phantoms(res), []);
+  assert.equal(res.reconciliation.valid, 'válida', JSON.stringify(res.reconciliation.checks.filter((c) => !c.ok).map((c) => c.id)));
+  assert.equal(reconcileAnalysis(res).ok, true, 'quintetos de 4, 3 y 2 jugadores: cada décima en exactamente una alineación');
+  // terminación: menos de dos listos → adjudicado (art. 21) separado del marcador de cancha; no hay estadísticas individuales inventadas para cuadrarlo
+  assert.equal(res.status, 'finished'); assert.equal(res.administrative.cause, 'insufficient_players'); assert.equal(res.administrative.awardedIsCourtScore, false);
+  assert.deepEqual(res.administrative.played, res.score); assert.equal(res.events.at(-1).type, 'termination'); assert.equal(e.result().outcome.kind, 'adjudicacion_administrativa');
+  assert.equal(res.acta.players ? Object.values(res.acta.players).reduce((a, p) => a + p.pts, 0) : null, res.score[0] + res.score[1], 'los puntos individuales son los de cancha');
+  // reproducción: las retiradas externas son comandos registrados y la reproducción da el mismo desarrollo y el mismo resultado adjudicado
+  assert.deepEqual(res.commands.map((c) => c.kind), ['withdraw', 'withdraw', 'withdraw', 'withdraw'].slice(0, res.commands.length));
+  const rp = replayMatch(JSON.parse(JSON.stringify(res))); assert.equal(rp.comparison.identical, true, JSON.stringify(rp.comparison.parts)); assert.deepEqual(rp.result.administrative, res.administrative);
+  // art. 21: el beneficiario conserva su marcador si va por delante; si no, se adjudica 2–0; «menos de cinco» no es terminación
+  const lead = terminate(profile, { favored: 1, played: [40, 50], reason: 'x', kind: 'insufficient_players' }); assert.deepEqual(lead.awarded, [40, 50]); assert.match(lead.awardedBasis, /conservado/);
+  const trail = terminate(profile, { favored: 1, played: [50, 40], reason: 'x', kind: 'insufficient_players' }); assert.deepEqual(trail.awarded, [0, 2]);
+  const tied = terminate(profile, { favored: 0, played: [30, 30], reason: 'x', kind: 'insufficient_players' }); assert.deepEqual(tied.awarded, [2, 0]);
+  assert.deepEqual(terminate(profile, { favored: 0, played: [3, 4], reason: 'x' }).awarded, [20, 0], 'la incomparecencia conserva su convención provisional');
+  const four = createEncounter({ input: inputFor(12), profile, detail: 'reduced' }); const fi = Object.values(four.match.teams[0].plan.starters);
+  four.match.teams[0].ids.forEach((id) => { if (!fi.includes(id)) four.match.ps[id].available = false; }); four.retirePlayer(fi[0]); four.advance({ until: 'end' });
+  assert.equal(four.result().result.administrative, null, 'con cuatro listos el encuentro sigue y termina normalmente'); assert.equal(four.result().outcome.kind, 'final_normal');
+  // la retirada de quien tiene una serie de libres pendiente se aplica al terminarla (no se cambia al lanzador entre tiros)
+  const m = createMatch(inputFor(13), profile, { detail: 'reduced' }); m.init(); m.startPossession({ team: 0, entry: 'deadFront', shotClock: 240 });
+  m.pendingFoul = { fouled: 'EQ01-J03', n: 2, shotTeam: 0, shooting: false, shotMade: false, kind: 'x', shotEvent: null, feed: null };
+  assert.equal(m.withdrawPlayer('EQ01-J03').deferred, true); assert.equal(m.ps['EQ01-J03'].available, true); m.pendingFoul = null; m.applyDeferredWithdrawals(); assert.equal(m.ps['EQ01-J03'].available, false);
+  // las órdenes de quinteto se rechazan con motivo mientras hay vacante (no se completa con un fantasma)
+  const v = createMatch(inputFor(14), profile, { detail: 'reduced' }); v.init(); delete v.lineup[0].C; const o = v.submit({ team: 0, type: 'lineup', assignment: { ...v.lineup[0], C: v.teams[0].ids[11] } }); assert.equal(o.state, 'rechazada'); assert.match(o.reason, /inferioridad/);
 });

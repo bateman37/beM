@@ -214,16 +214,21 @@ P.coachMandatory = function coachMandatory(team, window, used) {
   const st = this.coachState[team];
   for (const slot of SLOTS) {
     const out = this.lineup[team][slot];
-    if (this.ps[out].available) continue;
+    if (!out || this.ps[out].available) continue; // posición vacante (inferioridad) o jugador disponible
     // la fila de mayor prioridad del librillo para un jugador no disponible es la reglamentaria: sin excepción deportiva
     const fb = foulBookRow(this.coachView(team, this.coachFrontierInfo('ventana', { ventana: window })), this.profile.coach, { available: false, fouls: this.ps[out].fouls }, false);
     const pool = this.benchPool(team, used);
     const scored = pool.map((id) => ({ id, u: this.slotUtility(id, slot), nom: this.pl[id].positions.includes(slot) ? 0 : 1 })).sort((a, b) => a.nom - b.nom || b.u - a.u || (a.id < b.id ? -1 : 1));
     // la posición nominal orienta: primero quien la ocupa; si nadie, el mejor ajuste funcional
     const best = scored[0];
-    // MOTOR-09 (RG-D02): sin sustituto elegible no se mantiene a un excluido ni se inventa un sexto jugador: la inferioridad legal no está simulada por el motor natural
-    // y la ejecución se declara INVÁLIDA con diagnóstico (el caso se estudia con los casos preparados de laboratorio).
-    if (!best) throw new Error(`inferioridad no simulada: ${this.teams[team].id} no tiene un sustituto elegible para ${slot}; la ejecución no produce un acta final (RG-D02)`);
+    // MOTOR-14 (RG-D02): sin sustituto elegible no se mantiene a un excluido ni se inventa un sexto jugador: la posición queda VACANTE y el equipo continúa en inferioridad con los presentes.
+    if (!best) {
+      const d0 = this.decision(team, 'rotation', this.coachFrontierInfo('ventana', { ventana: window }), { rule: fb?.reason ?? 'FB100_REGLAMENTO', reason: 'retirada obligatoria sin sustituto elegible: continúa en inferioridad (RG-D02)', observations: { saliente: out, faltas: this.ps[out].fouls, disponiblesEnBanquillo: 0 }, proposal: { tipo: 'retirada', sale: out, posicion: slot }, participants: { antes: this.onCourt(team).slice() } });
+      this.dset(d0, 'autorizada', 'obligación reglamentaria');
+      this.vacate(team, slot, out, 'excluido sin sustituto elegible', { window, decision: d0 });
+      st.mandatoryRecent.push(this.sportT / 10);
+      continue;
+    }
     used.add(best.id);
     const before = this.onCourt(team).slice();
     const d = this.decision(team, 'rotation', this.coachFrontierInfo('ventana', { ventana: window }), { rule: fb?.reason ?? 'FB100_REGLAMENTO', reason: 'sustitución obligatoria: jugador excluido o indisponible (administración reglamentaria, no delegable)', observations: { fila: fb?.id ?? null, preferencia: fb?.preference ?? null, excepcion: fb?.exception ?? null, saliente: out, faltas: this.ps[out].fouls, candidatos: scored.map((x) => ({ id: x.id, utilidad: round(x.u, 3), posicionNominal: x.nom === 0 })) }, proposal: { tipo: 'sustitución', sale: out, entra: best.id, posicion: slot }, participants: { antes: before }, utility: { escala: '1–30', entrante: round(best.u, 3) } });

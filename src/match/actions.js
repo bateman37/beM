@@ -97,7 +97,7 @@ P.pickDirector = function pickDirector(team) {
   const on = new Set(this.onCourt(team));
   const list = this.teams[team].plan.directorPriority;
   for (let rank = 0; rank < list.length; rank++) { const id = list[rank]; if (on.has(id) && this.ps[id].available) return { id, fallback: false, rank }; }
-  for (const s of SLOTS) { const id = this.lineup[team][s]; if (this.ps[id].available) return { id, fallback: true, rank: null }; }
+  for (const s of SLOTS) { const id = this.lineup[team][s]; if (id && this.ps[id].available) return { id, fallback: true, rank: null }; }
   throw new Error('sin director disponible');
 };
 
@@ -674,14 +674,14 @@ P.afterMiss = function afterMiss(ex, zone) {
   const defP = ft ? this.playersAtSlots(defT, defSlots) : this.defenseReboundParticipants(defT, defSlots.length); // el cierre usa la referencia y los compromisos ACTUALES
   const strength = (pid) => this.reboundStrength(pid);
   const mean = (ids) => ids.reduce((s, id) => s + strength(id), 0) / ids.length;
-  const RA = mean(offP); const RD = mean(defP);
+  const RA = offP.length ? mean(offP) : 0; const RD = defP.length ? mean(defP) : 0; // MOTOR-14: sin cargadores presentes (inferioridad) no hay disputa ofensiva: pRO = 0, sin NaN
   const K = rb.loadLogitByLevel[this.styleOf(offT).afterShot - 1];
   const p0 = ft ? rb.lastFreeThrowOffensiveP0 : rb.fieldOffensiveP0;
   // MOTOR-07: disputa simétrica (Forma de defensa/disputa de ambos grupos, M-DEF de ambos); sin presión ni T. La elección del captor no usa estados.
   const rfp = this.formPressure('rebound', offP, defP, { executants: [] });
-  const pRO0 = sigmoid(logit(p0) + rb.sensitivity * (RA - RD) + K + rfp.delta);
+  const pRO0 = offP.length ? sigmoid(logit(p0) + rb.sensitivity * (RA - RD) + K + rfp.delta) : 0;
   const rz = this.momentZ('rebound', offP, defP);
-  const pRO = perturbBinary(pRO0, rz.Z, rz.alpha);
+  const pRO = offP.length ? perturbBinary(pRO0, rz.Z, rz.alpha) : 0;
   this.perturbNote('rebound', rz, { pBase: round(pRO0, 5), pFinal: round(pRO, 5) });
   this.note('rebote', { participantesAtaque: offP, participantesDefensa: defP, RA: round(RA, 3), RD: round(RD, 3), kCarga: K, pRebOfensivo: round(pRO, 5), encargos: this.commitTrace(commit) });
   if (this.opts.detail === 'full') { // MOTOR-14 (TEC17/TEC18/FIS05): fuerza de cierre por participante, con el mismo cálculo y las mismas entradas (sin sorteos ni cálculos nuevos)

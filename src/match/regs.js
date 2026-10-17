@@ -4,7 +4,7 @@
 // estado de contraste (`contrastada`, `heredada`, `provisional`, `pendiente`) y una fila `pendiente` NO ejecuta nada, rechaza con diagnóstico.
 import { inPenalty, foulPeriodKey } from './rules.js';
 
-export const CONTRAST = { contrastada: 'Contrastada (texto del encargo MOTOR-09 §4.3)', heredada: 'Heredada de MOTOR-01 a MOTOR-08, sin contrastar con el PDF', provisional: 'Mecanismo ejecutable con un valor sin contrastar', pendiente: 'Tipada, sin ejecución: contenido exacto pendiente' };
+export const CONTRAST = { contrastada: 'Contrastada con el texto de un encargo (MOTOR-09 §4.3 / MOTOR-14 §7.3: lectura de ChatGPT; no lectura directa del PDF por Claude)', heredada: 'Heredada de MOTOR-01 a MOTOR-08, sin contrastar con el PDF', provisional: 'Mecanismo ejecutable con un valor sin contrastar', pendiente: 'Tipada, sin ejecución: contenido exacto pendiente' };
 export const FOUL_CATEGORIES = ['personal', 'ofensiva', 'disruptiva', 'flagrante', 'tecnica1', 'tecnica2', 'antideportiva'];
 
 const getPath = (o, path) => path.split('.').reduce((x, k) => (x == null ? undefined : x[k]), o);
@@ -92,6 +92,8 @@ export function validateMatrix(profile) {
   const a = reg.availability; const t = reg.termination;
   if (!(Number.isInteger(a?.minPlayersToContinue) && a.minPlayersToContinue >= 1 && a.minPlayersToContinue <= 5)) bad('dominio', 'regulation.availability.minPlayersToContinue debe ser un entero de 1 a 5');
   if (!(Number.isInteger(t?.forfeitWinnerPoints) && t.forfeitWinnerPoints > t.forfeitLoserPoints && t.forfeitLoserPoints >= 0)) bad('dominio', 'el resultado adjudicado debe favorecer a un equipo (ganador > perdedor ≥ 0)');
+  const ip = t?.insufficientPlayers;
+  if (ip && !(typeof ip.retainLeadingScore === 'boolean' && Number.isInteger(ip.otherwiseWinnerPoints) && Number.isInteger(ip.otherwiseLoserPoints) && ip.otherwiseWinnerPoints > ip.otherwiseLoserPoints && ip.otherwiseLoserPoints >= 0)) bad('dominio', 'regulation.termination.insufficientPlayers: conservar marcador (sí/no) y un adjudicado ganador > perdedor ≥ 0');
   return out;
 }
 
@@ -143,10 +145,18 @@ export function availability(profile, roster) {
 }
 
 // Terminación administrativa: se conserva lo disputado y el resultado ADJUDICADO es un dato distinto (nunca puntos de un jugador).
-export function terminate(profile, { favored, played, reason }) {
+// `kind`: 'insufficient_players' (art. 21 de F14-01, lectura del encargo MOTOR-14 §7.3: menos de dos jugadores listos durante el encuentro; el beneficiario CONSERVA su marcador si va por delante y,
+// si no, se adjudica 2–0) o 'forfeit' (incomparecencia: resultado fijo de la fila; sigue siendo la convención provisional de MOTOR-09). El marcador de cancha nunca se reescribe.
+export function terminate(profile, { favored, played, reason, kind = 'forfeit' }) {
   const t = profile.regulation.termination;
+  if (kind === 'insufficient_players') {
+    const ip = t.insufficientPlayers;
+    const leading = played[favored] > played[1 - favored];
+    const awarded = leading && ip.retainLeadingScore ? [...played] : (favored === 0 ? [ip.otherwiseWinnerPoints, ip.otherwiseLoserPoints] : [ip.otherwiseLoserPoints, ip.otherwiseWinnerPoints]);
+    return { kind: 'administrative', cause: kind, reason, row: 'RG-T01', contrast: ip.contrast, played: [...played], awarded, awardedBasis: leading && ip.retainLeadingScore ? 'marcador favorable del beneficiario conservado' : 'adjudicado 2–0 (el beneficiario no iba por delante)', favored, awardedIsCourtScore: false };
+  }
   const awarded = favored === 0 ? [t.forfeitWinnerPoints, t.forfeitLoserPoints] : [t.forfeitLoserPoints, t.forfeitWinnerPoints];
-  return { kind: 'administrative', reason, row: 'RG-T01', contrast: t.contrast, played: [...played], awarded, awardedIsCourtScore: false };
+  return { kind: 'administrative', cause: kind, reason, row: 'RG-T01', contrast: t.contrast, played: [...played], awarded, awardedBasis: 'resultado fijo de la fila de incomparecencia', favored, awardedIsCourtScore: false };
 }
 
 export { foulPeriodKey };

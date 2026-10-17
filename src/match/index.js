@@ -13,6 +13,7 @@ import './states.js';
 import './coach.js';
 import './memory.js';
 import './orders.js';
+import './availability.js';
 import { projectBox, teamTotals } from './box.js';
 import { buildActa } from './acta.js';
 import { reconcile } from './reconcile.js';
@@ -131,8 +132,8 @@ export function buildResult(m, extra = {}) {
     periodScores: m.periodScores.map((p) => ({ period: p.period, points: [...p.points] })),
     box,
     acta, possessions: m.possLog,
-    reconciliation: reconcile({ events: m.events, lineups: m.lineupTable, input: m.input, score: m.score, periodScores: m.periodScores, possessions: m.possLog, status: m.status, diagnostics: { finalFouls: Object.fromEntries(Object.entries(m.ps).map(([id, s]) => [id, s.fouls])), timeouts: m.timeouts.map((l) => ({ used: { ...l.used }, finalWindow: l.final })) } }, acta),
-    administrative: null, revisions: [],
+    reconciliation: reconcile({ events: m.events, lineups: m.lineupTable, input: m.input, score: m.score, periodScores: m.periodScores, possessions: m.possLog, status: m.status, administrative: m.administrative ?? null, diagnostics: { finalFouls: Object.fromEntries(Object.entries(m.ps).map(([id, s]) => [id, s.fouls])), timeouts: m.timeouts.map((l) => ({ used: { ...l.used }, finalWindow: l.final })) } }, acta),
+    administrative: m.administrative ?? null, revisions: [],
     direction: m.opts.direction ?? null,
     commands: m.commands,
     orders: m.orders,

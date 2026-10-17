@@ -18,9 +18,10 @@ export const EXTENSION10_PATH = join(ROOT, 'data/match/motor10-seed-extension.js
 export const EXTENSION11_PATH = join(ROOT, 'data/match/motor11-seed-extension.json');
 export const EXTENSION12_PATH = join(ROOT, 'data/match/motor12-seed-extension.json');
 export const EXTENSION13_PATH = join(ROOT, 'data/match/motor13-seed-extension.json');
+export const EXTENSION14_PATH = join(ROOT, 'data/match/motor14-seed-extension.json');
 export const PLAYERS_PATH = join(ROOT, 'data/fixtures/reference-players-MOTOR01.csv');
 
-// `profile` es el perfil EFECTIVO (SEM de MOTOR-01 + extensiones SEM de MOTOR-02 a MOTOR-13); `baseProfile` es el original sin tocar.
+// `profile` es el perfil EFECTIVO (SEM de MOTOR-01 + extensiones SEM de MOTOR-02 a MOTOR-14); `baseProfile` es el original sin tocar.
 export function loadData() {
   const baseProfile = JSON.parse(readFileSync(PROFILE_PATH, 'utf8'));
   const extension = JSON.parse(readFileSync(EXTENSION_PATH, 'utf8'));
@@ -35,6 +36,7 @@ export function loadData() {
   const extension11 = JSON.parse(readFileSync(EXTENSION11_PATH, 'utf8'));
   const extension12 = JSON.parse(readFileSync(EXTENSION12_PATH, 'utf8'));
   const extension13 = JSON.parse(readFileSync(EXTENSION13_PATH, 'utf8'));
+  const extension14 = JSON.parse(readFileSync(EXTENSION14_PATH, 'utf8'));
   const players = parsePlayersCsv(readFileSync(PLAYERS_PATH, 'utf8'), baseProfile);
-  return { profile: applyExtension(baseProfile, extension, extension3, extension4, extension5, extension6, extension7, extension8, extension9, extension10, extension11, extension12, extension13), baseProfile, extension, extension3, extension4, extension5, extension6, extension7, extension8, extension9, extension10, extension11, extension12, extension13, players };
+  return { profile: applyExtension(baseProfile, extension, extension3, extension4, extension5, extension6, extension7, extension8, extension9, extension10, extension11, extension12, extension13, extension14), baseProfile, extension, extension3, extension4, extension5, extension6, extension7, extension8, extension9, extension10, extension11, extension12, extension13, extension14, players };
 }

@@ -582,6 +582,11 @@ P.afterBallRecovery = function afterBallRecovery(poss, src = poss.recovery) {
     if (id === captor || !this.ps[id].available || !['PG', 'SG', 'SF'].includes(this.slotOf(id))) continue;
     exits.push({ key: `${oreb ? 'ESP13' : 'ESP14'}:${id}`, role: 'exterior', actor: id, zone: 'three', exec: 'pass', passer: captor, icpt: this.markerOf(id), defend: this.markerOf(id), moved: false, offContact: null, holder: captor, esp: oreb ? 'ESP13' : 'ESP14' });
   }
+  if (!exits.length) { // MOTOR-14 (inferioridad): sin ninguna salida realizable con los participantes presentes, el equipo asegura y organiza (sin sortear ni inventar un receptor)
+    this.note(`${oreb ? 'rebote_ofensivo' : 'balón_recuperado'}:sin_salida`, { motivo: 'ninguna salida realizable con los jugadores presentes' });
+    this.reorganize(poss, oreb ? 'rebote ofensivo sin salida realizable' : 'balón recuperado sin salida realizable: se asegura y se organiza', null);
+    return null;
+  }
   const sc = this.scoreExits(team, exits, null);
   const lq = this.libertyAndReading(team, captor);
   const ex = { ...this.pick(this.mixIntention(sc.map((x) => this.exitItem(x)), lq, oreb ? 'salida:rebote_ofensivo' : 'salida:balón_recuperado'), oreb ? 'salida:rebote_ofensivo' : 'salida:balón_recuperado').exit };
@@ -819,6 +824,7 @@ P.step = function step() {
       this.possessionUnit();
     }
   } catch (err) { this.fail(err); }
+  if (this.status === 'running') { try { this.checkAvailability(); } catch (err) { this.fail(err); } } // MOTOR-14: menos de dos jugadores listos → terminación administrativa (RG-D02/RG-T01)
   this.inStep = false;
   info.events = this.events.length - ev0;
   this.lastStep = info;

@@ -84,6 +84,15 @@ export class Encounter {
     return this.match.cancel(orderId);
   }
 
+  // Indisponibilidad externa (p. ej. del manager): retira al jugador por la MISMA administración que una exclusión (sustitución si hay un elegible; si no, vacante y continuación en inferioridad;
+  // con menos de dos jugadores listos termina administrativamente). Valida autoridad sobre el equipo del jugador. Riesgo clínico, lesión aleatoria y recuperación entre partidos no se modelan aquí.
+  retirePlayer(playerId, { cause = 'indisponibilidad externa', authority = null } = {}) {
+    const st = this.match.ps[playerId]; if (!st) return { ok: false, reason: `jugador desconocido: ${playerId}` };
+    const team = this.match.pl[playerId].teamIdx; const allowed = authority == null ? this.controlledTeams : new Set(authority);
+    if (!allowed.has(team)) return { ok: false, reason: `sin autoridad sobre el equipo ${team}` };
+    return this.match.withdrawPlayer(playerId, { cause });
+  }
+
   // Consulta SIN efectos deportivos según audiencia: pública = lo observable; propia = estado de un equipo con las categorías autorizadas; diagnóstico = laboratorio.
   query({ audience = 'public', team = 0 } = {}) {
     if (!AUDIENCES.includes(audience)) throw new Error(`audiencia desconocida: ${audience}`);
