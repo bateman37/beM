@@ -25,6 +25,7 @@ P.initStates = function initStates() {
   this.sportT = 0; // décimas de juego vivo acumuladas: reloj deportivo de los estados (no depende de la presentación)
   this.pauses = []; // marcadores de pausa deportiva, en orden
   this.stateLog = []; // evolución comprometida (diagnóstico): solo actualizaciones reales con intervalo o pausa
+  this.stateSamples = []; // MOTOR-15 §9.2: muestras del estado propio en las fronteras de periodo (inicio y final); solo lectura, sin azar
   this.episodeLog = []; this.episodeTreated = new Set();
   this.importance = this.input.importance;
   const mk = (v) => ({ v, t: 0, pi: 0 });
@@ -34,6 +35,17 @@ P.initStates = function initStates() {
     this.ps[id].mom = { M_TIR: mk(st.M_TIR), M_OFE: mk(st.M_OFE), M_DEF: mk(st.M_DEF) };
   }
   this.tm = this.teams.map((t) => mk(t.plan.initialTeamMoment));
+};
+
+// MOTOR-15 §9.2: muestra del estado propio en una frontera estable (inicio y final de periodo). Energía exacta; Forma constante (entrada); momentos con valor COMPROMETIDO, hasta cuándo está actualizado
+// y su proyección determinista (solo atenúa hacia neutral). No se fuerza ninguna actualización (no se sortea nada para muestrear) ni se interpola: el tramo intermedio solo existe si hay muestra.
+P.sampleStates = function sampleStates(kind) {
+  const players = {};
+  for (const id of Object.keys(this.ps)) {
+    const s = this.ps[id];
+    players[id] = { e: round(s.energy, 2), on: s.onCourt, av: s.available, m: Object.fromEntries(MOMENT_SCOPES.map((k) => { const v = this.momentView(id, k); return [k, [round(v.comprometido, 4), v.actualizadoHasta, round(v.proyeccionDeterminista, 4)]]; })) };
+  }
+  this.stateSamples.push({ n: this.stateSamples.length + 1, kind, period: this.period, seq: this.eventSeq, sportSeconds: this.sportT / 10, clockTenths: this.clock, score: [...this.score], players, T: this.teams.map((_, i) => { const v = this.teamMomentView(i); return [round(v.comprometido, 4), v.actualizadoHasta, round(v.proyeccionDeterminista, 4)]; }) });
 };
 
 // ---------------------------------------------------------------- Consistencia: amplitud de la variación (MEN06)

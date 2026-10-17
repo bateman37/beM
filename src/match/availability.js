@@ -41,7 +41,7 @@ P.readyPlayers = function readyPlayers(t) { return this.teams[t].ids.filter((id)
 P.checkAvailability = function checkAvailability() {
   if (this.status !== 'running') return false;
   this.applyDeferredWithdrawals();
-  if ((this.poss && !this.poss.done) || this.pendingFoul) return false; // solo en una frontera estable: la posesión en curso (y sus libres pendientes) se administra hasta su cierre
+  if ((this.poss && !this.poss.done) || this.pendingFoul || this.adminPlan || this.incidentInbox?.length) return false; // solo en una frontera estable: la posesión en curso (y sus libres pendientes) se administra hasta su cierre
   const min = this.profile.regulation.availability.minPlayersToContinue;
   for (let t = 0; t < 2; t++) {
     if (this.readyPlayers(t) >= min) continue;

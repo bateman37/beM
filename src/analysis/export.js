@@ -14,7 +14,7 @@ export function metaOf(a) {
 
 export function jsonExport(a, { team = a.ctx.team, filters = {} } = {}) {
   return { meta: { ...metaOf(a), filters }, coverage: a.coverageSummary(), indicators: [0, 1].map((t) => ({ team: t, results: a.indicators(t, filters).map((r) => ({ id: r.id, label: r.label, value: r.value, num: r.num, den: r.den, unit: r.unit, universe: r.universe, coverage: r.coverage, sample: r.sample ?? null, reason: r.reason ?? null, versions: r.versions, evidence: r.evidence })) })),
-    sections: { summary: a.summary(), sectors: [0, 1].map((t) => a.sectors(t, filters)), quality: [0, 1].map((t) => a.quality(t, filters)), evolution: a.evolutionBrief(), margin: a.margin(), origin: [0, 1].map((t) => a.origin(t)) } };
+    sections: { summary: a.summary(), sectors: [0, 1].map((t) => a.sectors(t, filters)), quality: [0, 1].map((t) => a.quality(t, filters)), evolution: a.evolutionBrief(), margin: a.margin(), origin: [0, 1].map((t) => a.origin(t)), ownStates: [0, 1].map((t) => a.ownStates(t)), recommendations: [0, 1].map((t) => a.recommendations(t)) } };
 }
 
 // Tablas CSV disponibles (cada una con contexto suficiente: equipo, audiencia, versión y filtros).

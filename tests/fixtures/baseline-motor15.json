@@ -1,0 +1,39 @@
+{
+ "20261016": {
+  "score": [
+   83,
+   98
+  ],
+  "periodScores": [
+   [
+    28,
+    24
+   ],
+   [
+    12,
+    25
+   ],
+   [
+    17,
+    28
+   ],
+   [
+    26,
+    21
+   ]
+  ],
+  "draws": 6684,
+  "sha256": "4b1a9286c1ad19544981cb02e0acf50af9aed42dbaa50db4a3ae36ac25f20ae7",
+  "trajectorySha256": "12919e2aea84cb5bf05e0a00860826a38d009b0fcc833d7f83097d474b223259",
+  "note": "Referencia de MOTOR-15 (motor beM-motor-0.15.0-MOTOR15, perfil +SEM-MOTOR15-20261017). Sustituye a baseline-motor14.json (83–103, 6.505 sorteos): el deporte cambia por la liberación/resolución del tiro (SEM15-TIR-01) y la interferencia condicionada (SEM15-INT-01…04). sha256 = proyección deportiva con la identidad del perfil; trajectorySha256 = huella de trayectoria. Registro completo y reducido dan la misma trayectoria.",
+  "previous": {
+   "file": "baseline-motor14.json",
+   "score": [
+    83,
+    103
+   ],
+   "draws": 6505,
+   "trajectorySha256": "ed353769858813fe7ae3bedd271946c6f7c0aef7885ce00e2bbe27d0acc13bc5"
+  }
+ }
+}

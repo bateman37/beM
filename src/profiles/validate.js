@@ -119,6 +119,9 @@ function relationIssues(profile, add) {
   if (Array.isArray(cb) && !(cb[0] <= 0 && cb[1] >= 0)) add('pressure.combinedFormPressureLogitBounds', 'error', 'rango', 'el presupuesto conjunto debe incluir el 0 (sin Forma ni presión no hay ajuste)', cb);
   for (const [k, v] of Object.entries(ep ?? {})) if (/Impulse$/.test(k) && finite(v) && Math.abs(v) > 1) add(`episodes.${k}`, 'error', 'dominio', 'un impulso mayor que la escala completa del estado no es un impulso limitado', v);
   if (profile.regulation) for (const i of validateMatrix(profile)) add('regulation', i.severity, i.rule, i.message, null); // MOTOR-09: la matriz normativa debe ser coherente para activarse como perfil reglamentario
+  // MOTOR-15: resultados excluyentes por oportunidad (ninguna, ofensiva, defensiva): la suma de masas elegibles no puede superar 1
+  const itf = profile.interference;
+  if (itf) for (const k of ['fieldGoal', 'lastFreeThrow']) { const d = itf[k]?.defensiveP; const o = itf[k]?.offensiveP; if (finite(d) && finite(o) && d + o > 1) add(`interference.${k}.defensiveP`, 'error', 'masa', 'la suma de las masas defensiva y ofensiva de una oportunidad no puede superar 1 (la residual es 1 − suma)', d + o); }
   motor08Issues(profile, add); // MOTOR-08: referencias, prioridades, unidades y límites del entrenador y la memoria
 }
 

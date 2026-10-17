@@ -59,12 +59,13 @@ export function projectAttempt(src, a, profile, cfg) {
   // ---------------------------------------------------------------- hechos (relojes, bucles, tipos)
   const ev = src.stream(a, 'eventos'); P.bytes.eventos = ev?.length ?? 0;
   if (ev) {
-    let prev = null; let streak = 0; let prevSig = null; let prevScore = [0, 0]; const SKIP = new Set(['free_throw', 'foul', 'substitution', 'timeout', 'period_start', 'period_end', 'interval', 'tipoff']);
+    let prev = null; let streak = 0; let prevSig = null; let prevScore = [0, 0]; const SKIP = new Set(['free_throw', 'foul', 'substitution', 'timeout', 'period_start', 'period_end', 'interval', 'tipoff', 'correction']);
     for (const e of jsonlRecords(ev)) {
       P.events.n += 1; inc(P.events.types, e.type); P.events.byPeriodTenths[e.period] = (P.events.byPeriodTenths[e.period] ?? 0) + (e.durationTenths ?? 0);
-      if ((e.durationTenths ?? 0) < 0 || (e.clock && e.clock.after > e.clock.before)) P.events.durationBad += 1;
-      if (prev && prev.period === e.period && e.clock && prev.clock && e.clock.before !== prev.clock.after) { P.events.clockBad += 1; if (P.events.clockBad === 1) P.events.clockExample = { event_id: e.event_id, prev: prev.event_id, before: e.clock.before, prevAfter: prev.clock.after }; }
-      if (e.score && (e.score[0] < prevScore[0] || e.score[1] < prevScore[1])) P.events.scoreBad += 1; prevScore = e.score ?? prevScore;
+      const corr = e.type === 'correction' || prev?.type === 'correction'; // MOTOR-15: una corrección identificada (art. 45) puede romper la monotonía aparente del reloj o del marcador: no es un defecto ni un bucle
+      if (!corr && ((e.durationTenths ?? 0) < 0 || (e.clock && e.clock.after > e.clock.before))) P.events.durationBad += 1;
+      if (!corr && prev && prev.period === e.period && e.clock && prev.clock && e.clock.before !== prev.clock.after) { P.events.clockBad += 1; if (P.events.clockBad === 1) P.events.clockExample = { event_id: e.event_id, prev: prev.event_id, before: e.clock.before, prevAfter: prev.clock.after }; }
+      if (e.type !== 'correction' && e.score && (e.score[0] < prevScore[0] || e.score[1] < prevScore[1]) ) P.events.scoreBad += 1; prevScore = e.score ?? prevScore;
       const sig = `${e.type}|${e.team}|${e.possession_id}|${e.intent?.motivo ?? ''}|${e.clock?.after}`;
       if (!SKIP.has(e.type) && (e.durationTenths ?? 0) === 0 && sig === prevSig) { streak += 1; if (streak === 1) P.events.loop.streaks += 1; if (streak > P.events.loop.maxStreak) { P.events.loop.maxStreak = streak; P.events.loop.example = { event_id: e.event_id, signature: sig }; } } else streak = 0;
       prevSig = sig; prev = e;

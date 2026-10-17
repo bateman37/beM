@@ -1,7 +1,7 @@
 // Acta completa de MOTOR-09 (EST01, EST02, EST04): proyección determinista desde los HECHOS del encuentro y la política versionada.
 // No hay acumuladores paralelos: marcador, acta individual y colectiva, parciales, series, finalizaciones F, posesiones, presencia y más-menos salen
 // de la misma lectura ordenada por la secuencia estable de hechos. Una consulta no consume azar ni concede créditos nuevos.
-export const ACTA_POLICY_ID = 'ACTA-MOTOR09-R1';
+export const ACTA_POLICY_ID = 'ACTA-MOTOR15-R1'; // MOTOR-15: asistencias con productor causal (motivo de cierre); el resto de la política no cambia
 
 const ATTACK_TYPES = new Set(['attempt', 'foul', 'free_throw', 'loose_ball', 'rebound', 'reorganization', 'throw_in']);
 const POSSESSION_CLOSE = {
@@ -11,13 +11,14 @@ const POSSESSION_CLOSE = {
 const pct = (m, a) => (a > 0 ? m / a : null);
 const zeroLine = () => ({
   min: 0, pts: 0, fg2m: 0, fg2a: 0, fg3m: 0, fg3a: 0, ftm: 0, fta: 0, oreb: 0, dreb: 0, ast: 0, astFg: 0, astFt: 0, tov: 0, stl: 0, blk: 0, blkRec: 0, pf: 0, fr: 0, pm: 0,
-  fouls: { personal: 0, tiro: 0, ofensiva: 0, disruptiva: 0, otras: 0 },
+  fouls: { personal: 0, tiro: 0, ofensiva: 0, disruptiva: 0, flagrante: 0, tecnica1: 0, tecnica2: 0, otras: 0 },
 });
 
 // `src`: { events, lineups, input, possessions?, status?, periodScores? }. `policy`: política estadística del perfil (statsPolicy) o la de referencia.
 export function buildActa(src, policy = {}) {
   const { events, input } = src;
   const asst = { requiresDirectContinuation: true, fieldGoal: true, freeThrowSeries: true, maxPerSeries: 1, ...(policy.assist ?? {}) };
+  const feedOk = (feed) => !!feed && (feed.close ? feed.close.eligible : !(asst.requiresDirectContinuation && feed.moved)); // MOTOR-15: el motivo de cierre del productor decide; un hecho anterior sin él usa la regla de MOTOR-09
   const players = {}; const teamOf = {}; const info = {};
   input.teams.forEach((t, ti) => t.players.forEach((p) => {
     players[p.id] = zeroLine(); teamOf[p.id] = ti;
@@ -29,6 +30,7 @@ export function buildActa(src, policy = {}) {
   const collective = input.teams.map(() => ({ tov: 0, reb: 0, rebOff: 0, rebDef: 0, tovCauses: {} }));
   const teamFouls = input.teams.map(() => ({})); const teamPoints = [0, 0]; const periods = {};
   const timeouts = input.teams.map(() => ({}));
+  const coachTech = input.teams.map(() => ({ C: 0, B: 0, descalificado: false })); // MOTOR-15: técnicas imputadas al entrenador (no son faltas de jugador ni de equipo)
   const excluded = new Set(); const exitSeq = {};
   const pointEvents = []; const series = {}; const finals = []; const finalByShot = {};
   const credits = []; // trazabilidad: cada crédito remite a su hecho
@@ -54,6 +56,8 @@ export function buildActa(src, policy = {}) {
     }
     if (ev.type === 'timeout') { const t = ev.team; if (t != null) timeouts[t][ev.period] = (timeouts[t][ev.period] ?? 0) + 1; }
     if (ev.effects?.excluido && ev.participants?.infractor) { excluded.add(ev.participants.infractor); }
+    if (ev.effects?.entrenador) { const ce = ev.effects.entrenador; coachTech[ce.equipo] = { C: ce.contadores.C, B: ce.contadores.B, descalificado: coachTech[ce.equipo].descalificado || !!ce.descalificado }; credits.push({ k: 'tec-entrenador', team: ce.equipo, categoria: ev.effects.categoria, event: ev.id }); }
+    if (ev.effects?.interferencia) credits.push({ k: 'interferencia', situacion: ev.effects.interferencia.situacion, lado: ev.effects.interferencia.lado, infractor: ev.effects.interferencia.infractor, efecto: ev.effects.interferencia.efecto, event: ev.id });
     for (const f of ev.stats) {
       switch (f.k) {
         case 'shot': {
@@ -63,7 +67,7 @@ export function buildActa(src, policy = {}) {
           if (f.made) { pl.pts += f.points; addPoint(ev, f.team, f.points, 'fg', f.p, { zone: f.zone }); }
           if (f.blockedBy) { pl.blkRec += 1; credits.push({ k: 'trec', p: f.p, event: ev.id }); }
           // asistencia a canasta: el pase final alimenta un tiro válido del receptor sin creación propia con movimiento
-          if (f.made && asst.fieldGoal && f.feed && (!asst.requiresDirectContinuation || !f.feed.moved)) { players[f.feed.passer].ast += 1; players[f.feed.passer].astFg += 1; credits.push({ k: 'ast', type: 'canasta', p: f.feed.passer, shooter: f.p, event: ev.id }); }
+          if (f.made && asst.fieldGoal && feedOk(f.feed)) { players[f.feed.passer].ast += 1; players[f.feed.passer].astFg += 1; credits.push({ k: 'ast', type: 'canasta', p: f.feed.passer, shooter: f.p, event: ev.id }); }
           // F: la acción de tiro abre una finalización (también la falta sobre un tiro fallado, aunque no cuente como FGA); un tiro anulado no abre F
           if (f.annulled) break;
           const F = { id: `F${String(finals.length + 1).padStart(3, '0')}`, possession: ev.possessionId, team: f.team, shooter: f.p, event: ev.id, period: ev.period, zone: f.zone, value: f.points, made: !!f.made, fromFoul: !!f.fromFoul, blocked: !!f.blockedBy, series: null, fieldPoints: f.made ? f.points : 0, seriesPoints: 0, closed: !f.fromFoul };
@@ -74,7 +78,7 @@ export function buildActa(src, policy = {}) {
           const pl = players[f.p]; const valid = (f.status ?? 'administered') === 'administered'; // un libre anulado o repetido no es un intento válido ni abre otra F
           if (valid) pl.fta += 1;
           const s = (series[f.series] ??= { id: f.series, shooter: f.p, team: f.team, granted: f.n, cause: f.cause, shooting: !!f.shooting, shotEvent: f.shotEvent ?? null, shotMade: !!f.shotMade, feed: f.feed ?? null, attempts: [], events: [] });
-          s.attempts.push({ i: f.i, made: !!f.made, status: f.status ?? 'administered' }); s.events.push(ev.id);
+          s.attempts.push({ i: f.i, made: !!f.made, status: f.status ?? 'administered', corrected: f.corrected?.id ?? null }); s.events.push(ev.id);
           if (f.made && valid) { pl.ftm += 1; pl.pts += 1; addPoint(ev, f.team, 1, 'ft', f.p, { series: f.series, linked: f.shotEvent ? finalByShot[f.shotEvent]?.id ?? null : null }); }
           break;
         }
@@ -88,7 +92,7 @@ export function buildActa(src, policy = {}) {
         case 'blk': players[f.p].blk += 1; credits.push({ k: 'blk', p: f.p, event: ev.id }); break;
         case 'foul': {
           const pl = players[f.p]; pl.pf += 1;
-          const kind = ['personal', 'tiro', 'ofensiva', 'disruptiva'].includes(f.kind) ? f.kind : 'otras'; pl.fouls[kind] += 1;
+          const kind = ['personal', 'tiro', 'ofensiva', 'disruptiva', 'flagrante', 'tecnica1', 'tecnica2'].includes(f.kind) ? f.kind : 'otras'; pl.fouls[kind] += 1;
           if (f.sobre && players[f.sobre]) players[f.sobre].fr += 1; // falta recibida solo cuando existe un receptor individual identificado
           if (f.teamFoul) { const key = ev.period <= 4 ? ev.period : 4; teamFouls[f.team][key] = (teamFouls[f.team][key] ?? 0) + 1; }
           break;
@@ -104,11 +108,12 @@ export function buildActa(src, policy = {}) {
   for (const s of Object.values(series)) {
     const madeN = s.attempts.filter((a) => a.made && a.status === 'administered').length;
     const validN = s.attempts.filter((a) => a.status === 'administered').length;
-    s.made = madeN; s.administered = s.attempts.length; s.valid = validN; s.annulled = s.attempts.filter((a) => a.status === 'annulled').length; s.repeated = s.attempts.filter((a) => a.status === 'repeated').length; s.pending = validN < s.granted; s.points = madeN;
+    s.made = madeN; s.administered = s.attempts.length; s.valid = validN; s.annulled = s.attempts.filter((a) => a.status === 'annulled').length; s.repeated = s.attempts.filter((a) => a.status === 'repeated').length; s.cancelled = s.attempts.length > 0 && s.attempts.every((a) => a.status === 'annulled' && a.corrected); // serie anulada por una corrección (art. 45): no queda pendiente ni abre F
+    s.pending = validN < s.granted && !s.cancelled; s.points = madeN;
     const F = s.shotEvent ? finalByShot[s.shotEvent] : null;
     if (F) { F.series = s.id; F.seriesPoints += madeN; F.closed = !s.pending; s.final = F.id; }
     // asistencia a una serie elegible: tiro fallado con falta, pase final elegible y al menos un libre convertido (una por serie)
-    if (asst.freeThrowSeries && s.shooting && !s.shotMade && s.feed && (!asst.requiresDirectContinuation || !s.feed.moved) && madeN >= 1) {
+    if (asst.freeThrowSeries && s.shooting && !s.shotMade && feedOk(s.feed) && madeN >= 1) {
       players[s.feed.passer].ast += asst.maxPerSeries; players[s.feed.passer].astFt += asst.maxPerSeries;
       credits.push({ k: 'ast', type: 'libres', p: s.feed.passer, shooter: s.shooter, series: s.id });
     }
@@ -158,7 +163,7 @@ export function buildActa(src, policy = {}) {
     const s = (k) => L.reduce((x, l) => x + l[k], 0); const c = collective[ti];
     const tot = { pts: s('pts'), fg2m: s('fg2m'), fg2a: s('fg2a'), fg3m: s('fg3m'), fg3a: s('fg3a'), ftm: s('ftm'), fta: s('fta'), oreb: s('oreb') + c.rebOff, dreb: s('dreb') + c.rebDef, ast: s('ast'), astFg: s('astFg'), astFt: s('astFt'), tov: s('tov') + c.tov, stl: s('stl'), blk: s('blk'), blkRec: s('blkRec'), pf: s('pf'), fr: s('fr'), min: s('min') };
     tot.fgm = tot.fg2m + tot.fg3m; tot.fga = tot.fg2a + tot.fg3a; tot.reb = tot.oreb + tot.dreb;
-    return { index: ti, id: t.id, name: t.name, players: ids, points: teamPoints[ti], totals: tot, collective: c, individualOnly: { tov: s('tov'), reb: s('oreb') + s('dreb') }, fouls: teamFouls[ti], timeouts: timeouts[ti], minutesExpected: null };
+    return { index: ti, id: t.id, name: t.name, players: ids, points: teamPoints[ti], totals: tot, collective: c, individualOnly: { tov: s('tov'), reb: s('oreb') + s('dreb') }, fouls: teamFouls[ti], timeouts: timeouts[ti], coach: coachTech[ti], minutesExpected: null };
   });
   const periodList = Object.entries(periods).map(([p, pts]) => ({ period: Number(p), points: pts }));
   const pendingSeries = Object.values(series).filter((s) => s.pending).map((s) => s.id);

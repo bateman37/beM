@@ -10,9 +10,11 @@ export const ATTRS = [
 ];
 export const SLOTS = ['PG', 'SG', 'SF', 'PF', 'C'];
 export const ZONES = ['rim', 'inside', 'midrange', 'three'];
-export const ENGINE_VERSION = 'beM-motor-0.9.0-MOTOR09';
+// MOTOR-15: el motor deportivo cambia de identidad porque cambian sorteos y finales (liberación/resolución del tiro, interferencia condicionada, administración de incidencias y correcciones). Antes era 0.9.0-MOTOR09 desde MOTOR-09.
+export const ENGINE_VERSION = 'beM-motor-0.15.0-MOTOR15';
 export const INPUT_SCHEMA = 'beM-match-input/6';
-export const EXPORT_SCHEMA = 'beM-match-export/8';
+export const EXPORT_SCHEMA = 'beM-match-export/9';
+export const EXPORT_SCHEMA_MOTOR14 = 'beM-match-export/8';
 export const EXPORT_SCHEMA_MOTOR08 = 'beM-match-export/7';
 export const EXPORT_SCHEMA_MOTOR07 = 'beM-match-export/6';
 export const EXPORT_SCHEMA_MOTOR06 = 'beM-match-export/5';

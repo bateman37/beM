@@ -2,6 +2,14 @@
 
 Registro breve de entregas. Una entrada por entrega; las más recientes primero.
 
+## MOTOR-15 — Cierre funcional, compatibilidad y rendimiento del mundo — 2026-10-17
+
+- **Panel:** corregido «reading 'policies'» con perfiles anteriores (sin `coach`); tarjeta de compatibilidad y recuperación explícita, sin convertir ni activar nada solo.
+- **Cambio deportivo versionado** (`SEM-MOTOR15-20261017`, motor `0.15.0-MOTOR15`, `export/9`): técnicas/contadores, compensación y cola del art. 43, correcciones del art. 45, tiro pendiente, interferencia condicionada, asistencias causales, estado propio por tramo, REC10-01/02. Referencia 83–98 / 6 684 sorteos; con semillas a cero = MOTOR-14. Semillas sin calibrar.
+- **Mundo:** nivel `world-essential`, pool persistente de workers, huella incremental `TRAYINC-MOTOR15-R1`, pestaña **Cierre**, paquetes de revisión rápida y detallada con comprobador.
+- **Completado técnicamente**; **pendiente de Dennis** (recorrido manual); **evaluación estadística pendiente** (MOTOR-16/17); **objetivo de coste no alcanzado** (≈27 s por 100 partidos frente a 5 s).
+- Ver [`docs/tecnico/motor15.md`](docs/tecnico/motor15.md).
+
 ## MOTOR-14 — Rendimiento, cierre funcional y candidato a motor v1 (parcial) — 2026-10-17
 
 - **Sin cambio deportivo en la referencia** (`20261016` = 83–103, 6 505 sorteos, misma huella de trayectoria); motor `0.9.0-MOTOR09` y `export/8` sin cambios.

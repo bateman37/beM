@@ -74,8 +74,8 @@ export const LAB_CASES = [
   },
   {
     id: 'CASO-COMBINADAS', title: 'Sanciones combinadas', area: 'REG04',
-    inputs: ['A: dos sanciones de EQ01 (falta con bonus y una disruptiva) en orden de ocurrencia', 'B: dos faltas con bonus iguales de equipos opuestos (candidatas a compensación)', 'C: una técnica de categoría 1 sin contenido contrastado'],
-    expected: ['A: se administra cada sanción UNA vez, en orden, con una única reanudación (convención provisional RG-C01)', 'B: la compensación NO se aplica ni se inventa: queda «pendiente de contraste» con el contenido exacto necesario', 'C: la técnica falla la validación con diagnóstico; no se convierte en una falta personal normal'],
+    inputs: ['A: dos sanciones de EQ01 (falta con bonus y una disruptiva) en orden de ocurrencia', 'B: dos faltas con bonus iguales de equipos opuestos (art. 43: compensación)', 'C: una técnica de categoría 1 (MOTOR-15: ejecutable)'],
+    expected: ['A: se administra cada sanción UNA vez, en orden, con una única reanudación (convención provisional RG-C01)', 'B: se compensan por orden (equivalentes en libres y derechos); las faltas cargadas se conservan y no hay posesión ficticia', 'C: un libre sin alineación, falta individual y colectiva, contador de categoría 1'],
     run({ profile }) {
       const mk = (id, team, order, category, extra = {}) => ({ id, team, order, category, shotAction: false, penalty: false, committer: `P${id}`, fouled: `V${id}`, ...extra });
       const A = combineSanctions(profile, [mk('S1', 1, 1, 'personal', { penalty: true }), mk('S2', 1, 2, 'disruptiva')]);
@@ -141,6 +141,17 @@ export const LAB_CASES = [
       const full = syntheticMatch(profile, input, [...common, f(1, true), f(2, false), f(3, true)], 'finished');
       const ap = buildActa(partial, profile.statsPolicy); const af = buildActa(full, profile.statsPolicy);
       return { partial, full, acta: af, actaPartial: ap, reconciliation: reconcile(full, af), highlights: { parcial: { estado: ap.status, puntos: ap.score }, completa: { estado: af.status, puntos: af.score, finales: af.finals } } };
+    },
+  },
+  {
+    id: 'CASO-COLA-43', title: 'Cola de sanciones del art. 43 en el núcleo (43-5 y 43-7)', area: 'REG04 · MOTOR-15',
+    inputs: ['43-5: canasta con falta (adicional) de EQ02 y técnica posterior de EQ01', '43-7: flagrante con canasta de EQ02 y técnica de EQ01'],
+    expected: ['43-5: la canasta se conserva y las sanciones equivalentes se compensan (sin libres); faltas cargadas', '43-7: no equivalentes (el derecho sancionador distingue): la técnica se administra primero y se conserva el derecho'],
+    run({ profile }) {
+      const mk = (id, team, order, category, extra = {}) => ({ id, team, order, category, shotAction: false, penalty: false, committer: `P${id}`, fouled: `V${id}`, ...extra });
+      const c5 = combineSanctions(profile, [mk('S1', 1, 1, 'personal', { shotAction: true, shotPoints: 2, shotMade: true }), mk('S2', 0, 2, 'tecnica1')]);
+      const c7 = combineSanctions(profile, [mk('S1', 1, 1, 'flagrante', { shotAction: true, shotPoints: 2, shotMade: true }), mk('S2', 0, 2, 'tecnica1')]);
+      return { c5, c7, highlights: { '43-5': { estado: c5.status, compensadas: c5.compensated, reanudacion: c5.resume.kind }, '43-7': { estado: c7.status, orden: c7.steps.map((x) => x.id), reanudacion: c7.resume.kind, derechoDe: c7.resume.from } } };
     },
   },
 ];

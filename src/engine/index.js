@@ -7,6 +7,9 @@ import { missingRequired } from '../profiles/rows.js';
 import { analyze } from '../analysis/index.js';
 import { trajectoryFingerprint, inputFingerprint, profileSportFingerprint } from '../batch/fingerprint.js';
 import { retargetTeam } from '../population/ids.js';
+import { TrajectoryObserver } from '../batch/observer.js';
+import { ESSENTIAL_LEVEL, buildEssential } from '../batch/essential.js';
+import { validityOf } from '../batch/records.js';
 
 export const ENGINE_CONTRACT = 'beM-engine-contract/1';
 export { ENGINE_VERSION, EXPORT_SCHEMA, buildMatchInput, retargetTeam };
@@ -14,6 +17,8 @@ export { ENGINE_VERSION, EXPORT_SCHEMA, buildMatchInput, retargetTeam };
 // Fronteras que `advance` sabe alcanzar. «step» = una operación/acontecimiento resuelto (la frontera atómica del núcleo).
 export const BOUNDARIES = ['step', 'possession', 'period', 'end'];
 export const AUDIENCES = ['public', 'own', 'diagnostic'];
+// Niveles de conservación (MOTOR-15 §11): tres ejes independientes (modalidad de avance, detalle conservado, resolutor). `level` solo elige el detalle conservado; el resolutor es siempre el mismo.
+export const LEVELS = { diagnostic: 'full', reduced: 'minimal', [ESSENTIAL_LEVEL]: 'minimal' };
 
 // ------------------------------------------------------------------------------------------------ validar entradas
 // IN01 (plantillas, capacidades, cuerpo, tendencias y estados iniciales), IN02 (planes) e IN03 (semilla, importancia, perfil) viajan en una sola `input` + `profile`. No se inventa ningún dato requerido:
@@ -42,10 +47,16 @@ export function validateEntries({ input, profile }) {
 let instanceCounter = 0; // solo numera instancias del proceso para identificarlas; NO interviene en el deporte ni se guarda como estado del encuentro
 
 export class Encounter {
-  constructor(match, { id, controlledTeams, rootInputFp }) {
-    this.match = match; this.id = id; this.controlledTeams = new Set(controlledTeams); this.rootInputFp = rootInputFp;
+  constructor(match, { id, controlledTeams, rootInputFp, observer = null }) {
+    this.observer = observer; this.match = match; this.id = id; this.controlledTeams = new Set(controlledTeams); this.rootInputFp = rootInputFp;
   }
   get status() { return this.match.status; }
+  // Registro esencial para el mundo (solo si el encuentro terminó): lectura del resultado, sin simular. La huella es la del observador incremental si se activó `observeTrajectory`; si no, se declara `none`.
+  essential({ validation = 'full' } = {}) {
+    const m = this.match; const res = buildResult(m); const v = res.status === 'finished' ? { ...validityOf(res), mode: 'full' } : { valid: false, reasons: [`partido no terminado (estado ${res.status})`], reconciliation_ok: false, analysis_ok: false, mode: validation };
+    const fp = this.observer ? this.observer.finish(m) : null;
+    return buildEssential(res, { keys: { batch_id: null, variant_id: null, case_id: null, match_id: this.id, attempt_id: null }, validity: v, fp, fpMode: fp ? 'incremental' : 'none', sim: null });
+  }
   get done() { return this.match.status === 'finished' || this.match.status === 'error'; }
 
   position() {
@@ -58,7 +69,7 @@ export class Encounter {
     if (!BOUNDARIES.includes(until)) throw new Error(`frontera desconocida: ${until} (admite ${BOUNDARIES.join(', ')})`);
     const m = this.match; const startPoss = m.possSeq; let steps = 0; let reached = false;
     while (!this.done && steps < maxSteps) {
-      const alive = m.step(); steps += 1;
+      const alive = m.step(); steps += 1; if (this.observer) this.observer.consume(m.events);
       if (!alive) { reached = true; break; }
       if (until === 'step') { reached = true; break; }
       if (until === 'possession' && (m.possSeq !== startPoss || (m.poss && m.poss.done))) { reached = true; break; }
@@ -93,6 +104,18 @@ export class Encounter {
     return this.match.withdrawPlayer(playerId, { cause });
   }
 
+  // Incidencia tipada (MOTOR-15 §5.3: técnica de jugador/banquillo/entrenador, flagrante, disruptiva). Es un hecho CLASIFICADO que llega de fuera (un árbitro, un escenario): se administra con la misma cola de
+  // sanciones que un encuentro natural; no es una probabilidad. Solo quien controla el equipo infractor o el encuentro completo (`authority` nulo + equipos 0 y 1) puede registrarla. Comando reproducible.
+  requestIncident(incident, { authority = null } = {}) {
+    if (this.done) return { ok: false, state: 'rechazada', reason: `el encuentro está ${this.match.status === 'finished' ? 'terminado' : 'en error'}` };
+    const allowed = authority == null ? this.controlledTeams : new Set(authority);
+    const team = incident?.player && this.match.pl[incident.player] ? this.match.pl[incident.player].teamIdx : incident?.team;
+    if (team != null && !allowed.has(team)) return { ok: false, state: 'rechazada', reason: `sin autoridad sobre el equipo ${team}` };
+    return this.match.requestIncident(incident);
+  }
+  // Corrección del art. 45 (MOTOR-15 §6): entrada tipada con error, clase, hecho original, instante de reconocimiento, valores autorizados y solicitante habilitado. Valida la ventana con hechos del encuentro.
+  requestCorrection(correction) { return this.match.requestCorrection(correction); }
+
   // Consulta SIN efectos deportivos según audiencia: pública = lo observable; propia = estado de un equipo con las categorías autorizadas; diagnóstico = laboratorio.
   query({ audience = 'public', team = 0 } = {}) {
     if (!AUDIENCES.includes(audience)) throw new Error(`audiencia desconocida: ${audience}`);
@@ -118,13 +141,14 @@ export class Encounter {
   dispose() { this.match = null; }
 }
 
-export function createEncounter({ input, profile, controlledTeams = [0, 1], detail = 'full', profileRef = null, instanceId = null } = {}) {
+export function createEncounter({ input, profile, controlledTeams = [0, 1], detail = 'full', level = null, observeTrajectory = false, profileRef = null, instanceId = null } = {}) {
+  if (level != null) { if (!LEVELS[level]) throw new Error(`nivel de conservación desconocido: ${level} (admite ${Object.keys(LEVELS).join(', ')})`); detail = LEVELS[level]; }
   const v = validateEntries({ input, profile });
   if (!v.ok) { const e = new Error(`entradas no válidas: ${[...v.errors.map((x) => `${x.path}: ${x.message}`), ...v.incompatibilities.map((x) => x.message)].slice(0, 6).join('; ')}`); e.validation = v; throw e; }
   const match = createMatch(input, profile, { detail, profileRef });
   instanceCounter += 1;
   const fp = inputFingerprint(match.input);
-  return new Encounter(match, { id: instanceId ?? `ENC-${fp.slice(0, 8)}-${instanceCounter}`, controlledTeams, rootInputFp: fp });
+  return new Encounter(match, { id: instanceId ?? `ENC-${fp.slice(0, 8)}-${instanceCounter}`, controlledTeams, rootInputFp: fp, observer: observeTrajectory ? new TrajectoryObserver() : null });
 }
 
 // Continuación real de un guardado (§10): con SU entrada y SU perfil congelados. Rechaza con motivo un guardado incompatible, incompleto o alterado.
