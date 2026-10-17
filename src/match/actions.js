@@ -762,7 +762,7 @@ P.defenseReboundParticipants = function defenseReboundParticipants(t, n) {
   const TIER = { rim: 0, mid: 1, far: 2 }; const LINE = { back: 0, mid: 1, wing: 1, high: 1, front: 2, chase: 2 };
   const tier = (id) => {
     let base = 1;
-    if (ref.kind === 'individual') { const a = this.responsibilityOf(id); base = a ? TIER[this.rep().functions[ref.fnMap[a]].access] : 1; }
+    if (ref.kind === 'individual') { const a = this.responsibilityOf(id); const fn = a ? ref.fnMap[a] : null; base = fn ? TIER[this.rep().functions[fn].access] : 1; } // MOTOR-15 (defecto hallado por el benchmark, seed 376412896): un atacante sin función en la referencia (p. ej. el que entró tras un cambio) no tiene acceso al aro conocido: tramo medio, no un error
     else { const f = ref.defFn[id]; base = f ? LINE[org.functions[f].line] : 1; }
     return base + (committed.has(id) ? 2 : 0);
   };
