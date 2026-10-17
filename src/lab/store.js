@@ -19,12 +19,12 @@ export const PLAY_NAMES = {};
 
 // `profile` es el perfil EFECTIVO de la versión ACTIVA (MOTOR-03): lo que usarán los próximos encuentros. Los encuentros ya
 // iniciados llevan su propia copia congelada y no se ven afectados por activar otra versión.
-export const store = { baseProfile: null, extension: null, extension3: null, extension4: null, extension5: null, extension6: null, extension7: null, extension8: null, extension9: null, extension10: null, extension11: null, extension12: null, base: null, edit: null, labels: {}, catalog: null, last: null, scenario: null, persisted: false, library: null, matchRef: null, pop: null, undo: [],
+export const store = { baseProfile: null, extension: null, extension3: null, extension4: null, extension5: null, extension6: null, extension7: null, extension8: null, extension9: null, extension10: null, extension11: null, extension12: null, extension13: null, base: null, edit: null, labels: {}, catalog: null, last: null, scenario: null, persisted: false, library: null, matchRef: null, pop: null, undo: [],
   get profile() { return this.library ? this.library.activeVersion().effective : null; },
   get profileRef() { return this.library ? this.library.profileRef(this.library.activeId) : null; } };
 
 export async function loadAll() {
-  const [baseProfile, extension, extension3, extension4, extension5, extension6, extension7, extension8, extension9, extension10, extension11, extension12, csv, catalog] = await Promise.all([
+  const [baseProfile, extension, extension3, extension4, extension5, extension6, extension7, extension8, extension9, extension10, extension11, extension12, extension13, csv, catalog] = await Promise.all([
     fetch('/data/match/motor01-seed-profile.json').then((r) => r.json()),
     fetch('/data/match/motor02-seed-extension.json').then((r) => r.json()),
     fetch('/data/match/motor03-seed-extension.json').then((r) => r.json()),
@@ -37,12 +37,13 @@ export async function loadAll() {
     fetch('/data/match/motor10-seed-extension.json').then((r) => r.json()),
     fetch('/data/match/motor11-seed-extension.json').then((r) => r.json()),
     fetch('/data/match/motor12-seed-extension.json').then((r) => r.json()),
+    fetch('/data/match/motor13-seed-extension.json').then((r) => r.json()),
     fetch('/data/fixtures/reference-players-MOTOR01.csv').then((r) => r.text()),
     fetch('/data/catalog.json').then((r) => (r.ok ? r.json() : null)).catch(() => null),
   ]);
   const players = parsePlayersCsv(csv, baseProfile);
-  const profile = applyExtension(baseProfile, extension, extension3, extension4, extension5, extension6, extension7, extension8, extension9, extension10, extension11, extension12); // perfil efectivo base: el original no se sobrescribe
-  store.baseProfile = baseProfile; store.extension = extension; store.extension3 = extension3; store.extension4 = extension4; store.extension5 = extension5; store.extension6 = extension6; store.extension7 = extension7; store.extension8 = extension8; store.extension9 = extension9; store.extension10 = extension10; store.extension11 = extension11; store.extension12 = extension12; store.catalog = catalog;
+  const profile = applyExtension(baseProfile, extension, extension3, extension4, extension5, extension6, extension7, extension8, extension9, extension10, extension11, extension12, extension13); // perfil efectivo base: el original no se sobrescribe
+  store.baseProfile = baseProfile; store.extension = extension; store.extension3 = extension3; store.extension4 = extension4; store.extension5 = extension5; store.extension6 = extension6; store.extension7 = extension7; store.extension8 = extension8; store.extension9 = extension9; store.extension10 = extension10; store.extension11 = extension11; store.extension12 = extension12; store.extension13 = extension13; store.catalog = catalog;
   store.library = new ProfileLibrary({ storage: storage(), base: profile });
   store.labels = Object.fromEntries(profile.attributeDictionary.map((a) => [a.id, a.label]));
   store.players = players; store.baseNew = profile; // perfil efectivo de MOTOR-10: siempre disponible para construir la entrada, aunque el activo sea anterior

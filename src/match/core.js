@@ -8,6 +8,15 @@ import { assertProfileComplete } from '../profiles/rows.js';
 import { createParamTracker } from '../profiles/tracker.js';
 import { deepFreeze } from '../profiles/util.js';
 
+// Operación PURA de la capacidad efectiva (MOTOR-13 §7.3): capacidad base, energía actual, capacidad y tope de penalización de la tarea → valor efectivo. `MatchCore.eff` la usa sin
+// cambiar su semántica; la auditoría de sensibilidad la invoca con las entradas registradas de un contexto, sin partido, sin RNG y sin estado.
+export function effectiveAbility(profile, base, energy, attr, taskMax = null) {
+  const e = profile.energy;
+  const pen = taskMax != null ? taskMax : (attr.startsWith('FIS') ? e.defaultPhysicalTaskMax : e.defaultTechnicalTaskMax);
+  const [lo, hi] = profile.abilityBounds;
+  return clamp(base - interpolate(e.severityNodes, energy) * pen, lo, hi);
+}
+
 export class MatchCore {
   constructor(input, profile, opts = {}) {
     this.opts = { detail: 'full', check: false, track: true, profileRef: null, ...opts };
@@ -129,9 +138,7 @@ export class MatchCore {
     return attr.startsWith('FIS') ? e.defaultPhysicalTaskMax : e.defaultTechnicalTaskMax;
   }
   eff(pid, attr, taskMax = null) {
-    const base = this.pl[pid].abilities[attr];
-    const [lo, hi] = this.profile.abilityBounds;
-    return clamp(base - this.severity(pid) * this.penFor(attr, taskMax), lo, hi);
+    return effectiveAbility(this.profile, this.pl[pid].abilities[attr], this.ps[pid].energy, attr, taskMax);
   }
   // Suma ponderada (sin normalizar) de capacidades efectivas de un jugador: {capacidad: peso}.
   weightedSum(pid, weights) {

@@ -47,14 +47,14 @@ export function applyVariantOps(input, ops, { pair, bounds }) {
 }
 
 // Validación estructural de la definición (antes de materializar nada).
-export function validateVariants(variants, { attrs } = {}) {
+export function validateVariants(variants, { attrs, allowBaseOps = false } = {}) {
   const problems = []; const seen = new Set();
   if (!Array.isArray(variants) || !variants.length) return ['hace falta al menos la variante base'];
   variants.forEach((v, i) => {
     const p = `variante ${i + 1}`;
     if (!v.id || !/^[A-Za-z0-9_]+$/.test(v.id)) problems.push(`${p}: identificador no válido`);
     if (seen.has(v.id)) problems.push(`${p}: identificador repetido (${v.id})`); seen.add(v.id);
-    if (i === 0 && v.ops?.length) problems.push('la primera variante es la base y no puede cambiar nada');
+    if (i === 0 && v.ops?.length && !allowBaseOps) problems.push('la primera variante es la base y no puede cambiar nada');
     for (const o of v.ops ?? []) {
       if (!OPS.includes(o.op)) problems.push(`${p}: operación desconocida «${o.op}»`);
       if (o.op === 'ability') { if (!Number.isFinite(o.delta)) problems.push(`${p}: delta no numérico`); if (!Array.isArray(o.attrs) || !o.attrs.length || (attrs && o.attrs.some((a) => !attrs.includes(a)))) problems.push(`${p}: capacidades no válidas`); }

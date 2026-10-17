@@ -1,0 +1,879 @@
+{
+ "schema": "beM-audit-campaign-plan/1",
+ "frozen_before_results": true,
+ "engine_note": "Plan generado SIN ejecutar ningún partido: población, actores, intervención, variables conservadas y semillas derivadas (LOT-SEED-R1) quedan fijados antes de mirar resultados.",
+ "audit_profile": "AUD-MOTOR13-R1",
+ "effective_profile_id": "SEM-MOTOR01-20261016+SEM-MOTOR02-20261016+SEM-MOTOR03-20261016+SEM-MOTOR04-20261016+SEM-MOTOR05-20261016+SEM-MOTOR06-20261016+SEM-MOTOR07-20261016+SEM-MOTOR08-20261016+SEM-MOTOR09-20261016+SEM-MOTOR10-20261016+SEM-MOTOR11-20261017+SEM-MOTOR12-20261017+SEM-MOTOR13-20261017",
+ "experiments": [
+  {
+   "id": "EXP13-01",
+   "name": "Pase +3 en el director",
+   "hypothesis": "TEC08 +3 (24→27) en el primer director de EQ01 frente a la base: ¿cómo cambian pérdidas de pase, ventanas, creación y selección? (no AS como único efecto)",
+   "pair": [
+    "EQ01",
+    "EQ02"
+   ],
+   "record_level": "reduced",
+   "lot_seed": 131001,
+   "derived_sport_seeds": [
+    {
+     "match_id": "M000001",
+     "variant_id": "V0",
+     "seed": 3769764945
+    },
+    {
+     "match_id": "M000002",
+     "variant_id": "V1",
+     "seed": 3769764945
+    }
+   ],
+   "capabilities_touched": [
+    "TEC08"
+   ],
+   "metrics": [
+    "pérdidas de pase",
+    "ventanas",
+    "creación",
+    "selección",
+    "recetas TAR07"
+   ],
+   "conserved": [
+    "mismos equipos (fichas y planes) salvo la intervención declarada",
+    "misma semilla deportiva del caso en las dos variantes (la trayectoria puede divergir tras una decisión distinta)",
+    "mismo perfil efectivo congelado",
+    "estado inicial limpio salvo el estado declarado"
+   ],
+   "base_has_intervention": false,
+   "variants": [
+    {
+     "id": "V0",
+     "label": "Base",
+     "ops": [],
+     "changes": 0
+    },
+    {
+     "id": "V1",
+     "label": "TEC08 +3 al director de EQ01",
+     "ops": [
+      {
+       "op": "ability",
+       "team": "A",
+       "player": "director",
+       "attrs": [
+        "TEC08"
+       ],
+       "delta": 3
+      }
+     ],
+     "changes": 1
+    }
+   ],
+   "counts": "2 equipos → 1 par; 1 repeticion por par → 1 caso deportivo; 2 variantes → 2 ejecuciones totales solicitadas"
+  },
+  {
+   "id": "EXP13-02",
+   "name": "Triple +3 en finalizadores exteriores",
+   "hypothesis": "TEC01 +3 en los finalizadores exteriores titulares de EQ02 seleccionados por regla de ficha (vocación ≥ 0,75 y preferencia de triple ≥ 0,5): J04, J05. Conversión condicionada y cambios de atención/elección si están modelados.",
+   "pair": [
+    "EQ02",
+    "EQ09"
+   ],
+   "record_level": "reduced",
+   "lot_seed": 131002,
+   "derived_sport_seeds": [
+    {
+     "match_id": "M000001",
+     "variant_id": "V0",
+     "seed": 92186291
+    },
+    {
+     "match_id": "M000002",
+     "variant_id": "V1",
+     "seed": 92186291
+    }
+   ],
+   "capabilities_touched": [
+    "TEC01"
+   ],
+   "metrics": [
+    "conversión de triple condicionada",
+    "atención/elección"
+   ],
+   "conserved": [
+    "mismos equipos (fichas y planes) salvo la intervención declarada",
+    "misma semilla deportiva del caso en las dos variantes (la trayectoria puede divergir tras una decisión distinta)",
+    "mismo perfil efectivo congelado",
+    "estado inicial limpio salvo el estado declarado"
+   ],
+   "base_has_intervention": false,
+   "variants": [
+    {
+     "id": "V0",
+     "label": "Base",
+     "ops": [],
+     "changes": 0
+    },
+    {
+     "id": "V1",
+     "label": "TEC01 +3 a J04, J05 de EQ02",
+     "ops": [
+      {
+       "op": "ability",
+       "team": "A",
+       "player": "J04",
+       "attrs": [
+        "TEC01"
+       ],
+       "delta": 3
+      },
+      {
+       "op": "ability",
+       "team": "A",
+       "player": "J05",
+       "attrs": [
+        "TEC01"
+       ],
+       "delta": 3
+      }
+     ],
+     "changes": 2
+    }
+   ],
+   "counts": "2 equipos → 1 par; 1 repeticion por par → 1 caso deportivo; 2 variantes → 2 ejecuciones totales solicitadas"
+  },
+  {
+   "id": "EXP13-03",
+   "name": "Lectura del director (MEN02 y MEN03 +3)",
+   "hypothesis": "MEN02 y MEN03 +3 al mismo director de EQ06 (intervención en DOS capacidades, declarada): percepción/elección y calidad.",
+   "pair": [
+    "EQ06",
+    "EQ05"
+   ],
+   "record_level": "reduced",
+   "lot_seed": 131003,
+   "derived_sport_seeds": [
+    {
+     "match_id": "M000001",
+     "variant_id": "V0",
+     "seed": 3902250365
+    },
+    {
+     "match_id": "M000002",
+     "variant_id": "V1",
+     "seed": 3902250365
+    }
+   ],
+   "capabilities_touched": [
+    "MEN02",
+    "MEN03"
+   ],
+   "metrics": [
+    "percepción",
+    "elección",
+    "calidad de oportunidad"
+   ],
+   "conserved": [
+    "mismos equipos (fichas y planes) salvo la intervención declarada",
+    "misma semilla deportiva del caso en las dos variantes (la trayectoria puede divergir tras una decisión distinta)",
+    "mismo perfil efectivo congelado",
+    "estado inicial limpio salvo el estado declarado"
+   ],
+   "base_has_intervention": false,
+   "variants": [
+    {
+     "id": "V0",
+     "label": "Base",
+     "ops": [],
+     "changes": 0
+    },
+    {
+     "id": "V1",
+     "label": "MEN02 y MEN03 +3 al director de EQ06",
+     "ops": [
+      {
+       "op": "ability",
+       "team": "A",
+       "player": "director",
+       "attrs": [
+        "MEN02",
+        "MEN03"
+       ],
+       "delta": 3
+      }
+     ],
+     "changes": 2
+    }
+   ],
+   "counts": "2 equipos → 1 par; 1 repeticion por par → 1 caso deportivo; 2 variantes → 2 ejecuciones totales solicitadas"
+  },
+  {
+   "id": "EXP13-04",
+   "name": "Libertad 1 frente a 5",
+   "hypothesis": "Libertad del libro nivel 1 frente a 5 en EQ01 con el mismo libro y plantilla (las dos variantes fijan el valor: conversión de escala explícita = nivel 1 / nivel 5 de la escala vigente 1–5).",
+   "pair": [
+    "EQ01",
+    "EQ02"
+   ],
+   "record_level": "reduced",
+   "lot_seed": 131004,
+   "derived_sport_seeds": [
+    {
+     "match_id": "M000001",
+     "variant_id": "V0",
+     "seed": 617294207
+    },
+    {
+     "match_id": "M000002",
+     "variant_id": "V1",
+     "seed": 617294207
+    }
+   ],
+   "capabilities_touched": [
+    "MEN01",
+    "MEN03"
+   ],
+   "metrics": [
+    "prioridades",
+    "autonomía",
+    "lectura",
+    "reloj",
+    "riesgo"
+   ],
+   "conserved": [
+    "mismos equipos (fichas y planes) salvo la intervención declarada",
+    "misma semilla deportiva del caso en las dos variantes (la trayectoria puede divergir tras una decisión distinta)",
+    "mismo perfil efectivo congelado",
+    "estado inicial limpio salvo el estado declarado"
+   ],
+   "base_has_intervention": true,
+   "variants": [
+    {
+     "id": "V0",
+     "label": "Libertad 1",
+     "ops": [
+      {
+       "op": "style",
+       "team": "A",
+       "key": "freedom",
+       "value": 1
+      }
+     ],
+     "changes": 1
+    },
+    {
+     "id": "V1",
+     "label": "Libertad 5",
+     "ops": [
+      {
+       "op": "style",
+       "team": "A",
+       "key": "freedom",
+       "value": 5
+      }
+     ],
+     "changes": 1
+    }
+   ],
+   "counts": "2 equipos → 1 par; 1 repeticion por par → 1 caso deportivo; 2 variantes → 2 ejecuciones totales solicitadas"
+  },
+  {
+   "id": "EXP13-05",
+   "name": "Individual frente a zona 2–3",
+   "hypothesis": "EQ10 defiende ORG01 (individual) frente a ORG02 (zona 2–3) con los mismos jugadores: responsabilidades, recepción/tiro concedidos y costes (no un factor genérico de zona).",
+   "pair": [
+    "EQ10",
+    "EQ04"
+   ],
+   "record_level": "reduced",
+   "lot_seed": 131005,
+   "derived_sport_seeds": [
+    {
+     "match_id": "M000001",
+     "variant_id": "V0",
+     "seed": 788640160
+    },
+    {
+     "match_id": "M000002",
+     "variant_id": "V1",
+     "seed": 788640160
+    }
+   ],
+   "capabilities_touched": [
+    "TEC12",
+    "TEC13",
+    "TEC16"
+   ],
+   "metrics": [
+    "responsabilidades",
+    "calidad concedida",
+    "coste"
+   ],
+   "conserved": [
+    "mismos equipos (fichas y planes) salvo la intervención declarada",
+    "misma semilla deportiva del caso en las dos variantes (la trayectoria puede divergir tras una decisión distinta)",
+    "mismo perfil efectivo congelado",
+    "estado inicial limpio salvo el estado declarado"
+   ],
+   "base_has_intervention": true,
+   "variants": [
+    {
+     "id": "V0",
+     "label": "ORG01 individual",
+     "ops": [
+      {
+       "op": "plan",
+       "team": "A",
+       "key": "defense",
+       "value": "ORG01"
+      }
+     ],
+     "changes": 1
+    },
+    {
+     "id": "V1",
+     "label": "ORG02 zona 2–3",
+     "ops": [
+      {
+       "op": "plan",
+       "team": "A",
+       "key": "defense",
+       "value": "ORG02"
+      }
+     ],
+     "changes": 1
+    }
+   ],
+   "counts": "2 equipos → 1 par; 1 repeticion por par → 1 caso deportivo; 2 variantes → 2 ejecuciones totales solicitadas"
+  },
+  {
+   "id": "EXP13-06",
+   "name": "Presión normal frente a tres cuartos",
+   "hypothesis": "Altura de presión de EQ10 normal frente a three_quarters: tiempo y errores de avance, carga y concesión al superarla.",
+   "pair": [
+    "EQ10",
+    "EQ04"
+   ],
+   "record_level": "reduced",
+   "lot_seed": 131006,
+   "derived_sport_seeds": [
+    {
+     "match_id": "M000001",
+     "variant_id": "V0",
+     "seed": 62963654
+    },
+    {
+     "match_id": "M000002",
+     "variant_id": "V1",
+     "seed": 62963654
+    }
+   ],
+   "capabilities_touched": [
+    "TEC12",
+    "FIS01",
+    "FIS06"
+   ],
+   "metrics": [
+    "tiempo de avance",
+    "errores",
+    "carga",
+    "concesión"
+   ],
+   "conserved": [
+    "mismos equipos (fichas y planes) salvo la intervención declarada",
+    "misma semilla deportiva del caso en las dos variantes (la trayectoria puede divergir tras una decisión distinta)",
+    "mismo perfil efectivo congelado",
+    "estado inicial limpio salvo el estado declarado"
+   ],
+   "base_has_intervention": true,
+   "variants": [
+    {
+     "id": "V0",
+     "label": "Presión normal",
+     "ops": [
+      {
+       "op": "plan",
+       "team": "A",
+       "key": "pressureHeight",
+       "value": "normal"
+      }
+     ],
+     "changes": 1
+    },
+    {
+     "id": "V1",
+     "label": "Presión tres cuartos",
+     "ops": [
+      {
+       "op": "plan",
+       "team": "A",
+       "key": "pressureHeight",
+       "value": "three_quarters"
+      }
+     ],
+     "changes": 1
+    }
+   ],
+   "counts": "2 equipos → 1 par; 1 repeticion por par → 1 caso deportivo; 2 variantes → 2 ejecuciones totales solicitadas"
+  },
+  {
+   "id": "EXP13-07",
+   "name": "Después del tiro 2 frente a 4",
+   "hypothesis": "Carga de rebote ofensivo («después del tiro») nivel 2 frente a 4 en EQ03: rebote ofensivo, balance y transición rival con ofertas/fallos comparables.",
+   "pair": [
+    "EQ03",
+    "EQ10"
+   ],
+   "record_level": "reduced",
+   "lot_seed": 131007,
+   "derived_sport_seeds": [
+    {
+     "match_id": "M000001",
+     "variant_id": "V0",
+     "seed": 209567448
+    },
+    {
+     "match_id": "M000002",
+     "variant_id": "V1",
+     "seed": 209567448
+    }
+   ],
+   "capabilities_touched": [
+    "TEC17",
+    "TEC18",
+    "FIS05"
+   ],
+   "metrics": [
+    "rebote ofensivo",
+    "balance",
+    "transición rival"
+   ],
+   "conserved": [
+    "mismos equipos (fichas y planes) salvo la intervención declarada",
+    "misma semilla deportiva del caso en las dos variantes (la trayectoria puede divergir tras una decisión distinta)",
+    "mismo perfil efectivo congelado",
+    "estado inicial limpio salvo el estado declarado"
+   ],
+   "base_has_intervention": true,
+   "variants": [
+    {
+     "id": "V0",
+     "label": "Después del tiro 2",
+     "ops": [
+      {
+       "op": "style",
+       "team": "A",
+       "key": "afterShot",
+       "value": 2
+      }
+     ],
+     "changes": 1
+    },
+    {
+     "id": "V1",
+     "label": "Después del tiro 4",
+     "ops": [
+      {
+       "op": "style",
+       "team": "A",
+       "key": "afterShot",
+       "value": 4
+      }
+     ],
+     "changes": 1
+    }
+   ],
+   "counts": "2 equipos → 1 par; 1 repeticion por par → 1 caso deportivo; 2 variantes → 2 ejecuciones totales solicitadas"
+  },
+  {
+   "id": "EXP13-08",
+   "name": "Energía 100 frente a 30 (referencia EQ11)",
+   "hypothesis": "EQ11-J03 (anotador referente) a energía inicial 100 frente a 30, sin retirada obligatoria por 30: valor actual/relevo y efectos físicos.",
+   "pair": [
+    "EQ11",
+    "EQ12"
+   ],
+   "record_level": "diagnostic",
+   "lot_seed": 131008,
+   "derived_sport_seeds": [
+    {
+     "match_id": "M000001",
+     "variant_id": "V0",
+     "seed": 721059253
+    },
+    {
+     "match_id": "M000002",
+     "variant_id": "V1",
+     "seed": 721059253
+    }
+   ],
+   "capabilities_touched": [
+    "FIS06"
+   ],
+   "metrics": [
+    "valor actual",
+    "relevo",
+    "efectos físicos"
+   ],
+   "conserved": [
+    "mismos equipos (fichas y planes) salvo la intervención declarada",
+    "misma semilla deportiva del caso en las dos variantes (la trayectoria puede divergir tras una decisión distinta)",
+    "mismo perfil efectivo congelado",
+    "estado inicial limpio salvo el estado declarado"
+   ],
+   "base_has_intervention": false,
+   "variants": [
+    {
+     "id": "V0",
+     "label": "EQ11-J03 a energía 100 (base)",
+     "ops": [],
+     "changes": 0
+    },
+    {
+     "id": "V1",
+     "label": "EQ11-J03 a energía 30",
+     "ops": [
+      {
+       "op": "state",
+       "team": "A",
+       "player": "J03",
+       "key": "energy",
+       "value": 30
+      }
+     ],
+     "changes": 1
+    }
+   ],
+   "counts": "2 equipos → 1 par; 1 repeticion por par → 1 caso deportivo; 2 variantes → 2 ejecuciones totales solicitadas"
+  },
+  {
+   "id": "EXP13-09",
+   "name": "Forma −0,5 frente a +0,5",
+   "hypothesis": "Forma de EQ01-J03 −0,5 frente a +0,5 (escala vigente −1…1) en la referencia histórica, con energía y momentos iguales.",
+   "pair": [
+    "EQ01H",
+    "EQ02H"
+   ],
+   "record_level": "reduced",
+   "lot_seed": 131009,
+   "derived_sport_seeds": [
+    {
+     "match_id": "M000001",
+     "variant_id": "V0",
+     "seed": 4221124698
+    },
+    {
+     "match_id": "M000002",
+     "variant_id": "V1",
+     "seed": 4221124698
+    }
+   ],
+   "capabilities_touched": [],
+   "metrics": [
+    "estado persistente de entrada",
+    "tareas pertinentes"
+   ],
+   "conserved": [
+    "mismos equipos (fichas y planes) salvo la intervención declarada",
+    "misma semilla deportiva del caso en las dos variantes (la trayectoria puede divergir tras una decisión distinta)",
+    "mismo perfil efectivo congelado",
+    "estado inicial limpio salvo el estado declarado"
+   ],
+   "base_has_intervention": true,
+   "variants": [
+    {
+     "id": "V0",
+     "label": "Forma −0,5",
+     "ops": [
+      {
+       "op": "state",
+       "team": "A",
+       "player": "J03",
+       "key": "form",
+       "value": -0.5
+      }
+     ],
+     "changes": 1
+    },
+    {
+     "id": "V1",
+     "label": "Forma +0,5",
+     "ops": [
+      {
+       "op": "state",
+       "team": "A",
+       "player": "J03",
+       "key": "form",
+       "value": 0.5
+      }
+     ],
+     "changes": 1
+    }
+   ],
+   "counts": "2 equipos → 1 par; 1 repeticion por par → 1 caso deportivo; 2 variantes → 2 ejecuciones totales solicitadas"
+  },
+  {
+   "id": "EXP13-10",
+   "name": "Consistencia 10 frente a 24",
+   "hypothesis": "MEN06 de EQ01-J03 (natural 17) fijada a 10 frente a 24 (deltas −7 y +7 sobre la ficha; escala 1–30). Variación/episodios, complementada por el protocolo neutral fijo de MOTOR-07.",
+   "pair": [
+    "EQ01H",
+    "EQ02H"
+   ],
+   "record_level": "reduced",
+   "lot_seed": 131010,
+   "derived_sport_seeds": [
+    {
+     "match_id": "M000001",
+     "variant_id": "V0",
+     "seed": 2899942476
+    },
+    {
+     "match_id": "M000002",
+     "variant_id": "V1",
+     "seed": 2899942476
+    }
+   ],
+   "capabilities_touched": [
+    "MEN06"
+   ],
+   "metrics": [
+    "amplitud de variación",
+    "episodios"
+   ],
+   "conserved": [
+    "mismos equipos (fichas y planes) salvo la intervención declarada",
+    "misma semilla deportiva del caso en las dos variantes (la trayectoria puede divergir tras una decisión distinta)",
+    "mismo perfil efectivo congelado",
+    "estado inicial limpio salvo el estado declarado"
+   ],
+   "base_has_intervention": true,
+   "variants": [
+    {
+     "id": "V0",
+     "label": "MEN06 = 10 (−7)",
+     "ops": [
+      {
+       "op": "ability",
+       "team": "A",
+       "player": "J03",
+       "attrs": [
+        "MEN06"
+       ],
+       "delta": -7
+      }
+     ],
+     "changes": 1
+    },
+    {
+     "id": "V1",
+     "label": "MEN06 = 24 (+7)",
+     "ops": [
+      {
+       "op": "ability",
+       "team": "A",
+       "player": "J03",
+       "attrs": [
+        "MEN06"
+       ],
+       "delta": 7
+      }
+     ],
+     "changes": 1
+    }
+   ],
+   "counts": "2 equipos → 1 par; 1 repeticion por par → 1 caso deportivo; 2 variantes → 2 ejecuciones totales solicitadas"
+  },
+  {
+   "id": "EXP13-11",
+   "name": "T colectivo inicial −0,5 frente a +0,5",
+   "hypothesis": "T inicial de EQ01 −0,5 frente a +0,5, resto igual: coordinación/tareas autorizadas y presupuesto compartido, sin bonus directo de tiro.",
+   "pair": [
+    "EQ01H",
+    "EQ02H"
+   ],
+   "record_level": "diagnostic",
+   "lot_seed": 131011,
+   "derived_sport_seeds": [
+    {
+     "match_id": "M000001",
+     "variant_id": "V0",
+     "seed": 2103687629
+    },
+    {
+     "match_id": "M000002",
+     "variant_id": "V1",
+     "seed": 2103687629
+    }
+   ],
+   "capabilities_touched": [],
+   "metrics": [
+    "coordinación",
+    "tareas autorizadas",
+    "presupuesto compartido"
+   ],
+   "conserved": [
+    "mismos equipos (fichas y planes) salvo la intervención declarada",
+    "misma semilla deportiva del caso en las dos variantes (la trayectoria puede divergir tras una decisión distinta)",
+    "mismo perfil efectivo congelado",
+    "estado inicial limpio salvo el estado declarado"
+   ],
+   "base_has_intervention": true,
+   "variants": [
+    {
+     "id": "V0",
+     "label": "T inicial −0,5",
+     "ops": [
+      {
+       "op": "plan",
+       "team": "A",
+       "key": "initialTeamMoment",
+       "value": -0.5
+      }
+     ],
+     "changes": 1
+    },
+    {
+     "id": "V1",
+     "label": "T inicial +0,5",
+     "ops": [
+      {
+       "op": "plan",
+       "team": "A",
+       "key": "initialTeamMoment",
+       "value": 0.5
+      }
+     ],
+     "changes": 1
+    }
+   ],
+   "counts": "2 equipos → 1 par; 1 repeticion por par → 1 caso deportivo; 2 variantes → 2 ejecuciones totales solicitadas"
+  },
+  {
+   "id": "EXP13-12",
+   "name": "Política cauta frente a agresiva",
+   "hypothesis": "Política del entrenador de EQ11 ENTREF01 (cauta) frente a ENTREF03 (agresiva), misma plantilla, plan y contexto: rotación, faltas, pausas, ajuste y riesgo contextual (no talento del entrenador).",
+   "pair": [
+    "EQ11",
+    "EQ12"
+   ],
+   "record_level": "reduced",
+   "lot_seed": 131012,
+   "derived_sport_seeds": [
+    {
+     "match_id": "M000001",
+     "variant_id": "V0",
+     "seed": 2352238291
+    },
+    {
+     "match_id": "M000002",
+     "variant_id": "V1",
+     "seed": 2352238291
+    }
+   ],
+   "capabilities_touched": [],
+   "metrics": [
+    "rotación",
+    "faltas",
+    "pausas",
+    "ajuste",
+    "riesgo"
+   ],
+   "conserved": [
+    "mismos equipos (fichas y planes) salvo la intervención declarada",
+    "misma semilla deportiva del caso en las dos variantes (la trayectoria puede divergir tras una decisión distinta)",
+    "mismo perfil efectivo congelado",
+    "estado inicial limpio salvo el estado declarado"
+   ],
+   "base_has_intervention": true,
+   "variants": [
+    {
+     "id": "V0",
+     "label": "Política ENTREF01 (cauta)",
+     "ops": [
+      {
+       "op": "plan",
+       "team": "A",
+       "key": "coach",
+       "value": {
+        "policy": "ENTREF01",
+        "delegation": {
+         "rotation": true,
+         "adjustments": true,
+         "fouls": true,
+         "timeouts": true,
+         "endgame": true
+        }
+       }
+      }
+     ],
+     "changes": 1
+    },
+    {
+     "id": "V1",
+     "label": "Política ENTREF03 (agresiva)",
+     "ops": [
+      {
+       "op": "plan",
+       "team": "A",
+       "key": "coach",
+       "value": {
+        "policy": "ENTREF03",
+        "delegation": {
+         "rotation": true,
+         "adjustments": true,
+         "fouls": true,
+         "timeouts": true,
+         "endgame": true
+        }
+       }
+      }
+     ],
+     "changes": 1
+    }
+   ],
+   "counts": "2 equipos → 1 par; 1 repeticion por par → 1 caso deportivo; 2 variantes → 2 ejecuciones totales solicitadas"
+  }
+ ],
+ "validation_reserve": [
+  {
+   "id": "VAL13-01",
+   "pair": [
+    "EQ01H",
+    "EQ02H"
+   ],
+   "lot_seed": 132001,
+   "record_level": "reduced",
+   "note": "Solo se ejecuta base/candidata (hasta 8 encuentros) si existe una candidata con cambio real; no se usa para repetir ciclos de ajuste."
+  },
+  {
+   "id": "VAL13-02",
+   "pair": [
+    "EQ03",
+    "EQ09"
+   ],
+   "lot_seed": 132002,
+   "record_level": "reduced",
+   "note": "Solo se ejecuta base/candidata (hasta 8 encuentros) si existe una candidata con cambio real; no se usa para repetir ciclos de ajuste."
+  },
+  {
+   "id": "VAL13-03",
+   "pair": [
+    "EQ07",
+    "EQ08"
+   ],
+   "lot_seed": 132003,
+   "record_level": "reduced",
+   "note": "Solo se ejecuta base/candidata (hasta 8 encuentros) si existe una candidata con cambio real; no se usa para repetir ciclos de ajuste."
+  },
+  {
+   "id": "VAL13-04",
+   "pair": [
+    "EQ11",
+    "EQ12"
+   ],
+   "lot_seed": 132004,
+   "record_level": "reduced",
+   "note": "Solo se ejecuta base/candidata (hasta 8 encuentros) si existe una candidata con cambio real; no se usa para repetir ciclos de ajuste."
+  }
+ ]
+}
