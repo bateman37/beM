@@ -7,7 +7,7 @@ const NOT_SPORT = 'Solo cambia cómo se orquesta, registra o exporta un lote; el
 const row = (path, type, unit, label, desc, effect = NOT_SPORT) => ({ ...A, path, type, unit, label: () => label, desc: () => desc, effect: () => effect });
 
 export const MOTOR12_FAMILIES = [
-  row('batch.concurrency', 'count', 'partidos a la vez', 'Lotes · concurrencia de partidos', 'Partidos simultáneos del controlador (precarga 1: ejecución serial, sin workers distribuidos). Solo se admite 1 en esta versión; otro valor se rechaza al preparar el lote.'),
+  row('batch.concurrency', 'count', 'partidos a la vez', 'Lotes · concurrencia de partidos', 'Partidos simultáneos del controlador (precarga 1: secuencial). Desde MOTOR-15 el grupo local de trabajadores admite 1, 2 o 4 (y «auto» = max(1, min(4, núcleos − 1)) como opción de ejecución); es configuración OPERATIVA, no una probabilidad deportiva. Otro valor se rechaza al preparar el lote.'),
   row('batch.repetitionShortcuts.0', 'count', 'repeticiones', 'Lotes · acceso rápido 1', 'Primer acceso rápido de repeticiones por enfrentamiento y por variante (precarga 10). El total real se muestra siempre antes de iniciar.'),
   row('batch.repetitionShortcuts.1', 'count', 'repeticiones', 'Lotes · acceso rápido 2', 'Segundo acceso rápido (precarga 100).'),
   row('batch.repetitionShortcuts.2', 'count', 'repeticiones', 'Lotes · acceso rápido 3', 'Tercer acceso rápido (precarga 1.000).'),
