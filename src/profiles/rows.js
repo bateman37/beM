@@ -10,6 +10,7 @@ import { MOTOR09_FAMILIES, MOTOR09_EXEMPT } from './rows-motor09.js';
 import { MOTOR10_FAMILIES, MOTOR10_EXEMPT } from './rows-motor10.js';
 import { MOTOR11_FAMILIES, MOTOR11_EXEMPT } from './rows-motor11.js';
 import { MOTOR12_FAMILIES, MOTOR12_EXEMPT } from './rows-motor12.js';
+import { MOTOR13_FAMILIES, MOTOR13_EXEMPT } from './rows-motor13.js';
 
 export const CLASSES = {
   balance: 'Parámetro de balance',
@@ -433,13 +434,15 @@ export const FAMILIES = [
   ...MOTOR11_FAMILIES,
   // ------------------------------------------------------------------ MOTOR-12: ejecución masiva y extracción (SEM-MOTOR12)
   ...MOTOR12_FAMILIES,
+  // ------------------------------------------------------------------ MOTOR-13: auditoría, sensibilidad y calibración (SEM-MOTOR13)
+  ...MOTOR13_FAMILIES,
 ];
 
 // Hojas del perfil que NO son filas: identidad, procedencia y estructura de contenido, no magnitudes calibrables (§4.1).
 export const EXEMPT_LEAF = [
   /^id$/, /^status$/, /^scope$/, /^effectiveId$/, /^provenance\./, /^deferred/, /^scenario\./, /^fixtureContract\./, /^attributeOrder/, /^attributeDictionary/,
   /^extensions\./, /^motor02\.(seedExtensionId|status|basedOn|origin)$/, /^profileRef\./, /^plays\.\d+\.(id|family|roles|continuations)/, /^tasks\.[^.]+\.(attack|defense)\.\d+\.[01]$/, /^plays\.\d+\.(qualityAttack|qualityDefense)\.\d+\.[01]$/,
-  /^rotation\.foulProtection\.\d+\.period$/, ...MOTOR07_EXEMPT, ...MOTOR08_EXEMPT, ...MOTOR09_EXEMPT, ...MOTOR10_EXEMPT, ...MOTOR11_EXEMPT, ...MOTOR12_EXEMPT, /^repertoire\./, /^defenseRepertoire\./, /^spontaneousRepertoire\./, /^throwInRepertoire\./,
+  /^rotation\.foulProtection\.\d+\.period$/, ...MOTOR07_EXEMPT, ...MOTOR08_EXEMPT, ...MOTOR09_EXEMPT, ...MOTOR10_EXEMPT, ...MOTOR11_EXEMPT, ...MOTOR12_EXEMPT, ...MOTOR13_EXEMPT, /^repertoire\./, /^defenseRepertoire\./, /^spontaneousRepertoire\./, /^throwInRepertoire\./,
 ];
 
 // Excepciones explicadas: valores del código que NO se convierten en filas (§4.1).

@@ -6,6 +6,7 @@ import { join, normalize, extname, sep } from 'node:path';
 import { ROOT } from './node-data.js';
 import { appLine } from '../src/version.js';
 import { BatchService } from '../src/batch/api.js';
+import { AuditService } from '../src/audit/api.js';
 
 const PORT = Number(process.env.PORT ?? 5173);
 const HOST = process.env.HOST ?? '127.0.0.1';
@@ -15,10 +16,13 @@ const ALLOWED = ['src', 'data'];
 export function createLabServer({ batchRoot = undefined } = {}) {
   // MOTOR-12: servicio local de lotes (ejecución en hilo de trabajo, persistencia progresiva en out/batches/, descargas). Se crea de forma perezosa en la primera petición /api/batch.
   let batch = null; const service = () => (batch ??= new BatchService({ root: batchRoot }));
+  // MOTOR-13: servicio de auditoría (lectura de evidencia; no simula). Comparte la raíz de lotes.
+  let audit = null; const auditService = () => (audit ??= new AuditService({ batchRoot }));
   const server = createServer(async (req, res) => {
     try {
       let path = decodeURIComponent(new URL(req.url, 'http://x').pathname);
       if (path.startsWith('/api/batch/')) { await service().handle(req, res, path); return; }
+      if (path.startsWith('/api/audit/')) { await auditService().handle(req, res, path); return; }
       if (path === '/' || path === '/index.html') path = '/src/lab/index.html';
       const file = normalize(join(ROOT, path));
       const rel = file.slice(ROOT.length + 1).split(sep);

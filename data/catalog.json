@@ -76,6 +76,13 @@
       "sha256": "b35f35fc8f64fd7659f30cfd812ed326424034b76d0064b0d8c0c77453734aa1",
       "origin": "Encargo MOTOR-11 (§5–§12): planes naturales materializados por scripts/build-motor11-data.js, revisión R1 de EQ07-J01, receta del generador y catálogo LAB11"
     },
+    "data/match/motor13-seed-extension.json": {
+      "id": "SEM-MOTOR13-20261017",
+      "status": "SEM: provisional, no calibrado (parámetros de lectura de auditoría, sensibilidad y pasos del editor de candidatas; ningún efecto deportivo: no son pesos, probabilidades ni coeficientes de juego, y ningún umbral limita un partido en ejecución).",
+      "sha256": "b3cf1629323e9b1bed06a2ac9b76b5e5ed4ae8c6bb4b5ee8a0542957be86da13",
+      "origin": "Encargo MOTOR-13 (§15.4, §14.3, §18): parámetros de auditoría, lectura y calibración (tabla audit); sin efecto deportivo",
+      "state": "SEM provisional, no calibrado"
+    },
     "data/match/motor12-seed-extension.json": {
       "id": "SEM-MOTOR12-20261017",
       "status": "SEM: provisional, no calibrado (parámetros técnicos de ejecución, registro y exportación de lotes; ningún efecto deportivo: no son pesos, probabilidades ni coeficientes de juego).",

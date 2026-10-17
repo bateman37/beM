@@ -1,0 +1,760 @@
+{
+ "schema": "beM-audit-catalog/1",
+ "audit_version": "AUD-MOTOR13-R1",
+ "parametros": {
+  "version": "AUD-MOTOR13-R1",
+  "name": "Auditorías, sensibilidad y calibración de MOTOR-13",
+  "provenance": "Valores SEM del encargo MOTOR-13 §15.4 y §14.3. Un informe conserva los valores con que se calculó; cambiar este panel después solo afecta a las lecturas siguientes.",
+  "resultSchema": "beM-audit-result/1",
+  "contextsPerCapability": 24,
+  "sensitivityIncrements": [
+   1,
+   3,
+   5
+  ],
+  "reliabilityBins": 5,
+  "reliabilityWarn": {
+   "minDecisions": 100,
+   "minMatches": 3
+  },
+  "familyConcentration": {
+   "share": 0.8,
+   "minUnits": 40,
+   "minMatches": 3
+  },
+  "finalizerConcentration": {
+   "share": 0.6,
+   "minUnits": 40,
+   "minMatches": 3
+  },
+  "loopRevisits": 10,
+  "examplesPerFinding": 5,
+  "campaign": {
+   "explorationMatches": 24,
+   "fullDiagnostics": 4,
+   "validationReserveMax": 8,
+   "explorationSeedBase": 131001,
+   "validationSeedBase": 132001
+  },
+  "calibrationStep": {
+   "p0Absolute": 0.01,
+   "logitPerPoint": 0.005,
+   "loadFactorRelative": 0.05,
+   "maxHypotheses": 1,
+   "maxChangedRows": 3
+  }
+ },
+ "auditorias": [
+  {
+   "id": "AUD01",
+   "name": "Administración y acta",
+   "area": "reglamento",
+   "question": "Concilian acta y análisis y qué consecuencias reglamentarias del perfil implementado aparecen?",
+   "hypothesis": "Un partido finalizado cuadra en las 33 + 23 comprobaciones y el marcador es la suma de periodos.",
+   "type": "determinista",
+   "inputs": [
+    "partidos",
+    "periodos",
+    "equipos",
+    "jugadores"
+   ],
+   "producers": "acta MOTOR-09 y conciliación de MOTOR-10 (completa); cobertura normativa aparte (FIBA sin contraste de PDF)",
+   "suggestedExperiments": [],
+   "indicators": [
+    "reconciliation_ok",
+    "analysis_ok",
+    "puntos por equipo"
+   ],
+   "references": "perfil normativo REG (sin lectura directa de PDF)",
+   "tolerance": "exacta",
+   "severity": "error determinista",
+   "interpretation": "Un acta cuadrada prueba consistencia, no conformidad con FIBA."
+  },
+  {
+   "id": "AUD02",
+   "name": "Posesiones y continuidad",
+   "area": "flujo",
+   "question": "Cada posesión tiene inicio y cierre coherentes, sin solapes ni F duplicadas?",
+   "hypothesis": "Las posesiones no se solapan, sus F existen una sola vez y pertenecen a una posesión real.",
+   "type": "determinista",
+   "inputs": [
+    "posesiones",
+    "finalizaciones"
+   ],
+   "producers": "posesiones beM y F (completo, también en reducido)",
+   "suggestedExperiments": [],
+   "indicators": [
+    "solapes",
+    "F huérfanas",
+    "ids duplicados"
+   ],
+   "references": "sin referencia externa comparable (evaluación funcional SEM)",
+   "tolerance": "exacta",
+   "severity": "error determinista",
+   "interpretation": "AN08: una posesión mixta para dos quintetos no es un error de conciliación; esta auditoría no reparte posesiones por quinteto."
+  },
+  {
+   "id": "AUD03",
+   "name": "Relojes y ventanas",
+   "area": "flujo",
+   "question": "Los hechos respetan el orden temporal y el consumo de reloj?",
+   "hypothesis": "El reloj de juego no crece, la duración es la variación del reloj y los periodos dentro de su longitud.",
+   "type": "determinista",
+   "inputs": [
+    "eventos"
+   ],
+   "producers": "hechos del motor (completo)",
+   "suggestedExperiments": [],
+   "indicators": [
+    "duraciones negativas",
+    "saltos de reloj",
+    "décimas por periodo"
+   ],
+   "references": "sin referencia externa comparable (evaluación funcional SEM)",
+   "tolerance": "exacta (relojes); señal (saltos entre hechos)",
+   "severity": "error determinista",
+   "interpretation": "Solicitudes frente a aplicación de órdenes y recursos: parcial (ver AUD24)."
+  },
+  {
+   "id": "AUD04",
+   "name": "Perfiles y datos",
+   "area": "datos",
+   "question": "Los datos efectivos que consumió el partido son válidos?",
+   "hypothesis": "Capacidades dentro de 1–30, pesos de receta suman 1 y solo existen las 32 capacidades.",
+   "type": "determinista",
+   "inputs": [
+    "decisiones (recetas)"
+   ],
+   "producers": "recetas registradas con base, efectiva, peso y energía (solo diagnóstico completo)",
+   "suggestedExperiments": [],
+   "indicators": [
+    "capacidades fuera de rango",
+    "recetas con peso ≠ 1",
+    "capacidades desconocidas"
+   ],
+   "references": "sin referencia externa comparable (evaluación funcional SEM)",
+   "tolerance": "exacta",
+   "severity": "error determinista",
+   "interpretation": "Sin registro de recetas (nivel reducido) la auditoría es inconclusa, no verde."
+  },
+  {
+   "id": "AUD05",
+   "name": "Uso de las 32 capacidades",
+   "area": "capacidades",
+   "question": "Qué capacidades se usaron, con qué contribución y qué sensibilidad de cálculo tienen?",
+   "hypothesis": "Cada capacidad declarada en una receta y expuesta aparece aplicada; una ausencia sin exposición no es un atributo muerto.",
+   "type": "descriptivo",
+   "inputs": [
+    "decisiones (recetas)",
+    "perfil"
+   ],
+   "producers": "recetas registradas y declaración del perfil",
+   "suggestedExperiments": [
+    "EXP13-01",
+    "EXP13-02",
+    "EXP13-03",
+    "EXP13-10"
+   ],
+   "indicators": [
+    "usos",
+    "contribución",
+    "+1/+3/+5"
+   ],
+   "references": "sin referencia externa comparable (evaluación funcional SEM)",
+   "tolerance": "no aplica",
+   "severity": "información / aviso de cobertura",
+   "interpretation": "Un contraste de cálculo fijo prueba una relación del cálculo en ese contexto, no un resultado que ocurrió."
+  },
+  {
+   "id": "AUD06",
+   "name": "Selección frente a ejecución",
+   "area": "selección",
+   "question": "Se distinguen disponibilidad, elección, ejecución y conversión?",
+   "hypothesis": "Hay decisiones de elección y de ejecución registradas por separado.",
+   "type": "cobertura",
+   "inputs": [
+    "decisiones"
+   ],
+   "producers": "oportunidades, mezclas y binarias (diagnóstico); percepción no registrada como fase",
+   "suggestedExperiments": [],
+   "indicators": [
+    "elecciones",
+    "ejecuciones",
+    "conversiones"
+   ],
+   "references": "sin referencia externa comparable (evaluación funcional SEM)",
+   "tolerance": "no aplica",
+   "severity": "aviso de cobertura",
+   "interpretation": "No se inventan fases: percepción previa a la elección no tiene registro propio."
+  },
+  {
+   "id": "AUD07",
+   "name": "Libro y prioridades",
+   "area": "libro",
+   "question": "Los niveles 1–5 y los empates del libro son coherentes?",
+   "hypothesis": "Prioridades en 1–5 y al menos una ficha elegible; los empates son legítimos.",
+   "type": "determinista",
+   "inputs": [
+    "decisiones (libro)"
+   ],
+   "producers": "registros `libro:elegibilidad` (diagnóstico)",
+   "suggestedExperiments": [
+    "EXP13-04"
+   ],
+   "indicators": [
+    "prioridades fuera de 1–5",
+    "sin ficha elegible",
+    "empates"
+   ],
+   "references": "sin referencia externa comparable (evaluación funcional SEM)",
+   "tolerance": "exacta (rango); descriptivo (empates)",
+   "severity": "error determinista / información",
+   "interpretation": "La equivalencia semántica de fichas renombradas no se prueba aquí (pendiente)."
+  },
+  {
+   "id": "AUD08",
+   "name": "Libertad y director",
+   "area": "libro",
+   "question": "Cuánto toma el director sobre el plan?",
+   "hypothesis": "La iniciativa y lectura del director quedan registradas en decisiones efectivas.",
+   "type": "descriptivo",
+   "inputs": [
+    "decisiones"
+   ],
+   "producers": "oportunidades y lectura defensiva (diagnóstico)",
+   "suggestedExperiments": [
+    "EXP13-03",
+    "EXP13-04"
+   ],
+   "indicators": [
+    "procedencia de la decisión",
+    "lectura efectiva"
+   ],
+   "references": "sin referencia externa comparable (evaluación funcional SEM)",
+   "tolerance": "no aplica",
+   "severity": "información",
+   "interpretation": "Sin cuotas por etiqueta."
+  },
+  {
+   "id": "AUD09",
+   "name": "Juego espontáneo",
+   "area": "selección",
+   "question": "Qué ESP01–20 se expusieron y decidieron realmente?",
+   "hypothesis": "La exposición a cada ESP se ve en las oportunidades registradas.",
+   "type": "descriptivo",
+   "inputs": [
+    "decisiones (oportunidades)"
+   ],
+   "producers": "etiquetas ESP de oportunidades",
+   "suggestedExperiments": [],
+   "indicators": [
+    "etiquetas ESP",
+    "procedencia"
+   ],
+   "references": "sin referencia externa comparable (evaluación funcional SEM)",
+   "tolerance": "no aplica",
+   "severity": "información / aviso de cobertura",
+   "interpretation": "Un ESP no observado no es un ESP roto."
+  },
+  {
+   "id": "AUD10",
+   "name": "Estilos ofensivos",
+   "area": "selección",
+   "question": "Los estilos cambian selección, tiempo y coste?",
+   "hypothesis": "La distribución de familias de ejecución difiere entre planes naturales.",
+   "type": "descriptivo",
+   "inputs": [
+    "ejecuciones"
+   ],
+   "producers": "ejecuciones encadenadas (completo)",
+   "suggestedExperiments": [
+    "EXP13-04"
+   ],
+   "indicators": [
+    "familias por equipo"
+   ],
+   "references": "sin referencia externa comparable (evaluación funcional SEM)",
+   "tolerance": "no aplica",
+   "severity": "información",
+   "interpretation": "Es lectura de distribución; el efecto del estilo requiere contraste de variantes."
+  },
+  {
+   "id": "AUD11",
+   "name": "Organizaciones defensivas",
+   "area": "defensa",
+   "question": "La organización efectiva coincide con la prevista y con alternativa declarada?",
+   "hypothesis": "La organización efectiva por tiro es la prevista salvo ORG02 por ausencia o reorganización.",
+   "type": "señal",
+   "inputs": [
+    "tiros"
+   ],
+   "producers": "organización prevista/efectiva por tiro (completo)",
+   "suggestedExperiments": [
+    "EXP13-05"
+   ],
+   "indicators": [
+    "previsto",
+    "efectivo",
+    "desajustes"
+   ],
+   "references": "sin referencia externa comparable (evaluación funcional SEM)",
+   "tolerance": "señal",
+   "severity": "señal deportiva",
+   "interpretation": "Un desajuste no es defecto: puede ser la alternativa declarada."
+  },
+  {
+   "id": "AUD12",
+   "name": "Presión y ayudas",
+   "area": "defensa",
+   "question": "Qué se registra de presión y ayudas?",
+   "hypothesis": "Las binarias de presión y ayuda existen con sus probabilidades consumidas.",
+   "type": "descriptivo",
+   "inputs": [
+    "decisiones (binarias)"
+   ],
+   "producers": "binarias `defensa:presión` y `ayuda:*`",
+   "suggestedExperiments": [
+    "EXP13-06"
+   ],
+   "indicators": [
+    "intentos",
+    "resultados"
+   ],
+   "references": "sin referencia externa comparable (evaluación funcional SEM)",
+   "tolerance": "no aplica",
+   "severity": "información",
+   "interpretation": "Sin tabla de carga por tramo: avance/carga solo en comparación de variantes."
+  },
+  {
+   "id": "AUD13",
+   "name": "Oportunidad y oposición",
+   "area": "tiro",
+   "question": "La calidad previa se separa del acierto?",
+   "hypothesis": "La probabilidad de conversión crece con la calidad de oportunidad y se sortea aparte.",
+   "type": "señal",
+   "inputs": [
+    "tiros"
+   ],
+   "producers": "calidad y p de conversión por tiro (completo)",
+   "suggestedExperiments": [],
+   "indicators": [
+    "p media por calidad",
+    "frecuencia observada"
+   ],
+   "references": "sin referencia externa comparable (evaluación funcional SEM)",
+   "tolerance": "señal",
+   "severity": "señal deportiva",
+   "interpretation": "Frecuencia observada de pocos tiros es descriptiva, no calibración."
+  },
+  {
+   "id": "AUD14",
+   "name": "Finalización y preparación",
+   "area": "tiro",
+   "question": "TEC03/TEC04 y TEC06/distancia se aplican en la tarea pertinente sin doble puntería?",
+   "hypothesis": "Las recetas de tiro usan capacidades técnicas distintas por tarea.",
+   "type": "descriptivo",
+   "inputs": [
+    "decisiones (recetas)"
+   ],
+   "producers": "recetas de tiro registradas",
+   "suggestedExperiments": [
+    "EXP13-02"
+   ],
+   "indicators": [
+    "capacidades por receta de tiro"
+   ],
+   "references": "sin referencia externa comparable (evaluación funcional SEM)",
+   "tolerance": "no aplica",
+   "severity": "información",
+   "interpretation": "Coexistencia de capacidades en una receta no es duplicidad por sí sola (AUD de §11.3)."
+  },
+  {
+   "id": "AUD15",
+   "name": "Rebote y balance",
+   "area": "rebote",
+   "question": "Cierre/acceso/captura se registran por separado?",
+   "hypothesis": "Los registros de cierre y la captura existen y TEC17/TEC18 no se duplican.",
+   "type": "descriptivo",
+   "inputs": [
+    "decisiones (rebote)"
+   ],
+   "producers": "registros `rebote:*`",
+   "suggestedExperiments": [
+    "EXP13-07"
+   ],
+   "indicators": [
+    "cierres",
+    "capturas"
+   ],
+   "references": "sin referencia externa comparable (evaluación funcional SEM)",
+   "tolerance": "no aplica",
+   "severity": "información",
+   "interpretation": "La captura del compañero no demuestra por sí sola utilidad del cierre."
+  },
+  {
+   "id": "AUD16",
+   "name": "Tiempo y exposición",
+   "area": "tiempo",
+   "question": "El tiempo consumido por tipo es coherente?",
+   "hypothesis": "Las duraciones sorteadas se consumen una vez por acontecimiento.",
+   "type": "descriptivo",
+   "inputs": [
+    "decisiones (duraciones)",
+    "eventos"
+   ],
+   "producers": "duraciones registradas",
+   "suggestedExperiments": [],
+   "indicators": [
+    "décimas por tipo"
+   ],
+   "references": "sin referencia externa comparable (evaluación funcional SEM)",
+   "tolerance": "no aplica",
+   "severity": "información",
+   "interpretation": "No se multiplica por frases."
+  },
+  {
+   "id": "AUD17",
+   "name": "Curva de energía",
+   "area": "estados",
+   "question": "Energía 100–70 es casi neutra y el deterioro crece al bajar?",
+   "hypothesis": "La brecha base−efectiva medida es pequeña de 100 a 70 y creciente por debajo.",
+   "type": "señal",
+   "inputs": [
+    "decisiones (recetas)"
+   ],
+   "producers": "recetas con energía registrada",
+   "suggestedExperiments": [
+    "EXP13-08"
+   ],
+   "indicators": [
+    "brecha media por banda de energía"
+   ],
+   "references": "curva SEM del perfil (energy.severityNodes)",
+   "tolerance": "señal",
+   "severity": "señal deportiva",
+   "interpretation": "La energía fija se prueba con la operación pura; resistencia afecta al desgaste futuro, no al siguiente tiro."
+  },
+  {
+   "id": "AUD18",
+   "name": "Rotación contextual",
+   "area": "entrenador",
+   "question": "Qué motivos de cambio registra el entrenador?",
+   "hypothesis": "Las decisiones de rotación del entrenador existen con regla y motivo.",
+   "type": "descriptivo",
+   "inputs": [
+    "decisiones (entrenador)"
+   ],
+   "producers": "decisiones del entrenador (diagnóstico)",
+   "suggestedExperiments": [
+    "EXP13-12"
+   ],
+   "indicators": [
+    "decisiones por área",
+    "estado"
+   ],
+   "references": "sin referencia externa comparable (evaluación funcional SEM)",
+   "tolerance": "no aplica",
+   "severity": "información",
+   "interpretation": "Estabilidad de la rotación requiere más partidos."
+  },
+  {
+   "id": "AUD19",
+   "name": "Librillo de faltas",
+   "area": "entrenador",
+   "question": "Se respeta el límite legal de faltas?",
+   "hypothesis": "Ningún jugador supera el límite de faltas.",
+   "type": "determinista",
+   "inputs": [
+    "jugadores",
+    "decisiones (entrenador)"
+   ],
+   "producers": "faltas por jugador (completo)",
+   "suggestedExperiments": [
+    "EXP13-12"
+   ],
+   "indicators": [
+    "jugadores sobre el límite"
+   ],
+   "references": "rules.foulOut del perfil",
+   "tolerance": "exacta",
+   "severity": "error determinista",
+   "interpretation": "La excepción/urgencia del librillo se lee solo en diagnóstico."
+  },
+  {
+   "id": "AUD20",
+   "name": "Forma y experiencia",
+   "area": "estados",
+   "question": "No hay bonus de edad ni capacidades fuera de las 32?",
+   "hypothesis": "Las recetas solo usan las 32 capacidades (sin edad ni experiencia).",
+   "type": "determinista",
+   "inputs": [
+    "decisiones (recetas)"
+   ],
+   "producers": "recetas registradas",
+   "suggestedExperiments": [
+    "EXP13-09"
+   ],
+   "indicators": [
+    "capacidades desconocidas"
+   ],
+   "references": "sin referencia externa comparable (evaluación funcional SEM)",
+   "tolerance": "exacta",
+   "severity": "error determinista",
+   "interpretation": "Estados de entrada y límites físicos veteranos: pendientes de más evidencia."
+  },
+  {
+   "id": "AUD21",
+   "name": "Consistencia/momento individual",
+   "area": "estados",
+   "question": "Qué cambios de estado individuales se registran?",
+   "hypothesis": "Los cambios de M_* se registran por actor y ámbito.",
+   "type": "descriptivo",
+   "inputs": [
+    "estados"
+   ],
+   "producers": "bitácora de estados (diagnóstico)",
+   "suggestedExperiments": [
+    "EXP13-10"
+   ],
+   "indicators": [
+    "cambios por ámbito",
+    "media"
+   ],
+   "references": "protocolo neutral de MOTOR-07 (reutilizado, no repetido)",
+   "tolerance": "no aplica",
+   "severity": "información",
+   "interpretation": "No se exige que más Consistencia dé más puntos; la neutralidad se comprueba con el protocolo fijo."
+  },
+  {
+   "id": "AUD22",
+   "name": "Momento colectivo",
+   "area": "estados",
+   "question": "T actúa solo en ámbitos permitidos?",
+   "hypothesis": "T aparece como estado, nunca como término de una receta personal.",
+   "type": "determinista",
+   "inputs": [
+    "estados",
+    "decisiones (recetas)"
+   ],
+   "producers": "bitácora de estados y recetas",
+   "suggestedExperiments": [
+    "EXP13-11"
+   ],
+   "indicators": [
+    "cambios de T",
+    "T en recetas"
+   ],
+   "references": "sin referencia externa comparable (evaluación funcional SEM)",
+   "tolerance": "exacta (T en recetas)",
+   "severity": "error determinista",
+   "interpretation": "Sin aura de tiro: T no es una capacidad."
+  },
+  {
+   "id": "AUD23",
+   "name": "Presupuesto de estados",
+   "area": "estados",
+   "question": "Dónde se aplican los estados?",
+   "hypothesis": "Los estados se cobran en lugares enumerados (calidad de oportunidad, etc.).",
+   "type": "cobertura",
+   "inputs": [
+    "decisiones (estados)"
+   ],
+   "producers": "registros `estados:*`",
+   "suggestedExperiments": [],
+   "indicators": [
+    "lugares de aplicación"
+   ],
+   "references": "sin referencia externa comparable (evaluación funcional SEM)",
+   "tolerance": "no aplica",
+   "severity": "aviso de cobertura",
+   "interpretation": "La ausencia de un tercer bonus de racha requiere lectura del mecanismo (ver duplicidades)."
+  },
+  {
+   "id": "AUD24",
+   "name": "Tiempos muertos",
+   "area": "entrenador",
+   "question": "Qué pausas y órdenes se registran?",
+   "hypothesis": "Las órdenes y pausas tienen motivo y estado.",
+   "type": "descriptivo",
+   "inputs": [
+    "órdenes",
+    "decisiones (entrenador)"
+   ],
+   "producers": "órdenes y decisiones",
+   "suggestedExperiments": [
+    "EXP13-12"
+   ],
+   "indicators": [
+    "órdenes",
+    "decisiones"
+   ],
+   "references": "sin referencia externa comparable (evaluación funcional SEM)",
+   "tolerance": "no aplica",
+   "severity": "información",
+   "interpretation": "Antes/después descriptivo, sin garantía."
+  },
+  {
+   "id": "AUD25",
+   "name": "Memoria y repetición",
+   "area": "memoria",
+   "question": "La memoria defensiva respeta su capacidad y claves?",
+   "hypothesis": "No hay más de 8 patrones ocupados.",
+   "type": "determinista",
+   "inputs": [
+    "decisiones (memoria)"
+   ],
+   "producers": "registros de memoria (diagnóstico)",
+   "suggestedExperiments": [],
+   "indicators": [
+    "inserciones",
+    "ocupadas"
+   ],
+   "references": "sin referencia externa comparable (evaluación funcional SEM)",
+   "tolerance": "exacta",
+   "severity": "error determinista",
+   "interpretation": "Cuarta repetición puede funcionar: no se impone un fallo por ordinal."
+  },
+  {
+   "id": "AUD26",
+   "name": "Saques y finales",
+   "area": "saques",
+   "question": "Cada saque tiene receptor real?",
+   "hypothesis": "Toda cadena de saque cerrada tiene receptor.",
+   "type": "señal",
+   "inputs": [
+    "decisiones (cadenas de saque)"
+   ],
+   "producers": "cadenas de saque (diagnóstico)",
+   "suggestedExperiments": [],
+   "indicators": [
+    "cadenas",
+    "sin receptor"
+   ],
+   "references": "sin referencia externa comparable (evaluación funcional SEM)",
+   "tolerance": "señal",
+   "severity": "señal deportiva",
+   "interpretation": "El estado «cerrada» sin receptor requiere revisión de causa."
+  },
+  {
+   "id": "AUD27",
+   "name": "Estadística y universos",
+   "area": "estadística",
+   "question": "Equipo = suma de jugadores y las tasas están bien definidas?",
+   "hypothesis": "Los totales de equipo coinciden con la suma de jugadores.",
+   "type": "determinista",
+   "inputs": [
+    "equipos",
+    "jugadores"
+   ],
+   "producers": "acta (completo)",
+   "suggestedExperiments": [],
+   "indicators": [
+    "discrepancias equipo/jugadores"
+   ],
+   "references": "sin referencia externa comparable (evaluación funcional SEM)",
+   "tolerance": "exacta",
+   "severity": "error determinista",
+   "interpretation": "AN08: la regresión de mixtas queda cubierta por `analysis_ok`."
+  },
+  {
+   "id": "AUD28",
+   "name": "Visibilidad y dirección",
+   "area": "permisos",
+   "question": "Los archivos declaran audiencia diagnóstica?",
+   "hypothesis": "Todo archivo de registro exacto declara audiencia diagnóstica.",
+   "type": "determinista",
+   "inputs": [
+    "índice de archivos"
+   ],
+   "producers": "audiencia por archivo (MOTOR-12)",
+   "suggestedExperiments": [],
+   "indicators": [
+    "archivos por audiencia"
+   ],
+   "references": "sin referencia externa comparable (evaluación funcional SEM)",
+   "tolerance": "exacta",
+   "severity": "error determinista",
+   "interpretation": "La entrada humano/IA y los informes públicos no se auditan aquí (interfaz)."
+  },
+  {
+   "id": "AUD29",
+   "name": "Modos y continuación",
+   "area": "modos",
+   "question": "Los modos dan igual resultado con iguales entradas?",
+   "hypothesis": "No evaluable desde un lote: lo cubren las pruebas de MOTOR-02/12.",
+   "type": "cobertura",
+   "inputs": [],
+   "producers": "pruebas automáticas existentes (modos, reproducción, continuación)",
+   "suggestedExperiments": [],
+   "indicators": [],
+   "references": "sin referencia externa comparable (evaluación funcional SEM)",
+   "tolerance": "no aplica",
+   "severity": "aviso de cobertura",
+   "interpretation": "Sin snapshot de continuación (límite declarado de MOTOR-12)."
+  },
+  {
+   "id": "AUD30",
+   "name": "Población y estilos",
+   "area": "población",
+   "question": "Los equipos de la evidencia son distintos entre sí?",
+   "hypothesis": "Las medias de capacidades difieren entre equipos (sin homogeneización).",
+   "type": "descriptivo",
+   "inputs": [
+    "entradas"
+   ],
+   "producers": "fichas congeladas en el lote",
+   "suggestedExperiments": [],
+   "indicators": [
+    "media de capacidades por equipo"
+   ],
+   "references": "población ficticia EQ01–12 (no equivalente a élite)",
+   "tolerance": "no aplica",
+   "severity": "información",
+   "interpretation": "No es referencia externa."
+  },
+  {
+   "id": "AUD31",
+   "name": "Partidos y colas",
+   "area": "distribución",
+   "question": "Ritmo, producción y extremos de los partidos de la evidencia?",
+   "hypothesis": "Resultados y posesiones dentro de rangos observados sin imponer cuotas.",
+   "type": "descriptivo",
+   "inputs": [
+    "partidos"
+   ],
+   "producers": "hechos agregados por partido",
+   "suggestedExperiments": [],
+   "indicators": [
+    "puntos",
+    "posesiones",
+    "extremos"
+   ],
+   "references": "sin referencia externa comparable (evaluación funcional SEM)",
+   "tolerance": "no aplica",
+   "severity": "información",
+   "interpretation": "Un extremo se abre para revisión, no se elimina; la muestra pequeña es inconclusa."
+  },
+  {
+   "id": "AUD32",
+   "name": "Conservación y coste",
+   "area": "coste",
+   "question": "Los archivos conservan su integridad y cuánto cuesta leerlos?",
+   "hypothesis": "Los SHA-256 coinciden con el índice y se mide bytes/tiempo por intento.",
+   "type": "determinista",
+   "inputs": [
+    "índice",
+    "archivos"
+   ],
+   "producers": "índice del lote o comprobador del paquete",
+   "suggestedExperiments": [],
+   "indicators": [
+    "bytes",
+    "ms de lectura"
+   ],
+   "references": "sin referencia externa comparable (evaluación funcional SEM)",
+   "tolerance": "exacta",
+   "severity": "error determinista",
+   "interpretation": "Coste medido en este entorno; la optimización es de MOTOR-14."
+  }
+ ]
+}

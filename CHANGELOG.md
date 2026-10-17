@@ -2,6 +2,15 @@
 
 Registro breve de entregas. Una entrada por entrega; las más recientes primero.
 
+## MOTOR-13 — Auditorías, sensibilidad y calibración — 2026-10-17
+
+- **Lectura y diagnóstico; sin cambio deportivo**: referencia `20261016` sigue en **83–103** con 6 505 sorteos y la misma huella de trayectoria; motor `beM-motor-0.9.0-MOTOR09` y `beM-match-export/8` sin cambios.
+- `src/audit/`: catálogo **AUD01–AUD32** con evaluador y estados separados (implementación, registro, exposición, resultado, revisión); lectura de lote conservado o paquete verificable con integridad previa; proyección por intento con caché; hallazgos navegables; matriz de **32 capacidades** con contraste de cálculo fijo +1/+3/+5 (`effectiveAbility`, extraída sin cambiar semántica); fiabilidad por mecanismo (cinco intervalos fijos, Brier descriptivo); concentración y bucles como avisos; referencias sin rangos inventados.
+- Pestaña **Auditorías**, API `/api/audit/*`, paquete `beM-audit-package/1` con comprobador (`npm run audit:check`), extensión `SEM-MOTOR13-20261017` (tabla `audit`, 25 filas LAB01) y versión `MOTOR-13`.
+- **Campaña inicial**: doce contrastes EXP13-01…12 × 2 variantes = 24 encuentros (plan congelado antes de ejecutar); el lector dejó 8 con la conciliación analítica en fallo: **defecto de lector de MOTOR-10 corregido** (quintetos con los mismos jugadores en puestos distintos contaban doble; filas con puntos sin tiempo se descartaban) y campaña repetida con las mismas semillas (24/24 válidos, trayectorias idénticas). Tres defectos de auditor corregidos (AUD07, AUD13, AUD26).
+- **Primer ciclo: base mantenida** con evidencia y límites (una señal aislada |z| ≈ 2,1 entre 13 mecanismos; muestra de 4 partidos completos); reserva de validación sin lanzar; ninguna candidata. Bandera `allowBaseOps` en lotes y columna aditiva `lineup_ids` en `quintetos.csv`.
+- Pruebas: 9 grupos nuevos. Documentación: [`docs/tecnico/motor13.md`](docs/tecnico/motor13.md), [evidencia](docs/tecnico/evidencia-motor13/README.md), [recorrido manual](docs/prompts/MOTOR-13-recorrido-manual.md). Pendiente de validación de Dennis.
+
 ## MOTOR-12 — Simulación masiva y extracción completa — 2026-10-17
 
 - **Orquestación, registro y exportación; sin cambio deportivo**: referencia `20261016` sigue en **83–103** con 6 505 sorteos (con registro completo y reducido, misma huella de trayectoria); motor `beM-motor-0.9.0-MOTOR09` y `beM-match-export/8` sin cambios.

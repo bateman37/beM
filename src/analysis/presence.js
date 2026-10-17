@@ -55,13 +55,17 @@ export function onOff(ix, G, cfg) {
     label: 'Diferencia observada con − sin bajo la misma definición; no es impacto causal ni puntos que aporta el jugador.' };
 }
 
-// Quintetos usados: una fila por alineación registrada con tiempo, tramos, producción y posesiones completas/mixtas.
+// Quintetos usados: una fila por QUINTETO (grupo de cinco jugadores) con tiempo, tramos, producción y posesiones completas/mixtas.
+// MOTOR-13 (defectos de lector confirmados con partidos reales de la campaña, causa «lector»): (1) la lectura de presencia es por CONJUNTO de jugadores, de modo que dos alineaciones registradas
+// con los mismos cinco jugadores en puestos distintos (p. ej. tras una rotación que reasigna puestos) se leían como dos quintetos y contaban dos veces minutos y puntos: ahora se agrupan por
+// conjunto (la fila lleva todos los ids de tramo registrados en `lineupIds`); (2) una fila con puntos o tiempo en presencia pero sin posesión completa (p. ej. solo unos libres con el quinteto en
+// pista y 0 décimas) se descartaba y esos puntos desaparecían de la conciliación: ahora solo se omite una fila sin ninguna presencia.
 export function lineupTable(ix, team, cfg = DEFAULT_PRESENCE) {
-  const keys = new Map(); for (const l of ix.res.lineups ?? []) if (l.team === team) keys.set(l.key, l.key.split('|'));
-  const rows = []; for (const [key, G] of keys) {
-    const r = groupReading(ix, G, cfg); if (!r.with.tenths && !r.with.own.complete.length && !r.with.mixedCount) continue;
+  const sets = new Map(); for (const l of ix.res.lineups ?? []) if (l.team === team) { const setKey = l.key.split('|').slice().sort().join('|'); const e = sets.get(setKey); if (e) e.ids.push(l.id); else sets.set(setKey, { key: l.key, G: l.key.split('|'), ids: [l.id] }); }
+  const rows = []; for (const { key, G, ids } of sets.values()) {
+    const r = groupReading(ix, G, cfg); const w = r.with; if (!w.tenths && !w.own.complete.length && !w.mixedCount && !w.ptsFor && !w.ptsAgainst && !w.adminFor && !w.adminAgainst) continue;
     const tramos = ix.acta.presence.intervals.length ? new Set(ix.events.filter((e) => evPresent(ix, e, G, team) === 'with').map((e) => e.lineups[team])).size : 0;
-    rows.push({ key, players: G, minutes: r.with.minutes, plusMinus: r.with.plusMinus, ptsFor: r.with.ptsFor, ptsAgainst: r.with.ptsAgainst, ownComplete: r.with.own.complete.length, rivalComplete: r.with.rival.complete.length, mixed: r.with.mixedCount, ortg: r.with.ortgStable, drtg: r.with.drtgStable, sufficient: r.sufficient, tramos, possessionIds: [...r.with.own.complete, ...r.with.rival.complete].map((p) => p.id) });
+    rows.push({ key, lineupIds: ids, players: G, minutes: w.minutes, plusMinus: w.plusMinus, ptsFor: w.ptsFor, ptsAgainst: w.ptsAgainst, ownComplete: w.own.complete.length, rivalComplete: w.rival.complete.length, mixed: w.mixedCount, ortg: w.ortgStable, drtg: w.drtgStable, sufficient: r.sufficient, tramos, possessionIds: [...w.own.complete, ...w.rival.complete].map((p) => p.id) });
   }
   return { team, rows: rows.sort((a, b) => b.minutes - a.minutes), orderCriterion: 'minutos en pista (descendente); sin mínimo de exposición no se puede hablar del «mejor quinteto»', minimum: cfg };
 }

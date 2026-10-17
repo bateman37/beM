@@ -27,7 +27,7 @@ export function normalizeSpec(spec, profile) {
     importance: spec.importance ?? 'ordinary', batchSeed: spec.batchSeed ?? 20261017, variants: variants.map((v, i) => ({ id: v.id ?? `V${i}`, label: v.label ?? (i === 0 ? 'Base' : `Candidata ${i}`), kind: v.kind ?? (v.lab ? 'lab' : 'ops'), ops: v.ops ?? [], ...(v.lab ? { lab: v.lab } : {}), ...(v.description ? { description: v.description } : {}) })),
     source: spec.source ?? { kind: 'teams' }, objective: (spec.objective ?? '').trim() || d.objective, objectiveDefaulted: !(spec.objective ?? '').trim(), question: spec.question ?? null, conserved: spec.conserved ?? null,
     recordLevel: spec.recordLevel ?? d.level, prose: spec.prose ?? d.prose, partTargetMiB: spec.partTargetMiB ?? d.partTargetMiB, concurrency: spec.concurrency ?? d.concurrency,
-    teams: spec.teams ?? {}, label: spec.label ?? null,
+    teams: spec.teams ?? {}, label: spec.label ?? null, allowBaseOps: !!spec.allowBaseOps,
   };
 }
 
@@ -107,7 +107,7 @@ export function prepareBatch(specIn, profile, { players = null } = {}) {
   }
   else if (spec.mode === 'repeat') { if (spec.teamIds.length !== 2) problems.push('repetir un enfrentamiento necesita exactamente dos equipos'); else if (spec.teamIds[0] === spec.teamIds[1] && !spec.selfPlay) problems.push('un equipo contra sí mismo exige marcarlo explícitamente (dos instancias, p. ej. base y copia)'); }
   else if (new Set(spec.teamIds).size < 2 && !spec.selfPlay) problems.push('los cruces necesitan al menos dos equipos distintos (o autoenfrentamiento explícito)');
-  problems.push(...validateVariants(spec.variants, { attrs: profile.attributeOrder }));
+  problems.push(...validateVariants(spec.variants, { attrs: profile.attributeOrder, allowBaseOps: !!spec.allowBaseOps }));
   // Desde un escenario LAB11 el emparejamiento lo define el escenario: se materializa cada variante UNA vez para fijar el par (todas deben compartirlo) antes de programar la agenda.
   if (spec.source?.kind === 'lab' && !problems.length) {
     try {
