@@ -1,0 +1,265 @@
+{
+ "schema": "beM-query-matrix/1",
+ "version": "MAT-MOTOR15-R1",
+ "levels": {
+  "diagnostic": "Diagnóstico completo (detalle `full`)",
+  "reduced": "Reducido (detalle `minimal`, sin decisiones calculadas)",
+  "world-essential": "Esencial para el mundo (detalle `minimal`, registro compacto)"
+ },
+ "note": "Los tres niveles usan el MISMO resolutor: trayectoria deportiva, sorteos, estados y acta idénticos para las mismas entradas y versión. Solo cambia lo que se conserva.",
+ "queries": [
+  {
+   "id": "Q01",
+   "query": "Identidad, versiones, estado y resultado de cancha frente a adjudicado",
+   "data": "identity + result (court_score, administrative)",
+   "availability": {
+    "diagnostic": "sí",
+    "reduced": "sí",
+    "world-essential": "sí"
+   },
+   "where_essential": "result, identity"
+  },
+  {
+   "id": "Q02",
+   "query": "Parciales y duración",
+   "data": "result.period_scores, game_tenths",
+   "availability": {
+    "diagnostic": "sí",
+    "reduced": "sí",
+    "world-essential": "sí"
+   },
+   "where_essential": "result"
+  },
+  {
+   "id": "Q03",
+   "query": "Acta individual (minutos, tiros, puntos, créditos, faltas, DNP)",
+   "data": "acta.players",
+   "availability": {
+    "diagnostic": "sí",
+    "reduced": "sí",
+    "world-essential": "sí"
+   },
+   "where_essential": "acta.players"
+  },
+  {
+   "id": "Q04",
+   "query": "Acta colectiva (totales, colectivos, faltas por periodo, tiempos muertos)",
+   "data": "acta.teams",
+   "availability": {
+    "diagnostic": "sí",
+    "reduced": "sí",
+    "world-essential": "sí"
+   },
+   "where_essential": "acta.teams"
+  },
+  {
+   "id": "Q05",
+   "query": "Series de libres y finalizaciones F",
+   "data": "acta.series, acta.finals",
+   "availability": {
+    "diagnostic": "sí",
+    "reduced": "sí",
+    "world-essential": "sí"
+   },
+   "where_essential": "acta.series, acta.finals"
+  },
+  {
+   "id": "Q06",
+   "query": "Créditos y trazabilidad de asistencias y rebotes",
+   "data": "acta.credits",
+   "availability": {
+    "diagnostic": "sí",
+    "reduced": "sí",
+    "world-essential": "sí"
+   },
+   "where_essential": "acta.credits"
+  },
+  {
+   "id": "Q07",
+   "query": "Posesiones beM (origen, cierre, puntos) y partición de puntos",
+   "data": "acta.possessions, acta.partition",
+   "availability": {
+    "diagnostic": "sí",
+    "reduced": "sí",
+    "world-essential": "sí"
+   },
+   "where_essential": "acta.possessions"
+  },
+  {
+   "id": "Q08",
+   "query": "Secuencia de hechos (orden estable, referencias, créditos)",
+   "data": "sequence",
+   "availability": {
+    "diagnostic": "sí (hechos completos)",
+    "reduced": "sí (hechos completos)",
+    "world-essential": "sí (filas compactas; sin intent/effects/params)"
+   },
+   "where_essential": "sequence.columns/rows"
+  },
+  {
+   "id": "Q09",
+   "query": "Presencia: entradas/salidas, quintetos, on-off, mixtas",
+   "data": "presence.lineups, presence.intervals, sequence.lineup_*",
+   "availability": {
+    "diagnostic": "sí",
+    "reduced": "sí",
+    "world-essential": "sí"
+   },
+   "where_essential": "presence"
+  },
+  {
+   "id": "Q10",
+   "query": "Tiro: autor, sector funcional, valor, resultado/validez y causa",
+   "data": "shots",
+   "availability": {
+    "diagnostic": "sí",
+    "reduced": "sí",
+    "world-essential": "sí"
+   },
+   "where_essential": "shots"
+  },
+  {
+   "id": "Q11",
+   "query": "Tiro: preparación/oposición en categorías (calidad, defensor, cobertura, organización efectiva)",
+   "data": "shots.quality / defender / coverage / defense_org",
+   "availability": {
+    "diagnostic": "sí",
+    "reduced": "sí",
+    "world-essential": "sí (categorías; sin probabilidades ni pesos)"
+   },
+   "where_essential": "shots"
+  },
+  {
+   "id": "Q12",
+   "query": "Cruce jugador × defensa de tiro",
+   "data": "shots.shooter × shots.defender",
+   "availability": {
+    "diagnostic": "sí",
+    "reduced": "sí",
+    "world-essential": "sí (conservado por fila: los marginales por jugador y por defensa no bastarían y no se ofrecen como sustituto)"
+   },
+   "where_essential": "shots"
+  },
+  {
+   "id": "Q13",
+   "query": "Táctica observada: familias ejecutadas, cobertura y organización efectivas por posesión",
+   "data": "tactics",
+   "availability": {
+    "diagnostic": "sí",
+    "reduced": "sí",
+    "world-essential": "sí"
+   },
+   "where_essential": "tactics"
+  },
+  {
+   "id": "Q14",
+   "query": "Dirección: órdenes, comandos y delegación efectiva del entrenador",
+   "data": "direction",
+   "availability": {
+    "diagnostic": "sí",
+    "reduced": "sí",
+    "world-essential": "sí (órdenes y comandos; sin decisiones calculadas)"
+   },
+   "where_essential": "direction"
+  },
+  {
+   "id": "Q15",
+   "query": "Estados propios por tramo (energía, Forma, momentos) autorizados",
+   "data": "states",
+   "availability": {
+    "diagnostic": "sí",
+    "reduced": "sí",
+    "world-essential": "sí (registro de cambios y episodios; los valores internos solo en diagnóstico)"
+   },
+   "where_essential": "states"
+  },
+  {
+   "id": "Q16",
+   "query": "Integridad: huella de trayectoria, sorteos consumidos, pasos, cobertura observada",
+   "data": "integrity",
+   "availability": {
+    "diagnostic": "sí (TRAY-MOTOR12-R1)",
+    "reduced": "sí (TRAY-MOTOR12-R1)",
+    "world-essential": "sí (TRAYINC-MOTOR15-R1 incremental; `none` declarado si se desactiva)"
+   },
+   "where_essential": "integrity"
+  },
+  {
+   "id": "Q17",
+   "query": "Conciliación del acta y conciliación analítica",
+   "data": "validity",
+   "availability": {
+    "diagnostic": "sí",
+    "reduced": "sí",
+    "world-essential": "sí (modo `full`; `acta` solo si se declara)"
+   },
+   "where_essential": "validity"
+  },
+  {
+   "id": "Q18",
+   "query": "Sorteos con ordinal y propósito",
+   "data": "sorteos.jsonl",
+   "availability": {
+    "diagnostic": "sí",
+    "reduced": "sí",
+    "world-essential": "no (solo su cuenta y la huella)"
+   },
+   "where_essential": "—"
+  },
+  {
+   "id": "Q19",
+   "query": "Decisiones calculadas con capacidad base/efectiva y pesos",
+   "data": "decisiones.jsonl",
+   "availability": {
+    "diagnostic": "sí",
+    "reduced": "no",
+    "world-essential": "no"
+   },
+   "where_essential": "—"
+  },
+  {
+   "id": "Q20",
+   "query": "Contrafactuales y sensibilidad +1/+3/+5",
+   "data": "decisiones.jsonl + capacidades-uso",
+   "availability": {
+    "diagnostic": "sí",
+    "reduced": "no",
+    "world-essential": "no"
+   },
+   "where_essential": "—"
+  },
+  {
+   "id": "Q21",
+   "query": "Indicadores del catálogo MOTOR-10, ejecuciones y quintetos tabulados",
+   "data": "tablas/*.csv",
+   "availability": {
+    "diagnostic": "sí",
+    "reduced": "sí",
+    "world-essential": "no tabulados (recalculables desde Q03–Q15 con la capa de análisis sobre el resultado reproducido)"
+   },
+   "where_essential": "—"
+  },
+  {
+   "id": "Q22",
+   "query": "Relato / prosa",
+   "data": "relato",
+   "availability": {
+    "diagnostic": "opcional",
+    "reduced": "opcional",
+    "world-essential": "no"
+   },
+   "where_essential": "—"
+  },
+  {
+   "id": "Q23",
+   "query": "Paquete ZIP de análisis (MOTOR-12) y agregados del lote",
+   "data": "paquetes/",
+   "availability": {
+    "diagnostic": "sí",
+    "reduced": "sí",
+    "world-essential": "no: el nivel esencial no genera tablas; la extracción es el JSON esencial"
+   },
+   "where_essential": "—"
+  }
+ ]
+}
