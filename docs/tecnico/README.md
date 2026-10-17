@@ -13,6 +13,7 @@ Cómo está **realmente implementado** el proyecto. Distingue lo documentado de 
 - **MOTOR-07** (capacidades, energía, Forma, presión, momentos, T y episodios, con cierre acotado de salvedades de MOTOR-06): [`motor07.md`](motor07.md).
 - **MOTOR-08** (entrenador automático con tres políticas y delegación por áreas, memoria defensiva y cierre de las salvedades de MOTOR-07): [`motor08.md`](motor08.md).
 - **MOTOR-09** (reglamento, administración y acta: matriz normativa con estado de contraste por fila, series de libres, posesiones beM y finalizaciones F, acta completa, conciliación, revisiones, ruta B de la memoria y cierre de pendientes de MOTOR-08): [`motor09.md`](motor09.md).
+- **MOTOR-10** (análisis, estadísticas, resumen e información: lector del partido con catálogo común de indicadores, evolución y final ajustado, mapa y calidad, origen y ejecuciones, defensa, saques, sin balón, quintetos y on/off, resumen con claves sustentadas, recomendaciones condicionadas, permisos por audiencia y exportación analítica; sin cambio deportivo ni de `export/8`): [`motor10.md`](motor10.md).
 - **Utilidades documentales** (`scripts/docs/`): descritas en [`../exportados/README.md`](../exportados/README.md).
 
 ## Pendiente (no existe aún)

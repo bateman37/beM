@@ -29,6 +29,7 @@ const sched = () => ({
 });
 
 export function renderGame(root) {
+  store.liveResult = () => (ui.session ? ui.session.result() : null); // lectura parcial para la pestaña «Análisis» (no avanza el partido)
   ui.root = root; clear(root);
   root.append(h('h2', {}, 'Partido'), setupCard(), h('div', { id: 'live' }), h('div', { id: 'panel' }), h('div', { id: 'result' }));
   paintLive(); paintPanel(); paintResult(); refreshReplay();
@@ -282,6 +283,7 @@ function renderResult(root, res, { live = false, banner = null, refresh = paintR
     table(['Periodo', ...res.teams.map((t) => t.id)], res.periodScores.map((p) => [periodName(p.period), ...p.points]), { numeric: [1, 2] }),
     h('div', { class: 'row', style: 'margin-top:10px' },
       h('button', { class: 'btn secondary', id: 'download', onclick: () => download(res) }, 'Descargar encuentro (JSON)'),
+      h('button', { class: 'btn', id: 'open-analysis', type: 'button', onclick: () => { store.last = res; window.dispatchEvent(new CustomEvent('beM:goto', { detail: 'analysis' })); } }, 'Abrir análisis y resumen'),
       live ? [h('button', { class: 'btn secondary', onclick: () => recompute(res) }, 'Reproducir este encuentro (recalcular)'),
         ui.compare ? h('span', { class: `pill ${ui.compare.identical ? 'ok' : 'bad'}` }, ui.compare.identical ? 'Recálculo idéntico: mismos hechos, sorteos, acta y órdenes' : 'El recálculo difiere') : null] : null)));
   root.append(...actaCards(res), casesCard(LAB_CASES, { profile: store.baseNew, players: store.players }, res), lineupsCard(res), choicesCard(res), opportunitiesCard(res), statesDiagnosticCard(res), coachDiagnosticCard(res), finalStory(refresh, res, teamName));

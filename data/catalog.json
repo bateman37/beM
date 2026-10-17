@@ -63,6 +63,13 @@
       "origin": "Encargo MOTOR-09 (§4 fuentes, §5 matriz, §12 política estadística, §16.3 ruta B): matriz normativa con estado de contraste por fila (los PDF de S09-01 a S09-04 no fueron accesibles) y política estadística beM",
       "state": "SEM provisional en parámetros; matriz normativa con estados contrastada/heredada/provisional/pendiente"
     },
+    "data/match/motor10-seed-extension.json": {
+      "id": "SEM-MOTOR10-20261016",
+      "status": "SEM: provisional, no calibrado (parámetros editoriales y de muestra del análisis; ningún efecto deportivo).",
+      "sha256": "42c1dd9da084d6562266c8241a54d0e07153aea174b740bd2024dfeff914c881",
+      "origin": "Encargo MOTOR-10 (§7.1 final ajustado, §14 antes/después, §15.3 selección editorial, §17.5 REC10-01/02, §19 precargas): parámetros editoriales y de muestra del análisis",
+      "state": "SEM provisional, no calibrado; sin efecto deportivo"
+    },
     "data/match/motor04-seed-extension.json": {
       "id": "SEM-MOTOR04-20261016",
       "status": "SEM: provisional, no calibrado",

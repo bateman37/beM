@@ -1,0 +1,77 @@
+{
+ "seedExtensionId": "SEM-MOTOR10-20261016",
+ "status": "SEM: provisional, no calibrado (parámetros editoriales y de muestra del análisis; ningún efecto deportivo).",
+ "basedOn": "SEM-MOTOR01-20261016",
+ "origin": "docs/prompts/MOTOR-10-analisis-estadisticas-y-resumen.md (§5 contrato de consultas, §7.1 final ajustado, §14 antes/después, §15.3 selección editorial, §17.5 recomendaciones REC10-01/02, §19 precargas).",
+ "additions": {
+  "analysis": {
+   "version": "ANA-MOTOR10-R1",
+   "adjustedFinal": {
+    "seconds": 120,
+    "margin": 5
+   },
+   "beforeAfter": {
+    "attacks": 3
+   },
+   "sample": {
+    "warnBelow": 5,
+    "lineupMinSeconds": 180,
+    "lineupMinAttacks": 8
+   },
+   "conventions": {
+    "ftCoefficient": 0.44,
+    "clockEndTenths": 40
+   },
+   "summary": {
+    "maxKeys": 3,
+    "productionDiffMin": 6,
+    "unansweredMin": 8,
+    "executionMin": 4,
+    "qualityMinOpportunities": 8,
+    "qualityDiffPp": 20,
+    "groupSeconds": 180,
+    "groupAttacks": 8,
+    "categoryOrder": [
+     "producción",
+     "evolución",
+     "táctica"
+    ]
+   },
+   "recommendations": {
+    "REC10-01": {
+     "enabled": true,
+     "minExecutions": 4,
+     "minDenials": 2,
+     "minAlternatives": 2,
+     "title": "Salida negada",
+     "text": "La misma respuesta rival cerró la salida prevista en {denials} de {executions} ejecuciones y en {alternatives} ocasiones la alternativa estuvo registrada y autorizada: considerar una variante ya disponible que la utilice, teniendo en cuenta su concesión o riesgo conocido."
+    },
+    "REC10-02": {
+     "enabled": true,
+     "minMisses": 5,
+     "minTransitions": 2,
+     "title": "Revisar balance",
+     "text": "Hubo {misses} fallos propios con encargo de carga identificado y {transitions} transiciones rivales enlazadas a esos fallos; en ese universo se capturaron {orebs} rebotes ofensivos. Considerar revisar el equilibrio entre carga y balance. Es una coexistencia observada: no se afirma que cambiar el encargo elimine las transiciones."
+    }
+   },
+   "name": "Política analítica de MOTOR-10 (lector del partido: catálogo, consultas, resumen, informes y exportación)",
+   "provenance": "Parámetros editoriales y de muestra SEM del encargo MOTOR-10 (§7.1, §14, §15.3, §17.5, §19). No son multiplicadores deportivos: nada de aquí modifica probabilidades, azar, estados ni el marcador.",
+   "assistCriterion": {
+    "source": "FIBA Statisticians’ Manual 2024 v1.0, cap. 6, según el extracto de ChatGPT del encargo MOTOR-10 §4.3 (PDF no abierto por Claude: HTTP 403; no es lectura directa ni auditoría completa del manual)",
+    "rules": [
+     "solo el último pase puede recibir asistencia",
+     "recibir y anotar dentro de la pintura mantiene el crédito",
+     "fuera de la pintura, anotar sin bote acredita; con movimiento propio es creación nueva y no acredita",
+     "una serie elegible admite una asistencia si se convierte al menos un libre",
+     "estados funcionales no representados: continuación de ventaja y desviación (dependen de un productor que el motor no tiene)"
+    ],
+    "creditedBy": "acta.js (statsPolicy.assist): sin cambios en MOTOR-10; la capa analítica solo clasifica y expone el estado"
+   },
+   "sectors": {
+    "resolution": "zona (aro, pintura, media, triple); sin lateralidad",
+    "note": "No se reparten tiros entre izquierda y derecha para llenar Z03–Z10."
+   }
+  }
+ },
+ "replacementNotes": {}
+}
