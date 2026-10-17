@@ -66,7 +66,7 @@ export function validateReplayFile(file) {
 // Proyección deportiva: excluye fechas reales, duración de ejecución, detalle calculado, relato y metadatos de presentación.
 export function sportsProjection(res) {
   return {
-    events: res.events.map(({ calc, params, ...e }) => e),
+    events: res.events.map(({ calc, params, instr, ...e }) => e), // `instr`: datos de lectura añadidos en MOTOR-11 (ocupación de ayuda, disponibilidad de corte); un export/8 anterior sigue siendo reproducible
     score: res.score, periodScores: res.periodScores,
     box: projectBox(res.events, res.lineups, res.input),
     acta: (({ glossary, ...a }) => a)(buildActa({ events: res.events, lineups: res.lineups, input: res.input, possessions: res.possessions, status: res.status }, res.profile?.statsPolicy)), // MOTOR-09: acta reconstruida desde los hechos

@@ -12,6 +12,7 @@ import { canonical } from '../../profiles/util.js';
 import { validateMatrix } from '../../match/regs.js';
 import { CATALOG } from '../../analysis/catalog.js';
 import { VISIBILITY } from '../../analysis/visibility.js';
+import { APP_VERSION, ENGINE_VERSION, EXPORT_SCHEMA } from '../../version.js';
 
 const go = (tab, extra = {}) => { ps.tab = tab; Object.assign(ps, extra); repaint(); };
 const light = (state, label, detail) => h('div', { class: `light ${state}` }, h('strong', {}, label), h('div', { class: 'small' }, detail));
@@ -32,8 +33,16 @@ export function renderHome() {
   const analysisCard = noAnalysis ? h('div', { class: 'card' }, h('strong', {}, 'El perfil activo no incluye la política analítica de MOTOR-10. '), 'Puede jugar con normalidad: el análisis usa entonces los valores por defecto del código y lo identifica («por defecto del código»). ',
     h('button', { class: 'btn secondary', type: 'button', id: 'activate-m10', onclick: () => { L.activate(L.baseId, 'activar la base de MOTOR-10 (política analítica administrable)'); window.dispatchEvent(new Event('beM:repaint')); repaint(); } }, 'Activar la base de MOTOR-10'),
     h('p', { class: 'small muted' }, 'La activación es explícita y no migra nada en silencio; una versión activa anterior sigue siendo jugable y reproducible.')) : null;
+  const noPopulation = !legacyCard && !L.version(a.id)?.effective?.population;
+  const popCard = noPopulation ? h('div', { class: 'card' }, h('strong', {}, 'El perfil activo no incluye la población y el generador de MOTOR-11. '), 'Puede jugar con normalidad: Plantillas usa entonces la receta y los equipos de la base de MOTOR-11 y lo identifica («de la base de MOTOR-11»). ',
+    h('button', { class: 'btn secondary', type: 'button', id: 'activate-m11', onclick: () => { L.activate(L.baseId, 'activar la base de MOTOR-11 (población de referencia, planes naturales, receta del generador y escenarios; +SEM-MOTOR11-20261017)'); window.dispatchEvent(new Event('beM:repaint')); repaint(); } }, 'Activar la base de MOTOR-11'),
+    h('p', { class: 'small muted' }, 'La activación es explícita y no migra nada en silencio: tus perfiles antiguos, candidatas, planes y variantes guardadas se conservan; cargar los planes naturales sigue siendo una acción visible en Preparación.')) : null;
+  const versionCard = h('div', { class: 'card', id: 'versions' }, h('h3', { style: 'margin-top:0' }, 'Versiones visibles (cuatro cosas distintas)'),
+    table(['', 'Valor'], [['Aplicación / motor cargados', `${APP_VERSION} — motor ${ENGINE_VERSION}`], ['Perfil numérico/analítico activo', `${a.id} «${a.label}» · ${(L.version(a.id)?.effective?.effectiveId ?? '').split('+').slice(-2).join('+')} · ${a.status}`],
+      ['Dataset, plan o escenario seleccionado', `${(L.version(a.id)?.effective?.population ?? store.baseNew.population)?.version}${L.version(a.id)?.effective?.population ? '' : ' (base de MOTOR-11; el perfil activo es anterior)'} · ${store.scenario ? `escenario ${store.scenario.scenario.id}` : 'sin escenario activo'}`], ['Formato de exportación del encuentro', EXPORT_SCHEMA]]),
+    h('p', { class: 'small muted' }, 'Un perfil guardado con una versión anterior no convierte la aplicación en esa versión: conserva su identidad y, si el motor rechaza su contrato, se explica la incompatibilidad sin perder datos.'));
   return h('div', {},
-    legacyCard, analysisCard,
+    legacyCard, analysisCard, popCard, versionCard,
     h('div', { class: 'card' }, h('h3', { style: 'margin-top:0' }, 'Perfil activo para futuros partidos'),
       h('div', { class: 'row' }, h('strong', { style: 'font-size:18px' }, `${a.id} · ${a.label}`), h('span', { class: 'pill warn' }, `${a.status}`), h('span', { class: 'pill' }, a.kind), h('code', { title: a.hash }, a.hash.slice(0, 12))),
       h('p', { class: 'small muted' }, `Versión ${a.id}${a.parent ? `, hereda de ${a.parent.id} «${a.parent.label}» (huella ${a.parent.hash.slice(0, 8)})` : ', base protegida sin padre'} · creada ${a.createdAt.slice(0, 16).replace('T', ' ')} por ${a.actor}`),

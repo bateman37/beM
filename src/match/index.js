@@ -29,6 +29,8 @@ import { ORDER_TYPES, ORDER_STATES, TERMINAL_STATES, EDITABLE_STYLES } from './o
 
 export { ENGINE_VERSION, EXPORT_SCHEMA, EXPORT_SCHEMA_MOTOR01, EXPORT_SCHEMA_MOTOR02, EXPORT_SCHEMA_MOTOR04, EXPORT_SCHEMA_MOTOR05, EXPORT_SCHEMA_MOTOR06, EXPORT_SCHEMA_MOTOR07, EXPORT_SCHEMA_MOTOR08, MIDRANGE_POLICIES, upgradeInput, ATTRS, SLOTS, validateInput, buildMatchInput, parsePlayersCsv, validateProfileAndFixtures, applyExtension, validateExtension, projectBox, teamTotals, deepCopy, ORDER_TYPES, ORDER_STATES, TERMINAL_STATES, EDITABLE_STYLES };
 
+export const INSTRUMENTATION = 'INSTR-MOTOR11-R1';
+
 export const COVERAGE = {
   activos: {
     equipos: 'EQ01 y EQ02 (doce jugadores por equipo)', disposiciones: 'DIS01–DIS06 (5 abiertos, 4+1, 3+2, Horns, 1–4 alto, 1–4 bajo)',
@@ -142,6 +144,7 @@ export function buildResult(m, extra = {}) {
       possessions: m.possSeq,
       steps: m.stepSeq,
       sportingDraws: m.rng.count,
+      instrumentation: INSTRUMENTATION, // MOTOR-11: el motor conserva los datos de lectura `instr` (ocupación de ayuda, disponibilidad de corte); no es parte del deporte
       coverageObserved: { ...m.coverageObserved },
       paramTable: m.tracker ? [...m.tracker.table] : null,
       finalEnergy: Object.fromEntries(Object.entries(m.ps).map(([id, s]) => [id, Math.round(s.energy * 100) / 100])),

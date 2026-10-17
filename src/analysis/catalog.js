@@ -4,6 +4,7 @@
 import { ratio, pctOf, eFG, TS, threeRate, ftPerFg, fgPointsPerAttempt, rating, tovPctConv, orebPctActa, drebPctActa, flatTotals, FT_COEF, ANALYSIS_VERSION } from './formulas.js';
 import { ACTA_POLICY_ID } from '../match/acta.js';
 import { assistReading, validShots } from './shooting.js';
+import { closureShare, productionPer100, CREDITS } from './closures.js';
 
 const COVER = { ok: 'disponible', partial: 'parcial', none: 'no registrado', dep: 'dependiente de datos', na: 'no aplicable' };
 export const COVERAGE_STATES = COVER;
@@ -47,9 +48,14 @@ export const CATALOG = [
   // ---- no disponibles (se declaran, no se rellenan con cero)
   ind('REB_OPP', 'Rebote por oportunidad', 'Rebote', 'razón', '%', { coverage: COVER.partial, source: 'ofertas de rebote registradas', universe: 'capturas elegibles/ofertas registradas', calc: '100 × capturas elegibles/ofertas registradas', time: 'partido', note: 'Solo con diagnóstico: las ofertas por jugador (candidatos) se conservan en el hecho de rebote, pero no son información pública.', info: 'diag',
     fn: (q) => { if (q.audience !== 'diagnostic') return { value: null, reason: 'información diagnóstica: no disponible para esta audiencia', evidence: [] }; const rb = q.events.filter((e) => e.type === 'rebound' && e.team !== undefined); const offered = rb.length; const captured = rb.filter((e) => (e.stats ?? []).some((x) => x.k === 'reb' && x.team === q.team)).length; return { ...pctOf(captured, offered), evidence: rb.map((e) => e.id), n: offered }; } }),
+  ind('CLOSE_SHARE', 'Cuota de cierres de posesión', 'Jugador', 'conteo', '%', { scope: 'players', source: 'posesiones activas y hechos de cierre', universe: 'cierres elegibles del equipo (colectivos o sin actor con fila propia)', calc: '100 × cierres atribuibles al jugador / cierres elegibles del equipo', time: 'partido', info: 'public', note: 'Autoría causal: canasta, último libre, tiro que acaba en rebote defensivo o tapón, pérdida con actor. Fin de periodo, balón suelto y pérdida de equipo = cierre colectivo. No es USG.',
+    fn: () => ({ value: null, reason: 'consulta individual: elige un jugador en la ficha de Análisis › Acta y comparación', evidence: [] }) }),
+  ind('PROD100', 'Producción por 100 ataques completos con presencia completa', 'Jugador', 'razón', 'créditos/100', { scope: 'players', source: 'acta + posesiones + presencia', universe: 'ataques completos del equipo (créditos ofensivos) o rivales (defensivos) con el jugador presente toda la unidad', calc: '100 × créditos elegibles / ataques completos correspondientes', time: 'partido', info: 'public', note: 'Mismas unidades en numerador y denominador; mixtas y parciales aparte; no es un ORtg/DRtg individual.',
+    fn: () => ({ value: null, reason: 'consulta individual: elige un jugador en la ficha de Análisis › Acta y comparación', evidence: [] }) }),
   ind('HIST_PCTL', 'Media de temporada y percentiles', 'Historia', 'descriptor', '', { coverage: COVER.dep, source: 'historial de partidos', universe: 'varios encuentros compatibles', calc: '—', time: '—', note: 'No existe historial accesible: dependiente de datos (no es un cero).', fn: () => ({ value: null, reason: 'dependiente de datos: no existe historial de encuentros', evidence: [] }) }),
   ind('MATES', 'Mates', 'Tiro', 'conteo', '', { coverage: COVER.none, source: 'no representados por el motor', universe: '—', calc: '—', time: '—', note: 'El motor no representa mates (campo no registrado).', fn: () => ({ value: null, reason: 'no registrado: el motor no representa mates', evidence: [] }) }),
 ];
+void CREDITS;
 export const CATALOG_BY_ID = Object.fromEntries(CATALOG.map((c) => [c.id, c]));
 
 // Indicadores por jugador (formulario individual): X por 40, ratio AS/PER, USG estimado, cuotas de F y de rebote.
@@ -63,6 +69,8 @@ export function playerIndicators(ix, pid, FT_COEF = 0.44) {
     { id: 'AST_PER', label: 'Ratio AS/PER', ...(l.tov > 0 ? ratio(l.ast, l.tov, { unit: 'AS/PER' }) : { value: null, num: l.ast, den: 0, unit: 'AS/PER', reason: 'PER = 0: se muestran los conteos, no hay ratio finito' }), universe: 'créditos del jugador' },
     { id: 'USG', label: 'USG estimado', ...ratio(100 * (l.fga + FT_COEF * l.fta + l.tov) * D, l.min * (tm.fga + FT_COEF * tm.fta + tm.tov), { unit: '%', reason: 'sin minutos o sin acciones de equipo' }), universe: 'aproximación por tiempo; no mide cuánto organiza el jugador' },
     { id: 'F_SHARE', label: 'Cuota de F', ...pctOf(myF.length, F.length), universe: 'F del equipo (descripción de finalización, no dirección)' },
+    { id: 'CLOSE_SHARE', label: 'Cuota de cierres de posesión', ...closureShare(ix, pid), universe: 'cierres elegibles del equipo (posesiones activas; los colectivos o sin actor tienen fila propia)', note: 'Cierre atribuible = quien realizó la acción que cerró la posesión; no es USG ni mide cuánto organiza.' },
+    ...['pts', 'ast', 'oreb', 'stl'].map((k) => { const r = productionPer100(ix, pid, k); return { id: `PROD100_${k.toUpperCase()}`, ...r, universe: `${r.complete.attacks} ataques completos con presencia completa (${r.mixed.attacks} mixtos y ${r.partial.attacks} parciales aparte)` }; }),
     { id: 'REB_SHARE', label: 'Cuota de rebote', ...pctOf(l.reb, t.reb), universe: 'rebotes de equipo (no probabilidad de capturar)' },
     { id: 'TS_PLAYER', label: 'TS % estimado', ...TS({ pts: l.pts, fga: l.fga, fta: l.fta }), universe: 'convención 0,44' },
   ];

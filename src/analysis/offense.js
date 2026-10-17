@@ -97,3 +97,17 @@ export function directorTable(ix, team) {
   }
   return { team, rows: [...by.values()].sort((a, b) => b.directed - a.directed).map((r) => ({ ...r, ppp: ratio(r.points, r.directed, { unit: 'pts/ataque dirigido', reason: 'sin ataques' }) })), note: 'Ataques dirigidos: posesiones con ese director en alguna ejecución; si el director cambia durante el ataque aparece en ambas filas. No es una nota de dirección.' };
 }
+
+// Actor observable de la primera interacción resuelta de cada posesión (MOTOR-11 §4.5). Es un hecho PERMITIDO (quién ejecuta y, si lo hay, quién pasa): se distingue de la
+// configuración privada (identidad del director designado, lista de prioridades de dirección, libro y procedencia de la elección), que sigue siendo información propia.
+export function observableActors(ix, team) {
+  const by = new Map(); let n = 0;
+  for (const p of ix.possessions.filter((x) => x.team === team)) {
+    const e = p.first; if (!e) continue; n += 1;
+    const pa = e.participants ?? {}; const actor = pa.actor ?? null; if (!actor) continue;
+    const r = by.get(actor) ?? { actor, first: 0, points: 0, passes: 0, ids: [] };
+    r.first += 1; r.points += p.points; if (pa.pasador && pa.pasador !== actor) r.passes += 1; r.ids.push(p.id); by.set(actor, r);
+  }
+  return { team, possessions: n, rows: [...by.values()].sort((a, b) => b.first - a.first), note: 'Actor que ejecuta la primera interacción resuelta de la posesión (hecho observable). No identifica al director designado ni revela la lista privada de prioridades de dirección, el libro o la procedencia de la elección: esa configuración es información propia o de diagnóstico.' };
+}
+

@@ -14,6 +14,7 @@ import { openRow } from './panel/rowdialog.js';
 import { coachLiveCard, coachDiagnosticCard } from './coach-ui.js';
 import { actaCards, casesCard } from './acta-ui.js';
 import { LAB_CASES } from '../match/cases.js';
+import { srcText } from './population-ui.js';
 
 const ui = { mode: 'total', managed: 0, speed: PRESENTATION.defaultSpeed, session: null, draft: null, msg: null, call: null, filter: 'all', limit: 150, showBox: false, storyLimit: 18, replay: null, compare: null, error: null, root: null };
 
@@ -58,6 +59,7 @@ function setupCard() {
         store.scenario ? h('p', { class: 'pill warn', id: 'scenario-badge' }, `Copia de contraste: ${store.scenario.scenario.id} · ${store.scenario.scenario.name} (${store.scenario.changes.length} cambios listados; tus fichas y planes no se tocan) `, h('button', { class: 'link', type: 'button', id: 'scenario-clear', onclick: () => { store.scenario = null; renderGame(ui.root); } }, 'quitar')) : null,
         h('label', { class: 'row' }, 'Importancia del encuentro ', h('select', { id: 'importance', disabled: !!store.scenario, onchange: (e) => { store.edit.importance = e.target.value; renderGame(ui.root); } }, Object.keys(profile.pressure.importance).map((k) => h('option', { value: k, selected: edit.importance === k }, { ordinary: 'Ordinario', important: 'Importante', decisive: 'Decisivo' }[k])))),
         h('p', { class: 'small muted' }, 'La importancia es una entrada visible: junto con la tensión de reloj y marcador forma la presión (el máximo de ambas, no su suma). No cambia por un resultado parcial.'),
+        h('p', { class: 'small' }, `Equipo A: ${srcText(edit.teams[0].source)}`), h('p', { class: 'small' }, `Equipo B: ${srcText(edit.teams[1].source)}`),
         h('p', { class: 'small' }, `Semilla ${edit.seed} · ${edit.teams[0].id} vs ${edit.teams[1].id} · perfil ${store.library.activeId} «${store.library.activeVersion().label}» (${profile.effectiveId}) `, h('span', { class: 'pill warn' }, profile.status)))),
     errs.length ? h('div', { class: 'errbox' }, h('strong', { class: 'err' }, 'No se puede preparar: entrada no válida.'), h('ul', {}, errs.map((e) => h('li', {}, h('code', {}, e.path), ' — ', e.message)))) : null,
     ui.error ? h('div', { class: 'errbox' }, h('strong', { class: 'err' }, ui.error)) : null,
@@ -261,13 +263,25 @@ function paramsSection(ev, src) {
 function paintPanel() {
   const box = document.getElementById('panel'); if (!box) return; clear(box);
   const s = ui.session; if (!s || ['finalizado', 'error', 'preparado'].includes(s.state)) { if (s?.state === 'preparado') box.append(h('p', { class: 'small muted' }, 'La dirección se habilita al iniciar el encuentro (la preparación inicial se edita en «Preparación»).')); return; }
-  box.append(directionPanel(s, ui, rerender));
+  box.append(plannedOrdersCard(s), directionPanel(s, ui, rerender));
+}
+
+// Órdenes previstas del escenario (MOTOR-11 §12, LAB11-10): se guardan con su frontera y se ENVÍAN a mano en ella; el motor las aplica solo en su ventana real (no por magia).
+function plannedOrdersCard(s) {
+  const planned = store.scenario?.plannedOrders ?? []; if (!planned.length) return null;
+  const m = s.match;
+  return h('div', { class: 'card', id: 'planned-orders' }, h('h3', { style: 'margin-top:0' }, 'Órdenes previstas del escenario'),
+    h('p', { class: 'small muted' }, 'Guardadas con el escenario y su frontera. No se aplican solas: se envían desde aquí y siguen el ciclo normal de órdenes (validación, ventana real de aplicación).'),
+    planned.map((o) => { const mine = o.team === s.managedTeam; const ready = m.period >= o.period - 1 && !['finalizado', 'error'].includes(s.state);
+      return h('div', { class: 'row small' }, h('span', {}, `${o.boundary} · equipo ${m.teams[o.team].id}: ${o.spec.type} ${JSON.stringify(Object.fromEntries(Object.entries(o.spec).filter(([k]) => k !== 'type')))}`),
+        h('button', { class: 'btn secondary', type: 'button', disabled: !mine || !ready, title: mine ? '' : 'Dirige ese equipo para enviarla', onclick: () => { try { s.submit({ ...o.spec, team: o.team }); ui.msg = 'Orden prevista enviada: se aplicará en su ventana real.'; } catch (e) { ui.msg = `No se pudo enviar: ${e.message}`; } rerender(); } }, mine ? (ready ? 'Enviar ahora' : 'Aún no es su frontera') : 'Dirige ese equipo para enviarla')); }));
 }
 
 function paintResult() {
   const box = document.getElementById('result'); if (!box) return; clear(box);
   const s = ui.session; if (!s || !['finalizado', 'error'].includes(s.state)) return;
   const res = s.result(); store.last = res;
+  if (!s._logged) { s._logged = true; store.pop?.logResult({ scenario: res.input?.contrast?.id ?? null, seed: res.meta.rng.initialSeed, teams: res.teams.map((t) => t.id), score: res.score, status: res.status, engine: res.identity.engineVersion, profile: res.identity.effectiveProfileId }); } // comparación sin lotes: un resultado por encuentro
   renderResult(box, res, { live: true, refresh: paintResult });
 }
 

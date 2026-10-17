@@ -224,6 +224,7 @@ export class MatchCore {
       effects: data.effects ?? {},
       score: [...this.score],
       draws: this.rng.drain(),
+      ...(data.instr ? { instr: data.instr } : {}), // MOTOR-11: instrumentación de LECTURA (no deportiva): no entra en la proyección que se reproduce
     };
     this.coachObserveEvent?.(ev); // MOTOR-08: hechos observables del ataque (puntos) para la evidencia de racha
     this.chainHook?.(ev); // MOTOR-06: la cadena de saque abierta asocia el hecho y acumula la producción directa

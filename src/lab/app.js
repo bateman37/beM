@@ -6,6 +6,7 @@ import { renderGame } from './game.js';
 import { renderCoverage } from './coverage.js';
 import { renderAnalysis } from './analysis-ui.js';
 import { renderPanel } from './panel/index.js';
+import { APP_VERSION, APP_TITLE, ENGINE_VERSION, EXPORT_SCHEMA } from '../version.js';
 
 const TABS = [['teams', 'Plantillas', renderTeams], ['prep', 'Preparación', renderPrep], ['game', 'Partido', renderGame], ['analysis', 'Análisis', renderAnalysis], ['panel', 'Panel de ajustes', renderPanel], ['cov', 'Cobertura', renderCoverage]];
 let current = 'teams';
@@ -17,12 +18,15 @@ function paint() {
   TABS.find((t) => t[0] === current)[2](root);
 }
 
-window.addEventListener('beM:goto', (e) => { current = e.detail; paint(); });
+window.addEventListener('beM:goto', (e) => { current = e.detail; paint(); window.dispatchEvent(new Event('beM:repaint')); });
 document.getElementById('detail-close').addEventListener('click', () => document.getElementById('detail').close());
 document.getElementById('rowdlg-close').addEventListener('click', () => document.getElementById('rowdlg').close());
 try {
   await loadAll();
-  const badge = () => { const a = store.library.activeVersion(); document.getElementById('profile-badge').textContent = `perfil activo ${a.id} «${a.label}» · ${store.profile.effectiveId} · ${store.profile.status}`; };
+  // Versión de aplicación (fuente única src/version.js) separada del motor, del formato de exportación, del perfil numérico activo y del dataset seleccionado.
+  document.title = `beM — Laboratorio ${APP_VERSION}`;
+  document.getElementById('app-version').textContent = `${APP_VERSION} — ${APP_TITLE} · motor ${ENGINE_VERSION} · ${EXPORT_SCHEMA}`;
+  const badge = () => { const a = store.library.activeVersion(); const pop = store.profile?.population ? store.profile.population.version : `${store.baseNew.population.version} (base de MOTOR-11; el perfil activo es anterior)`; document.getElementById('profile-badge').textContent = `perfil activo ${a.id} «${a.label}» · ${store.profile.effectiveId} · ${store.profile.status} · dataset ${pop}${store.scenario ? ` · escenario ${store.scenario.scenario.id}` : ''}`; };
   badge();
   window.addEventListener('beM:repaint', badge);
   paint();

@@ -35,6 +35,20 @@ export function organizationTable(ix, defTeam) {
   return { team: defTeam, rows: list, total: list.reduce((s, r) => s + r.poss, 0), pressureHeight: ix.input.teams[defTeam].plan.pressureHeight, note: 'Organización efectiva = plan inicial más órdenes activadas antes de la posesión; los ataques que cruzan un cambio de organización van a «mixta». La organización de cada tiro no se guarda en el hecho (dependencia): se lee por posesión. «Toda pista» no significa que en cada ataque se resolviera una intervención de presión.' };
 }
 
+// Organización defensiva efectiva en la frontera de CADA tiro (MOTOR-11): una fila por organización efectiva y versión de plan (órdenes aplicadas antes del hecho). Los tiros de una
+// posesión que cruza un cambio se reparten entre las organizaciones que realmente estaban vigentes; no hay fila «mixta» a nivel de hecho.
+export function organizationByFact(ix, defTeam) {
+  const att = 1 - defTeam; const rows = new Map(); let n = 0; let unknown = 0;
+  for (const s of ix.shots) {
+    if (s.team !== att || !s.valid) continue; const o = s.pub.defOrg; n += 1; if (!o.reconstructable) unknown += 1;
+    const key = `${o.effective}|${o.alternate ? 'alt' : 'int'}|v${o.planVersion}`;
+    const r = rows.get(key) ?? { org: o.effective, intended: o.intended, alternate: o.alternate, planVersion: o.planVersion, att: 0, made: 0, points: 0, three: 0, quals: { comfortable: 0, normal: 0, forced: 0 }, ids: [] };
+    r.att += 1; if (s.pub.made) { r.made += 1; r.points += s.pub.points; } if (s.pub.zone === 'three') r.three += 1; if (s.pub.quality in r.quals) r.quals[s.pub.quality] += 1; r.ids.push(s.id); rows.set(key, r);
+  }
+  const list = [...rows.values()].sort((a, b) => a.planVersion - b.planVersion || b.att - a.att).map((r) => ({ ...r, fgPct: pctOf(r.made, r.att) }));
+  return { team: defTeam, rows: list, total: n, unreconstructable: unknown, note: 'Organización efectiva = plan inicial más órdenes defOrg aplicadas antes del hecho y la alternativa de box and one registrada; no la última intención guardada en la preparación. Los hechos de un archivo anterior a esta lectura se reconstruyen igual desde el historial de órdenes; si no fuera posible se cuenta aparte.' };
+}
+
 // Cruza familia ofensiva y cobertura REALMENTE ejecutada. Una respuesta no ejecutada no entra en el numerador de uso.
 export function coverageTable(ix, defTeam) {
   const att = 1 - defTeam; const by = new Map();

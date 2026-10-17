@@ -4,6 +4,7 @@ import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { join, normalize, extname, sep } from 'node:path';
 import { ROOT } from './node-data.js';
+import { appLine } from '../src/version.js';
 
 const PORT = Number(process.env.PORT ?? 5173);
 const HOST = process.env.HOST ?? '127.0.0.1';
@@ -26,5 +27,5 @@ export function createLabServer() {
 }
 
 if (process.argv[1] && process.argv[1].endsWith('dev-server.js')) {
-  createLabServer().listen(PORT, HOST, () => console.log(`Laboratorio beM (MOTOR-07): http://${HOST === '127.0.0.1' ? 'localhost' : HOST}:${PORT}/`));
+  createLabServer().listen(PORT, HOST, () => console.log(`Laboratorio ${appLine()}: http://${HOST === '127.0.0.1' ? 'localhost' : HOST}:${PORT}/`));
 }
