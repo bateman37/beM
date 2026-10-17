@@ -18,7 +18,9 @@ const send = (res, code, obj, headers = {}) => { const body = typeof obj === 'st
 
 export class BatchService {
   constructor({ root = undefined } = {}) {
-    this.store = new JobStore(root); this.runExec = new WorkerPool({ store: this.store, size: 4 }); // grupo persistente (capacidad 4; la concurrencia efectiva de cada lote la fija su configuración) this.auxExec = new WorkerExecutor({ store: this.store });
+    this.store = new JobStore(root);
+    this.runExec = new WorkerPool({ store: this.store, size: 4 }); // grupo persistente (capacidad 4; la concurrencia efectiva de cada lote la fija su configuración)
+    this.auxExec = new WorkerExecutor({ store: this.store }); // exportar un partido y construir paquetes (un trabajo auxiliar a la vez; no compite con el grupo del lote)
     this.ctl = new BatchController({ store: this.store, executor: this.runExec }); this.data = null; this.recovered = this.ctl.recover();
   }
   players() { this.data ??= loadData(); return this.data.players; }

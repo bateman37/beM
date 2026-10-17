@@ -1,0 +1,18 @@
+requirement,source,consumer,recording,exposure,verification,state,evidence
+Panel con perfil anterior accesible y recuperable,§4,src/lab/panel/*,perfil V0 conservado en la biblioteca,Panel › Inicio (tarjeta de compatibilidad),tests/motor15 M15·1; scripts/browser/panel-recovery.mjs,completo,13-NAVEGADOR.md
+Técnicas de jugador/banquillo/entrenador y contadores,§5.2 N15-03,incident-admin.js,hechos foul con effects.administracion,entrada tipada (sin generación natural),tests/motor15 M15·2,completo con límite,11-NORMATIVA.csv RG-F07..F10
+"Cola causal y compensación (art. 43; 43-5, 43-7)",§6.1 N15-02,regs.combineSanctions; incident-admin.js,plan en el hecho; keptFouls,casos preparados y núcleo real,tests/motor15 M15·3,completo con límite,11-NORMATIVA.csv RG-C01/C02
+Correcciones art. 45 (ventanas y operaciones),§6.2–6.4 N15-01,correction-admin.js,hecho correction con original enlazado,entrada tipada,tests/motor15 M15·4,completo con límite (numeración 45.4.x sin lectura directa),11-NORMATIVA.csv RG-R01
+Tiro con liberación y resolución,§7.1,actions.js resolveShot,effects.vuelo,natural (último tiro de periodo),tests/motor15 M15·5,completo,05-PARTIDOS.csv
+Interferencia condicionada,§7.2–7.3,actions.js drawInterference,diagnostics.interference (denominadores),natural con SEM sin calibrar,tests/motor15 M15·6,completo; consecuencias provisionales,11-NORMATIVA.csv RG-I01..I04
+Semillas SEM15 administradas desde el panel,§8,rows-motor15.js,filas editables,Panel › Tabla maestra,check-data; tests/profiles,completo,11-NORMATIVA.csv
+Asistencias con productor causal,§9.1 N15-04,assistCandidate,feed.close,acta ACTA-MOTOR15-R1,tests/motor15 M15·7,completo; desvío no generado,04-HALLAZGOS.csv
+Estado propio por tramo,§9.2,states.sampleStates,diagnostics.stateSamples,Análisis › Rotaciones,tests/motor15 M15·8,completo,13-NAVEGADOR.md
+REC10-01 y REC10-02,§9.3,recommend.js,—,Análisis › Informes,tests/motor15 M15·8,completo,13-NAVEGADOR.md
+"Guardado, inferioridad y equivalencia de MOTOR-14 integrados",§10,snapshot.js; equivalence.js,guardados SAVE-PENDIENTE y SAVE-PERIODO,Partido › Guardar y continuar,tests/motor15 M15·9; npm run equivalence,completo,08-EQUIVALENCIA.csv
+world-essential conserva el deporte y las consultas comprometidas,§11,src/batch/essential.js,registro esencial por intento,Lotes; fachada; CLI,tests/motor15-c; 08-EQUIVALENCIA.csv,completo,docs/tecnico/motor15-c-matriz-consultas.md
+"Grupo de workers persistentes, aislamiento y recuperación",§12,src/batch/executors.js; runner.js,índice único,Lotes,tests/motor15-c,completo,08-EQUIVALENCIA.csv
+Benchmark real de cien y objetivos de coste,"§13, §15.3",scripts/bench-world.js,07-RENDIMIENTO.csv,Cierre,bench100.json,medido; objetivo NO alcanzado,07-RENDIMIENTO.csv
+AUD01–32 y matriz de capacidades,§17,src/audit/*,auditoria/resultado.json,Auditorías,scripts/m15-audit.js,actualizado; muchas inconclusas,09-AUDITORIAS.csv; 10-CAPACIDADES.csv
+Paquete rápido y evidencia detallada con comprobador,§18–§20,scripts/m15-package*.js,ZIP fuera de Git,Cierre › Descargas,scripts/m15-package-check.js,completo,manifest.json
+Calibración poblacional y revisión humana,§22,—,—,—,—,NO realizado (MOTOR-16/17; Dennis),14-PENDIENTES-MOTOR16.md
