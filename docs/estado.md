@@ -1,6 +1,6 @@
 # Estado del proyecto
 
-Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANGELOG.md)). Última actualización: 2026-10-17, entrega MOTOR-12.
+Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANGELOG.md)). Última actualización: 2026-10-17, entrega MOTOR-13.
 
 ## Qué hay realmente en el repositorio
 
@@ -9,13 +9,21 @@ Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANG
 - **Copia original congelada** del funcional unificado y **exportado completo vigente** generado: ver [`historico/`](historico/README.md) y [`exportados/`](exportados/README.md).
 - **Utilidades documentales** en `scripts/docs/` (Python 3, librería estándar).
 
+## MOTOR-13 (ejecutado, pendiente de Dennis)
+
+- **Existe**: pestaña **Auditorías** (catálogo AUD01–32 con definición separada del resultado, evidencia con integridad verificada antes de interpretar, análisis de **lectura que no simula**, hallazgos navegables, matriz de 32 capacidades con contraste de cálculo fijo +1/+3/+5, fiabilidad, concentración, doce experimentos EXP13 que sí lanzan partidos con aviso, candidatas explícitas, informe y paquete `beM-audit-package/1`), `npm run audit`/`audit:check`, extensión `SEM-MOTOR13-20261017` (tabla `audit`) y versión `MOTOR-13`. Ver [`tecnico/motor13.md`](tecnico/motor13.md) y [recorrido manual](prompts/MOTOR-13-recorrido-manual.md).
+- **No cambia el deporte**: referencia `20261016` = 83–103 con 6 505 sorteos y misma huella de trayectoria. Todo SEM, nada calibrado.
+- **Honesto**: campaña de 24 encuentros (plan congelado antes de ejecutar) con 8 conciliaciones analíticas en fallo por un **defecto de lector de MOTOR-10 (quintetos), corregido** y repetida con las mismas semillas (24/24 válidos, trayectoria idéntica); primer ciclo **base mantenida** (muestra de 4 partidos completos, ninguna referencia externa numérica, reserva de validación sin lanzar); 7 capacidades consumidas sin receta registrada (contraste B no aislable); 9 de 20 ESP expuestos; los archivos del lote de cierre de MOTOR-12 no estaban disponibles.
+- **Comprobado por Claude**: 170 pruebas (9 nuevas), `data:check`, comprobación documental, campaña R0/R1, comprobador del paquete y recorrido automatizado en Chromium. **Pendiente de Dennis**: todo el recorrido manual (también MOTOR-08 a MOTOR-12). **No ejecutado**: lotes de 100/1.000, Node 24, otros navegadores, fuentes FIBA (403).
+- Siguiente: MOTOR-14 (rendimiento y cierre de registro; inventario en `tecnico/motor13.md` §14; no iniciado).
+
 ## MOTOR-12 (ejecutado, pendiente de Dennis)
 
 - **Existe**: pestaña **Lotes** (repetir un enfrentamiento, cruces entre equipos o pares elegidos; atajos 10/100/1000 y cantidad editable con el total real desglosado; localía fija, ida/vuelta o alternada; variantes base/candidata con diferencias exactas o desde un escenario LAB11; semillas de generación, de lote `LOT-SEED-R1` y deportiva por caso; agenda y snapshot **congelados**; progreso, detener al terminar el actual, continuar, reintento explícito y recuperación tras reinicio; resultados con filtros, agregados/distribuciones/comparación y apertura del análisis MOTOR-10 de cada partido); servidor local con `worker_thread` y persistencia progresiva en `out/batches/`; registro diagnóstico completo R01–R08 (hechos, órdenes, estados, decisiones con capacidad base/efectiva, **todos** los sorteos con ordinal); paquete ZIP `beM-analysis-package/1` (único o por partes con índice y fragmentación), `npm run batch:check` (15 controles, sin re-simular) y `SEM-MOTOR12-20261017` (tabla técnica `batch`, LAB01). Ver [`tecnico/motor12.md`](tecnico/motor12.md) y [recorrido manual](prompts/MOTOR-12-recorrido-manual.md).
 - **No cambia el deporte**: referencia `20261016` = 83–103 con 6 505 sorteos con registro completo **y** reducido (misma huella de trayectoria); motor `beM-motor-0.9.0-MOTOR09` y `export/8` sin cambios. Todo SEM, nada calibrado.
 - **Honesto**: la corrección de AN08 (una posesión mixta para dos quintetos no es un error de conciliación) cambia la conciliación **analítica** de MOTOR-10, no el deporte; sin snapshot de continuación (un intento interrumpido se repite desde el inicio); el 404 de Chromium **no se pudo reproducir** (se declara el icono en la página, sin afirmar que fuera la causa); deuda heredada de MOTOR-09/10/11 declarada en la cobertura de cada paquete.
 - **Comprobado por Claude**: **161 pruebas** (149 + 12 nuevas), `data:check` y comprobación documental correctos, lote de cierre de **diez encuentros reales** (5 casos × 2 variantes; 10 válidos; 10 ZIP verificados), Chromium automatizado con descargas reales (parcial, índice y partes) y comprobador sobre ellas y sobre una copia alterada. **Pendiente de Dennis**: todo el recorrido manual (también MOTOR-08/09/10/11). **No ejecutado**: lotes de 100/1.000 (controles de producto para Dennis), Node 24, otros navegadores.
-- Siguiente: MOTOR-13 (auditorías, sensibilidad y calibración con estos paquetes; no iniciado).
+- Siguiente: MOTOR-13 (ejecutado: auditorías, sensibilidad y calibración).
 
 ## MOTOR-11 (ejecutado, pendiente de Dennis)
 

@@ -43,6 +43,19 @@ export function concentration(projs, params) {
   return out;
 }
 
+// Capacidades que el motor CONSUME en operaciones cuyas entradas no se registran como receta con base, efectiva y energía (lectura de código de MOTOR-13, con función y archivo). No son
+// «atributos muertos» (se consumen), pero su contraste B no es aislable con el contrato de registro actual: la dependencia exacta se declara aquí y en el inventario de MOTOR-14.
+export const UNRECORDED = {
+  TEC17: { mech: 'fuerza de rebote (profile.rebound.strength) vía reboundStrength → recipeObj sin etiqueta (actions.js)', dep: 'registrar la receta de fuerza de rebote o extraer una función pura con energía y alcance del contexto' },
+  TEC18: { mech: 'fuerza de rebote (strength) y captor (profile.rebound.captor) vía recipeObj/weightedSum sin etiqueta (actions.js)', dep: 'registrar las recetas de fuerza y de captor o extraer una función pura con energía y alcance del contexto' },
+  FIS05: { mech: 'fuerza de rebote y captor (rebote) y alcance (alcance) sin receta etiquetada', dep: 'ídem TEC17/TEC18; el registro `alcance` conserva el ajuste pero no las entradas' },
+  FIS06: { mech: 'factor de resistencia del gasto de energía (core.js · enduranceFactor): afecta al desgaste futuro, no a un valor del siguiente tiro', dep: 'contraste de gasto por intervalo con la operación pura de consumo (no existe extraída); EXP13-08 observa el efecto en partidos' },
+  MEN02: { mech: 'q de la selección (actions.js · libertyAndReading) y lectura defensiva: eff(decisor, MEN02) sin receta etiquetada', dep: 'registrar las entradas de q (MEN02, MEN03 y penalización de presión) o extraer libertyAndReading como función pura' },
+  MEN03: { mech: 'q de la selección (actions.js · libertyAndReading, con penalización de presión MEN07) y lectura defensiva', dep: 'ídem MEN02' },
+  MEN06: { mech: 'amplitud de la variación del momento (states.js · formulas.js consistencySigmaAt)', dep: 'protocolo neutral de MOTOR-07 (contexto fijo, estados neutrales); no se evalúa como «más valor → más puntos»' },
+  MEN07: { mech: 'pérdida por presión (states.js, formulas.js) y penalización de MEN03 en la elección', dep: 'registrar la pérdida por presión con sus entradas o extraer la fórmula pura; `estados:forma_presion` conserva el resultado' },
+};
+
 // ---------------------------------------------------------------------------------------------------------------- escaneo de las filas que declaran cada capacidad (§7.1)
 export function declaredUses(profile) {
   const out = Object.fromEntries(CAPABILITY_IDS.map((c) => [c, []])); const seen = new Set(CAPABILITY_IDS);
@@ -93,7 +106,7 @@ export function capabilityMatrix(projs, profile, sens, experiments) {
     const sat = sum(projs.map((p) => p.recipes.byCap[cap]?.saturated ?? 0)); const s = sens.filter((r) => r.cap === cap);
     const sensBy = (inc) => { const xs = s.filter((r) => r.incrementoSolicitado === inc && !r.limite && r.incrementoEfectivo > 0); return xs.length ? { n: xs.length, mediaDelta: r4(mean(xs.map((r) => r.delta))), minDelta: r4(Math.min(...xs.map((r) => r.delta))), maxDelta: r4(Math.max(...xs.map((r) => r.delta))) } : null; };
     const decl = declared[cap]; const strata = Object.keys(obs);
-    const estado = totalUses > 0 ? (s.length ? 'declarado, observado, aplicado y contrastado (cálculo fijo)' : 'declarado, observado y aplicado; sin contraste') : (qUses > 0 ? 'declarado y observado solo en calidad de ataque (sin base/energía registradas: contraste no aislable)' : (decl.length ? 'declarado y NO expuesto en esta evidencia (no es un atributo muerto)' : 'sin declaración localizada'));
+    const estado = totalUses > 0 ? (s.length ? 'declarado, observado, aplicado y contrastado (cálculo fijo)' : 'declarado, observado y aplicado; sin contraste') : (UNRECORDED[cap] ? `consumida en operaciones sin receta registrada con entradas (${UNRECORDED[cap].mech}); contraste B no aislable: ${UNRECORDED[cap].dep}` : qUses > 0 ? 'declarado y observado solo en calidad de ataque (sin base/energía registradas: contraste no aislable)' : (decl.length ? 'declarado y NO expuesto en esta evidencia (no es un atributo muerto)' : 'sin declaración localizada'));
     if (!strata.length) rows.push({ cap, nombre: dict[cap] ?? cap, stratum: '—', declaradoEn: decl.map((d) => d.path).slice(0, 8), declaradoN: decl.length, usos: 0, usosCalidadAtaque: qUses, matches: 0, actores: 0, mediaBase: null, mediaEfectiva: null, mediaPeso: null, saturadas: sat, contrasteCalculo: null, contrastePartidos: expCaps[cap] ?? [], estado });
     else for (const st of strata.sort()) { const o = obs[st]; rows.push({ cap, nombre: dict[cap] ?? cap, stratum: st, declaradoEn: decl.map((d) => d.path).slice(0, 8), declaradoN: decl.length, usos: o.uses, usosCalidadAtaque: qUses, matches: o.matches.size, actores: players.size, mediaBase: r4(o.sumBase / o.uses), mediaEfectiva: r4(o.sumEff / o.uses), mediaPeso: r4(o.sumShare / o.uses), saturadas: sat, contrasteCalculo: { '+1': sensBy(1), '+3': sensBy(3), '+5': sensBy(5), contextos: s.filter((r) => r.stratum === st && r.incrementoSolicitado === 1).length }, contrastePartidos: expCaps[cap] ?? [], estado }); }
   }

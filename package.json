@@ -2,7 +2,7 @@
   "name": "bem",
   "version": "0.1.0",
   "private": true,
-  "description": "beM — motor de partidos, laboratorio, población, análisis del encuentro y simulación masiva (MOTOR-12)",
+  "description": "beM — motor de partidos, laboratorio, población, análisis del encuentro y simulación masiva (MOTOR-13)",
   "type": "module",
   "engines": {
     "node": ">=22"
@@ -14,6 +14,9 @@
     "data:check": "node scripts/check-data.js",
     "replay": "node scripts/replay-match.js",
     "batch:check": "node scripts/batch-check.js",
-    "batch:integration": "node scripts/integration-motor12.js"
+    "batch:integration": "node scripts/integration-motor12.js",
+    "audit": "node scripts/audit-run.js",
+    "audit:check": "node scripts/audit-check.js",
+    "audit:campaign": "node scripts/audit-campaign.js"
   }
 }

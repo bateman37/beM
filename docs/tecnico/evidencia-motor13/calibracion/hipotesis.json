@@ -1,0 +1,345 @@
+{
+ "schema": "beM-audit-hypothesis/1",
+ "question": "Primer ciclo de revisión: ¿hay un defecto demostrado o una desviación con evidencia suficiente para proponer un ajuste de parámetros sobre la campaña inicial?",
+ "base": {
+  "effective_profile_id": "SEM-MOTOR01-20261016+SEM-MOTOR02-20261016+SEM-MOTOR03-20261016+SEM-MOTOR04-20261016+SEM-MOTOR05-20261016+SEM-MOTOR06-20261016+SEM-MOTOR07-20261016+SEM-MOTOR08-20261016+SEM-MOTOR09-20261016+SEM-MOTOR10-20261016+SEM-MOTOR11-20261017+SEM-MOTOR12-20261017+SEM-MOTOR13-20261017",
+  "audit_version": "AUD-MOTOR13-R1"
+ },
+ "campaign": {
+  "tag": "R1",
+  "experiments": 12,
+  "matches": 24,
+  "diagnostic": 4,
+  "reduced": 20
+ },
+ "hypotheses_considered": [
+  {
+   "mecanismo": "COB01:seguimiento",
+   "n": 223,
+   "partidos": 4,
+   "esperados": 106.3938,
+   "observados": 122,
+   "diferencia": 15.6062,
+   "z": 2.1324,
+   "mismoSignoEnTodosLosPartidos": false,
+   "decision": "no se propone cambio",
+   "razon": "señal aislada (z=2.1324, n=223, 4 partidos con diagnóstico completo de dos experimentos) entre 13 mecanismos con muestra suficiente: se esperaban ≈ 0.5915 con |z| ≥ 2 solo por azar y la probabilidad de ver al menos una es ≈ 45 %; los acontecimientos de un partido comparten contexto, así que ni siquiera es una muestra de ensayos independientes. Se recomienda AMPLIAR la muestra con diagnóstico completo (Lotes) antes de tocar una probabilidad.",
+   "alternativas_a_descartar": [
+    "fluctuación de muestreo",
+    "efecto de la composición de plantillas (pocos equipos)",
+    "defecto del lector del mecanismo (el binario se lee de la misma operación que lo sortea)",
+    "p0 real mal calibrada (única hipótesis que justificaría tocar una fila)"
+   ]
+  }
+ ],
+ "reliability_review": {
+  "mechanisms": 38,
+  "deterministicViolations": [],
+  "signals": [
+   {
+    "mecanismo": "COB01:seguimiento",
+    "n": 223,
+    "partidos": 4,
+    "esperados": 106.3938,
+    "observados": 122,
+    "diferencia": 15.6062,
+    "z": 2.1324,
+    "mismoSignoEnTodosLosPartidos": false
+   }
+  ],
+  "insufficient": [
+   "COB02:cambio_completa",
+   "COB03:recupera",
+   "CONT04:aceptación",
+   "CONT06:aceptación",
+   "CONT07:aceptación",
+   "ESP01:aceptación",
+   "ESP02:aceptación",
+   "ESP12:aceptación",
+   "ESP13:aceptación",
+   "ESP14:aceptación",
+   "ESPD01:contacto_legítimo",
+   "ESPD01:intento",
+   "ayuda:llega",
+   "ayuda:relevo_llega",
+   "conversión:midrange",
+   "negada:reorganizar",
+   "pérdida:fuera",
+   "robo",
+   "saque:aceptación:midrange",
+   "saque:aceptación:rim",
+   "saque:aceptación:three",
+   "suelto:control",
+   "tapón:balón_vivo",
+   "tapón:fuera",
+   "transición:sin_oposición"
+  ],
+  "compatible": 12,
+  "expected_by_chance": 0.5915,
+  "note": "Con 13 mecanismos suficientes se esperan ≈ 0.5915 con |z| ≥ 2 por azar (aproximación normal): la coherencia de muestreo no demuestra realismo y una señal aislada no justifica un cambio."
+ },
+ "changes": [],
+ "effective_rows_changed": 0,
+ "expected_effect": null,
+ "validation_reserve": {
+  "reserved": true,
+  "cases": [
+   "EQ01H–EQ02H",
+   "EQ03–EQ09",
+   "EQ07–EQ08",
+   "EQ11–EQ12"
+  ],
+  "lot_seeds": [
+   132001,
+   132002,
+   132003,
+   132004
+  ],
+  "launched": false,
+  "reason": "no existe una candidata con cambio real: copias idénticas de la base no validan nada (§13.4); se conserva reservada y no se usó para ajustar"
+ },
+ "decision": "Base mantenida con evidencia y límites",
+ "decision_state": "evaluación funcional SEM inicial (no validación externa)",
+ "defects_fixed": [
+  {
+   "id": "DEF-LECTOR-QUINTETOS",
+   "cause": "lector",
+   "summary": "La tabla de quintetos (a) contaba dos veces minutos y puntos de dos alineaciones registradas con los mismos cinco jugadores en puestos distintos y (b) descartaba filas con puntos pero sin tiempo ni posesión completa, de modo que la conciliación analítica AN07/AN09 fallaba en 8 de 24 encuentros de la campaña R0 mientras el acta conciliaba",
+   "sport_changed": false
+  },
+  {
+   "id": "DEF-AUDITOR-AUD07",
+   "cause": "auditor",
+   "summary": "AUD07 leyó prioridad null (ficha llamada fuera del libro, prioridad efectiva 1) como error de rango"
+  },
+  {
+   "id": "DEF-AUDITOR-AUD13",
+   "cause": "auditor",
+   "summary": "AUD13 comparó la calidad con p_final (probabilidad de la selección) en lugar de p_conversion"
+  },
+  {
+   "id": "DEF-AUDITOR-AUD26",
+   "cause": "auditor",
+   "summary": "AUD26 trató como «sin receptor» cadenas de saque abiertas al sonar la bocina"
+  }
+ ],
+ "trajectory_R0_vs_R1": [
+  {
+   "experiment": "EXP13-01",
+   "variant": "V0",
+   "r0_valid": true,
+   "r1_valid": true,
+   "same_trajectory": true,
+   "same_score": true,
+   "same_draws": true
+  },
+  {
+   "experiment": "EXP13-01",
+   "variant": "V1",
+   "r0_valid": true,
+   "r1_valid": true,
+   "same_trajectory": true,
+   "same_score": true,
+   "same_draws": true
+  },
+  {
+   "experiment": "EXP13-02",
+   "variant": "V0",
+   "r0_valid": true,
+   "r1_valid": true,
+   "same_trajectory": true,
+   "same_score": true,
+   "same_draws": true
+  },
+  {
+   "experiment": "EXP13-02",
+   "variant": "V1",
+   "r0_valid": true,
+   "r1_valid": true,
+   "same_trajectory": true,
+   "same_score": true,
+   "same_draws": true
+  },
+  {
+   "experiment": "EXP13-03",
+   "variant": "V0",
+   "r0_valid": true,
+   "r1_valid": true,
+   "same_trajectory": true,
+   "same_score": true,
+   "same_draws": true
+  },
+  {
+   "experiment": "EXP13-03",
+   "variant": "V1",
+   "r0_valid": true,
+   "r1_valid": true,
+   "same_trajectory": true,
+   "same_score": true,
+   "same_draws": true
+  },
+  {
+   "experiment": "EXP13-04",
+   "variant": "V0",
+   "r0_valid": true,
+   "r1_valid": true,
+   "same_trajectory": true,
+   "same_score": true,
+   "same_draws": true
+  },
+  {
+   "experiment": "EXP13-04",
+   "variant": "V1",
+   "r0_valid": true,
+   "r1_valid": true,
+   "same_trajectory": true,
+   "same_score": true,
+   "same_draws": true
+  },
+  {
+   "experiment": "EXP13-05",
+   "variant": "V0",
+   "r0_valid": false,
+   "r1_valid": true,
+   "same_trajectory": true,
+   "same_score": true,
+   "same_draws": true
+  },
+  {
+   "experiment": "EXP13-05",
+   "variant": "V1",
+   "r0_valid": false,
+   "r1_valid": true,
+   "same_trajectory": true,
+   "same_score": true,
+   "same_draws": true
+  },
+  {
+   "experiment": "EXP13-06",
+   "variant": "V0",
+   "r0_valid": true,
+   "r1_valid": true,
+   "same_trajectory": true,
+   "same_score": true,
+   "same_draws": true
+  },
+  {
+   "experiment": "EXP13-06",
+   "variant": "V1",
+   "r0_valid": true,
+   "r1_valid": true,
+   "same_trajectory": true,
+   "same_score": true,
+   "same_draws": true
+  },
+  {
+   "experiment": "EXP13-07",
+   "variant": "V0",
+   "r0_valid": false,
+   "r1_valid": true,
+   "same_trajectory": true,
+   "same_score": true,
+   "same_draws": true
+  },
+  {
+   "experiment": "EXP13-07",
+   "variant": "V1",
+   "r0_valid": true,
+   "r1_valid": true,
+   "same_trajectory": true,
+   "same_score": true,
+   "same_draws": true
+  },
+  {
+   "experiment": "EXP13-08",
+   "variant": "V0",
+   "r0_valid": true,
+   "r1_valid": true,
+   "same_trajectory": true,
+   "same_score": true,
+   "same_draws": true
+  },
+  {
+   "experiment": "EXP13-08",
+   "variant": "V1",
+   "r0_valid": false,
+   "r1_valid": true,
+   "same_trajectory": true,
+   "same_score": true,
+   "same_draws": true
+  },
+  {
+   "experiment": "EXP13-09",
+   "variant": "V0",
+   "r0_valid": false,
+   "r1_valid": true,
+   "same_trajectory": true,
+   "same_score": true,
+   "same_draws": true
+  },
+  {
+   "experiment": "EXP13-09",
+   "variant": "V1",
+   "r0_valid": false,
+   "r1_valid": true,
+   "same_trajectory": true,
+   "same_score": true,
+   "same_draws": true
+  },
+  {
+   "experiment": "EXP13-10",
+   "variant": "V0",
+   "r0_valid": true,
+   "r1_valid": true,
+   "same_trajectory": true,
+   "same_score": true,
+   "same_draws": true
+  },
+  {
+   "experiment": "EXP13-10",
+   "variant": "V1",
+   "r0_valid": true,
+   "r1_valid": true,
+   "same_trajectory": true,
+   "same_score": true,
+   "same_draws": true
+  },
+  {
+   "experiment": "EXP13-11",
+   "variant": "V0",
+   "r0_valid": true,
+   "r1_valid": true,
+   "same_trajectory": true,
+   "same_score": true,
+   "same_draws": true
+  },
+  {
+   "experiment": "EXP13-11",
+   "variant": "V1",
+   "r0_valid": false,
+   "r1_valid": true,
+   "same_trajectory": true,
+   "same_score": true,
+   "same_draws": true
+  },
+  {
+   "experiment": "EXP13-12",
+   "variant": "V0",
+   "r0_valid": true,
+   "r1_valid": true,
+   "same_trajectory": true,
+   "same_score": true,
+   "same_draws": true
+  },
+  {
+   "experiment": "EXP13-12",
+   "variant": "V1",
+   "r0_valid": false,
+   "r1_valid": true,
+   "same_trajectory": true,
+   "same_score": true,
+   "same_draws": true
+  }
+ ],
+ "trajectory_unchanged": true
+}

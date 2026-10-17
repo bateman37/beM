@@ -9,9 +9,12 @@ const nat = (profile, players, id) => P.referenceTeam(profile, players, id);
 const hist = (profile, players, id) => P.referenceTeam(profile, players, id, { revision: 'R0', planKind: 'historical' });
 
 // Reglas de selección de actores, aplicadas a las FICHAS antes de cualquier partido.
+// Cobertura de capacidades por experimento (sin materializar equipos): la matriz de capacidades solo necesita saber qué contrastes de partidos existen.
+const LITE = [['EXP13-01', ['TEC08']], ['EXP13-02', ['TEC01']], ['EXP13-03', ['MEN02', 'MEN03']], ['EXP13-04', ['MEN01', 'MEN03']], ['EXP13-05', ['TEC12', 'TEC13', 'TEC16']], ['EXP13-06', ['TEC12', 'FIS01', 'FIS06']], ['EXP13-07', ['TEC17', 'TEC18', 'FIS05']], ['EXP13-08', ['FIS06']], ['EXP13-10', ['MEN06']]].map(([id, capabilities]) => ({ id, capabilities }));
 export const exteriorFinishers = (team) => { const st = new Set(Object.values(team.plan.starters)); return team.players.filter((p) => st.has(p.id) && p.finishingVocation >= 0.75 && (p.zonePreference?.three ?? 0) >= 0.5).map((p) => p.id.slice(-3)); };
 
-export function experimentCatalog(profile, players) {
+export function experimentCatalog(profile, players, { lite = false } = {}) {
+  if (lite && !players) return LITE;
   const E = profile.audit.campaign; const seed = (n) => E.explorationSeedBase + n - 1;
   const t = (ref, id) => nat(profile, players, id);
   const eq02 = t(null, 'EQ02'); const ext = exteriorFinishers(eq02); const coach11 = t(null, 'EQ11').plan.coach;

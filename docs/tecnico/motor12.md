@@ -179,3 +179,7 @@ El registro **reducido** ocupa ≈ **3,5 MiB por partido** sin comprimir. La par
 3. **Propios**: el nivel reducido no guarda recetas; el registro diagnóstico ocupa decenas de MiB por partido sin comprimir (ver mediciones); la ejecución es serial; un partido en curso no se puede reanudar tras un cierre del proceso (se repite).
 4. **Posteriores**: auditorías de comportamiento, sensibilidad y calibración (MOTOR-13); coste, rendimiento y versión 1 (MOTOR-14). Este paquete prepara la evidencia; **no** calibra ni recomienda cambios de coeficientes.
 5. Recorrido manual de MOTOR-08/09/10/11/12 pendiente de Dennis; no ejecutado: Node 24 y otros navegadores.
+
+## Nota posterior (MOTOR-13)
+
+La campaña de MOTOR-13 mostró que la tabla de quintetos de MOTOR-10 contaba dos veces las alineaciones con los mismos cinco jugadores en puestos distintos y descartaba filas con puntos pero sin tiempo. Se corrigió el lector (no el deporte) y `quintetos.csv` gana la columna aditiva `lineup_ids`; el comprobador la acepta ausente. Ver [`motor13.md`](motor13.md) §10.

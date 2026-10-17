@@ -1,7 +1,7 @@
 // Fuentes de evidencia de la auditoría (MOTOR-13 §4.2, §12): un lote conservado (`out/batches/<lote>/`) o un paquete/directorio verificable de MOTOR-12.
 // Un auditor recibe hechos ya generados: NO simula, no llama al entrenador y no solicita RNG. Antes de interpretar se valida la integridad (§4.2): se recalculan los SHA-256 de los
 // archivos de cada intento contra el índice (lote) o se ejecuta el comprobador de 15 controles (paquete). Una parte aislada se declara parcial, no como el lote completo.
-import { readFileSync, existsSync, statSync } from 'node:fs';
+import { readFileSync, existsSync, statSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { JobStore } from '../batch/jobstore.js';
 import { openTarget, verifySet } from '../batch/check.js';
@@ -43,6 +43,8 @@ export class BatchSource {
     return rowsAsObjects({ header: cols, rows }).map((o) => typed(name, o));
   }
   frozenFile(rel) { const p = join(this.dir, rel); return existsSync(p) ? JSON.parse(readFileSync(p, 'utf8')) : null; }
+  listFrozen(dir) { const p = join(this.dir, dir); return existsSync(p) ? readdirSync(p).filter((f) => f.endsWith('.json')).map((f) => `${dir}/${f}`) : []; }
+  audiences() { return this.attempts().flatMap((a) => (a.files ?? []).filter((f) => f.kind === 'jsonl').map((f) => f.audience)); }
   fingerprint(policy) { return sha({ kind: this.kind, batch: this.batchId, a: this.attempts().map((a) => [a.attempt_id, (a.files ?? []).map((f) => f.sha256)]), policy }).slice(0, 16); }
 }
 
@@ -69,6 +71,8 @@ export class PackageSource {
   stream(a, name) { const path = `${STREAMS[name].dir}/${STREAMS[name].prefix}-${a.match_id}--${a.attempt_id}.jsonl`; const p = a._p; if (p.has(path)) return p.read(path); const m = this.parts.find((x) => x.p.has(path)); return m ? m.p.read(path) : null; }
   table(a, name) { const rows = this.read(a._p, TABLES[name].file); if (!rows) return null; return rows.filter((r) => r.attempt_id === a.attempt_id).map((o) => typed(name, { ...o })); }
   frozenFile(rel) { for (const { p } of this.parts) if (p.has(rel)) return JSON.parse(p.read(rel).toString('utf8')); return null; }
+  listFrozen(dir) { return [...new Set(this.parts.flatMap(({ p }) => p.list().filter((n) => n.startsWith(`${dir}/`) && n.endsWith('.json'))))]; }
+  audiences() { return this.manifests.flatMap((m) => (m.files ?? []).filter((f) => f.format === 'jsonl' || /\.jsonl$/.test(f.path)).map((f) => f.audience)).filter(Boolean); }
   fingerprint(policy) { return sha({ kind: this.kind, m: this.manifests.map((m) => m.files?.map((f) => f.sha256)), policy }).slice(0, 16); }
 }
 

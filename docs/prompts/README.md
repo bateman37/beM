@@ -24,6 +24,7 @@ Directorio de los encargos a Claude Code. **El texto original de un prompt ejecu
 | MOTOR-10 | Análisis, estadísticas, resumen e información: catálogo común de indicadores, evolución y final ajustado, mapa sectorial y calidad, origen y ejecuciones, defensa y responsabilidades, quintetos y on/off, informes por audiencia, resumen con claves sustentadas, recomendaciones REC10-01/02 y exportación analítica; perfil `SEM-MOTOR10` | [`MOTOR-10-analisis-estadisticas-y-resumen.md`](MOTOR-10-analisis-estadisticas-y-resumen.md) · [recorrido manual](MOTOR-10-recorrido-manual.md) | Ejecutado, **pendiente de revisión de Dennis** (PR abierta, sin fusionar) | 2026-10-17 · intento 1 | — |
 | MOTOR-11 | Población de referencia (doce equipos, 144 fichas, revisión de edad), planes naturales, generador correlacionado reproducible, edición masiva con deshacer exacto, variantes y escenarios LAB11; cierre de pendientes de MOTOR-10; perfil `SEM-MOTOR11` | [`MOTOR-11-poblacion-generador-y-escenarios.md`](MOTOR-11-poblacion-generador-y-escenarios.md) · [recorrido manual](MOTOR-11-recorrido-manual.md) | Ejecutado, **pendiente de revisión de Dennis** | 2026-10-17 | — |
 | MOTOR-12 | Simulación masiva y extracción completa: lotes con repeticiones/cruces/pares, variantes y semillas congeladas, controlador con detención/continuación/reintento, persistencia progresiva, registro diagnóstico completo, agregados y comparación base/candidata, paquete ZIP `beM-analysis-package/1` con partes e índice, comprobador `npm run batch:check`; perfil `SEM-MOTOR12` | [`MOTOR-12-simulacion-masiva-y-extraccion.md`](MOTOR-12-simulacion-masiva-y-extraccion.md) · [recorrido manual](MOTOR-12-recorrido-manual.md) |
+| MOTOR-13 | Auditorías AUD01–32, sensibilidad de las 32 capacidades, campaña inicial de doce contrastes y primer ciclo de calibración | [`MOTOR-13-auditorias-sensibilidad-y-calibracion.md`](MOTOR-13-auditorias-sensibilidad-y-calibracion.md) · [recorrido manual](MOTOR-13-recorrido-manual.md) | Ejecutado, **pendiente de revisión de Dennis** | 2026-10-17 (intento 1) | — |
 
 ## Fichas de ejecución
 
@@ -234,3 +235,17 @@ Comprobación local de enlaces: hecha por Claude. Presentación en GitHub: no co
 | Comprobaciones realizadas | Ver [`../tecnico/motor12.md`](../tecnico/motor12.md) §12. No ejecutado: lotes de 100/1.000, Node 24, otros navegadores, recorrido humano. |
 | Limitaciones | Todo SEM sin calibrar; registro diagnóstico voluminoso (≈ 37 MiB/partido sin comprimir medidos); ejecución serial; sin snapshot de continuación; 404 de Chromium no reproducido; deuda heredada de MOTOR-09/10/11. |
 | Pendientes | Validación de Dennis ([recorrido manual](MOTOR-12-recorrido-manual.md)); MOTOR-13 (auditorías, sensibilidad, calibración) y MOTOR-14 (rendimiento). |
+
+### MOTOR-13
+
+| Campo | Valor |
+|---|---|
+| Objetivo | Convertir partidos y lotes en evidencia revisable (catálogo AUD01–32, matriz de 32 capacidades con contraste de cálculo fijo, fiabilidad, concentración, referencias), ejecutar una campaña inicial de doce contrastes y un primer ciclo de calibración desde tablas administrables. Sin cambio deportivo. |
+| Medio de entrada del texto | Archivo `.md` adjunto (`beM-PROMPT-MOTOR-13-AUDITORIAS-SENSIBILIDAD-Y-CALIBRACION.md`; prefijo añadido por la subida). Copia archivada byte a byte idéntica (SHA-256 `f0607854…`): [`MOTOR-13-auditorias-sensibilidad-y-calibracion.md`](MOTOR-13-auditorias-sensibilidad-y-calibracion.md). |
+| Fecha real de ejecución | 2026-10-17 · intento 1 |
+| Rama | `claude/busy-edison-b1fmnc` (designada por el entorno), reiniciada desde `origin/main` (`655fb84`, con MOTOR-12 fusionado en la PR #13: no hay PR dependiente); el encargo proponía `feature/MOTOR-13-auditorias-y-calibracion`. |
+| PR | Abierta contra `main` (sin fusionar); el enlace consta en la respuesta final. |
+| Resultado breve | `src/audit/` (catálogo, fuentes, proyección con caché, evaluadores, análisis, experimentos, calibración, informe y paquete, API), pestaña Auditorías, `SEM-MOTOR13-20261017` (tabla `audit`), `effectiveAbility` extraída sin cambiar semántica, campaña de 24 encuentros (+24 de repetición), corrección de un defecto de lector de quintetos, primer ciclo con **base mantenida**. |
+| Comprobaciones realizadas | Ver [`../tecnico/motor13.md`](../tecnico/motor13.md) §15. No ejecutado: lotes de 100/1.000, reserva de validación, Node 24, otros navegadores, recorrido humano, fuentes FIBA (403), archivos del lote de cierre de MOTOR-12 (ausentes). |
+| Limitaciones | Todo SEM sin calibrar; 4 partidos con diagnóstico completo; 7 capacidades consumidas sin receta registrada; ninguna referencia externa numérica; un caso por intervención. |
+| Pendientes | Validación de Dennis ([recorrido manual](MOTOR-13-recorrido-manual.md)); MOTOR-14 (rendimiento, cierre de registro y contratos para el manager; inventario en `motor13.md` §14). |

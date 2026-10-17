@@ -25,16 +25,16 @@ if (flag('--plan')) {
 }
 
 const root = opt('--root', process.env.BEM_BATCH_ROOT ?? join(ROOT, 'out', 'batches')); const store = new JobStore(root); const ctl = new BatchController({ store, executor: new InlineExecutor({ store }) });
-const outDir = join(ROOT, 'out', 'audit'); mkdirSync(outDir, { recursive: true });
+const outDir = join(ROOT, 'out', 'audit'); mkdirSync(outDir, { recursive: true }); const tag = opt('--tag', 'R1');
 async function runLot(spec, label) {
   const cr = ctl.create(spec, profile, { players, label }); if (!cr.ok) throw new Error(`${label}: ${cr.problems.join('; ')}`);
   const t0 = performance.now(); const run = await ctl.run(cr.batchId); const end = await run.done; const st = ctl.status(cr.batchId, { rows: true });
   return { label, batchId: cr.batchId, state: end.state, counters: st.counters, wall_ms: Math.round(performance.now() - t0), matches: st.matches.map((m) => ({ match_id: m.match_id, case_id: m.case_id, variant_id: m.variant_id, exec_state: m.exec_state, valid: m.valid, score: `${m.facts?.score_home}–${m.facts?.score_away}`, draws: m.facts?.draws, trajectory_fp: m.facts?.trajectory_fp, exec_ms: Math.round(m.exec_ms) })) };
 }
 if (flag('--run')) {
-  const res = []; for (const e of exps) { const r = await runLot(experimentSpec(e, profile, players), e.id); res.push({ experiment: e.id, ...r }); console.log(e.id, r.batchId, r.state, r.matches.map((m) => `${m.variant_id} ${m.score} ${m.valid ? 'válido' : 'NO válido'}`).join(' · '), `${(r.wall_ms / 1000).toFixed(1)} s`); }
+  const res = []; for (const e of exps) { const r = await runLot(experimentSpec(e, profile, players), `${e.id} ${tag}`); res.push({ experiment: e.id, ...r }); console.log(e.id, r.batchId, r.state, r.matches.map((m) => `${m.variant_id} ${m.score} ${m.valid ? 'válido' : 'NO válido'}`).join(' · '), `${(r.wall_ms / 1000).toFixed(1)} s`); }
   const total = res.reduce((s, r) => s + r.matches.length, 0); const valid = res.reduce((s, r) => s + r.matches.filter((m) => m.valid).length, 0);
-  console.log(`campaña: ${total} encuentros, ${valid} válidos`); writeFileSync(join(outDir, 'campaign.json'), `${JSON.stringify({ schema: 'beM-audit-campaign-run/1', root, effective_profile_id: profile.effectiveId, experiments: res }, null, 1)}\n`);
+  console.log(`campaña: ${total} encuentros, ${valid} válidos`); writeFileSync(join(outDir, `campaign-${tag}.json`), `${JSON.stringify({ schema: 'beM-audit-campaign-run/1', tag, root, effective_profile_id: profile.effectiveId, experiments: res }, null, 1)}\n`);
   process.exit(valid === total ? 0 : 1);
 }
 if (flag('--validation')) {

@@ -4,7 +4,7 @@
 import { jsonlRecords, ensure, inc, fnv, r4, sum } from './util.js';
 import { effectiveAbility } from '../match/core.js';
 
-export const PROJECTION_VERSION = 'PRJ-MOTOR13-R1';
+export const PROJECTION_VERSION = 'PRJ-MOTOR13-R3';
 export const BIN_EDGES = [0, 0.2, 0.4, 0.6, 0.8, 1];
 export const binOf = (p) => { for (let i = 0; i < BIN_EDGES.length - 2; i++) if (p < BIN_EDGES[i + 1]) return i; return BIN_EDGES.length - 2; };
 const PLAYER = /^EQ\d+(_B)?-J\d+$/;
@@ -45,13 +45,13 @@ export function projectAttempt(src, a, profile, cfg) {
         if (!PLAYER.test(opts[0].clave)) for (const o of opts) { const c = ensure(ensure(P.cat, lab, () => ({})), o.clave, () => ({ n: 0, expected: 0, observed: 0 })); c.n += 1; c.expected += o.p; if (o.clave === d.elegido) c.observed += 1; }
       } else if (r.kind === 'receta') projectRecipe(P, r, taskMax, caps, profile);
       else if (r.kind === 'calidad_ataque') { for (const x of d.receta ?? []) { const c = ensure(P.recipes.qualityTerms ??= {}, x.cap, () => ({ uses: 0, sumEff: 0, sumShare: 0 })); c.uses += 1; c.sumEff += x.efectiva; } }
-      else if (r.kind === 'libro') { const f = d.fichas ?? []; P.libro.n += 1; const el = f.filter((x) => x.elegible); if (!el.length) P.libro.noElegible += 1; for (const x of f) { inc(P.libro.prios, x.prioridad); if (!(x.prioridad >= 1 && x.prioridad <= 5)) P.libro.badPrio += 1; } if (el.length) { const m = Math.min(...el.map((x) => x.prioridad)); if (el.filter((x) => x.prioridad === m).length > 1) P.libro.ties += 1; } }
+      else if (r.kind === 'libro') { const f = d.fichas ?? []; P.libro.n += 1; const el = f.filter((x) => x.elegible); if (!el.length) P.libro.noElegible += 1; /* prioridad null = ficha LLAMADA aunque no esté en el libro (la llamada puntual no la activa; prioridad efectiva 1): es legítima, no un error de rango (AUD07, corregida en MOTOR-13) */ for (const x of f) { if (x.prioridad == null) { P.libro.called = (P.libro.called ?? 0) + 1; continue; } inc(P.libro.prios, x.prioridad); if (!(x.prioridad >= 1 && x.prioridad <= 5)) P.libro.badPrio += 1; } const pr = el.map((x) => x.prioridad ?? 1); if (pr.length) { const m = Math.min(...pr); if (pr.filter((x) => x === m).length > 1) P.libro.ties += 1; } }
       else if (r.kind === 'rebote') { P.rebote.n += 1; inc(P.rebote.label, r.label); }
       else if (r.kind === 'duracion') { const x = ensure(P.durations, r.label, () => ({ n: 0, tenths: 0 })); x.n += 1; x.tenths += d.decimas ?? 0; }
     } else if (r.record_type === 'oportunidad') { P.opp.n += 1; inc(P.opp.procedencia, r.procedencia ?? 'null'); inc(P.opp.eleccion, r.eleccion ?? 'null'); for (const t of r.etiquetas ?? []) inc(P.opp.tags, t); }
     else if (r.record_type === 'entrenador') { P.coach.n += 1; inc(P.coach.area, r.area); inc(P.coach.estado, r.estado); inc(P.coach.regla, r.regla ?? 'null'); }
     else if (r.record_type === 'memoria') { P.memoria.n += 1; inc(P.memoria.tipo, r.tipo); inc(P.memoria.claves, r.clave ?? 'null'); P.memoria.maxOcupadas = Math.max(P.memoria.maxOcupadas, r.ocupadas ?? 0); }
-    else if (r.record_type === 'cadena_saque') { P.saques.n += 1; inc(P.saques.kind, r.kind); inc(P.saques.status, r.status); if (!r.receptor) P.saques.sinReceptor += 1; }
+    else if (r.record_type === 'cadena_saque') { P.saques.n += 1; inc(P.saques.kind, r.kind); inc(P.saques.status, r.status); if (r.status === 'cerrada' && !r.receptor) P.saques.sinReceptor += 1; if (r.status === 'abierta') P.saques.abiertas = (P.saques.abiertas ?? 0) + 1; }
   }
   P.ms.decisiones = performance.now() - t0;
 
@@ -110,7 +110,7 @@ function projectRecipe(P, r, taskMax, caps, profile) {
   for (const x of terms) {
     R.terms += 1; if (!caps.has(x.cap)) { inc(R.capsUnknown, x.cap); continue; }
     if (!(x.base >= lo && x.base <= hi) || !(x.efectiva >= lo - 1e-9 && x.efectiva <= hi + 1e-9) || !(x.peso > 0)) R.boundsBad += 1;
-    const stratum = t ? `${t.task}.${t.side}|${x.rol}` : `${r.label.split(':')[0]}|${x.rol}`;
+    const stratum = t ? `${t.task}.${t.side}|${x.rol}` : `${r.label.replace(/^receta:/, '')}|${x.rol}`;
     const c = ensure(R.byCap, x.cap, () => ({ uses: 0, sumBase: 0, sumEff: 0, sumShare: 0, saturated: 0, strata: {}, players: {} }));
     c.uses += 1; c.sumBase += x.base; c.sumEff += x.efectiva; c.sumShare += x.peso / (w || 1); if (x.base >= hi) c.saturated += 1;
     const s = ensure(c.strata, stratum, () => ({ uses: 0, sumEff: 0, sumBase: 0, sumShare: 0 })); s.uses += 1; s.sumEff += x.efectiva; s.sumBase += x.base; s.sumShare += x.peso / (w || 1);

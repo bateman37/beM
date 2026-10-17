@@ -1,0 +1,548 @@
+{
+ "schema": "beM-audit-campaign-run/1",
+ "tag": "R1",
+ "root": "out/batches",
+ "effective_profile_id": "SEM-MOTOR01-20261016+SEM-MOTOR02-20261016+SEM-MOTOR03-20261016+SEM-MOTOR04-20261016+SEM-MOTOR05-20261016+SEM-MOTOR06-20261016+SEM-MOTOR07-20261016+SEM-MOTOR08-20261016+SEM-MOTOR09-20261016+SEM-MOTOR10-20261016+SEM-MOTOR11-20261017+SEM-MOTOR12-20261017+SEM-MOTOR13-20261017",
+ "experiments": [
+  {
+   "experiment": "EXP13-01",
+   "label": "EXP13-01 R1",
+   "batchId": "LOT-83c0a1b9-R2",
+   "state": "completado",
+   "counters": {
+    "solicitados": 2,
+    "pendientes": 0,
+    "en_curso": 0,
+    "terminados": 2,
+    "fallidos": 0,
+    "interrumpidos": 0,
+    "iniciados": 2,
+    "validos": 2,
+    "no_validos_terminados": 0,
+    "reintentados": 0,
+    "intentos": 2,
+    "reconciled": true
+   },
+   "wall_ms": 3019,
+   "matches": [
+    {
+     "match_id": "M000001",
+     "case_id": "C000001",
+     "variant_id": "V0",
+     "exec_state": "terminada",
+     "valid": true,
+     "score": "93–109",
+     "draws": 8073,
+     "trajectory_fp": "fd58bb24fb80e7c74cf2256b7696047e8eaa211a6dfa943d4ee871a77ed5d662",
+     "exec_ms": 1673
+    },
+    {
+     "match_id": "M000002",
+     "case_id": "C000001",
+     "variant_id": "V1",
+     "exec_state": "terminada",
+     "valid": true,
+     "score": "76–104",
+     "draws": 8077,
+     "trajectory_fp": "6cdfbc4428d4c8486a8fe4ef766ca197ccc7136cb13c65a1891c3d56f9904227",
+     "exec_ms": 1323
+    }
+   ]
+  },
+  {
+   "experiment": "EXP13-02",
+   "label": "EXP13-02 R1",
+   "batchId": "LOT-a2ff8507-R2",
+   "state": "completado",
+   "counters": {
+    "solicitados": 2,
+    "pendientes": 0,
+    "en_curso": 0,
+    "terminados": 2,
+    "fallidos": 0,
+    "interrumpidos": 0,
+    "iniciados": 2,
+    "validos": 2,
+    "no_validos_terminados": 0,
+    "reintentados": 0,
+    "intentos": 2,
+    "reconciled": true
+   },
+   "wall_ms": 2434,
+   "matches": [
+    {
+     "match_id": "M000001",
+     "case_id": "C000001",
+     "variant_id": "V0",
+     "exec_state": "terminada",
+     "valid": true,
+     "score": "91–63",
+     "draws": 8046,
+     "trajectory_fp": "7c0090e7900e5922e1c8bdc6deaaa75d4379aa975387134a33ded8f233d7667b",
+     "exec_ms": 1227
+    },
+    {
+     "match_id": "M000002",
+     "case_id": "C000001",
+     "variant_id": "V1",
+     "exec_state": "terminada",
+     "valid": true,
+     "score": "82–78",
+     "draws": 8027,
+     "trajectory_fp": "06b9b51b74f560373b81cc7deed8d83d1f7685ce3de6918ca32bafe7a6067314",
+     "exec_ms": 1188
+    }
+   ]
+  },
+  {
+   "experiment": "EXP13-03",
+   "label": "EXP13-03 R1",
+   "batchId": "LOT-919a4056-R2",
+   "state": "completado",
+   "counters": {
+    "solicitados": 2,
+    "pendientes": 0,
+    "en_curso": 0,
+    "terminados": 2,
+    "fallidos": 0,
+    "interrumpidos": 0,
+    "iniciados": 2,
+    "validos": 2,
+    "no_validos_terminados": 0,
+    "reintentados": 0,
+    "intentos": 2,
+    "reconciled": true
+   },
+   "wall_ms": 2411,
+   "matches": [
+    {
+     "match_id": "M000001",
+     "case_id": "C000001",
+     "variant_id": "V0",
+     "exec_state": "terminada",
+     "valid": true,
+     "score": "99–73",
+     "draws": 8707,
+     "trajectory_fp": "3342927da08731cbc0a53d1c79bddbbc705bb37b4a8fb8a5d8916b5df73af30e",
+     "exec_ms": 1246
+    },
+    {
+     "match_id": "M000002",
+     "case_id": "C000001",
+     "variant_id": "V1",
+     "exec_state": "terminada",
+     "valid": true,
+     "score": "96–76",
+     "draws": 8817,
+     "trajectory_fp": "6b9d83dd813e893b74da67f5db354ee260d69642802330fb8fd84e90c6c309a0",
+     "exec_ms": 1154
+    }
+   ]
+  },
+  {
+   "experiment": "EXP13-04",
+   "label": "EXP13-04 R1",
+   "batchId": "LOT-134c01c7-R2",
+   "state": "completado",
+   "counters": {
+    "solicitados": 2,
+    "pendientes": 0,
+    "en_curso": 0,
+    "terminados": 2,
+    "fallidos": 0,
+    "interrumpidos": 0,
+    "iniciados": 2,
+    "validos": 2,
+    "no_validos_terminados": 0,
+    "reintentados": 0,
+    "intentos": 2,
+    "reconciled": true
+   },
+   "wall_ms": 2221,
+   "matches": [
+    {
+     "match_id": "M000001",
+     "case_id": "C000001",
+     "variant_id": "V0",
+     "exec_state": "terminada",
+     "valid": true,
+     "score": "74–101",
+     "draws": 8843,
+     "trajectory_fp": "4ab4848451d64262125a3c3d3f15b54ceadbe1cbc1e38afdd35e2da520b6edac",
+     "exec_ms": 1114
+    },
+    {
+     "match_id": "M000002",
+     "case_id": "C000001",
+     "variant_id": "V1",
+     "exec_state": "terminada",
+     "valid": true,
+     "score": "93–91",
+     "draws": 7979,
+     "trajectory_fp": "c489d217dd4af22bbb5080502afab2b59ab0e1a7bbcbe793fd54f79bdcee3e92",
+     "exec_ms": 1094
+    }
+   ]
+  },
+  {
+   "experiment": "EXP13-05",
+   "label": "EXP13-05 R1",
+   "batchId": "LOT-97f9693a-R2",
+   "state": "completado",
+   "counters": {
+    "solicitados": 2,
+    "pendientes": 0,
+    "en_curso": 0,
+    "terminados": 2,
+    "fallidos": 0,
+    "interrumpidos": 0,
+    "iniciados": 2,
+    "validos": 2,
+    "no_validos_terminados": 0,
+    "reintentados": 0,
+    "intentos": 2,
+    "reconciled": true
+   },
+   "wall_ms": 2587,
+   "matches": [
+    {
+     "match_id": "M000001",
+     "case_id": "C000001",
+     "variant_id": "V0",
+     "exec_state": "terminada",
+     "valid": true,
+     "score": "125–85",
+     "draws": 8352,
+     "trajectory_fp": "dbbcfd7d3614304592928f17728d58a3108c32165bd7b5d559aedc30d4af63ce",
+     "exec_ms": 1213
+    },
+    {
+     "match_id": "M000002",
+     "case_id": "C000001",
+     "variant_id": "V1",
+     "exec_state": "terminada",
+     "valid": true,
+     "score": "82–80",
+     "draws": 8336,
+     "trajectory_fp": "06c036ac7aa35e4d7d557948ac94d8b006ee0f82c35030ad6bb5f471c3fac7a9",
+     "exec_ms": 1357
+    }
+   ]
+  },
+  {
+   "experiment": "EXP13-06",
+   "label": "EXP13-06 R1",
+   "batchId": "LOT-cf694c80-R2",
+   "state": "completado",
+   "counters": {
+    "solicitados": 2,
+    "pendientes": 0,
+    "en_curso": 0,
+    "terminados": 2,
+    "fallidos": 0,
+    "interrumpidos": 0,
+    "iniciados": 2,
+    "validos": 2,
+    "no_validos_terminados": 0,
+    "reintentados": 0,
+    "intentos": 2,
+    "reconciled": true
+   },
+   "wall_ms": 2453,
+   "matches": [
+    {
+     "match_id": "M000001",
+     "case_id": "C000001",
+     "variant_id": "V0",
+     "exec_state": "terminada",
+     "valid": true,
+     "score": "95–65",
+     "draws": 8595,
+     "trajectory_fp": "7907399f759c8a6f0b6971c785404ca57426fc5741197940694c08144a5d9a4b",
+     "exec_ms": 1217
+    },
+    {
+     "match_id": "M000002",
+     "case_id": "C000001",
+     "variant_id": "V1",
+     "exec_state": "terminada",
+     "valid": true,
+     "score": "90–79",
+     "draws": 8442,
+     "trajectory_fp": "2c08e6db900998465a172e8a1e3f6824d04301f910ea896b5b3f54fc779e1791",
+     "exec_ms": 1223
+    }
+   ]
+  },
+  {
+   "experiment": "EXP13-07",
+   "label": "EXP13-07 R1",
+   "batchId": "LOT-d1f5b19f-R2",
+   "state": "completado",
+   "counters": {
+    "solicitados": 2,
+    "pendientes": 0,
+    "en_curso": 0,
+    "terminados": 2,
+    "fallidos": 0,
+    "interrumpidos": 0,
+    "iniciados": 2,
+    "validos": 2,
+    "no_validos_terminados": 0,
+    "reintentados": 0,
+    "intentos": 2,
+    "reconciled": true
+   },
+   "wall_ms": 2253,
+   "matches": [
+    {
+     "match_id": "M000001",
+     "case_id": "C000001",
+     "variant_id": "V0",
+     "exec_state": "terminada",
+     "valid": true,
+     "score": "99–87",
+     "draws": 8442,
+     "trajectory_fp": "ea5c596d2130fa2c91c8eec5005b93c61bd934251292c8f60aee4d9b702b8fd1",
+     "exec_ms": 1160
+    },
+    {
+     "match_id": "M000002",
+     "case_id": "C000001",
+     "variant_id": "V1",
+     "exec_state": "terminada",
+     "valid": true,
+     "score": "91–81",
+     "draws": 8162,
+     "trajectory_fp": "8da3d74432447571ce6458c30da03723c22df451c5e03254a55898b1387145a8",
+     "exec_ms": 1081
+    }
+   ]
+  },
+  {
+   "experiment": "EXP13-08",
+   "label": "EXP13-08 R1",
+   "batchId": "LOT-11765aae-R2",
+   "state": "completado",
+   "counters": {
+    "solicitados": 2,
+    "pendientes": 0,
+    "en_curso": 0,
+    "terminados": 2,
+    "fallidos": 0,
+    "interrumpidos": 0,
+    "iniciados": 2,
+    "validos": 2,
+    "no_validos_terminados": 0,
+    "reintentados": 0,
+    "intentos": 2,
+    "reconciled": true
+   },
+   "wall_ms": 13398,
+   "matches": [
+    {
+     "match_id": "M000001",
+     "case_id": "C000001",
+     "variant_id": "V0",
+     "exec_state": "terminada",
+     "valid": true,
+     "score": "84–94",
+     "draws": 8317,
+     "trajectory_fp": "ab427f07096ab1c5d8acc2656d989f2caf98ae814098526789fa25d6e3bf91ef",
+     "exec_ms": 6151
+    },
+    {
+     "match_id": "M000002",
+     "case_id": "C000001",
+     "variant_id": "V1",
+     "exec_state": "terminada",
+     "valid": true,
+     "score": "80–97",
+     "draws": 8402,
+     "trajectory_fp": "f1d0b19b9caf49fb520ae4b420337b45add05e20446bbdf5f31386b399c5d2a6",
+     "exec_ms": 7215
+    }
+   ]
+  },
+  {
+   "experiment": "EXP13-09",
+   "label": "EXP13-09 R1",
+   "batchId": "LOT-ddc621af-R2",
+   "state": "completado",
+   "counters": {
+    "solicitados": 2,
+    "pendientes": 0,
+    "en_curso": 0,
+    "terminados": 2,
+    "fallidos": 0,
+    "interrumpidos": 0,
+    "iniciados": 2,
+    "validos": 2,
+    "no_validos_terminados": 0,
+    "reintentados": 0,
+    "intentos": 2,
+    "reconciled": true
+   },
+   "wall_ms": 2683,
+   "matches": [
+    {
+     "match_id": "M000001",
+     "case_id": "C000001",
+     "variant_id": "V0",
+     "exec_state": "terminada",
+     "valid": true,
+     "score": "112–82",
+     "draws": 6821,
+     "trajectory_fp": "3803b2c8bc34e10387558eb9d6259973353d0ffd4032d73c7eadb55e7a96a0c3",
+     "exec_ms": 1467
+    },
+    {
+     "match_id": "M000002",
+     "case_id": "C000001",
+     "variant_id": "V1",
+     "exec_state": "terminada",
+     "valid": true,
+     "score": "82–96",
+     "draws": 6320,
+     "trajectory_fp": "d3b0a526753607a8c4e3afbf9c3be0585c58581294418027ef66fd9c2143c5c6",
+     "exec_ms": 1205
+    }
+   ]
+  },
+  {
+   "experiment": "EXP13-10",
+   "label": "EXP13-10 R1",
+   "batchId": "LOT-66ec846f-R2",
+   "state": "completado",
+   "counters": {
+    "solicitados": 2,
+    "pendientes": 0,
+    "en_curso": 0,
+    "terminados": 2,
+    "fallidos": 0,
+    "interrumpidos": 0,
+    "iniciados": 2,
+    "validos": 2,
+    "no_validos_terminados": 0,
+    "reintentados": 0,
+    "intentos": 2,
+    "reconciled": true
+   },
+   "wall_ms": 2319,
+   "matches": [
+    {
+     "match_id": "M000001",
+     "case_id": "C000001",
+     "variant_id": "V0",
+     "exec_state": "terminada",
+     "valid": true,
+     "score": "73–103",
+     "draws": 6802,
+     "trajectory_fp": "e99d6bb318877b4ea8b39e0632eabf3019570e8e49383bd495e86e6780f8fa23",
+     "exec_ms": 1190
+    },
+    {
+     "match_id": "M000002",
+     "case_id": "C000001",
+     "variant_id": "V1",
+     "exec_state": "terminada",
+     "valid": true,
+     "score": "73–103",
+     "draws": 6802,
+     "trajectory_fp": "5f16b57a1648dd4f73f5b23166f7534d46131d82f2bc9fb785befc078e80ecca",
+     "exec_ms": 1118
+    }
+   ]
+  },
+  {
+   "experiment": "EXP13-11",
+   "label": "EXP13-11 R1",
+   "batchId": "LOT-df162ff1-R2",
+   "state": "completado",
+   "counters": {
+    "solicitados": 2,
+    "pendientes": 0,
+    "en_curso": 0,
+    "terminados": 2,
+    "fallidos": 0,
+    "interrumpidos": 0,
+    "iniciados": 2,
+    "validos": 2,
+    "no_validos_terminados": 0,
+    "reintentados": 0,
+    "intentos": 2,
+    "reconciled": true
+   },
+   "wall_ms": 10270,
+   "matches": [
+    {
+     "match_id": "M000001",
+     "case_id": "C000001",
+     "variant_id": "V0",
+     "exec_state": "terminada",
+     "valid": true,
+     "score": "118–103",
+     "draws": 6662,
+     "trajectory_fp": "ed6ee48b308a489317ede6a1a6c53ca344de7b898cd2a08931d6a499122696c4",
+     "exec_ms": 4938
+    },
+    {
+     "match_id": "M000002",
+     "case_id": "C000001",
+     "variant_id": "V1",
+     "exec_state": "terminada",
+     "valid": true,
+     "score": "98–112",
+     "draws": 6893,
+     "trajectory_fp": "7b40f9ccbc0cf951190cc2935de0f76dcc2b328abae46a58dfd8d862933245a9",
+     "exec_ms": 5311
+    }
+   ]
+  },
+  {
+   "experiment": "EXP13-12",
+   "label": "EXP13-12 R1",
+   "batchId": "LOT-42561646-R2",
+   "state": "completado",
+   "counters": {
+    "solicitados": 2,
+    "pendientes": 0,
+    "en_curso": 0,
+    "terminados": 2,
+    "fallidos": 0,
+    "interrumpidos": 0,
+    "iniciados": 2,
+    "validos": 2,
+    "no_validos_terminados": 0,
+    "reintentados": 0,
+    "intentos": 2,
+    "reconciled": true
+   },
+   "wall_ms": 2661,
+   "matches": [
+    {
+     "match_id": "M000001",
+     "case_id": "C000001",
+     "variant_id": "V0",
+     "exec_state": "terminada",
+     "valid": true,
+     "score": "83–95",
+     "draws": 8271,
+     "trajectory_fp": "9d107339ceed66def9606edd576a69f17706b34ae9af680f22a8a281488883be",
+     "exec_ms": 1266
+    },
+    {
+     "match_id": "M000002",
+     "case_id": "C000001",
+     "variant_id": "V1",
+     "exec_state": "terminada",
+     "valid": true,
+     "score": "89–99",
+     "draws": 8323,
+     "trajectory_fp": "c3380b5b6550cdb849cc342ce84419b9ef40b82b2631c52005e00d54829de5ff",
+     "exec_ms": 1361
+    }
+   ]
+  }
+ ]
+}

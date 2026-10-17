@@ -7,9 +7,10 @@ import { renderCoverage } from './coverage.js';
 import { renderAnalysis } from './analysis-ui.js';
 import { renderPanel } from './panel/index.js';
 import { renderBatch } from './batch-ui.js';
+import { renderAudit } from './audit-ui.js';
 import { APP_VERSION, APP_TITLE, ENGINE_VERSION, EXPORT_SCHEMA } from '../version.js';
 
-const TABS = [['teams', 'Plantillas', renderTeams], ['prep', 'Preparación', renderPrep], ['game', 'Partido', renderGame], ['analysis', 'Análisis', renderAnalysis], ['batch', 'Lotes', renderBatch], ['panel', 'Panel de ajustes', renderPanel], ['cov', 'Cobertura', renderCoverage]];
+const TABS = [['teams', 'Plantillas', renderTeams], ['prep', 'Preparación', renderPrep], ['game', 'Partido', renderGame], ['analysis', 'Análisis', renderAnalysis], ['batch', 'Lotes', renderBatch], ['audit', 'Auditorías', renderAudit], ['panel', 'Panel de ajustes', renderPanel], ['cov', 'Cobertura', renderCoverage]];
 let current = 'teams';
 
 function paint() {
