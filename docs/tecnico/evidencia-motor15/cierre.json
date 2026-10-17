@@ -1,0 +1,112 @@
+{
+ "generated_by": "node scripts/m15-package.js",
+ "commit": "6b72387",
+ "engine": "beM-motor-0.15.0-MOTOR15",
+ "axes": [
+  {
+   "axis": "Funcional",
+   "state": "Completo en el alcance, con límites declarados",
+   "detail": "Panel con perfiles anteriores, técnicas/flagrantes/compensación/art. 45 por entrada tipada, tiro con liberación y resolución, interferencia condicionada, asistencias causales, estado por tramo, REC10, world-essential y workers. Límites: sin generación natural de técnicas; consecuencias de interferencia provisionales; numeración 45.4.x sin lectura directa."
+  },
+  {
+   "axis": "Rendimiento",
+   "state": "Medido; objetivo NO alcanzado",
+   "detail": "100 partidos world-essential con 4 workers: 22.8 s frente al objetivo de 5 s (4.6×). 200 partidos: estimación lineal 46 s, no ejecutada. Perfil de CPU plano."
+  },
+  {
+   "axis": "Evaluación deportiva",
+   "state": "Evidencia de integración; calibración pendiente",
+   "detail": "Seis casos de integración y cien partidos del mundo conciliados. La calibración poblacional es materia de MOTOR-16/17; las semillas SEM15 no están calibradas."
+  },
+  {
+   "axis": "Aceptación",
+   "state": "Revisión de Claude ejecutada; pruebas de Dennis pendientes",
+   "detail": "Recorrido real de Chromium ejecutado por Claude (13-NAVEGADOR.md). Todo el recorrido manual de Dennis, otros navegadores y Node 24: no ejecutados."
+  }
+ ],
+ "versions": {
+  "extension": "SEM-MOTOR15-20261017",
+  "statsPolicy": "EST-MOTOR15-R1 / ACTA-MOTOR15-R1",
+  "reference": "83–98, 6.684 sorteos (MOTOR-14: 83–103, 6.505)",
+  "snapshot": "beM-match-snapshot/1 (motor 0.15.0-MOTOR15)",
+  "package": "beM-m15-quick-review/1"
+ },
+ "coverage": [
+  [
+   "Auditorías AUD01–32 (evidencia: 6 encuentros diagnósticos)",
+   "15 conformes · 16 inconclusas · 1 señal · 0 defecto · 0 no evaluadas"
+  ],
+  [
+   "Capacidades auditadas",
+   "32 de 32"
+  ],
+  [
+   "Filas normativas de la matriz",
+   "29"
+  ],
+  [
+   "Pares de equivalencia comparados",
+   "27 (26 iguales)"
+  ],
+  [
+   "Casos de integración",
+   "6, todos conciliados"
+  ],
+  [
+   "Benchmark",
+   "100 válidos de 100"
+  ]
+ ],
+ "cost": [
+  [
+   "Pared de 100 partidos (4 workers, frío)",
+   "22.8 s",
+   "medición"
+  ],
+  [
+   "Por partido (pared/100)",
+   "228 ms",
+   "medición"
+  ],
+  [
+   "Objetivo de producto",
+   "5 s",
+   "no alcanzado"
+  ],
+  [
+   "200 partidos",
+   "46 s",
+   "ESTIMACIÓN (no ejecutada)"
+  ],
+  [
+   "Pico de memoria (proceso completo)",
+   "631 MiB RSS",
+   "medición"
+  ],
+  [
+   "Bytes del lote de cien",
+   "27.1 MiB (3.2 MiB gz)",
+   "medición"
+  ]
+ ],
+ "costNote": "Entorno: Intel(R) Xeon(R) Processor @ 2.10GHz; 4 vCPU; 15.7 GiB; Node v22.22.0; commit 4888ce2. El tiempo por trabajo con varios workers se solapa y no equivale a la espera del usuario.",
+ "reports": [
+  {
+   "path": "docs/tecnico/motor15.md",
+   "what": "documentación técnica de la entrega"
+  },
+  {
+   "path": "docs/tecnico/evidencia-motor15/",
+   "what": "tablas pequeñas versionadas y resumen de cierre"
+  },
+  {
+   "path": "docs/tecnico/motor15-c-esencial-y-workers.md",
+   "what": "nivel esencial, workers y medidas del bloque C"
+  },
+  {
+   "path": "docs/prompts/MOTOR-15-recorrido-manual.md",
+   "what": "recorrido manual para Dennis"
+  }
+ ],
+ "checker": "node scripts/m15-package-check.js out/motor15/MOTOR-15-revision-rapida.zip"
+}
