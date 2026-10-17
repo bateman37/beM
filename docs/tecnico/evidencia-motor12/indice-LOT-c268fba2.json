@@ -1,0 +1,202 @@
+{
+ "schema": "beM-analysis-index/1",
+ "batch_id": "LOT-c268fba2",
+ "created_at": "2026-10-17T08:09:07.136Z",
+ "scope": "lote",
+ "state": "completado",
+ "counters": {
+  "solicitados": 10,
+  "pendientes": 0,
+  "en_curso": 0,
+  "terminados": 10,
+  "fallidos": 0,
+  "interrumpidos": 0,
+  "iniciados": 10,
+  "validos": 10,
+  "no_validos_terminados": 0,
+  "reintentados": 0,
+  "intentos": 10,
+  "reconciled": true
+ },
+ "n_parts": 9,
+ "target_bytes": 67108864,
+ "note": "Los totales de este índice son GLOBALES; cada parte lleva sus propios totales de ámbito parte (no se suman a los globales). Cada partido canónico está en exactamente una parte; un partido fragmentado declara todos sus fragmentos.",
+ "parts": [
+  {
+   "part": 1,
+   "file": "beM-lote-LOT-c268fba2-parte-001-de-009.zip",
+   "bytes": 4776463,
+   "sha256": "524b4d03e534576855b99fe2a75fbcb51c35b7beeaa0d925f9989311bfce818e",
+   "uncompressed_bytes": 60240231,
+   "files": 50,
+   "matches": [
+    {
+     "match_id": "M000001",
+     "case_id": "C000001",
+     "variant_id": "V0",
+     "canonical_attempt_id": "M000001-A1",
+     "exec_state": "terminada"
+    },
+    {
+     "match_id": "M000002",
+     "case_id": "C000001",
+     "variant_id": "V1",
+     "canonical_attempt_id": "M000002-A1",
+     "exec_state": "terminada"
+    }
+   ],
+   "fragment": null
+  },
+  {
+   "part": 2,
+   "file": "beM-lote-LOT-c268fba2-parte-002-de-009.zip",
+   "bytes": 2754929,
+   "sha256": "7821c52192cf62ab5ff4b34a40dd2349e2425384cb417167d938781345f65b9a",
+   "uncompressed_bytes": 39103765,
+   "files": 42,
+   "matches": [
+    {
+     "match_id": "M000003",
+     "case_id": "C000002",
+     "variant_id": "V0",
+     "canonical_attempt_id": "M000003-A1",
+     "exec_state": "terminada"
+    }
+   ],
+   "fragment": null
+  },
+  {
+   "part": 3,
+   "file": "beM-lote-LOT-c268fba2-parte-003-de-009.zip",
+   "bytes": 2756609,
+   "sha256": "cb8840e31c32ed0c3e5c99c3e929774cf7ce1bc7a3133eb6c79c9c0431df3653",
+   "uncompressed_bytes": 39199857,
+   "files": 42,
+   "matches": [
+    {
+     "match_id": "M000004",
+     "case_id": "C000002",
+     "variant_id": "V1",
+     "canonical_attempt_id": "M000004-A1",
+     "exec_state": "terminada"
+    }
+   ],
+   "fragment": null
+  },
+  {
+   "part": 4,
+   "file": "beM-lote-LOT-c268fba2-parte-004-de-009.zip",
+   "bytes": 3134814,
+   "sha256": "e6e2b3cea6a35837f9567af8491bc45ed39bc4c9e02e5ad480a56825ff9b771b",
+   "uncompressed_bytes": 43710408,
+   "files": 42,
+   "matches": [
+    {
+     "match_id": "M000005",
+     "case_id": "C000003",
+     "variant_id": "V0",
+     "canonical_attempt_id": "M000005-A1",
+     "exec_state": "terminada"
+    }
+   ],
+   "fragment": null
+  },
+  {
+   "part": 5,
+   "file": "beM-lote-LOT-c268fba2-parte-005-de-009.zip",
+   "bytes": 3134965,
+   "sha256": "3bc70a6a00943751ce148e8ba8ca106c8076d623e60702496f8761e7f503f6fe",
+   "uncompressed_bytes": 43710663,
+   "files": 42,
+   "matches": [
+    {
+     "match_id": "M000006",
+     "case_id": "C000003",
+     "variant_id": "V1",
+     "canonical_attempt_id": "M000006-A1",
+     "exec_state": "terminada"
+    }
+   ],
+   "fragment": null
+  },
+  {
+   "part": 6,
+   "file": "beM-lote-LOT-c268fba2-parte-006-de-009.zip",
+   "bytes": 2950096,
+   "sha256": "1578d9265d67d46e9231b3e0e80d8ad775536ed58dc00473cfc7e67a70ff0a77",
+   "uncompressed_bytes": 41190692,
+   "files": 42,
+   "matches": [
+    {
+     "match_id": "M000007",
+     "case_id": "C000004",
+     "variant_id": "V0",
+     "canonical_attempt_id": "M000007-A1",
+     "exec_state": "terminada"
+    }
+   ],
+   "fragment": null
+  },
+  {
+   "part": 7,
+   "file": "beM-lote-LOT-c268fba2-parte-007-de-009.zip",
+   "bytes": 2917537,
+   "sha256": "b0d272f5765f1238b97e398e0334534b04ca9e1e154968be65d6862ab34d8e23",
+   "uncompressed_bytes": 40702784,
+   "files": 42,
+   "matches": [
+    {
+     "match_id": "M000008",
+     "case_id": "C000004",
+     "variant_id": "V1",
+     "canonical_attempt_id": "M000008-A1",
+     "exec_state": "terminada"
+    }
+   ],
+   "fragment": null
+  },
+  {
+   "part": 8,
+   "file": "beM-lote-LOT-c268fba2-parte-008-de-009.zip",
+   "bytes": 3292069,
+   "sha256": "fe253e27b692e67651b24b6e265b602dd3f0e8849b64bf6331665877baf47421",
+   "uncompressed_bytes": 46467390,
+   "files": 42,
+   "matches": [
+    {
+     "match_id": "M000009",
+     "case_id": "C000005",
+     "variant_id": "V0",
+     "canonical_attempt_id": "M000009-A1",
+     "exec_state": "terminada"
+    }
+   ],
+   "fragment": null
+  },
+  {
+   "part": 9,
+   "file": "beM-lote-LOT-c268fba2-parte-009-de-009.zip",
+   "bytes": 2847044,
+   "sha256": "ebeb4f41c4577b9eb5f12c1403571b7505672bf6d4c7eb65dc6cd9cda2b66196",
+   "uncompressed_bytes": 40033377,
+   "files": 42,
+   "matches": [
+    {
+     "match_id": "M000010",
+     "case_id": "C000005",
+     "variant_id": "V1",
+     "canonical_attempt_id": "M000010-A1",
+     "exec_state": "terminada"
+    }
+   ],
+   "fragment": null
+  }
+ ],
+ "global_files": [
+  "agregados/*.csv",
+  "estadisticas/partidos.csv",
+  "estadisticas/intentos.csv",
+  "resumen.md",
+  "auditoria/*"
+ ]
+}
