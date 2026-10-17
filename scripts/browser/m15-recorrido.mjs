@@ -14,7 +14,7 @@ const server = createLabServer({ savesRoot: join(scratch, 'saves'), batchRoot: j
 const log = []; const step = (n, route, action, ok, obs) => { log.push({ n, route, action, ok, obs }); console.log(`${ok ? 'OK   ' : 'FALLO'} [${n}] ${route} · ${action} — ${obs}`); };
 const browser = await chromium.launch(); const ctx = await browser.newContext({ acceptDownloads: true }); const p = await ctx.newPage();
 const consoleErrors = []; const netErrors = []; p.on('console', (m) => m.type() === 'error' && consoleErrors.push(m.text())); p.on('pageerror', (e) => consoleErrors.push(String(e))); p.on('response', (r) => r.status() >= 400 && netErrors.push(`${r.status()} ${r.url()}`));
-const URL0 = `http://127.0.0.1:${PORT}/`; const tab = async (name) => { await p.click(`#tabs button:has-text("${name}")`); await p.waitForTimeout(250); };
+const URL0 = `http://127.0.0.1:${PORT}/`; const tab = async (name) => { await p.click(`#tabs button:has-text("${name}")`); await p.waitForTimeout(700); };
 const text = async (sel = '#view') => p.locator(sel).innerText();
 await p.goto(URL0); await p.waitForSelector('#tabs button');
 step(1, URL0, 'arranque y versiones', /MOTOR-15.*beM-motor-0\.15\.0-MOTOR15.*beM-match-export\/9/.test(await text('#app-version')), await text('#app-version'));
@@ -58,7 +58,7 @@ await p.click('button:has-text("Revisar agenda y entradas")'); await p.waitForSe
 let lotTxt = await text(); const stopBtn = p.locator('button:has-text("Detener")').first(); const hadStop = await stopBtn.count();
 if (hadStop) { await stopBtn.click().catch(() => {}); await p.waitForTimeout(2500); lotTxt = await text(); }
 step(7, 'Lotes', 'lote esencial con 2 workers; detener (no despacha nuevos y espera los activos)', /Esencial|esencial/.test(lotTxt) && /2/.test(lotTxt), `botones: ${btnTxt.slice(0, 6).join(' | ')} · ${lotTxt.replace(/\s+/g, ' ').match(/(En curso[^.]*\.|Detenido[^.]*\.|detenid[^.]*\.)/)?.[0] ?? ''}`.slice(0, 260));
-const contLote = p.locator('button:has-text("Continuar")').first(); if (await contLote.count()) { await contLote.click().catch(() => {}); }
+const contLote = p.locator('button:has-text("Continuar pendientes")').first(); if (await contLote.count()) { await contLote.click().catch(() => {}); }
 await p.waitForFunction(() => /completado|terminad|Completado/i.test(document.querySelector('#view')?.innerText ?? ''), null, { timeout: 120000 }).catch(() => {});
 lotTxt = await text(); step(7, 'Lotes', 'continuar hasta completar; resultados y errores diferenciados', /completado|Completado/i.test(lotTxt), lotTxt.replace(/\s+/g, ' ').slice(0, 220));
 // 8. auditorías y cierre
