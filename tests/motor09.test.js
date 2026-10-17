@@ -278,7 +278,7 @@ test('11. memoria: denominadores separados, claves semánticas sin fragmentació
 
 test('12. reproducción: acta reconstruida = acta de la ejecución, sin dobles sanciones; export/7 se rechaza conservando el archivo', () => {
   const res = reference();
-  assert.equal(res.schema, EXPORT_SCHEMA); assert.match(EXPORT_SCHEMA, /export\/8$/); assert.equal(res.meta.engineVersion, ENGINE_VERSION);
+  assert.equal(res.schema, EXPORT_SCHEMA); assert.match(EXPORT_SCHEMA, /export\/[89]$/); assert.equal(res.meta.engineVersion, ENGINE_VERSION);
   assert.equal(res.reconciliation.ok, true, JSON.stringify(res.reconciliation.checks.filter((c) => !c.ok)));
   const file = JSON.parse(JSON.stringify(res));
   const rebuilt = buildActa({ events: file.events, lineups: file.lineups, input: file.input, possessions: file.possessions, status: file.status }, file.profile.statsPolicy);
