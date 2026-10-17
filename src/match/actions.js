@@ -32,8 +32,13 @@ P.libertyAndReading = function libertyAndReading(team, decider) {
   const I = this.pl[decider].initiative;
   const L = F * (sel.initiativeMix[0] + sel.initiativeMix[1] * I);
   // MOTOR-07: la presión reduce la valoración efectiva de Decisiones (hasta k·P·(1 − a(MEN07)) puntos) solo en esta elección; no toca la nota ni la ejecución.
-  const m3 = Math.max(this.profile.abilityBounds[0], this.eff(decider, 'MEN03') - this.choicePenalty(decider));
-  const q = (sel.readingMix.MEN02 * this.eff(decider, 'MEN02') + sel.readingMix.MEN03 * m3 - 1) / 29;
+  const e2 = this.eff(decider, 'MEN02'); const e3 = this.eff(decider, 'MEN03'); const pen = this.choicePenalty(decider);
+  const m3 = Math.max(this.profile.abilityBounds[0], e3 - pen);
+  const q = (sel.readingMix.MEN02 * e2 + sel.readingMix.MEN03 * m3 - 1) / 29;
+  // MOTOR-14 (FIS/MEN02/MEN03): entradas de q registradas desde el mismo cálculo; sin sorteos ni cálculo adicional. MEN03 conserva su valoración efectiva tras la presión.
+  if (this.opts.detail === 'full') this.note('receta:seleccion.lectura', { valor: round(sel.readingMix.MEN02 * e2 + sel.readingMix.MEN03 * m3, 4), q: round(clamp(q, 0, 1), 5), penalizacionPresion: round(pen, 4), importanciaYTension: round(this.pressureNow().P, 4), libertad: round(L, 4), terminos: [
+    { rol: 'decisor', jugador: decider, cap: 'MEN02', base: this.pl[decider].abilities.MEN02, efectiva: round(e2, 3), peso: sel.readingMix.MEN02, energia: round(this.ps[decider].energy, 2) },
+    { rol: 'decisor', jugador: decider, cap: 'MEN03', base: this.pl[decider].abilities.MEN03, efectiva: round(m3, 3), peso: sel.readingMix.MEN03, energia: round(this.ps[decider].energy, 2), efectivaSinPresion: round(e3, 3) }] });
   return { L, q: clamp(q, 0, 1), F, I, team };
 };
 const normalize = (arr, f) => { const s = arr.reduce((a, x) => a + f(x), 0); return arr.map((x) => (s > 0 ? f(x) / s : 0)); };
@@ -594,6 +599,13 @@ P.reboundStrength = function reboundStrength(pid) {
   const rb = this.profile.rebound;
   return this.recipeObj(rb.strength, pid, rb.maxEnergyPenalty) + this.profile.body.reboundStrengthSensitivity * (this.pl[pid].reach - this.profile.body.reboundReachReference);
 };
+// MOTOR-14: registro de una receta de rebote (misma receta que `recipeObj`, solo lectura). `lado` identifica el grupo; el alcance corporal se conserva aparte (no es una capacidad).
+P.reboundRecipeNote = function reboundRecipeNote(label, lado, pid, obj) {
+  const rb = this.profile.rebound; const tm = rb.maxEnergyPenalty;
+  const terminos = Object.entries(obj).map(([cap, w]) => ({ rol: `participante_${lado}`, jugador: pid, cap, base: this.pl[pid].abilities[cap], efectiva: round(this.eff(pid, cap, tm), 3), peso: w, energia: round(this.ps[pid].energy, 2), tope: tm }));
+  const valor = terminos.reduce((a, x) => a + x.peso * x.efectiva, 0) / terminos.reduce((a, x) => a + x.peso, 0);
+  this.note(`receta:${label}`, { valor: round(valor, 4), lado, alcance: label === 'rebote.fuerza' ? round(this.profile.body.reboundStrengthSensitivity * (this.pl[pid].reach - this.profile.body.reboundReachReference), 4) : null, terminos });
+};
 const TIER = { rim: 0, mid: 1, far: 2 };
 // Acceso funcional al aro: por la función que ocupa en la disposición de la posesión; sin layout (transición, recurso), por su posición nominal.
 P.accessTier = function accessTier(pid) {
@@ -672,6 +684,9 @@ P.afterMiss = function afterMiss(ex, zone) {
   const pRO = perturbBinary(pRO0, rz.Z, rz.alpha);
   this.perturbNote('rebound', rz, { pBase: round(pRO0, 5), pFinal: round(pRO, 5) });
   this.note('rebote', { participantesAtaque: offP, participantesDefensa: defP, RA: round(RA, 3), RD: round(RD, 3), kCarga: K, pRebOfensivo: round(pRO, 5), encargos: this.commitTrace(commit) });
+  if (this.opts.detail === 'full') { // MOTOR-14 (TEC17/TEC18/FIS05): fuerza de cierre por participante, con el mismo cálculo y las mismas entradas (sin sorteos ni cálculos nuevos)
+    for (const [side, ids] of [['ataque', offP], ['defensa', defP]]) for (const id of ids) this.reboundRecipeNote('rebote.fuerza', side, id, rb.strength);
+  }
   const spec = { dist: this.profile.durationSeconds.rebound, factor: 1, tag: 'rebote', load: 'rebound' };
   const plan = this.planDuration(spec, 'rebound', 'rebote');
   if (plan.expired) {
@@ -686,6 +701,7 @@ P.afterMiss = function afterMiss(ex, zone) {
   const offReb = this.bernoulli(pRO, 'rebote:equipo');
   const team = offReb ? offT : defT;
   const cands = offReb ? offP : defP;
+  if (this.opts.detail === 'full') for (const id of cands) this.reboundRecipeNote('rebote.captura', offReb ? 'ataque' : 'defensa', id, rb.captor); // MOTOR-14 (TEC18): candidatos elegibles y peso de captura
   const captor = this.pick(cands.map((id) => ({ key: id, w: this.recipeObj(rb.captor, id, rb.maxEnergyPenalty) })), 'rebote:captor').key;
   this.cover(offReb ? 'rebote ofensivo' : 'rebote defensivo');
   this.emit('rebound', { t, team: offT, intent: { origen: ft ? 'último libre fallado' : `tiro fallado ${zone}` }, participants: { captor, candidatos: cands }, stats: [{ k: 'reb', p: captor, team, off: offReb, of: missEvent }], effects: { ofensivo: offReb, pRebOfensivo: round(pRO, 5), contactoAro: true, encargos: this.commitTrace(commit) } });

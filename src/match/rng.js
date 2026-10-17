@@ -27,6 +27,10 @@ export function createRng(seed, config) {
     // Recoge (y vacía) los sorteos hechos desde la última recogida.
     drain() { const b = buffer; buffer = []; return b; },
     state() { return x >>> 0; },
+    // MOTOR-14: restaura la posición exacta del generador (continuación de un guardado). No vuelve a sortear.
+    // `pending` son los sorteos ya hechos y aún no recogidos por un hecho (se asocian al siguiente acontecimiento).
+    pending() { return buffer.map((b) => ({ ...b })); },
+    restore(s) { x = s.state >>> 0; n = s.count; buffer = (s.pending ?? []).map((b) => ({ ...b })); },
   };
   return rng;
 }

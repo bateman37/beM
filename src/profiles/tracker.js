@@ -55,5 +55,13 @@ export function createParamTracker(profileCopy) {
     quiet(fn) { const was = muted; muted = true; try { return fn(); } finally { muted = was; } },
     // Índices de las filas leídas desde la última recogida (ordenados, sin repetidos).
     drain() { const out = [...current].sort((a, b) => a - b); current = new Set(); return out; },
+    // MOTOR-14: estado del seguimiento para guardar/continuar. La tabla es el orden de primera lectura; las filas que lee el constructor son las mismas en la ejecución original y en la restaurada
+    // (misma entrada y perfil), de modo que el prefijo coincide y solo se añaden las leídas después. `current` son las lecturas aún no asociadas a un hecho.
+    state() { return { table: [...table], current: [...current] }; },
+    restore(s) {
+      for (let i = 0; i < table.length; i++) if (table[i] !== s.table[i]) throw new Error('seguimiento de filas: el prefijo del constructor no coincide con el guardado');
+      for (let i = table.length; i < s.table.length; i++) { table.push(s.table[i]); idxOf.set(s.table[i], i); }
+      current = new Set(s.current);
+    },
   };
 }

@@ -2,6 +2,7 @@
 // Sin DOM y sin reloj propio: el planificador se inyecta (setTimeout/cedido en el navegador; reloj controlado en las pruebas).
 // La modalidad y la velocidad pertenecen a la presentación: NO alteran el deporte. Todas llaman a MatchCore.step().
 import { createMatch, buildResult } from './index.js';
+import { snapshotMatch, restoreMatch } from './snapshot.js';
 
 export const MODES = { total: 'Simulado total', cuartos: 'Por cuartos', tiempo: 'Por tiempo' };
 export const SESSION_STATES = {
@@ -18,11 +19,11 @@ const browserScheduler = {
 };
 
 export class MatchSession {
-  constructor({ input, profile, profileRef = null, mode = 'total', managedTeam = 0, speed = PRESENTATION.defaultSpeed, scheduler = browserScheduler, presentation = PRESENTATION, pauseOnTimeout = true } = {}) {
+  constructor({ input, profile, profileRef = null, mode = 'total', managedTeam = 0, speed = PRESENTATION.defaultSpeed, scheduler = browserScheduler, presentation = PRESENTATION, pauseOnTimeout = true, match = null } = {}) {
     if (!MODES[mode]) throw new Error(`modalidad desconocida: ${mode}`);
     this.mode = mode; this.managedTeam = managedTeam; this.speed = speed; this.sched = scheduler; this.pres = presentation; this.pauseOnTimeout = pauseOnTimeout;
     // copia congelada de la entrada y del perfil efectivo: activar otro perfil después no cambia este encuentro
-    this.match = createMatch(input, profile, { detail: 'full', direction: { managedTeam, mode }, profileRef });
+    this.match = match ?? createMatch(input, profile, { detail: 'full', direction: { managedTeam, mode }, profileRef }); // `match`: núcleo ya restaurado de un guardado (MOTOR-14)
     this.state = 'preparado'; this.token = 0; this.timer = null; this.running = false; this.listeners = new Set();
     this.pendingBaseMs = 0;
     this.log = { mode, managedTeam, initialSpeed: speed, speedChanges: [], pauses: [], resumes: [], reviews: [], startedAt: null, finishedAt: null };
@@ -67,6 +68,15 @@ export class MatchSession {
     if (this.mode === 'total') return this._runUntil(() => false);
     if (this.mode === 'cuartos') return this._runUntil((m) => m.periodBreak != null);
     this._playTimed(); return true;
+  }
+
+  // Continuar tras restaurar un guardado (o iniciar uno preparado). Por cuartos, en una revisión pendiente use `playNextPeriod` (admite el plan del siguiente periodo).
+  async proceed() {
+    if (this.busy || this.state === 'finalizado' || this.state === 'error') return false;
+    if (this.state === 'preparado') return this.start();
+    if (this.mode === 'tiempo') return this.resume();
+    if (this.mode === 'cuartos') return this.state === 'revision' ? (await this.playNextPeriod()).ok : this._runUntil((m) => m.periodBreak != null);
+    return this._runUntil(() => false);
   }
 
   // Por cuartos: «Aplicar plan y jugar siguiente periodo». Valida el conjunto entero; si no es válido no arranca el periodo.
@@ -130,6 +140,22 @@ export class MatchSession {
   submit(spec) { const o = this.match.submit({ team: this.managedTeam, ...spec }); this._emit(); return o; }
   submitBatch(specs, label) { const os = this.match.submitBatch(specs.map((s) => ({ team: this.managedTeam, ...s })), label); this._emit(); return os; }
   cancel(id) { const r = this.match.cancel(id); this._emit(); return r; }
+
+  // ---------------- guardar y continuar (MOTOR-14 §10). Guardar solo LEE el estado en una frontera estable: no avanza, no sortea y no concede ventanas. Los datos de presentación
+  // (modalidad, equipo dirigido, velocidad) viajan aparte en `lab.presentation` y no forman parte del estado deportivo.
+  snapshot({ label = null, savedAt = null } = {}) {
+    return snapshotMatch(this.match, { label, savedAt: savedAt ?? this._now(), lab: { presentation: { mode: this.mode, managedTeam: this.managedTeam, speed: this.speed } } });
+  }
+  // Continuar un guardado con SU entrada y SU perfil congelados. Queda en pausa/revisión: el usuario decide cuándo reanudar (no se avanza al restaurar).
+  static fromSnapshot(snap, { scheduler = browserScheduler, presentation = PRESENTATION, mode = null, managedTeam = null, speed = null, pauseOnTimeout = true } = {}) {
+    const pres = snap.lab?.presentation ?? {};
+    const md = mode ?? pres.mode ?? 'total'; const mt = managedTeam ?? pres.managedTeam ?? 0;
+    const match = restoreMatch(snap, { direction: { managedTeam: mt, mode: md } });
+    const s = new MatchSession({ input: match.input, profile: match.profileData, mode: md, managedTeam: mt, speed: speed ?? pres.speed ?? PRESENTATION.defaultSpeed, scheduler, presentation, pauseOnTimeout, match });
+    s.log.restoredFrom = { stepSeq: snap.position.stepSeq, period: snap.position.period, label: snap.label ?? null };
+    if (match.status === 'created') s.state = 'preparado'; else s._settle();
+    return s;
+  }
 
   // ---------------- salidas
   result() { return buildResult(this.match, { presentation: { ...this.log, speed: this.speed, state: this.state } }); }

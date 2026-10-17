@@ -4,7 +4,7 @@
 import { jsonlRecords, ensure, inc, fnv, r4, sum } from './util.js';
 import { effectiveAbility } from '../match/core.js';
 
-export const PROJECTION_VERSION = 'PRJ-MOTOR13-R3';
+export const PROJECTION_VERSION = 'PRJ-MOTOR14-R1';
 export const BIN_EDGES = [0, 0.2, 0.4, 0.6, 0.8, 1];
 export const binOf = (p) => { for (let i = 0; i < BIN_EDGES.length - 2; i++) if (p < BIN_EDGES[i + 1]) return i; return BIN_EDGES.length - 2; };
 const PLAYER = /^EQ\d+(_B)?-J\d+$/;
@@ -44,6 +44,7 @@ export function projectAttempt(src, a, profile, cfg) {
         R.decisions = (R.decisions ?? 0) + 1; for (const o of opts) addRel(R, o.p, o.clave === d.elegido ? 1 : 0, r.decision_id);
         if (!PLAYER.test(opts[0].clave)) for (const o of opts) { const c = ensure(ensure(P.cat, lab, () => ({})), o.clave, () => ({ n: 0, expected: 0, observed: 0 })); c.n += 1; c.expected += o.p; if (o.clave === d.elegido) c.observed += 1; }
       } else if (r.kind === 'receta') projectRecipe(P, r, taskMax, caps, profile);
+      else if (P._lastSel && r.event_id === P._lastSel.event && r.label?.startsWith('mezcla:')) { P._lastSel.ex.mix = { label: r.label, L: d.L, q: d.q, opciones: d.opciones }; P._lastSel = null; }
       else if (r.kind === 'calidad_ataque') { for (const x of d.receta ?? []) { const c = ensure(P.recipes.qualityTerms ??= {}, x.cap, () => ({ uses: 0, sumEff: 0, sumShare: 0 })); c.uses += 1; c.sumEff += x.efectiva; } }
       else if (r.kind === 'libro') { const f = d.fichas ?? []; P.libro.n += 1; const el = f.filter((x) => x.elegible); if (!el.length) P.libro.noElegible += 1; /* prioridad null = ficha LLAMADA aunque no esté en el libro (la llamada puntual no la activa; prioridad efectiva 1): es legítima, no un error de rango (AUD07, corregida en MOTOR-13) */ for (const x of f) { if (x.prioridad == null) { P.libro.called = (P.libro.called ?? 0) + 1; continue; } inc(P.libro.prios, x.prioridad); if (!(x.prioridad >= 1 && x.prioridad <= 5)) P.libro.badPrio += 1; } const pr = el.map((x) => x.prioridad ?? 1); if (pr.length) { const m = Math.min(...pr); if (pr.filter((x) => x === m).length > 1) P.libro.ties += 1; } }
       else if (r.kind === 'rebote') { P.rebote.n += 1; inc(P.rebote.label, r.label); }
@@ -98,13 +99,22 @@ export function projectAttempt(src, a, profile, cfg) {
   P.shots = { n: 0, byQuality: {}, defOrg: { n: 0, mismatch: 0, effective: {} }, noParticipants: 0 };
   for (const s of T.tiros ?? []) { if (!s.valid || s.annulled) continue; P.shots.n += 1; const q = ensure(P.shots.byQuality, s.quality ?? 'sin_calidad', () => ({ n: 0, sumPFinal: 0, sumPConv: 0, made: 0 })); q.n += 1; q.sumPFinal += s.p_final ?? 0; q.sumPConv += s.p_conversion ?? 0; if (s.made) q.made += 1; if (s.def_org_intended) { P.shots.defOrg.n += 1; inc(P.shots.defOrg.effective, s.def_org_effective ?? 'null'); if (s.def_org_effective !== s.def_org_intended) P.shots.defOrg.mismatch += 1; } if (!s.shooter_player_instance_id) P.shots.noParticipants += 1; }
   P.ms.total = performance.now() - t0;
+  delete P._lastSel;
   return P;
+}
+
+// MOTOR-14: recetas de las siete capacidades antes sin registro. Se conserva una copia pequeña de sus entradas para el contraste +1/+3/+5 sobre la operación pura (no se recalcula nada aquí).
+export const SPECIAL_LABEL = /^receta:(rebote\.|seleccion\.lectura|lectura_defensiva|presion\.perdida|momento\.consistencia|gasto_resistencia)/;
+function specialExtra(P, r, d) {
+  const { terminos, ...rest } = d; const ex = { ...rest };
+  if (r.label === 'receta:seleccion.lectura') P._lastSel = { event: r.event_id, ex }; // se completa con la mezcla de opciones del mismo hecho
+  return ex;
 }
 
 function projectRecipe(P, r, taskMax, caps, profile) {
   const R = P.recipes; const d = r.data ?? {}; const terms = d.terminos; const t = taskOf(r.label); inc(R.labelsSeen, t ? `${t.task}.${t.side}` : 'otras');
   if (!Array.isArray(terms)) return;
-  let w = 0; let num = 0; const [lo, hi] = profile.abilityBounds;
+  let w = 0; let num = 0; const [lo, hi] = profile.abilityBounds; const ex = SPECIAL_LABEL.test(r.label) ? specialExtra(P, r, d) : null;
   for (const x of terms) { w += x.peso; num += x.peso * x.efectiva; }
   if (Math.abs(w - 1) > 1e-6 && t) R.weightBad += 1; if (w > 0 && Math.abs(num / w - d.valor) > 0.01) { R.valueBad += 1; if (R.bad.length < 5) R.bad.push({ decision_id: r.decision_id, label: r.label, valor: d.valor, recomputado: r4(num / w) }); }
   for (const x of terms) {
@@ -121,7 +131,8 @@ function projectRecipe(P, r, taskMax, caps, profile) {
     if (t && taskMax[t.task] != null && e != null) { R.effChecked += 1; const v = effectiveAbility(profile, x.base, e, x.cap, taskMax[t.task]); if (Math.abs(v - x.efectiva) > 0.06) { R.effMismatch += 1; if (R.bad.length < 5) R.bad.push({ decision_id: r.decision_id, cap: x.cap, base: x.base, energia: e, registrada: x.efectiva, pura: r4(v) }); } }
     // contextos del contraste B (selección ciega, determinista)
     const h = fnv(`${r.decision_id}|${x.cap}|${x.jugador}|${x.rol}`); const ctxList = ensure(R.contexts, x.cap, () => ({}));
-    const item = { h, decision_id: r.decision_id, event_id: r.event_id, label: r.label, task: t ? `${t.task}.${t.side}` : null, taskMax: t ? taskMax[t.task] ?? null : null, stratum, player: x.jugador, rol: x.rol, cap: x.cap, base: x.base, eff: x.efectiva, energia: e, peso: x.peso, valor: d.valor, terminos: terms };
+    const item = { h, decision_id: r.decision_id, event_id: r.event_id, label: r.label, task: t ? `${t.task}.${t.side}` : null, taskMax: (t ? taskMax[t.task] : null) ?? x.tope ?? null, stratum, player: x.jugador, rol: x.rol, cap: x.cap, base: x.base, eff: x.efectiva, energia: e, peso: x.peso, valor: d.valor, terminos: terms };
+    if (ex) item.ex = ex; // MOTOR-14: entradas del cálculo derivado de las siete capacidades recién registradas
     keepSmall(ensure(ctxList, stratum, () => []), item, 3); if (x.base >= hi - 2 || (e != null && e < 10)) keepSmall(ensure(ctxList, 'LIMITE', () => []), item, 2);
   }
 }

@@ -3,6 +3,7 @@
 import { r4, sum, mean, clamp, fnv } from './util.js';
 import { BIN_EDGES } from './project.js';
 import { effectiveAbility } from '../match/core.js';
+import { enduranceFactorAt, readingQRaw, pressureLossLogit, consistencySigmaAt } from '../match/formulas.js';
 
 export const CAPABILITY_IDS = ['TEC01', 'TEC02', 'TEC03', 'TEC04', 'TEC05', 'TEC06', 'TEC07', 'TEC08', 'TEC09', 'TEC10', 'TEC11', 'TEC12', 'TEC13', 'TEC14', 'TEC15', 'TEC16', 'TEC17', 'TEC18', 'FIS01', 'FIS02', 'FIS03', 'FIS04', 'FIS05', 'FIS06', 'FIS07', 'MEN01', 'MEN02', 'MEN03', 'MEN04', 'MEN05', 'MEN06', 'MEN07'];
 
@@ -69,6 +70,50 @@ export function declaredUses(profile) {
   return out;
 }
 
+// ---------------------------------------------------------------------------------------------------------------- salida derivada de las siete capacidades registradas en MOTOR-14
+// Contraste B de contexto fijo sobre las OPERACIONES PURAS del productor (formulas.js / effectiveAbility), con las entradas registradas y las innovaciones ya sorteadas fijas. No es un hecho ocurrido, no sortea
+// y no exige monotonía por realización. Devuelve null si la receta no es una de las nuevas o falta una entrada (no se inventa).
+const qOf = (q) => Math.min(1, Math.max(0, q));
+function mixChoice(mix, q) {
+  if (!mix?.opciones?.length) return null;
+  const hasCoach = mix.opciones.some((o) => o.entrenador != null && o.entrenador > 0);
+  const raw = mix.opciones.map((o) => { const pj = q * (o.adaptacion ?? 0) + (1 - q) * (o.preferencias ?? 0); const p = hasCoach ? (1 - mix.L) * (o.entrenador ?? 0) + mix.L * pj : pj; return { clave: o.clave, w: p * (o.riesgo ?? 1) * (o.media ?? 1) }; });
+  const tot = raw.reduce((a, x) => a + x.w, 0); if (!(tot > 0)) return null;
+  const probs = raw.map((x) => ({ clave: x.clave, p: x.w / tot })); return { probs, top: probs.reduce((a, b) => (b.p > a.p + 1e-12 ? b : a)).clave };
+}
+export function specialOutput(c, cap, newBase, effAfter, profile) {
+  const ex = c.ex; if (!ex) return null; const lab = c.label; const T = c.terminos;
+  const row = (nombre, unidad, antes, despues, extra = {}) => ({ salida: nombre, salidaUnidad: unidad, salidaAntes: r4(antes), salidaDespues: r4(despues), salidaDelta: r4(despues - antes), ...extra });
+  if (lab === 'receta:rebote.fuerza' || lab === 'receta:rebote.captura') { const alc = ex.alcance ?? 0; return row(lab.endsWith('fuerza') ? 'fuerza de cierre del participante (receta + alcance corporal)' : 'peso de captura del candidato', 'puntos de receta (no probabilidad)', c.valor + alc, c.valor + alc + (effAfter - c.eff) * c.peso / sum(T.map((x) => x.peso))); }
+  if (lab === 'receta:lectura_defensiva') { const W = sum(T.map((x) => x.peso)) || 1; return row('lectura del defensor (media ponderada)', 'puntos de receta', c.valor, c.valor + (effAfter - c.eff) * c.peso / W); }
+  if (lab === 'receta:seleccion.lectura') {
+    const e2 = T.find((x) => x.cap === 'MEN02'); const e3 = T.find((x) => x.cap === 'MEN03'); if (!e2 || !e3) return null;
+    let n2 = e2.efectiva; let n3 = e3.efectiva;
+    if (cap === 'MEN02') n2 = effAfter; else if (cap === 'MEN03') n3 = effAfter; // la brecha base−efectiva registrada ya incluye la penalización de presión (se mantiene fija)
+    const qA = qOf(readingQRaw(profile, e2.efectiva, e3.efectiva)); const qD = qOf(readingQRaw(profile, n2, n3));
+    const ch0 = mixChoice(ex.mix, qA); const ch1 = mixChoice(ex.mix, qD);
+    const dP = ch0 && ch1 ? Math.max(...ch0.probs.map((o, i) => Math.abs(o.p - ch1.probs[i].p))) : null;
+    return row('lectura q de la selección (la presión se mantiene fija)', 'razón 0–1', qA, qD, { opcionesAntes: ch0?.top ?? null, opcionesDespues: ch1?.top ?? null, cambiaOpcionMasProbable: ch0 && ch1 ? ch0.top !== ch1.top : null, maxCambioProbabilidadOpcion: dP == null ? null : r4(dP), opciones: ch0?.probs.length ?? null, nota: ex.mix ? 'probabilidades de intención recompensadas con la mezcla registrada del mismo hecho' : 'sin la mezcla de opciones del hecho: solo q' });
+  }
+  if (lab.startsWith('receta:presion.perdida')) {
+    const losses = T.map((x) => pressureLossLogit(profile, ex.ambito, ex.presion, (x.jugador === c.player && x.cap === cap ? effAfter : x.efectiva)));
+    const before = T.map((x) => pressureLossLogit(profile, ex.ambito, ex.presion, x.efectiva));
+    return row('pérdida por presión (logit; media de ejecutantes)', 'logit', mean(before), mean(losses), { ambito: ex.ambito, presion: ex.presion });
+  }
+  if (lab === 'receta:momento.consistencia') {
+    const s0 = consistencySigmaAt(profile, c.eff); const s1 = consistencySigmaAt(profile, effAfter); const steps = ex.pasos ?? [];
+    const e0 = sum(steps.map((x) => x.e)); const e1 = s0 > 0 ? e0 * s1 / s0 : e0;
+    return row('amplitud de la variación del momento (σ)', 'σ del momento (−1…1)', s0, s1, { innovacionFija: steps.map((x) => x.U), variacionAcumuladaAntes: r4(e0), variacionAcumuladaDespues: r4(e1), nota: 'misma innovación sorteada: solo cambia la amplitud; el valor final depende además de la atenuación y de los límites' });
+  }
+  if (lab === 'receta:gasto_resistencia') {
+    const t = T.find((x) => x.jugador === c.player); if (!t) return null; const e = profile.energy;
+    const f0 = enduranceFactorAt(profile, c.base); const f1 = enduranceFactorAt(profile, newBase); const mins = ex.intervaloDecimas / 600;
+    const g = (f) => Math.min(t.energia - e.range[0], e.costPerLiveMinute * mins * t.carga * f);
+    return row('gasto de energía del intervalo', 'puntos de energía (0–100)', g(f0), g(f1), { factorAntes: r4(f0), factorDespues: r4(f1), intervaloDecimas: ex.intervaloDecimas, carga: t.carga, nota: 'efecto sobre el desgaste del intervalo; el talento base no cambia' });
+  }
+  return null;
+}
+
 // ---------------------------------------------------------------------------------------------------------------- sensibilidad de contexto fijo (§7.3 B, §7.4)
 export function selectContexts(projs, perCap) {
   const sel = {};
@@ -91,7 +136,7 @@ export function sensitivity(contexts, profile, increments) {
     if (c.taskMax != null && c.energia != null) { effAfter = effectiveAbility(profile, newBase, c.energia, cap, c.taskMax); method = 'operación pura effectiveAbility(base, energía, tope de tarea)'; }
     else { effAfter = clamp(newBase - (c.base - c.eff), lo, hi); method = 'brecha base−efectiva registrada (tope de tarea no registrado)'; }
     const W = sum(c.terminos.map((x) => x.peso)); let num = 0; for (const x of c.terminos) num += x.peso * ((x.cap === cap && x.jugador === c.player && x.rol === c.rol) ? effAfter : x.efectiva);
-    const after = num / W; rows.push({ cap, stratum: c.stratum, decision_id: c.decision_id, event_id: c.event_id, label: c.label, player: c.player, role: c.rol, base: c.base, incrementoSolicitado: inc, incrementoEfectivo: effectiveInc, energia: c.energia, efectivaAntes: c.eff, efectivaDespues: r4(effAfter), valorAntes: c.valor, valorDespues: r4(after), delta: r4(after - c.valor), unidad: 'puntos de receta (escala 1–30); NO es probabilidad ni puntos', saturacion: effectiveInc < inc ? (effectiveInc === 0 ? 'base en el máximo: incremento efectivo 0' : 'recortada al máximo') : (effAfter >= hi ? 'efectiva en el máximo' : ''), limite: !!c.limite, metodo: method });
+    const after = num / W; const special = specialOutput(c, cap, newBase, effAfter, profile); rows.push({ ...(special ?? {}), cap, stratum: c.stratum, decision_id: c.decision_id, event_id: c.event_id, label: c.label, player: c.player, role: c.rol, base: c.base, incrementoSolicitado: inc, incrementoEfectivo: effectiveInc, energia: c.energia, efectivaAntes: c.eff, efectivaDespues: r4(effAfter), valorAntes: c.valor, valorDespues: r4(after), delta: r4(after - c.valor), unidad: 'puntos de receta (escala 1–30); NO es probabilidad ni puntos', saturacion: effectiveInc < inc ? (effectiveInc === 0 ? 'base en el máximo: incremento efectivo 0' : 'recortada al máximo') : (effAfter >= hi ? 'efectiva en el máximo' : ''), limite: !!c.limite, metodo: method });
   }
   return rows;
 }

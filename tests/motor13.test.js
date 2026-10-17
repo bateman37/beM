@@ -62,7 +62,7 @@ test('1 · catálogo y referencias: 32 familias con evaluador, 32 capacidades, e
   for (const r of reduced.runs.filter((x) => x.id !== 'AUD29')) assert.equal(r.resultado, 'inconcluso', `${r.id} no puede ser verde sin registro`);
   assert.equal(reduced.runs.find((x) => x.id === 'AUD29').resultado, 'no_evaluado');
   // la ausencia de exposición no es un atributo muerto y los estados de requisito son ejes separados
-  const aud05 = DIAG.runs.find((r) => r.id === 'AUD05'); assert.equal(aud05.resultado, 'inconcluso'); assert.ok(aud05.metrics.consumidasSinRecetaRegistrada.includes('TEC17'));
+  const aud05 = DIAG.runs.find((r) => r.id === 'AUD05'); assert.equal(aud05.resultado, 'inconcluso'); assert.deepEqual(aud05.metrics.consumidasSinRecetaRegistrada, [], 'MOTOR-14: con el registro nuevo, las siete capacidades tienen receta registrada');
   for (const r of DIAG.runs) for (const k of ['impl', 'registro', 'exposicion', 'resultado', 'revision']) assert.ok(r[k], `${r.id}.${k}`);
   // evidencia resoluble: cada hallazgo con partido remite a un attempt existente
   const attempts = new Set(DIAG.matches.map((m) => m.attempt_id)); for (const f of DIAG.findings) for (const e of f.evidence) if (e.attempt_id) assert.ok(attempts.has(e.attempt_id));
@@ -173,7 +173,7 @@ test('8 · neutralidad: auditar, recalcular y exportar no cambian el lote, la hu
   const out = join(root, 'pkg.zip'); await writeAuditPackage(again, out, { report: auditReport(again) }); assert.equal(treeHash(dir), before); const v = verifyAuditPackage(out); assert.ok(v.ok, JSON.stringify(v.problems));
   assert.equal(again.integrity.ok, true);
   const s = openSource({ kind: 'lote', id: lots.diag, root: store.root }); assert.ok(s.audiences().every((a) => a === 'diagnostic'), 'registros exactos solo para audiencia diagnóstica'); assert.equal(DIAG.runs.find((r) => r.id === 'AUD28').resultado, 'conforme');
-  assert.equal(APP_VERSION, 'MOTOR-13'); assert.deepEqual(checkMotor13(JSON.parse(readFileSync(new URL('../data/match/motor13-seed-extension.json', import.meta.url), 'utf8')), data.baseProfile, [data.extension, data.extension3, data.extension4, data.extension5, data.extension6, data.extension7, data.extension8, data.extension9, data.extension10, data.extension11, data.extension12], profile), []);
+  assert.equal(APP_VERSION, 'MOTOR-14'); assert.deepEqual(checkMotor13(JSON.parse(readFileSync(new URL('../data/match/motor13-seed-extension.json', import.meta.url), 'utf8')), data.baseProfile, [data.extension, data.extension3, data.extension4, data.extension5, data.extension6, data.extension7, data.extension8, data.extension9, data.extension10, data.extension11, data.extension12], profile), []);
   assert.deepEqual(Object.keys(profile.audit).sort(), Object.keys(JSON.parse(readFileSync(new URL('../data/match/motor13-seed-extension.json', import.meta.url), 'utf8')).additions.audit).sort());
 });
 

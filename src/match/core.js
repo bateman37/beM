@@ -174,7 +174,7 @@ export class MatchCore {
   limit() { return this.shotClockOn ? Math.min(this.clock, this.shotClock) : this.clock; }
   enduranceFactor(pid) {
     const e = this.profile.energy;
-    return clamp(1 - e.enduranceSlope * (this.pl[pid].abilities.FIS06 - e.baseEnduranceReference), e.enduranceFactorBounds[0], e.enduranceFactorBounds[1]);
+    return clamp(1 - e.enduranceSlope * (this.pl[pid].abilities.FIS06 - e.baseEnduranceReference), e.enduranceFactorBounds[0], e.enduranceFactorBounds[1]); // = enduranceFactorAt (formulas.js)
   }
   // Consume `dur` décimas de juego real: reloj, energía de los que están en pista y recuperación del banquillo.
   consume(dur, loadKind = 'organized') {
@@ -183,6 +183,7 @@ export class MatchCore {
     const mins = dur / 600;
     if (dur > 0) for (const id of Object.keys(this.ps)) this.ps[id].locked = false; // corre el reloj: cesa la restricción de reentrada inmediata
     const load = clamp(e.load[loadKind] ?? e.load.organized, e.loadBounds[0], e.loadBounds[1]);
+    const trace = dur > 0 && this.opts.detail === 'full' ? [] : null; // MOTOR-14: registro de FIS06 (solo lectura del cálculo existente)
     for (let t = 0; t < 2; t++) {
       for (const id of this.teams[t].ids) {
         const s = this.ps[id];
@@ -190,7 +191,9 @@ export class MatchCore {
         if (s.onCourt) {
           // carga por encargo: el comprometido paga clamp(carga · factor) una sola vez por el intervalo (máximo, no producto)
           const l = this.duty?.[id] ? clamp(load * this.duty[id], e.loadBounds[0], e.loadBounds[1]) : load;
+          const before = s.energy;
           s.energy = clamp(s.energy - e.costPerLiveMinute * mins * l * this.enduranceFactor(id), e.range[0], e.range[1]);
+          if (trace) trace.push({ rol: 'en_pista', jugador: id, cap: 'FIS06', base: this.pl[id].abilities.FIS06, efectiva: this.pl[id].abilities.FIS06, peso: 1, energia: round(before, 2), carga: round(l, 4), factor: round(this.enduranceFactor(id), 5), gasto: round(before - s.energy, 5) });
           s.stintTenths += dur; s.playedTenths += dur;
         } else {
           s.energy = clamp(s.energy + e.benchRecoveryPerLiveMinute * mins, e.range[0], e.range[1]);
@@ -198,6 +201,7 @@ export class MatchCore {
         }
       }
     }
+    if (trace && trace.length) { const tw = trace.map((x) => ({ ...x, peso: round(1 / trace.length, 6) })); this.note('receta:gasto_resistencia', { valor: round(tw.reduce((a, x) => a + x.efectiva, 0) / tw.length, 4), intervaloDecimas: dur, claseDeCarga: loadKind, cargaBase: round(load, 4), costePorMinutoVivo: e.costPerLiveMinute, terminos: tw }); }
     this.clock = Math.max(0, this.clock - dur);
     this.sportT += dur; // reloj deportivo de los estados: solo cuenta juego vivo
     if (this.shotClockOn) this.shotClock = Math.max(0, this.shotClock - dur);
