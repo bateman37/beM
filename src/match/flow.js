@@ -26,12 +26,18 @@ P.consumeParts = function consumeParts(parts) {
 // Sobrescribe la planificación para sumar los pases adicionales (continuaciones) a la duración del hecho.
 const basePlan = P.planDuration;
 P.planDurationWithExtra = function planDurationWithExtra(spec, cat, purpose, extra) {
-  if (!extra) { const p = basePlan.call(this, spec, cat, purpose); return p.expired ? p : { parts: [[p.tenths, p.load]], total: p.tenths }; }
+  if (!extra) {
+    const p = basePlan.call(this, spec, cat, purpose);
+    if (p.expired) return p;
+    // MOTOR-15: si la resolución cae en o después de la señal, solo se consume el reloj que queda (sin minutos posteriores a la bocina); la duración de la operación se conserva en `flight`
+    const consume = p.flight?.crossesSignal ? Math.min(p.tenths, this.clock) : p.tenths;
+    return { parts: [[consume, p.load]], total: consume, flight: p.flight ?? null };
+  }
   const cont = this.profile.durationSeconds.continuation;
   const reserve = extra * Math.round(cont[0] * 10);
   const lim = this.limit();
   this.limit = () => lim - reserve; // reserva el mínimo de las continuaciones
-  const p = basePlan.call(this, spec, cat, purpose);
+  const p = basePlan.call(this, spec, cat, purpose, { noFlight: true });
   delete this.limit;
   if (p.expired) return p;
   const parts = [[p.tenths, p.load]]; let used = p.tenths;
@@ -63,6 +69,7 @@ P.resolveAttempt = function resolveAttempt(ex) {
   const plan = this.planDurationWithExtra(spec, cat, 'duración', ex.extraPasses ?? 0);
   if (plan.expired) return this.expire(ex, cat);
   const t = this.withDuty(this.dutyFor(ex), () => this.consumeParts(plan.parts));
+  ex.flight = plan.flight ?? null; // MOTOR-15: hitos de liberación y resolución del tiro de campo (solo lectura para resolveShot)
   const base = {
     t, team: ex.team,
     intent: { origen: ex.origin, continuacion: ex.chain?.length ? ex.chain : (ex.label ?? null), oportunidad: ex.opportunity ?? null, zona: ex.zone, calidad: ex.quality?.cls ?? null, categoria: cat, ejecucion: ex.exec, ...this.directorTrace(), ...this.playTrace(ex) },
@@ -817,6 +824,7 @@ P.step = function step() {
     else if (this.pendingWindows.length) { info.kind = 'ventana'; const pw = this.processWindow(); info.timeouts = pw.timeouts; info.autoTimeouts = pw.autoTimeouts; }
     else if (this.periodStartPending) { this.finishPeriodStart(); info.kind = 'inicio de periodo'; }
     else if (this.periodBreak != null) { const p = this.periodBreak; this.periodBreak = null; this.beginPeriod(p); info.kind = 'comienzo de periodo'; }
+    else if (this.adminPlan || this.incidentInbox.length) { info.kind = 'incidencia'; const ir = this.incidentUnit(); if (ir?.end && this.poss && !this.poss.done) this.settlePossession(this.poss, ir); } // MOTOR-15: incidencia tipada o serie de la cola de sanciones (frontera propia)
     else if (this.clock <= 0 && (!this.poss || this.poss.done)) { this.closePeriod(); info.kind = 'final de periodo'; }
     else {
       info.kind = 'posesión';
@@ -834,6 +842,7 @@ P.step = function step() {
 P.closePeriod = function closePeriod() {
   const rules = this.profile.rules;
   this.emit('period_end', { intent: { origen: 'bocina de final de periodo' }, effects: { marcador: [...this.score] } });
+  this.stopLog.push({ seq: this.eventSeq, period: this.period, remaining: 0, reason: 'final de periodo' }); // MOTOR-15
   this.expireTimeoutRequests('terminó el periodo sin oportunidad: puedes volver a solicitarlo');
   this.expireThrowCalls(this.period, 'terminó el periodo sin un saque compatible propio: la llamada puntual de saque caduca con él');
   this.releaseLineupControl();

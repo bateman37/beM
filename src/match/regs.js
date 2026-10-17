@@ -5,7 +5,12 @@
 import { inPenalty, foulPeriodKey } from './rules.js';
 
 export const CONTRAST = { contrastada: 'Contrastada con el texto de un encargo (MOTOR-09 §4.3 / MOTOR-14 §7.3: lectura de ChatGPT; no lectura directa del PDF por Claude)', heredada: 'Heredada de MOTOR-01 a MOTOR-08, sin contrastar con el PDF', provisional: 'Mecanismo ejecutable con un valor sin contrastar', pendiente: 'Tipada, sin ejecución: contenido exacto pendiente' };
-export const FOUL_CATEGORIES = ['personal', 'ofensiva', 'disruptiva', 'flagrante', 'tecnica1', 'tecnica2', 'antideportiva'];
+// MOTOR-15: «antideportiva» NO es una categoría: es un alias histórico sin correspondencia automática (regulation.aliases); el hecho se clasifica como disruptiva o flagrante.
+// Las técnicas de jugador (1 y 2), de banquillo, del entrenador y la descalificación de banquillo tienen filas propias (RG-F07…RG-F10).
+export const FOUL_CATEGORIES = ['personal', 'ofensiva', 'disruptiva', 'flagrante', 'tecnica1', 'tecnica2', 'tecnica_banquillo', 'tecnica_entrenador', 'descalificacion_banquillo'];
+export const TECHNICAL_CATEGORIES = ['tecnica1', 'tecnica2', 'tecnica_banquillo', 'tecnica_entrenador', 'descalificacion_banquillo'];
+// Contador individual (jugador) por categoría; las de banquillo/entrenador cuentan en el entrenador (`coach:B`, `coach:C`).
+export const COUNTER_KEY = { disruptiva: 'disruptive', flagrante: 'flagrant', tecnica1: 'technicalCat1', tecnica2: 'technicalCat2' };
 
 const getPath = (o, path) => path.split('.').reduce((x, k) => (x == null ? undefined : x[k]), o);
 
@@ -42,6 +47,8 @@ function resolveFt(spec, fact, rules) {
 export function resolveFoul(profile, fact) {
   const rules = profile.rules;
   const miss = (reason) => ({ ok: false, diagnostic: reason, fact });
+  const alias = profile.regulation?.aliases?.[fact.category];
+  if (alias) return miss(`«${fact.category}» es un alias histórico sin categoría propia (${alias.rule}): clasifica el hecho como ${alias.maps.join(' o ')}`);
   if (!FOUL_CATEGORIES.includes(fact.category)) return miss(`categoría de falta desconocida: «${fact.category}»`);
   if (fact.shotAction === undefined || fact.shotAction === null) return miss('el hecho no declara si hubo acción de tiro: no se asume «falta personal normal»');
   if (fact.shotAction && !(fact.shotPoints >= 1)) return miss('falta en acción de tiro sin valor del intento');
@@ -53,7 +60,7 @@ export function resolveFoul(profile, fact) {
   const c = row.consequence;
   const ft = resolveFt(c.ft, fact, rules);
   return { ok: true, row: row.id, contrast: row.contrast, source: row.source, ft: ft.n, ftBasis: ft.basis, shooter: c.shooter ?? null, playerFoul: !!c.playerFoul, teamFoul: !!c.teamFoul, turnover: !!c.turnover,
-    counter: c.counter === 'byCategory' ? fact.category : null, shotValidity: c.shotValidity ?? null, resume: { ...(c.resume ?? {}) }, explanation: row.explanation, fact };
+    counter: c.counter === 'byCategory' ? fact.category : (c.counter ?? null), shotValidity: c.shotValidity ?? null, resume: { ...(c.resume ?? {}) }, alignment: c.alignment ?? null, orderException: !!c.orderException, explanation: row.explanation, fact };
 }
 
 // Hecho de falta defensiva a partir del estado del motor (la constante `penalty` procede de los contadores de equipo del periodo, no de un sorteo).
@@ -97,31 +104,51 @@ export function validateMatrix(profile) {
   return out;
 }
 
-// ---------------------------------------------------------------- sanciones combinadas (cola de penalizaciones pendientes)
-// Cada sanción se resuelve UNA vez con la matriz, en el orden en que se produjo. Dos sanciones iguales de equipos opuestos son candidatas a
-// compensación: la fila RG-C02 está pendiente de contraste, así que el caso se marca y NO se compensa ni se administra por intuición.
-export function combineSanctions(profile, sanctions) {
+// ---------------------------------------------------------------- sanciones combinadas (cola causal común, art. 43)
+// MOTOR-15 §6.1 (síntesis selectiva de N15-02, art. 43 y casos 43-5/43-7; ChatGPT, 17/10/2026). Cada sanción se resuelve UNA vez con la matriz, en el orden en que se produjo.
+//  · Dos penalizaciones de equipos opuestos se compensan POR ORDEN si son equivalentes: mismos libres Y mismos derechos (no solo el número de libres). Compensar no borra las faltas
+//    cargadas ni crea una posesión ficticia: solo retira la administración de ambas.
+//  · Una penalización ya iniciada con balón vivo no vuelve a usarse para compensar.
+//  · Las técnicas se administran antes (prioridad), salvo la imputada al entrenador por la descalificación de otra persona de banquillo, que conserva el orden del caso.
+//  · El último derecho de posesión sancionador sustituye a los anteriores; sin sanciones restantes (o sin derecho) se recupera la reanudación del contexto previo.
+// Sin azar: una vez validado el hecho, ni su sanción ni su ejecutor ni quién reanuda se vuelven a sortear.
+const rightOf = (res) => (res.resume?.kind === 'penaltyThrowIn' ? 'penaltyThrowIn' : 'none');
+const isPenalty = (res) => res.ft > 0 || rightOf(res) !== 'none'; // un simple saque de banda no es una penalización compensable
+
+export function combineSanctions(profile, sanctions, { priorContext = { kind: 'priorContext', shotClock: 'retained' } } = {}) {
   const queue = []; const warnings = []; const seen = new Set();
   const ordered = [...sanctions].sort((a, b) => a.order - b.order);
   for (const s of ordered) {
     if (seen.has(s.id)) { warnings.push(`la sanción ${s.id} aparece repetida: se administra una sola vez`); continue; }
     seen.add(s.id);
-    const r = resolveFoul(profile, { category: s.category, shotAction: s.shotAction, shotPoints: s.shotPoints ?? null, shotMade: !!s.shotMade, penalty: !!s.penalty });
-    queue.push({ id: s.id, team: s.team, order: s.order, committer: s.committer ?? null, fouled: s.fouled ?? null, resolution: r, administered: false });
+    const r = resolveFoul(profile, { category: s.category, shotAction: !!s.shotAction, shotPoints: s.shotPoints ?? null, shotMade: !!s.shotMade, penalty: !!s.penalty });
+    queue.push({ id: s.id, team: s.team, order: s.order, category: s.category, committer: s.committer ?? null, fouled: s.fouled ?? null, startedLive: !!s.startedLive, resolution: r, compensatedWith: null });
   }
   const failed = queue.filter((q) => !q.resolution.ok);
-  const candidates = [];
-  for (let i = 0; i < queue.length; i++) for (let j = i + 1; j < queue.length; j++) {
-    const a = queue[i]; const b = queue[j];
-    if (a.team !== b.team && a.resolution.ok && b.resolution.ok && a.resolution.ft === b.resolution.ft && a.resolution.row === b.resolution.row) candidates.push([a.id, b.id]);
-  }
-  const compRow = profile.regulation.matrix.find((r) => r.id === 'RG-C02');
   if (failed.length) return { ok: false, status: 'rechazada', queue, diagnostic: failed.map((q) => `${q.id}: ${q.resolution.diagnostic}`).join(' · '), warnings };
-  if (candidates.length) return { ok: false, status: 'pendiente_contraste', queue, candidates, diagnostic: `${compRow.id}: ${candidates.map((c) => c.join(' ↔ ')).join(', ')} serían candidatas a compensación; ${compRow.source.note}`, warnings };
-  // administración secuencial: una ejecución por sanción; la reanudación es única y la de la última sanción administrada (RG-C01, provisional)
-  const steps = queue.map((q) => ({ id: q.id, team: q.team, fouled: q.fouled, ft: q.resolution.ft, row: q.resolution.row, resumeIfLast: q.resolution.resume }));
-  const last = steps[steps.length - 1];
-  return { ok: true, status: 'resuelta', queue, steps, resume: last ? { ...last.resumeIfLast, from: last.id, convention: 'RG-C01 (provisional, art. de situaciones especiales sin contrastar)' } : null, warnings, totalFreeThrows: steps.reduce((x, s) => x + s.ft, 0) };
+  // compensación por orden: cada penalización busca la primera posterior, sin compensar, del equipo opuesto y equivalente (libres y derechos)
+  const cmp = profile.regulation.compensation;
+  for (let i = 0; i < queue.length; i++) {
+    const a = queue[i];
+    if (a.compensatedWith || !isPenalty(a.resolution) || (cmp?.startedLiveExcluded && a.startedLive)) continue;
+    for (let j = i + 1; j < queue.length; j++) {
+      const b = queue[j];
+      if (b.compensatedWith || b.team === a.team || !isPenalty(b.resolution) || (cmp?.startedLiveExcluded && b.startedLive)) continue;
+      if (a.resolution.ft === b.resolution.ft && rightOf(a.resolution) === rightOf(b.resolution)) { a.compensatedWith = b.id; b.compensatedWith = a.id; break; }
+    }
+  }
+  const compensated = queue.filter((q, i) => q.compensatedWith && queue.findIndex((x) => x.id === q.compensatedWith) > i).map((q) => [q.id, q.compensatedWith]);
+  const remaining = queue.filter((q) => !q.compensatedWith);
+  const priority = (q) => (cmp?.technicalFirst && TECHNICAL_CATEGORIES.includes(q.category) && !q.resolution.orderException ? 0 : 1);
+  const steps = [...remaining].sort((a, b) => priority(a) - priority(b) || a.order - b.order)
+    .map((q) => ({ id: q.id, team: q.team, beneficiary: 1 - q.team, fouled: q.fouled, committer: q.committer, category: q.category, ft: q.resolution.ft, shooter: q.resolution.shooter, row: q.resolution.row, resumeIfLast: q.resolution.resume, right: rightOf(q.resolution) }));
+  // reanudación: el último derecho sancionador (por orden de ocurrencia) sustituye a los anteriores; si no hay derecho, la de la última sanción que no devuelve al contexto previo; si no, el contexto previo
+  const byOccurrence = remaining.slice();
+  const lastRight = [...byOccurrence].reverse().find((q) => rightOf(q.resolution) !== 'none');
+  const lastReal = lastRight ?? [...byOccurrence].reverse().find((q) => q.resolution.resume?.kind && q.resolution.resume.kind !== 'priorContext');
+  const resume = lastReal ? { ...lastReal.resolution.resume, from: lastReal.id, convention: lastRight ? 'RG-C01: último derecho de posesión sancionador (art. 43)' : 'RG-C01: reanudación de la última sanción sin derecho (art. 43)' }
+    : { ...priorContext, from: null, convention: 'RG-C01: sin sanciones restantes o solo técnicas: contexto previo (art. 43)' };
+  return { ok: true, status: compensated.length ? 'compensada' : 'resuelta', queue, steps, compensated, resume, warnings, totalFreeThrows: steps.reduce((x, st) => x + st.ft, 0), keptFouls: queue.map((q) => q.id) };
 }
 
 // ---------------------------------------------------------------- series de libres: concedidos, administrados, anulados, repetidos y válidos

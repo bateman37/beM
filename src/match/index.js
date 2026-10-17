@@ -14,6 +14,8 @@ import './coach.js';
 import './memory.js';
 import './orders.js';
 import './availability.js';
+import './incident-admin.js';
+import './correction-admin.js';
 import { projectBox, teamTotals } from './box.js';
 import { buildActa } from './acta.js';
 import { reconcile } from './reconcile.js';

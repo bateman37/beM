@@ -7,7 +7,7 @@ import { validateInput, deepCopy, ENGINE_VERSION, EXPORT_SCHEMA, EXPORT_SCHEMA_M
 import { buildActa } from './acta.js';
 import { projectBox } from './box.js';
 
-const COMMAND_KINDS = new Set(['submit', 'batch', 'cancel', 'withdraw']);
+const COMMAND_KINDS = new Set(['submit', 'batch', 'cancel', 'withdraw', 'incident', 'correction']);
 const REQUIRED_PROFILE_KEYS = ['id', 'rng', 'rules', 'selection', 'opportunity', 'outcomes', 'tasks', 'plays', 'shots', 'energy', 'rotation', 'durationSeconds', 'activeCatalog', 'attributeOrder', 'form', 'pressure', 'moment', 'teamMoment', 'episodes', 'stateTasks', 'episodeCatalog', 'coach', 'memory', 'regulation', 'statsPolicy'];
 
 // Valida formato, versiones y referencias ANTES de ejecutar nada. Devuelve { ok, reproducible, legacy, problems }.

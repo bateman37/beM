@@ -114,7 +114,7 @@ P.tacticalFoul = function tacticalFoul(ex) {
 // un contacto innecesario (ESPD01) es disruptiva, no una «antideportiva» genérica heredada. La descalificación se cuenta por categoría
 // (Arts. 38.2.3/41.4): dos flagrantes, dos técnicas de categoría 1 o una de cada; dos disruptivas NO descalifican por sí solas.
 // Hoy solo se produce la disruptiva (ESPD01); los contadores de las demás existen para que la regla no dependa de un único contador.
-P.sanctions = function sanctions(pid) { return ((this.sanc ??= {})[pid] ??= { disruptive: 0, flagrant: 0, technicalCat1: 0 }); };
+P.sanctions = function sanctions(pid) { return ((this.sanc ??= {})[pid] ??= { disruptive: 0, flagrant: 0, technicalCat1: 0, technicalCat2: 0 }); };
 P.disqualifies = function disqualifies(pid) { return disqualifiesByMatrix(this.profile, this.sanctions(pid)); }; // MOTOR-09: el límite acumulado procede de regulation.disqualification (RG-D01)
 // Administración de la falta disruptiva (MOTOR-08 §12.1, resumen del encargo contrastado con OBR 2026 v1.1 arts. 37.2/38.2/17.2.7/29.2.6): falta personal y de equipo; lanza el jugador que
 // recibió la falta; sin acto de tiro, dos libres (con acto de tiro valdrían la canasta y un libre o dos/tres libres, pero ESPD01 se resuelve antes de la acción); después saque de su equipo en la
@@ -135,6 +135,6 @@ P.disruptiveAdmin = function disruptiveAdmin(committer, fouled, shotTeam) {
     effects: { faltasPersonales: this.ps[committer].fouls, faltasColectivasPeriodo: this.teamFouls[defTeam][key], tirosLibres: cons.ft, regla: cons.row, categoria: 'disruptiva', disruptivasDelJugador: sc.disruptive, descalificado: dq, excluido: out || dq, causaTirosLibres: 'falta disruptiva sin acto de tiro (arts. 37.2/38.2): dos libres para quien recibió la falta, después saque de penalización de su equipo en la línea de pista delantera enfrente de la mesa (art. 17.2.7) con 14 s (art. 29.2.6)', reglamento: 'OBR 2026 v1.1 arts. 37.2, 38.2, 17.2.7, 29.2.6 (resumen del encargo MOTOR-08; el PDF no se ha consultado desde el entorno)' },
   });
   this.cover('falta disruptiva');
-  this.pendingFoul = { fouled, n: cons.ft, shotTeam, shooting: false, shotMade: false, kind: 'falta disruptiva', retain: cons.resume.retains === true, shotEvent: null, feed: null };
+  this.pendingFoul = { fouled, n: cons.ft, shotTeam, shooting: false, shotMade: false, kind: 'falta disruptiva', retain: cons.resume.retains === true, shotEvent: null, feed: null, sanction: { id: `FAL${String(this.eventSeq).padStart(4, '0')}`, order: ++this.sanctionOrder, team: defTeam, category: 'disruptiva', shotAction: false, shotPoints: null, shotMade: false, penalty: false, committer, fouled, startedLive: false } };
   this.deadBall('falta disruptiva');
 };

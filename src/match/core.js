@@ -76,6 +76,8 @@ export class MatchCore {
     this.initDefense();
     this.initStates(); // MOTOR-07: Forma, momentos y T (estado deportivo recibido en la entrada)
     this.initCoach(); // MOTOR-08: entrenador automático, delegación, decisiones y memoria defensiva
+    this.initIncidents(); // MOTOR-15: cola de incidencias tipadas y cola causal común de sanciones
+    this.initCorrections(); // MOTOR-15: correcciones del art. 45 (entrada tipada, ventanas y operaciones)
   }
 
   reachOf(p) {

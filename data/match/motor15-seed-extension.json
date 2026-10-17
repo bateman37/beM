@@ -1,0 +1,642 @@
+{
+ "seedExtensionId": "SEM-MOTOR15-20261017",
+ "status": "SEM: provisional, no calibrado. Contiene (1) datos NORMATIVOS (técnicas, compensación art. 43, correcciones art. 45, interferencia) con la procedencia de cada lectura y (2) las semillas SEM15-TIR-01 y SEM15-INT-01…04 del encargo MOTOR-15 §8. Ningún otro coeficiente deportivo cambia.",
+ "basedOn": "SEM-MOTOR01-20261016",
+ "origin": "docs/prompts/MOTOR-15-cierre-funcional-y-rendimiento-del-mundo.md (§5–§8). Síntesis selectivas de ChatGPT (17/10/2026) de N15-01…N15-04; Claude no tuvo acceso directo a los PDF (HTTP 403). Las filas de interferencia son lectura de Claude, marcadas provisionales.",
+ "additions": {
+  "shotFlight": {
+   "version": "FLT-MOTOR15-R1",
+   "pendingLagSeconds": 0.35,
+   "ids": {
+    "pendingLagSeconds": "SEM15-TIR-01"
+   },
+   "provenance": "SEM15-TIR-01 (encargo MOTOR-15 §8): margen abstracto entre liberación y resolución del tiro de campo DENTRO de su duración ya existente. SEM, provisional, sin calibrar; no es física del balón."
+  },
+  "interference": {
+   "version": "INT-MOTOR15-R1",
+   "fieldGoal": {
+    "zones": [
+     "rim",
+     "inside"
+    ],
+    "defensiveP": 0.001,
+    "offensiveP": 0.0005
+   },
+   "lastFreeThrow": {
+    "defensiveP": 0.0005,
+    "offensiveP": 0.00025
+   },
+   "ids": {
+    "fieldGoal.defensiveP": "SEM15-INT-01",
+    "fieldGoal.offensiveP": "SEM15-INT-02",
+    "lastFreeThrow.defensiveP": "SEM15-INT-03",
+    "lastFreeThrow.offensiveP": "SEM15-INT-04"
+   },
+   "provenance": "Semillas SEM15-INT-01…04 (encargo MOTOR-15 §8): probabilidad POR OPORTUNIDAD ELEGIBLE, con resultados excluyentes (ninguna, ofensiva, defensiva; residual = 1 − suma). No son un porcentaje sobre todos los tiros. SEM, provisional, sin calibrar; no proceden de frecuencias FIBA/ACB."
+  },
+  "regulation.technical": {
+   "version": "TEC-MOTOR15-R1",
+   "shooterPolicy": "bestFreeThrowOnCourt",
+   "note": "El lanzador de una técnica lo designa el entrenador rival; aquí se resuelve con una política declarada: el mejor lanzador de libres en pista (desempate por identificador). No se inventa un receptor individual de la técnica."
+  },
+  "regulation.coachDisqualification": {
+   "cLimit": 2,
+   "totalLimit": 3,
+   "counters": [
+    "C",
+    "B"
+   ],
+   "contrast": "contrastada",
+   "note": "Entrenador: dos C, o tres técnicas (C y B) de la combinación reglamentaria. La combinación exacta con descalificaciones de banquillo no se precisó en el extracto: se cuenta C + B."
+  },
+  "regulation.aliases": {
+   "antideportiva": {
+    "status": "alias histórico sin categoría propia",
+    "maps": [
+     "disruptiva",
+     "flagrante"
+    ],
+    "rule": "No existe una tercera categoría «antideportiva» sobre disruptiva/flagrante: el hecho debe clasificarse explícitamente como una de las dos (N15-03)."
+   }
+  },
+  "regulation.compensation": {
+   "version": "CMP-MOTOR15-R1",
+   "equivalenceBy": [
+    "freeThrows",
+    "possessionRight"
+   ],
+   "technicalFirst": true,
+   "startedLiveExcluded": true,
+   "lastRightReplaces": true,
+   "contrast": "contrastada",
+   "note": "Artículo 43 y casos 43-5 y 43-7 (N15-02), lectura selectiva de ChatGPT."
+  },
+  "regulation.corrections": {
+   "version": "COR-MOTOR15-R1",
+   "article": "45.1–45.6 (N15-01); casos 45 de N15-02",
+   "reading": "contrastada con el encargo MOTOR-15 (síntesis selectiva de ChatGPT; no lectura directa del PDF por Claude)",
+   "thresholdPeriod": 4,
+   "thresholdSecondsRemaining": 120,
+   "authorizedRequesters": [
+    "crew_chief",
+    "referee",
+    "commissioner"
+   ],
+   "stoppageKinds": [
+    "foul",
+    "timeout",
+    "periodEnd",
+    "deadBall",
+    "lastFreeThrow"
+   ],
+   "classes": [
+    {
+     "id": "C1-FT-IMPROPER",
+     "category": 1,
+     "article": "45.4 (rama libres indebidos)",
+     "error": "freeThrowsAwardedImproperly",
+     "operation": "annulSeries",
+     "note": "Libres indebidos: se anulan; la actividad posterior legítima permanece."
+    },
+    {
+     "id": "C1-FT-OMITTED",
+     "category": 1,
+     "article": "45.4 (rama libres omitidos)",
+     "error": "freeThrowsOmitted",
+     "operation": "administerSeries",
+     "exception": "canasta posterior del mismo equipo tras un saque erróneo: no se administra",
+     "note": "Los libres omitidos se administran con intentos reales en el momento corregido."
+    },
+    {
+     "id": "C1-SHOOTER-PERMITTED",
+     "category": 1,
+     "article": "45.4 (rama lanzador permitido incorrectamente)",
+     "error": "shooterPermittedWrongly",
+     "operation": "cancelSeriesAndRight",
+     "note": "Se cancela la serie y la posesión sancionadora."
+    },
+    {
+     "id": "C1-SHOOTER-DIRECTED",
+     "category": 1,
+     "article": "45.4 (rama lanzador dirigido incorrectamente)",
+     "error": "shooterDirectedWrongly",
+     "operation": "replaceSeriesByCorrectShooter",
+     "note": "La serie del lanzador equivocado se sustituye por la del correcto."
+    },
+    {
+     "id": "C1-POINTS",
+     "category": 1,
+     "article": "45.4 (rama puntos)",
+     "error": "pointsWrong",
+     "operation": "rectifyPoints",
+     "note": "Rectifica puntos con sus efectos."
+    },
+    {
+     "id": "C1-SUBJECT",
+     "category": 1,
+     "article": "45.4 (rama infractor/sujeto)",
+     "error": "offenderWrong",
+     "operation": "rectifyOffender",
+     "note": "Rectifica el sujeto y sus contadores."
+    },
+    {
+     "id": "C1-TABLE",
+     "category": 1,
+     "article": "45.4 (rama mesa/recursos)",
+     "error": "tableResourcesWrong",
+     "operation": "rectifyResources",
+     "note": "Faltas, tiempos muertos y recursos de mesa."
+    },
+    {
+     "id": "C1-CLOCK",
+     "category": 1,
+     "article": "45.4 (rama reloj de juego)",
+     "error": "gameClockWrong",
+     "operation": "rectifyClock",
+     "note": "El detector de monotonía reconoce la administración identificada."
+    },
+    {
+     "id": "C2-SHOTCLOCK",
+     "category": 2,
+     "article": "45.6",
+     "error": "shotClockWrong",
+     "operation": "restoreShotClock",
+     "expiresWith": [
+      "liveBallControlChange",
+      "validBasket",
+      "end"
+     ],
+     "note": "Corregible inmediatamente o en la primera parada, manteniendo control y derecho."
+    }
+   ]
+  },
+  "regulation.sources.7": {
+   "id": "N15-01",
+   "title": "FIBA Official Basketball Rules 2026 v1.1",
+   "url": "https://assets.fiba.basketball/image/upload/documents-corporate-fiba-official-rules-2026-v1-1.pdf",
+   "use": "Reglamento principal (10/17/29/31/35–45).",
+   "access": "Lectura selectiva de ChatGPT (17/10/2026). Claude: sin lectura directa (HTTP 403 desde el entorno)."
+  },
+  "regulation.sources.8": {
+   "id": "N15-02",
+   "title": "FIBA Official Basketball Rules 2026 — Interpretations v1.0",
+   "url": "https://assets.fiba.basketball/image/upload/documents-corporate-fiba-official-rules-2026-interpretations-v1-0.pdf",
+   "use": "Casos 43 y 45.",
+   "access": "Lectura selectiva de ChatGPT (17/10/2026). Claude: sin lectura directa."
+  },
+  "regulation.sources.9": {
+   "id": "N15-03",
+   "title": "FIBA Official Basketball Rules 2026 — Rule changes v10a",
+   "url": "https://assets.fiba.basketball/image/upload/documents-corporate-fiba-official-rules-2026-rule-changes-v10a.pdf",
+   "use": "Antecedente oficial de cambios 2026; prevalece N15-01 ante discrepancias.",
+   "access": "Contraste de categorías por ChatGPT. Claude: sin lectura directa."
+  },
+  "regulation.sources.10": {
+   "id": "N15-04",
+   "title": "FIBA Statisticians' Manual 2024",
+   "url": "https://assets.fiba.basketball/image/upload/documents-corporate-fiba-statisticians-manual-2024.pdf",
+   "use": "Créditos (adaptación a 2026 identificada).",
+   "access": "Lectura selectiva de ChatGPT (cap. 6). Claude: sin lectura directa."
+  },
+  "regulation.matrix.20": {
+   "id": "RG-I01",
+   "family": "Interferencia",
+   "group": "REG02",
+   "edition": "OBR 2026 v1.1",
+   "source": {
+    "doc": "N15-01",
+    "article": "31 (interferencia en el tiro: ofensiva/defensiva)",
+    "case": null,
+    "reading": "lectura de Claude desde el conocimiento general del reglamento (art. 31); NO contrastada con los PDF (HTTP 403): revisar",
+    "note": "Interferencia defensiva en un tiro de campo: se concede la canasta con el valor del tiro. Crédito extraordinario: FGM del lanzador sin intento duplicado para el defensor. Sanción adicional: ninguna prevista en este supuesto."
+   },
+   "contrast": "provisional",
+   "priority": 15,
+   "when": {
+    "interference": "fieldGoal.defensive"
+   },
+   "consequence": {
+    "validity": "concedida",
+    "pointsAwarded": "shotValue",
+    "credit": "extraordinario",
+    "doubleCount": false,
+    "possession": "scoredBasket",
+    "additionalSanction": null
+   },
+   "explanation": "Defensiva en tiro de campo: canasta concedida; reanudación como tras canasta.",
+   "coverage": {
+    "admin": "ejecutable",
+    "exposure": "natural condicionada (oportunidad elegible) y hecho tipado",
+    "natural": "implementada con semillas SEM15 sin calibrar",
+    "consume": "incidents.js interferenceOpportunity · actions.js resolveShot",
+    "verify": "tests/motor15 grupo «Interferencia»"
+   }
+  },
+  "regulation.matrix.21": {
+   "id": "RG-I02",
+   "family": "Interferencia",
+   "group": "REG02",
+   "edition": "OBR 2026 v1.1",
+   "source": {
+    "doc": "N15-01",
+    "article": "31 (interferencia en el tiro: ofensiva/defensiva)",
+    "case": null,
+    "reading": "lectura de Claude desde el conocimiento general del reglamento (art. 31); NO contrastada con los PDF (HTTP 403): revisar",
+    "note": "Interferencia ofensiva en un tiro de campo: no se conceden puntos y la posesión pasa al rival. Si el tiro habría entrado, se anula; no hay rebote ni segunda oportunidad en el mismo desenlace."
+   },
+   "contrast": "provisional",
+   "priority": 15,
+   "when": {
+    "interference": "fieldGoal.offensive"
+   },
+   "consequence": {
+    "validity": "anulada",
+    "pointsAwarded": 0,
+    "credit": "intento sin acierto; pérdida del infractor",
+    "possession": "opponent",
+    "additionalSanction": null
+   },
+   "explanation": "Ofensiva en tiro de campo: sin puntos; posesión del rival.",
+   "coverage": {
+    "admin": "ejecutable",
+    "exposure": "natural condicionada (oportunidad elegible) y hecho tipado",
+    "natural": "implementada con semillas SEM15 sin calibrar",
+    "consume": "incidents.js interferenceOpportunity · actions.js resolveShot",
+    "verify": "tests/motor15 grupo «Interferencia»"
+   }
+  },
+  "regulation.matrix.22": {
+   "id": "RG-I03",
+   "family": "Interferencia",
+   "group": "REG02",
+   "edition": "OBR 2026 v1.1",
+   "source": {
+    "doc": "N15-01",
+    "article": "31 (interferencia en el tiro: ofensiva/defensiva)",
+    "case": null,
+    "reading": "lectura de Claude desde el conocimiento general del reglamento (art. 31); NO contrastada con los PDF (HTTP 403): revisar",
+    "note": "Interferencia defensiva en el último libre: se concede el punto. La eventual sanción adicional queda registrada como PENDIENTE con el dato exacto que falta: no se administra."
+   },
+   "contrast": "provisional",
+   "priority": 15,
+   "when": {
+    "interference": "lastFreeThrow.defensive"
+   },
+   "consequence": {
+    "validity": "concedida",
+    "pointsAwarded": 1,
+    "credit": "libre convertido del lanzador",
+    "possession": "asLastFreeThrowMade",
+    "additionalSanction": {
+     "status": "pendiente",
+     "article": "31 (consecuencia disciplinaria de la interferencia defensiva en el último libre)",
+     "missing": "categoría y existencia de la técnica adicional según N15-01/N15-02; no se inventa"
+    }
+   },
+   "explanation": "Defensiva en el último libre: punto concedido; sanción adicional pendiente de contraste.",
+   "coverage": {
+    "admin": "ejecutable",
+    "exposure": "natural condicionada (oportunidad elegible) y hecho tipado",
+    "natural": "implementada con semillas SEM15 sin calibrar",
+    "consume": "incidents.js interferenceOpportunity · actions.js resolveShot",
+    "verify": "tests/motor15 grupo «Interferencia»"
+   }
+  },
+  "regulation.matrix.23": {
+   "id": "RG-I04",
+   "family": "Interferencia",
+   "group": "REG02",
+   "edition": "OBR 2026 v1.1",
+   "source": {
+    "doc": "N15-01",
+    "article": "31 (interferencia en el tiro: ofensiva/defensiva)",
+    "case": null,
+    "reading": "lectura de Claude desde el conocimiento general del reglamento (art. 31); NO contrastada con los PDF (HTTP 403): revisar",
+    "note": "Interferencia ofensiva en el último libre: el libre no cuenta como convertido; posesión del rival sin rebote."
+   },
+   "contrast": "provisional",
+   "priority": 15,
+   "when": {
+    "interference": "lastFreeThrow.offensive"
+   },
+   "consequence": {
+    "validity": "anulada",
+    "pointsAwarded": 0,
+    "credit": "libre fallado (intento válido); sin rebote",
+    "possession": "opponent",
+    "additionalSanction": null
+   },
+   "explanation": "Ofensiva en el último libre: sin punto; posesión del rival.",
+   "coverage": {
+    "admin": "ejecutable",
+    "exposure": "natural condicionada (oportunidad elegible) y hecho tipado",
+    "natural": "implementada con semillas SEM15 sin calibrar",
+    "consume": "incidents.js interferenceOpportunity · actions.js resolveShot",
+    "verify": "tests/motor15 grupo «Interferencia»"
+   }
+  },
+  "regulation.matrix.24": {
+   "id": "RG-F08",
+   "family": "Faltas especiales",
+   "group": "REG04",
+   "edition": "OBR 2026 v1.1",
+   "source": {
+    "doc": "N15-01",
+    "article": "36 (técnica de banquillo)",
+    "case": null,
+    "reading": "contrastada con el encargo MOTOR-15 (síntesis selectiva de ChatGPT; no lectura directa del PDF por Claude)",
+    "note": "La técnica de banquillo se imputa al entrenador (contador B) y NO al contador colectivo de faltas de equipo. Un libre sin alineación."
+   },
+   "contrast": "contrastada",
+   "priority": 20,
+   "when": {
+    "category": [
+     "tecnica_banquillo"
+    ]
+   },
+   "consequence": {
+    "ft": 1,
+    "shooter": "designated",
+    "playerFoul": false,
+    "teamFoul": false,
+    "counter": "coach:B",
+    "alignment": false,
+    "resume": {
+     "kind": "priorContext",
+     "retains": null,
+     "shotClock": "retained"
+    }
+   },
+   "explanation": "Técnica de banquillo: imputada al entrenador, un libre; no suma a las faltas de equipo.",
+   "coverage": {
+    "admin": "ejecutable",
+    "exposure": "entrada tipada",
+    "natural": "sin productor natural",
+    "consume": "incidents.js administerIncident",
+    "verify": "tests/motor15 grupo «Técnicas y contadores»"
+   }
+  },
+  "regulation.matrix.25": {
+   "id": "RG-F09",
+   "family": "Faltas especiales",
+   "group": "REG04",
+   "edition": "OBR 2026 v1.1",
+   "source": {
+    "doc": "N15-01",
+    "article": "36 (técnica del entrenador)",
+    "case": null,
+    "reading": "contrastada con el encargo MOTOR-15 (síntesis selectiva de ChatGPT; no lectura directa del PDF por Claude)",
+    "note": "Técnica por la conducta del propio entrenador (contador C). No es falta colectiva. Un libre sin alineación."
+   },
+   "contrast": "contrastada",
+   "priority": 20,
+   "when": {
+    "category": [
+     "tecnica_entrenador"
+    ]
+   },
+   "consequence": {
+    "ft": 1,
+    "shooter": "designated",
+    "playerFoul": false,
+    "teamFoul": false,
+    "counter": "coach:C",
+    "alignment": false,
+    "resume": {
+     "kind": "priorContext",
+     "retains": null,
+     "shotClock": "retained"
+    }
+   },
+   "explanation": "Técnica del entrenador: contador C; un libre.",
+   "coverage": {
+    "admin": "ejecutable",
+    "exposure": "entrada tipada",
+    "natural": "sin productor natural",
+    "consume": "incidents.js administerIncident",
+    "verify": "tests/motor15 grupo «Técnicas y contadores»"
+   }
+  },
+  "regulation.matrix.26": {
+   "id": "RG-F10",
+   "family": "Faltas especiales",
+   "group": "REG04",
+   "edition": "OBR 2026 v1.1",
+   "source": {
+    "doc": "N15-02",
+    "article": "36 y 43 (técnica imputada al entrenador por la descalificación de otra persona de banquillo)",
+    "case": null,
+    "reading": "contrastada con el encargo MOTOR-15 (síntesis selectiva de ChatGPT; no lectura directa del PDF por Claude)",
+    "note": "La excepción conserva el orden del caso (no se administra con prioridad). Contador B del entrenador; no es falta colectiva."
+   },
+   "contrast": "contrastada",
+   "priority": 20,
+   "when": {
+    "category": [
+     "descalificacion_banquillo"
+    ]
+   },
+   "consequence": {
+    "ft": 1,
+    "shooter": "designated",
+    "playerFoul": false,
+    "teamFoul": false,
+    "counter": "coach:B",
+    "alignment": false,
+    "orderException": true,
+    "resume": {
+     "kind": "priorContext",
+     "retains": null,
+     "shotClock": "retained"
+    }
+   },
+   "explanation": "Descalificación de una persona de banquillo: técnica imputada al entrenador (B); conserva el orden del caso.",
+   "coverage": {
+    "admin": "ejecutable",
+    "exposure": "entrada tipada",
+    "natural": "sin productor natural",
+    "consume": "incidents.js administerIncident",
+    "verify": "tests/motor15 grupo «Compensación»"
+   }
+  }
+ },
+ "replacements": {
+  "regulation.version": "REG-MOTOR15-R1",
+  "regulation.matrix.6": {
+   "id": "RG-F07",
+   "family": "Faltas especiales",
+   "group": "REG04",
+   "edition": "OBR 2026 v1.1",
+   "source": {
+    "doc": "N15-01",
+    "article": "36 y categorías 2026 (técnicas de jugador)",
+    "case": null,
+    "reading": "contrastada con el encargo MOTOR-15 (síntesis selectiva de ChatGPT; no lectura directa del PDF por Claude)",
+    "note": "Técnica de jugador: categoría 1 cuenta para la descalificación acumulada; categoría 2 no. Ambas cuentan como falta individual y colectiva. Un libre sin alineación; el juego recupera la situación aplicable. El lanzador lo designa el entrenador rival: aquí lo resuelve regulation.technical.shooterPolicy (política declarada, editable)."
+   },
+   "contrast": "contrastada",
+   "priority": 20,
+   "when": {
+    "category": [
+     "tecnica1",
+     "tecnica2"
+    ]
+   },
+   "consequence": {
+    "ft": 1,
+    "shooter": "designated",
+    "playerFoul": true,
+    "teamFoul": true,
+    "counter": "byCategory",
+    "alignment": false,
+    "resume": {
+     "kind": "priorContext",
+     "retains": null,
+     "shotClock": "retained"
+    }
+   },
+   "explanation": "Técnica de jugador: un libre, falta individual y colectiva, contador por categoría; sin receptor individual de la falta.",
+   "coverage": {
+    "admin": "ejecutable",
+    "exposure": "entrada tipada (contexto externo admitido); sin generación natural",
+    "natural": "sin productor natural: no se genera conducta antideportiva desde las 32 capacidades",
+    "consume": "incidents.js administerIncident → regs.resolveFoul",
+    "verify": "tests/motor15 grupo «Técnicas y contadores»"
+   }
+  },
+  "regulation.matrix.7": {
+   "id": "RG-C01",
+   "family": "Combinadas",
+   "group": "REG04",
+   "edition": "OBR 2026 v1.1",
+   "source": {
+    "doc": "N15-02",
+    "article": "43 (orden de administración)",
+    "case": "Interpretaciones 2026, artículo 43",
+    "reading": "contrastada con el encargo MOTOR-15 (síntesis selectiva de ChatGPT; no lectura directa del PDF por Claude)",
+    "note": "Se ordenan por ocurrencia; la técnica ordinaria se administra prioritariamente (excepto la imputada al entrenador por descalificación de banquillo); el último derecho de posesión sancionador sustituye a los anteriores; sin sanciones restantes se recupera la reanudación del contexto previo."
+   },
+   "contrast": "contrastada",
+   "priority": 10,
+   "when": {
+    "queue": true
+   },
+   "consequence": {
+    "order": "occurrence",
+    "technicalFirst": true,
+    "resume": "lastPossessionRight",
+    "fallback": "priorContext",
+    "eachOnce": true
+   },
+   "explanation": "Cola causal común: orden de ocurrencia, técnica ordinaria primero, una sola reanudación efectiva.",
+   "coverage": {
+    "admin": "ejecutable",
+    "exposure": "entrada tipada y casos preparados; producción natural solo de la disruptiva",
+    "natural": "una sanción por parada (disruptiva)",
+    "consume": "regs.planAdministration",
+    "verify": "tests/motor15 grupo «Compensación»"
+   }
+  },
+  "regulation.matrix.8": {
+   "id": "RG-C02",
+   "family": "Combinadas",
+   "group": "REG04",
+   "edition": "OBR 2026 v1.1",
+   "source": {
+    "doc": "N15-02",
+    "article": "43 (compensación de penalizaciones equivalentes)",
+    "case": "43-5 y 43-7",
+    "reading": "contrastada con el encargo MOTOR-15 (síntesis selectiva de ChatGPT; no lectura directa del PDF por Claude)",
+    "note": "Dos penalizaciones de equipos opuestos son equivalentes si coinciden en libres Y en derechos (no solo el número de libres). Se compensan por orden. Una penalización ya iniciada con balón vivo no se vuelve a usar. Caso 43-5: canasta + adicional + técnica posterior del anotador conserva la canasta y compensa las equivalentes. Caso 43-7: el adicional por flagrante y la técnica no son equivalentes: la técnica se administra primero y se conserva el derecho sancionador."
+   },
+   "contrast": "contrastada",
+   "priority": 10,
+   "when": {
+    "queue": true,
+    "opposingEqualPenalties": true
+   },
+   "consequence": {
+    "compensate": "equivalent",
+    "equivalenceBy": [
+     "freeThrows",
+     "possessionRight"
+    ],
+    "keepsFouls": true,
+    "invents": "nada"
+   },
+   "explanation": "Compensar sanciones no borra las faltas cargadas ni crea una posesión ficticia.",
+   "coverage": {
+    "admin": "ejecutable",
+    "exposure": "casos preparados (43-5, 43-7) y entrada tipada",
+    "natural": "sin producción natural de dos sanciones opuestas",
+    "consume": "regs.planAdministration",
+    "verify": "tests/motor15 grupo «Compensación»"
+   }
+  },
+  "regulation.matrix.14": {
+   "id": "RG-S01",
+   "family": "Tiro y señal",
+   "group": "REG04",
+   "edition": "OBR 2026 v1.1",
+   "source": {
+    "doc": "N15-01",
+    "article": "29 y 31 (tiro liberado antes de la señal); convención SEM15-TIR-01",
+    "case": null,
+    "reading": "heredada de MOTOR-01 y precisada en MOTOR-15 §7.1 (convención temporal SEM)",
+    "note": "El tiro liberado antes de la señal es un intento válido aunque se resuelva después. El margen liberación→resolución es una convención temporal SEM (shotFlight.pendingLagSeconds): divide la duración ya existente de la operación de tiro; no añade tiempo ni un sorteo."
+   },
+   "contrast": "provisional",
+   "priority": 10,
+   "when": null,
+   "consequence": {
+    "releaseBeforeSignal": "valid",
+    "pendingResolution": "appliesProfileBeforeClosing",
+    "clockFloor": 0
+   },
+   "explanation": "Dos hitos discretos: liberación y resolución. El reloj no se vuelve negativo ni se añaden minutos posteriores a la señal.",
+   "coverage": {
+    "admin": "ejecutable",
+    "exposure": "natural (último tiro del periodo) y caso preparado",
+    "natural": "implementada",
+    "consume": "actions.js resolveShot · flow.js resolveAttempt",
+    "verify": "tests/motor15 grupo «Tiro pendiente»"
+   }
+  },
+  "regulation.matrix.18": {
+   "id": "RG-R01",
+   "family": "Correcciones",
+   "group": "REG04",
+   "edition": "OBR 2026 v1.1",
+   "source": {
+    "doc": "N15-01",
+    "article": "45.1–45.6 (errores corregibles; ramas 45.4.1–45.4.8 y 45.6)",
+    "case": "45.1–45.6; casos 45 de las interpretaciones",
+    "reading": "contrastada con el encargo MOTOR-15 (síntesis selectiva de ChatGPT; no lectura directa del PDF por Claude)",
+    "note": "Categoría 1: libres, lanzador, puntos, infractor, mesa y reloj de juego (ventana por umbral de los últimos 2:00 del cuarto periodo). Categoría 2: reloj de posesión (inmediata o primera parada, manteniendo control/derecho; caduca con cambio de control de balón vivo, canasta válida o final). La numeración exacta por rama dentro de 45.4 no se leyó directamente."
+   },
+   "contrast": "contrastada",
+   "priority": 10,
+   "when": {
+    "revision": "regulatory"
+   },
+   "consequence": {
+    "uses": "regulation.corrections"
+   },
+   "explanation": "Corrección tipada con ventana: no es un retroceso a voluntad ni una inferencia del marcador final.",
+   "coverage": {
+    "admin": "ejecutable",
+    "exposure": "orden tipada reproducible y casos preparados",
+    "natural": "sin generación natural: no se simulan errores arbitrales",
+    "consume": "corrections.js evaluateWindow · core.requestCorrection",
+    "verify": "tests/motor15 grupo «Art. 45»"
+   }
+  }
+ },
+ "replacementNotes": {
+  "regulation.matrix.6": "MOTOR-15 §5.2: técnicas de jugador ejecutables (RG-F07 pasa de pendiente a contrastada por síntesis de ChatGPT)",
+  "regulation.matrix.7": "MOTOR-15 §6.1: cola causal común (orden, técnica primero, último derecho)",
+  "regulation.matrix.8": "MOTOR-15 §6.1: compensación del art. 43 ejecutable",
+  "regulation.matrix.14": "MOTOR-15 §7.1: liberación y resolución como hitos discretos",
+  "regulation.matrix.18": "MOTOR-15 §6.2: art. 45 con ventanas y operaciones tipadas"
+ }
+}
