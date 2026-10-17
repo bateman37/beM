@@ -27,6 +27,6 @@ export function reconcileAnalysis(res) {
   const refs = new Set([...ix.events.map((x) => x.id), ...ix.possessions.map((p) => p.id), ...(res.diagnostics?.throwInChains ?? []).map((c) => c.id)]); const bad = [];
   for (const k of a.summary().keys) for (const id of k.evidence.ids) if (!refs.has(id)) bad.push(id);
   add('AN13', 'evidencia', 'las claves del resumen remiten a hechos existentes', [], bad);
-  const oo = a.onOff(['EQ01-J01'].filter((id) => ix.teamOf[id] != null)); add('AN10', 'on/off', 'con + sin + parcial = tiempo total', ix.totalTenths, oo.with.tenths + oo.without.tenths + oo.partialTenths);
+  const oo = a.onOff([Object.keys(ix.teamOf).find((id) => ix.teamOf[id] === 0)]); add('AN10', 'on/off', 'con + sin + parcial = tiempo total', ix.totalTenths, oo.with.tenths + oo.without.tenths + oo.partialTenths);
   return { version: 'RECAN-MOTOR10-R1', total: checks.length, failed: checks.filter((c) => !c.ok), ok: checks.every((c) => c.ok), checks };
 }
