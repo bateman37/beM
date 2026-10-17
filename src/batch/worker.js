@@ -13,8 +13,10 @@ parentPort.on('message', async ({ id, task, kind, args }) => {
   try {
     if (kind === 'replay') { const fz = cache.get(args.batchId) ?? loadFrozen(store, args.batchId); cache.set(args.batchId, fz); const ex = fz.lote.agenda.find((x) => x.match_id === args.matchId); const entry = fz.entryOf(ex); const r = defaultSimulate(fz.inputFor(entry, ex.seed), fz.profile, { level: 'diagnostic', planned: entry.planned_orders ?? [], profileRef: { batch: fz.batch_id, profile_id: fz.profile_id } }); if (!r.res) throw new Error(r.error?.message ?? 'no se pudo reproducir'); parentPort.postMessage({ id, result: { json: JSON.stringify(r.res), trajectory_fp: trajectoryFingerprint(r.res), status: r.res.status, error: r.error } }); return; }
     if (kind === 'package') { const ctl = new BatchController({ store, executor: new InlineExecutor({ store }) }); const res = await buildPackage(ctl, args.batchId, args.opts ?? {}); parentPort.postMessage({ id, result: JSON.parse(JSON.stringify(res)) }); return; }
-    if (!cache.has(task.batchId)) cache.set(task.batchId, loadFrozen(store, task.batchId));
-    const outcome = executeAttempt({ ...task, frozen: cache.get(task.batchId) });
+    // Contenido inmutable cacheado una vez por worker e invalidado por CONTENIDO (huella del lote congelado que envía el coordinador), no solo por etiqueta.
+    const key = `${task.batchId}#${task.frozenFp ?? 'sin-huella'}`;
+    if (!cache.has(key)) { for (const k of [...cache.keys()]) if (k.startsWith(`${task.batchId}#`)) cache.delete(k); cache.set(key, loadFrozen(store, task.batchId)); }
+    const outcome = executeAttempt({ ...task, frozen: cache.get(key) });
     parentPort.postMessage({ id, outcome });
   } catch (e) { parentPort.postMessage({ id, error: { message: e.message, phase: 'registro' } }); }
 });
