@@ -3,7 +3,7 @@
 La campaña de MOTOR-16 **no se ha ejecutado**. Esto es solo la lista de entrada.
 
 ## Coste
-- Objetivo de 100 partidos en 5 s **no alcanzado** (≈23 s con 4 workers, ≈4,6×); 200 partidos ≈46 s (estimación, no ejecutada). El perfil de CPU es plano: hace falta reducir trabajo por posesión (decisión de producto/arquitectura) o redefinir el objetivo.
+- Objetivo de 100 partidos en 5 s **no alcanzado** (≈27 s con 4 workers, ≈5,4×); 200 partidos ≈54 s (estimación, no ejecutada). El perfil de CPU es plano: hace falta reducir trabajo por posesión (decisión de producto/arquitectura) o redefinir el objetivo.
 
 ## Deporte
 - Calibrar las semillas SEM15 (SEM15-TIR-01 = 0,35 s; SEM15-INT-01..04): hoy son valores de partida sin calibrar.

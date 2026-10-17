@@ -9,7 +9,7 @@
 - **D. Medición y cierre:** benchmark real de 100 partidos (100/100 válidos), integración C15-01..06, auditorías AUD01–32 (15 conformes, 16 inconclusas, 1 señal, 0 defectos), recorrido real de Chromium, pestaña «Cierre» y paquetes.
 
 ## Coste
-100 partidos en ≈22,8 s con 4 workers (objetivo 5 s). 200 partidos: ≈46 s **estimado, no ejecutado**.
+100 partidos en ≈27 s con 4 workers (objetivo 5 s). 200 partidos: ≈54 s **estimado, no ejecutado**.
 
 ## Límites declarados
 Semillas SEM15 sin calibrar; consecuencias de interferencia provisionales; 45.4.x sin lectura directa; sin generación natural de técnicas ni desvío de asistencia; fuentes FIBA ilegibles (HTTP 403).

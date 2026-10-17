@@ -1,6 +1,6 @@
 {
  "generated_by": "node scripts/m15-package.js",
- "commit": "6b72387",
+ "commit": "b6756bf",
  "engine": "beM-motor-0.15.0-MOTOR15",
  "axes": [
   {
@@ -11,7 +11,7 @@
   {
    "axis": "Rendimiento",
    "state": "Medido; objetivo NO alcanzado",
-   "detail": "100 partidos world-essential con 4 workers: 22.8 s frente al objetivo de 5 s (4.6×). 200 partidos: estimación lineal 46 s, no ejecutada. Perfil de CPU plano."
+   "detail": "100 partidos world-essential con 4 workers: 27.2 s frente al objetivo de 5 s (5.4×). 200 partidos: estimación lineal 54 s, no ejecutada. Perfil de CPU plano."
   },
   {
    "axis": "Evaluación deportiva",
@@ -60,12 +60,12 @@
  "cost": [
   [
    "Pared de 100 partidos (4 workers, frío)",
-   "22.8 s",
+   "27.2 s",
    "medición"
   ],
   [
    "Por partido (pared/100)",
-   "228 ms",
+   "272 ms",
    "medición"
   ],
   [
@@ -75,21 +75,21 @@
   ],
   [
    "200 partidos",
-   "46 s",
+   "54 s",
    "ESTIMACIÓN (no ejecutada)"
   ],
   [
    "Pico de memoria (proceso completo)",
-   "631 MiB RSS",
+   "502 MiB RSS",
    "medición"
   ],
   [
    "Bytes del lote de cien",
-   "27.1 MiB (3.2 MiB gz)",
+   "29.5 MiB (3.5 MiB gz)",
    "medición"
   ]
  ],
- "costNote": "Entorno: Intel(R) Xeon(R) Processor @ 2.10GHz; 4 vCPU; 15.7 GiB; Node v22.22.0; commit 4888ce2. El tiempo por trabajo con varios workers se solapa y no equivale a la espera del usuario.",
+ "costNote": "Entorno: Intel(R) Xeon(R) Processor @ 2.10GHz; 4 vCPU; 15.7 GiB; Node v22.22.0; commit b6756bf. El tiempo por trabajo con varios workers se solapa y no equivale a la espera del usuario.",
  "reports": [
   {
    "path": "docs/tecnico/motor15.md",

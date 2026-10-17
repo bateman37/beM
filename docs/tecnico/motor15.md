@@ -2,7 +2,7 @@
 
 > [Prompt archivado](../prompts/MOTOR-15-cierre-funcional-y-rendimiento-del-mundo.md) · [Recorrido manual](../prompts/MOTOR-15-recorrido-manual.md) · [Estado](../estado.md) · evidencia en [`evidencia-motor15/`](evidencia-motor15/00-LEEME.md) ([resumen](evidencia-motor15/01-RESUMEN.md) · [diccionario](evidencia-motor15/DICCIONARIO.md)) · bloque C: [esencial y workers](motor15-c-esencial-y-workers.md) · [matriz de consultas](motor15-c-matriz-consultas.md)
 
-**Veredicto honesto:** funcionalmente completo en el alcance del encargo, con los límites de §9; **objetivo de coste NO alcanzado** (100 partidos en ≈23 s con 4 workers frente a 5 s); calibración deportiva **no realizada**; pruebas de Dennis **pendientes**.
+**Veredicto honesto:** funcionalmente completo en el alcance del encargo, con los límites de §9; **objetivo de coste NO alcanzado** (100 partidos en ≈27 s con 4 workers frente a 5 s); calibración deportiva **no realizada**; pruebas de Dennis **pendientes**.
 
 ## 1. Base
 
@@ -39,8 +39,8 @@ Rama `claude/busy-edison-b1fmnc`, partida del commit de MOTOR-14 `bb192b3` (su P
 
 ## 5. Bloque D — medición y cierre
 
-- **Benchmark real de cien** (`scripts/bench-world.js`): 100/100 válidos, 4 workers. Se hicieron **2 ejecuciones reales de cien**; la primera (1 fallo, `defenseReboundParticipants`, C000063) se conserva en `out/motor15/bench100-intento1-con-defecto.json` y se corrigió (H02).
-- **Coste:** ≈23 s por cien (≈4,6–4,7× el objetivo de 5 s). 200 partidos ≈46 s por **estimación lineal, no ejecutada**. Perfil de CPU plano: no hay un punto caliente que corregir sin tocar el deporte.
+- **Benchmark real de cien** (`scripts/bench-world.js`): 100/100 válidos, 4 workers. Se hicieron **cuatro ejecuciones reales de cien** (intento 1 con un fallo conservado; repetición válida 100/100; dos repeticiones finales con el código definitivo, 26,0 s y 27,2 s de pared, mismo digest de resultados); la primera (1 fallo, `defenseReboundParticipants`, C000063) se conserva en `out/motor15/bench100-intento1-con-defecto.json` y se corrigió (H02).
+- **Coste:** ≈27 s por cien (≈5,4× el objetivo de 5 s). 200 partidos ≈54 s por **estimación lineal, no ejecutada**. Perfil de CPU plano: no hay un punto caliente que corregir sin tocar el deporte.
 - **Equivalencia** (`scripts/equivalence.js`, `scripts/build-query-matrix.js`): comparaciones de nivel, concurrencia y modalidad.
 - **Casos de integración** `scripts/m15-integration.js` C15-01..06.
 - **Auditoría** `scripts/m15-audit.js`: AUD01–32 sobre seis encuentros diagnósticos (definición ≠ resultado); varias quedan *inconclusas* por exposición insuficiente, sin ajustar probabilidades.
