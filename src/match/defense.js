@@ -101,10 +101,11 @@ function bestAssignment(defs, slots, score, forced) {
   const taken = new Set(); const out = {};
   for (const [slot, d] of Object.entries(forced)) { if (ds.includes(d) && slots.includes(slot) && !taken.has(d) && !(slot in out)) { out[slot] = d; taken.add(d); } }
   const freeSlots = slots.filter((s) => !(s in out)); const freeDefs = ds.filter((d) => !taken.has(d));
+  const memo = new Map(); const sc = (s, d) => { const k = `${s}\u0000${d}`; let v = memo.get(k); if (v === undefined) { v = score(s, d); memo.set(k, v); } return v; }; // MOTOR-14 (coste): puntuación pura por pareja, una vez por llamada
   let best = null; let bestV = -Infinity;
   const rec = (i, used, acc, v) => {
     if (i === freeSlots.length) { if (v > bestV + 1e-12) { bestV = v; best = { ...acc }; } return; }
-    for (const d of freeDefs) { if (used.has(d)) continue; used.add(d); acc[freeSlots[i]] = d; rec(i + 1, used, acc, v + score(freeSlots[i], d)); used.delete(d); delete acc[freeSlots[i]]; }
+    for (const d of freeDefs) { if (used.has(d)) continue; used.add(d); acc[freeSlots[i]] = d; rec(i + 1, used, acc, v + sc(freeSlots[i], d)); used.delete(d); delete acc[freeSlots[i]]; }
     if (freeDefs.length < freeSlots.length) rec(i + 1, used, acc, v - 1e6); // MOTOR-14 (inferioridad): con menos defensores que ranuras una queda SIN defensor (concesión estructural); con los cinco completos esta rama nunca se explora
   };
   rec(0, new Set(), {}, 0);

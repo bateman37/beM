@@ -17,6 +17,8 @@
     "batch:integration": "node scripts/integration-motor12.js",
     "audit": "node scripts/audit-run.js",
     "audit:check": "node scripts/audit-check.js",
-    "audit:campaign": "node scripts/audit-campaign.js"
+    "audit:campaign": "node scripts/audit-campaign.js",
+    "equivalence": "node scripts/equivalence.js",
+    "cost": "node scripts/measure-cost.js"
   }
 }

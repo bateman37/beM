@@ -1,6 +1,6 @@
 # Estado del proyecto
 
-Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANGELOG.md)). Última actualización: 2026-10-17, entrega MOTOR-13.
+Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANGELOG.md)). Última actualización: 2026-10-17, entrega MOTOR-14 (parcial).
 
 ## Qué hay realmente en el repositorio
 
@@ -8,6 +8,13 @@ Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANG
 - **Diseño funcional del motor y del primer laboratorio**, organizado por temas en [`motor/`](motor/README.md) (34 capítulos). Es **especificación**: está *definida*, no implementada.
 - **Copia original congelada** del funcional unificado y **exportado completo vigente** generado: ver [`historico/`](historico/README.md) y [`exportados/`](exportados/README.md).
 - **Utilidades documentales** en `scripts/docs/` (Python 3, librería estándar).
+
+## MOTOR-14 (parcial; candidato con bloqueos, pendiente de Dennis)
+
+- **Existe**: registro de TEC17/TEC18/MEN02/MEN03/MEN06/MEN07/FIS06 desde el cálculo existente y contraste +1/+3/+5 sobre operaciones puras; **guardar y continuar** real (`src/match/snapshot.js`, almacén atómico, `/api/saves`, tarjeta en Partido); **inferioridad natural** y terminación por falta de jugadores (art. 21, extensión `SEM-MOTOR14-20261017`); equivalencia entre modalidades/velocidades/registro/continuación y AUD29 ejecutable (`npm run equivalence`); fachada para el manager (`src/engine`); medición de coste (`npm run cost`) y dos optimizaciones neutrales (simulación completa 3,05 → 1,37 s, reducida 0,77 → 0,52 s en este entorno). Ver [`tecnico/motor14.md`](tecnico/motor14.md), [contrato](tecnico/motor14-contrato.md) y [recorrido manual](prompts/MOTOR-14-recorrido-manual.md).
+- **No cambia el deporte de la referencia**: `20261016` = 83–103, 6 505 sorteos, misma huella de trayectoria; motor `0.9.0-MOTOR09` y `export/8` sin cambios.
+- **No cerrado** (explícito en `tecnico/motor14.md` §6): tiro en vuelo/interferencia (faltan filas numéricas), técnicas/antideportivas, compensación y art. 45 (falta el texto; fuentes FIBA sin acceso desde Claude), estado propio por tramo, asistencias con ruptura, REC10-01/02, pestaña/paquete «Cierre», campaña C14-03…06, estado actualizado de las 32 auditorías y recorrido de navegador.
+- **Pendiente de Dennis**: aceptación manual (MOTOR-08 a MOTOR-14) y presupuesto de escala.
 
 ## MOTOR-13 (ejecutado, pendiente de Dennis)
 

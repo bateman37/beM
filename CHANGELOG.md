@@ -2,6 +2,15 @@
 
 Registro breve de entregas. Una entrada por entrega; las más recientes primero.
 
+## MOTOR-14 — Rendimiento, cierre funcional y candidato a motor v1 (parcial) — 2026-10-17
+
+- **Sin cambio deportivo en la referencia** (`20261016` = 83–103, 6 505 sorteos, misma huella de trayectoria); motor `0.9.0-MOTOR09` y `export/8` sin cambios.
+- Siete capacidades antes sin receta (TEC17, TEC18, MEN02, MEN03, MEN06, MEN07, FIS06) registradas desde su cálculo y contrastadas (+1/+3/+5) con operaciones puras.
+- Guardar/continuar real (`beM-match-snapshot/1`), almacén atómico `out/saves/`, API y tarjeta en Partido; continuación = rama de laboratorio.
+- Inferioridad natural (vacantes sin jugador fantasma), retirada externa reproducible y terminación por falta de jugadores (art. 21 según el encargo; resultado adjudicado distinto del de cancha); extensión `SEM-MOTOR14-20261017`.
+- Equivalencia entre modalidades/velocidades/registro/continuación, AUD29 ejecutable (`npm run equivalence`), fachada `src/engine`, `npm run cost`, `scripts/closure-inventory.js` y dos optimizaciones neutrales (completo −55 %, reducido −32 % en este entorno).
+- **Parcial**: ver [`docs/tecnico/motor14.md`](docs/tecnico/motor14.md) §6 (interferencia/tiro en vuelo, técnicas, art. 45, estado por tramo, pestaña Cierre, campaña y navegador sin hacer). Pendiente de validación de Dennis.
+
 ## MOTOR-13 — Auditorías, sensibilidad y calibración — 2026-10-17
 
 - **Lectura y diagnóstico; sin cambio deportivo**: referencia `20261016` sigue en **83–103** con 6 505 sorteos y la misma huella de trayectoria; motor `beM-motor-0.9.0-MOTOR09` y `beM-match-export/8` sin cambios.

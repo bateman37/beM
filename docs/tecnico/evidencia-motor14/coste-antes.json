@@ -1,0 +1,445 @@
+{
+ "env": {
+  "commit": "b9e6b8c",
+  "node": "v22.22.0",
+  "os": "6.18.44-fc-v139",
+  "cpus": 4,
+  "cpuModel": "Intel(R) Xeon(R) Processor @ 2.10GHz",
+  "memGiB": 16,
+  "app": "MOTOR-14",
+  "engine": "beM-motor-0.9.0-MOTOR09"
+ },
+ "runs": 5,
+ "cases": {
+  "C14-01": {
+   "seed": 20261016,
+   "full": {
+    "detail": "full",
+    "trajectory_fp": "ed353769858813fe7ae3bedd271946c6f7c0aef7885ce00e2bbe27d0acc13bc5",
+    "draws": 6505,
+    "bytes": {
+     "snapshotMid": 14107460,
+     "snapshotGz": 1311693,
+     "resultJson": 15217751,
+     "resultGz": 1761428
+    },
+    "peakHeapMiB": 181,
+    "coldFirstRun": {
+     "validate": 2.1,
+     "create": 35.5,
+     "simulate": 3249.8,
+     "buildResult": 12.7,
+     "analyze": 32.4,
+     "reconcile": 18.6,
+     "snapshot": 516.1,
+     "restore": 319.2,
+     "json": 206
+    },
+    "validate": {
+     "samples": [
+      2.1,
+      0.3,
+      0.3,
+      0.4,
+      0.3
+     ],
+     "median": 0.3,
+     "min": 0.3,
+     "max": 2.1
+    },
+    "create": {
+     "samples": [
+      35.5,
+      16.4,
+      15.9,
+      14.2,
+      16.1
+     ],
+     "median": 16.1,
+     "min": 14.2,
+     "max": 35.5
+    },
+    "simulate": {
+     "samples": [
+      3249.8,
+      3126.3,
+      2831.1,
+      3053.9,
+      2954.4
+     ],
+     "median": 3053.9,
+     "min": 2831.1,
+     "max": 3249.8
+    },
+    "buildResult": {
+     "samples": [
+      12.7,
+      7,
+      5.9,
+      7.5,
+      9.7
+     ],
+     "median": 7.5,
+     "min": 5.9,
+     "max": 12.7
+    },
+    "analyze": {
+     "samples": [
+      32.4,
+      18,
+      12.8,
+      14.1,
+      13.9
+     ],
+     "median": 14.1,
+     "min": 12.8,
+     "max": 32.4
+    },
+    "reconcile": {
+     "samples": [
+      18.6,
+      17.8,
+      12.5,
+      13.7,
+      15.9
+     ],
+     "median": 15.9,
+     "min": 12.5,
+     "max": 18.6
+    },
+    "snapshot": {
+     "samples": [
+      516.1,
+      331.9,
+      333.1,
+      318.7,
+      385.3
+     ],
+     "median": 333.1,
+     "min": 318.7,
+     "max": 516.1
+    },
+    "restore": {
+     "samples": [
+      319.2,
+      256.7,
+      282.4,
+      250.2,
+      243
+     ],
+     "median": 256.7,
+     "min": 243,
+     "max": 319.2
+    },
+    "json": {
+     "samples": [
+      206,
+      201.7,
+      214.9,
+      224.6,
+      209.5
+     ],
+     "median": 209.5,
+     "min": 201.7,
+     "max": 224.6
+    }
+   },
+   "reduced": {
+    "detail": "reduced",
+    "trajectory_fp": "ed353769858813fe7ae3bedd271946c6f7c0aef7885ce00e2bbe27d0acc13bc5",
+    "draws": 6505,
+    "bytes": {
+     "resultJson": 1596752,
+     "resultGz": 244886
+    },
+    "peakHeapMiB": 155,
+    "coldFirstRun": {
+     "validate": 0.3,
+     "create": 15.2,
+     "simulate": 796.1,
+     "buildResult": 6.8,
+     "analyze": 0,
+     "reconcile": 0,
+     "snapshot": 0,
+     "restore": 0,
+     "json": 14.1
+    },
+    "validate": {
+     "samples": [
+      0.3,
+      0.2,
+      0.2,
+      0.3,
+      0.2
+     ],
+     "median": 0.2,
+     "min": 0.2,
+     "max": 0.3
+    },
+    "create": {
+     "samples": [
+      15.2,
+      10.9,
+      7.1,
+      11.7,
+      8.3
+     ],
+     "median": 10.9,
+     "min": 7.1,
+     "max": 15.2
+    },
+    "simulate": {
+     "samples": [
+      796.1,
+      765.7,
+      742.9,
+      769.3,
+      732.3
+     ],
+     "median": 765.7,
+     "min": 732.3,
+     "max": 796.1
+    },
+    "buildResult": {
+     "samples": [
+      6.8,
+      6,
+      6.6,
+      7.8,
+      8.7
+     ],
+     "median": 6.8,
+     "min": 6,
+     "max": 8.7
+    },
+    "json": {
+     "samples": [
+      14.1,
+      12.1,
+      13.3,
+      14.7,
+      13.3
+     ],
+     "median": 13.3,
+     "min": 12.1,
+     "max": 14.7
+    }
+   }
+  },
+  "C14-02": {
+   "seed": 141002,
+   "full": {
+    "detail": "full",
+    "trajectory_fp": "e8e18f92b437dc2856037c5e9858b82d68a6bfa4fe81a9fc6856c81b4c0a859e",
+    "draws": 6728,
+    "bytes": {
+     "snapshotMid": 14214493,
+     "snapshotGz": 1321978,
+     "resultJson": 15549448,
+     "resultGz": 1813790
+    },
+    "peakHeapMiB": 182,
+    "coldFirstRun": {
+     "validate": 0.3,
+     "create": 15.9,
+     "simulate": 2680,
+     "buildResult": 7.5,
+     "analyze": 21.2,
+     "reconcile": 20.8,
+     "snapshot": 404,
+     "restore": 253.1,
+     "json": 226.1
+    },
+    "validate": {
+     "samples": [
+      0.3,
+      0.4,
+      0.3,
+      0.3,
+      0.3
+     ],
+     "median": 0.3,
+     "min": 0.3,
+     "max": 0.4
+    },
+    "create": {
+     "samples": [
+      15.9,
+      20.9,
+      19.5,
+      14.9,
+      18.3
+     ],
+     "median": 18.3,
+     "min": 14.9,
+     "max": 20.9
+    },
+    "simulate": {
+     "samples": [
+      2680,
+      2975.7,
+      2981.3,
+      2722.2,
+      3041.4
+     ],
+     "median": 2975.7,
+     "min": 2680,
+     "max": 3041.4
+    },
+    "buildResult": {
+     "samples": [
+      7.5,
+      6,
+      6.8,
+      9.3,
+      6.8
+     ],
+     "median": 6.8,
+     "min": 6,
+     "max": 9.3
+    },
+    "analyze": {
+     "samples": [
+      21.2,
+      14.4,
+      15.4,
+      18.7,
+      16.2
+     ],
+     "median": 16.2,
+     "min": 14.4,
+     "max": 21.2
+    },
+    "reconcile": {
+     "samples": [
+      20.8,
+      35.4,
+      20.8,
+      20.1,
+      19.8
+     ],
+     "median": 20.8,
+     "min": 19.8,
+     "max": 35.4
+    },
+    "snapshot": {
+     "samples": [
+      404,
+      322.9,
+      328.5,
+      412.1,
+      302.5
+     ],
+     "median": 328.5,
+     "min": 302.5,
+     "max": 412.1
+    },
+    "restore": {
+     "samples": [
+      253.1,
+      250.9,
+      226.4,
+      285.3,
+      241
+     ],
+     "median": 250.9,
+     "min": 226.4,
+     "max": 285.3
+    },
+    "json": {
+     "samples": [
+      226.1,
+      218.9,
+      225.4,
+      245.5,
+      192.6
+     ],
+     "median": 225.4,
+     "min": 192.6,
+     "max": 245.5
+    }
+   },
+   "reduced": {
+    "detail": "reduced",
+    "trajectory_fp": "e8e18f92b437dc2856037c5e9858b82d68a6bfa4fe81a9fc6856c81b4c0a859e",
+    "draws": 6728,
+    "bytes": {
+     "resultJson": 1663523,
+     "resultGz": 256065
+    },
+    "peakHeapMiB": 163,
+    "coldFirstRun": {
+     "validate": 0.2,
+     "create": 9.1,
+     "simulate": 758.9,
+     "buildResult": 8.7,
+     "analyze": 0,
+     "reconcile": 0,
+     "snapshot": 0,
+     "restore": 0,
+     "json": 15.1
+    },
+    "validate": {
+     "samples": [
+      0.2,
+      0.5,
+      1.1,
+      0.3,
+      0.4
+     ],
+     "median": 0.4,
+     "min": 0.2,
+     "max": 1.1
+    },
+    "create": {
+     "samples": [
+      9.1,
+      9.2,
+      9,
+      11.1,
+      8.6
+     ],
+     "median": 9.1,
+     "min": 8.6,
+     "max": 11.1
+    },
+    "simulate": {
+     "samples": [
+      758.9,
+      867.3,
+      813.9,
+      803.5,
+      739.8
+     ],
+     "median": 803.5,
+     "min": 739.8,
+     "max": 867.3
+    },
+    "buildResult": {
+     "samples": [
+      8.7,
+      10.6,
+      9.7,
+      6.3,
+      6.2
+     ],
+     "median": 8.7,
+     "min": 6.2,
+     "max": 10.6
+    },
+    "json": {
+     "samples": [
+      15.1,
+      13,
+      15.9,
+      12.7,
+      14.2
+     ],
+     "median": 14.2,
+     "min": 12.7,
+     "max": 15.9
+    }
+   }
+  }
+ }
+}

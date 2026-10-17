@@ -1,0 +1,459 @@
+{
+ "schema": "beM-equivalence-report/1",
+ "id": "EQV-20261016-mvccmczh",
+ "created_at": "2026-10-17T12:04:15.293Z",
+ "engineVersion": "beM-motor-0.9.0-MOTOR09",
+ "appVersion": "MOTOR-14",
+ "seeds": [
+  20261016,
+  141006
+ ],
+ "work": {
+  "fullMatchEquivalents": 9.5,
+  "note": "mismos casos reutilizados por AUD29; las colas de continuación se cuentan por su fracción restante"
+ },
+ "runs": [
+  {
+   "id": "ref-completo",
+   "kind": "registro completo, simulado directo",
+   "status": "finished",
+   "score": [
+    83,
+    103
+   ],
+   "draws": 6505,
+   "steps": 465,
+   "trajectory_fp": "ed353769858813fe7ae3bedd271946c6f7c0aef7885ce00e2bbe27d0acc13bc5",
+   "input_fp": "2b6f19164a98b120"
+  },
+  {
+   "id": "modo-total",
+   "kind": "simulado total",
+   "status": "finished",
+   "score": [
+    83,
+    103
+   ],
+   "draws": 6505,
+   "steps": 465,
+   "trajectory_fp": "ed353769858813fe7ae3bedd271946c6f7c0aef7885ce00e2bbe27d0acc13bc5",
+   "input_fp": "2b6f19164a98b120"
+  },
+  {
+   "id": "modo-cuartos",
+   "kind": "por cuartos",
+   "status": "finished",
+   "score": [
+    83,
+    103
+   ],
+   "draws": 6505,
+   "steps": 465,
+   "trajectory_fp": "ed353769858813fe7ae3bedd271946c6f7c0aef7885ce00e2bbe27d0acc13bc5",
+   "input_fp": "2b6f19164a98b120"
+  },
+  {
+   "id": "modo-tiempo-x2-x16",
+   "kind": "por tiempo con x2/x4/x8/x16",
+   "status": "finished",
+   "score": [
+    83,
+    103
+   ],
+   "draws": 6505,
+   "steps": 465,
+   "trajectory_fp": "ed353769858813fe7ae3bedd271946c6f7c0aef7885ce00e2bbe27d0acc13bc5",
+   "input_fp": "2b6f19164a98b120"
+  },
+  {
+   "id": "registro-reducido",
+   "kind": "registro reducido",
+   "status": "finished",
+   "score": [
+    83,
+    103
+   ],
+   "draws": 6505,
+   "steps": 465,
+   "trajectory_fp": "ed353769858813fe7ae3bedd271946c6f7c0aef7885ce00e2bbe27d0acc13bc5",
+   "input_fp": "2b6f19164a98b120"
+  },
+  {
+   "id": "guion-ref",
+   "kind": "núcleo con guion de órdenes",
+   "status": "finished",
+   "score": [
+    101,
+    86
+   ],
+   "draws": 6925,
+   "steps": 496,
+   "trajectory_fp": "3dc4267964564c8589c4c4e8af04f51f14fdc57ebbb0e7cda41c567a70a14245",
+   "input_fp": "850e0bde6c89f6a6"
+  },
+  {
+   "id": "guion-periodos-ref",
+   "kind": "núcleo, guion por periodos",
+   "status": "finished",
+   "score": [
+    78,
+    104
+   ],
+   "draws": 6732,
+   "steps": 454,
+   "trajectory_fp": "6ea4bf4606489f54591ae845f562b981f21075135384586fbeb9ed7ad4e3b8dc",
+   "input_fp": "850e0bde6c89f6a6"
+  },
+  {
+   "id": "guion-cuartos",
+   "kind": "por cuartos con el mismo guion",
+   "status": "finished",
+   "score": [
+    78,
+    104
+   ],
+   "draws": 6732,
+   "steps": 454,
+   "trajectory_fp": "6ea4bf4606489f54591ae845f562b981f21075135384586fbeb9ed7ad4e3b8dc",
+   "input_fp": "850e0bde6c89f6a6"
+  },
+  {
+   "id": "cont-215",
+   "kind": "continuación en la frontera de periodo 2 con órdenes pendientes",
+   "status": "finished",
+   "score": [
+    101,
+    86
+   ],
+   "draws": 6925,
+   "steps": 496,
+   "trajectory_fp": "3dc4267964564c8589c4c4e8af04f51f14fdc57ebbb0e7cda41c567a70a14245",
+   "input_fp": "850e0bde6c89f6a6"
+  },
+  {
+   "id": "cont-120",
+   "kind": "guardado con una orden vigente y pendientes",
+   "status": "finished",
+   "score": [
+    101,
+    86
+   ],
+   "draws": 6925,
+   "steps": 496,
+   "trajectory_fp": "3dc4267964564c8589c4c4e8af04f51f14fdc57ebbb0e7cda41c567a70a14245",
+   "input_fp": "850e0bde6c89f6a6"
+  },
+  {
+   "id": "cont-40",
+   "kind": "guardado en la frontera de una orden registrada",
+   "status": "finished",
+   "score": [
+    101,
+    86
+   ],
+   "draws": 6925,
+   "steps": 496,
+   "trajectory_fp": "3dc4267964564c8589c4c4e8af04f51f14fdc57ebbb0e7cda41c567a70a14245",
+   "input_fp": "850e0bde6c89f6a6"
+  }
+ ],
+ "comparisons": [
+  {
+   "family": "modalidad",
+   "label": "total ↔ referencia",
+   "compatible": true,
+   "equal": true,
+   "differences": [],
+   "fields": [
+    "sport",
+    "draws",
+    "drawLog",
+    "lineups",
+    "finalEnergy",
+    "finalFouls",
+    "reconciliationValid"
+   ],
+   "excluded": [
+    "presentation",
+    "direction (modalidad y equipo dirigido: metadato de presentación)",
+    "events[].calc y events[].params (diagnóstico del cálculo)",
+    "identity.profileRef y nombre de biblioteca",
+    "coach[].version.perfil (procedencia)"
+   ],
+   "draws": [
+    6505,
+    6505
+   ],
+   "score": [
+    [
+     83,
+     103
+    ],
+    [
+     83,
+     103
+    ]
+   ]
+  },
+  {
+   "family": "modalidad",
+   "label": "por cuartos ↔ referencia",
+   "compatible": true,
+   "equal": true,
+   "differences": [],
+   "fields": [
+    "sport",
+    "draws",
+    "drawLog",
+    "lineups",
+    "finalEnergy",
+    "finalFouls",
+    "reconciliationValid"
+   ],
+   "excluded": [
+    "presentation",
+    "direction (modalidad y equipo dirigido: metadato de presentación)",
+    "events[].calc y events[].params (diagnóstico del cálculo)",
+    "identity.profileRef y nombre de biblioteca",
+    "coach[].version.perfil (procedencia)"
+   ],
+   "draws": [
+    6505,
+    6505
+   ],
+   "score": [
+    [
+     83,
+     103
+    ],
+    [
+     83,
+     103
+    ]
+   ]
+  },
+  {
+   "family": "velocidad",
+   "label": "visionado x2/x4/x8/x16 con pausas ↔ referencia",
+   "compatible": true,
+   "equal": true,
+   "differences": [],
+   "fields": [
+    "sport",
+    "draws",
+    "drawLog",
+    "lineups",
+    "finalEnergy",
+    "finalFouls",
+    "reconciliationValid"
+   ],
+   "excluded": [
+    "presentation",
+    "direction (modalidad y equipo dirigido: metadato de presentación)",
+    "events[].calc y events[].params (diagnóstico del cálculo)",
+    "identity.profileRef y nombre de biblioteca",
+    "coach[].version.perfil (procedencia)"
+   ],
+   "draws": [
+    6505,
+    6505
+   ],
+   "score": [
+    [
+     83,
+     103
+    ],
+    [
+     83,
+     103
+    ]
+   ]
+  },
+  {
+   "family": "registro",
+   "label": "reducido ↔ completo (hechos deportivos)",
+   "compatible": true,
+   "equal": true,
+   "differences": [],
+   "fields": [
+    "sport",
+    "draws",
+    "drawLog",
+    "lineups",
+    "finalEnergy",
+    "finalFouls",
+    "reconciliationValid"
+   ],
+   "excluded": [
+    "presentation",
+    "direction (modalidad y equipo dirigido: metadato de presentación)",
+    "events[].calc y events[].params (diagnóstico del cálculo)",
+    "identity.profileRef y nombre de biblioteca",
+    "coach[].version.perfil (procedencia)"
+   ],
+   "draws": [
+    6505,
+    6505
+   ],
+   "score": [
+    [
+     83,
+     103
+    ],
+    [
+     83,
+     103
+    ]
+   ]
+  },
+  {
+   "family": "modalidad",
+   "label": "por cuartos con guion ↔ núcleo con guion",
+   "compatible": true,
+   "equal": true,
+   "differences": [],
+   "fields": [
+    "sport",
+    "draws",
+    "drawLog",
+    "lineups",
+    "finalEnergy",
+    "finalFouls",
+    "reconciliationValid"
+   ],
+   "excluded": [
+    "presentation",
+    "direction (modalidad y equipo dirigido: metadato de presentación)",
+    "events[].calc y events[].params (diagnóstico del cálculo)",
+    "identity.profileRef y nombre de biblioteca",
+    "coach[].version.perfil (procedencia)"
+   ],
+   "draws": [
+    6732,
+    6732
+   ],
+   "score": [
+    [
+     78,
+     104
+    ],
+    [
+     78,
+     104
+    ]
+   ]
+  },
+  {
+   "family": "continuacion",
+   "label": "continuación en la frontera de periodo 2 con órdenes pendientes",
+   "compatible": true,
+   "equal": true,
+   "differences": [],
+   "fields": [
+    "sport",
+    "draws",
+    "drawLog",
+    "lineups",
+    "finalEnergy",
+    "finalFouls",
+    "reconciliationValid"
+   ],
+   "excluded": [
+    "presentation",
+    "direction (modalidad y equipo dirigido: metadato de presentación)",
+    "events[].calc y events[].params (diagnóstico del cálculo)",
+    "identity.profileRef y nombre de biblioteca",
+    "coach[].version.perfil (procedencia)"
+   ],
+   "draws": [
+    6925,
+    6925
+   ],
+   "score": [
+    [
+     101,
+     86
+    ],
+    [
+     101,
+     86
+    ]
+   ]
+  },
+  {
+   "family": "frontera",
+   "label": "guardado con una orden vigente y pendientes",
+   "compatible": true,
+   "equal": true,
+   "differences": [],
+   "fields": [
+    "sport",
+    "draws",
+    "drawLog",
+    "lineups",
+    "finalEnergy",
+    "finalFouls",
+    "reconciliationValid"
+   ],
+   "excluded": [
+    "presentation",
+    "direction (modalidad y equipo dirigido: metadato de presentación)",
+    "events[].calc y events[].params (diagnóstico del cálculo)",
+    "identity.profileRef y nombre de biblioteca",
+    "coach[].version.perfil (procedencia)"
+   ],
+   "draws": [
+    6925,
+    6925
+   ],
+   "score": [
+    [
+     101,
+     86
+    ],
+    [
+     101,
+     86
+    ]
+   ]
+  },
+  {
+   "family": "frontera",
+   "label": "guardado en la frontera de una orden registrada",
+   "compatible": true,
+   "equal": true,
+   "differences": [],
+   "fields": [
+    "sport",
+    "draws",
+    "drawLog",
+    "lineups",
+    "finalEnergy",
+    "finalFouls",
+    "reconciliationValid"
+   ],
+   "excluded": [
+    "presentation",
+    "direction (modalidad y equipo dirigido: metadato de presentación)",
+    "events[].calc y events[].params (diagnóstico del cálculo)",
+    "identity.profileRef y nombre de biblioteca",
+    "coach[].version.perfil (procedencia)"
+   ],
+   "draws": [
+    6925,
+    6925
+   ],
+   "score": [
+    [
+     101,
+     86
+    ],
+    [
+     101,
+     86
+    ]
+   ]
+  }
+ ],
+ "seal": "91b86c5afd90e018fae0a5d843da203eb6471dbac0aa97fa1cabc93918cfce67"
+}

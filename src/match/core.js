@@ -10,11 +10,18 @@ import { deepFreeze } from '../profiles/util.js';
 
 // Operación PURA de la capacidad efectiva (MOTOR-13 §7.3): capacidad base, energía actual, capacidad y tope de penalización de la tarea → valor efectivo. `MatchCore.eff` la usa sin
 // cambiar su semántica; la auditoría de sensibilidad la invoca con las entradas registradas de un contexto, sin partido, sin RNG y sin estado.
+// MOTOR-14 (coste): la curva de severidad es una función pura de la energía; el resultado se reutiliza por nodos y energía (misma aritmética, mismo valor exacto). Memoria acotada.
+const SEV = new WeakMap();
+function severityAt(nodes, energy) {
+  let m = SEV.get(nodes); if (!m) { m = new Map(); SEV.set(nodes, m); }
+  let v = m.get(energy); if (v === undefined) { v = interpolate(nodes, energy); if (m.size > 4096) m.clear(); m.set(energy, v); }
+  return v;
+}
 export function effectiveAbility(profile, base, energy, attr, taskMax = null) {
   const e = profile.energy;
   const pen = taskMax != null ? taskMax : (attr.startsWith('FIS') ? e.defaultPhysicalTaskMax : e.defaultTechnicalTaskMax);
   const [lo, hi] = profile.abilityBounds;
-  return clamp(base - interpolate(e.severityNodes, energy) * pen, lo, hi);
+  return clamp(base - severityAt(e.severityNodes, energy) * pen, lo, hi);
 }
 
 export class MatchCore {
