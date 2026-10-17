@@ -238,7 +238,7 @@ test('12. las filas sin lectura de partido (generator, analysis, batch) quedan e
   const issues = (p) => validateProfile(p, { base: profile }).issues.map((i) => i.id).join(' | ');
   assert.match(issues(edit((p) => { p.generator.coefficients.team = -1; })), /generator\.coefficients\.team/, 'una fila del generador mal formada se rechaza');
   assert.match(issues(edit((p) => { p.batch.progressIntervalMs = 0.5; })), /batch\.progressIntervalMs/, 'una fila de lotes mal formada se rechaza (entero no negativo)');
-  assert.equal(prepareBatch(baseSpec({ concurrency: 2 }), profile, { players }).ok, false, 'la concurrencia distinta de 1 se rechaza al preparar el lote');
+  assert.equal(prepareBatch(baseSpec({ concurrency: 3 }), profile, { players }).ok, false, 'MOTOR-15: solo se admite 1, 2, 4 o auto (3 se rechaza al preparar el lote)');
   const rows = buildRows(profile); const byId = (id) => rows.find((r) => r.id === id);
   assert.ok(byId('batch.concurrency') && byId('batch.partTargetMiB') && byId('batch.maxExecutionsPerJob') && byId('batch.repetitionShortcuts.2'), 'filas de lotes en el diccionario');
   assert.deepEqual(uncoveredLeaves(profile, rows).filter((k) => k.startsWith('batch.') || k.startsWith('generator.')), [], 'ninguna hoja de batch/generator queda sin fila ni exención declarada');

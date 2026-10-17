@@ -5,7 +5,7 @@ import { join, basename } from 'node:path';
 import { loadData } from '../../scripts/node-data.js';
 import { JobStore } from './jobstore.js';
 import { BatchController } from './runner.js';
-import { WorkerExecutor } from './executors.js';
+import { WorkerExecutor, WorkerPool } from './executors.js';
 import { prepareBatch, planCounts, normalizeSpec, batchDefaults } from './schedule.js';
 import { deriveState, countersOf, matchRows } from './state.js';
 import { aggregate, compare } from './aggregate.js';
@@ -18,7 +18,7 @@ const send = (res, code, obj, headers = {}) => { const body = typeof obj === 'st
 
 export class BatchService {
   constructor({ root = undefined } = {}) {
-    this.store = new JobStore(root); this.runExec = new WorkerExecutor({ store: this.store }); this.auxExec = new WorkerExecutor({ store: this.store });
+    this.store = new JobStore(root); this.runExec = new WorkerPool({ store: this.store, size: 4 }); // grupo persistente (capacidad 4; la concurrencia efectiva de cada lote la fija su configuración) this.auxExec = new WorkerExecutor({ store: this.store });
     this.ctl = new BatchController({ store: this.store, executor: this.runExec }); this.data = null; this.recovered = this.ctl.recover();
   }
   players() { this.data ??= loadData(); return this.data.players; }
@@ -33,7 +33,7 @@ export class BatchService {
       if (req.method === 'POST' && seg[0] === 'create') { const b = await readBody(req); const r = this.ctl.create(b.spec, b.profile, { players: this.players(), label: b.label ?? null, revisionOf: b.revisionOf ?? null }); if (!r.ok) return send(res, 422, r); if (b.start !== false) { const run = await this.ctl.run(r.batchId); r.started = run.ok; r.reason = run.reason; run.done?.catch?.(() => {}); } return send(res, 200, { ok: true, batchId: r.batchId, counts: r.counts, warnings: r.warnings }); }
       const id = seg[0]; if (!id || !this.store.exists(id)) return send(res, 404, { ok: false, reason: 'lote desconocido' });
       if (req.method === 'GET' && seg[1] === 'status') return send(res, 200, this.ctl.status(id, { rows: u.searchParams.get('rows') === '1' }));
-      if (req.method === 'POST' && seg[1] === 'start') { const b = await readBody(req).catch(() => ({})); const r = await this.ctl.run(id, { profileForCompat: null }); void b; r.done?.catch?.(() => {}); const { done, ...rest } = r; return send(res, r.ok ? 200 : 409, rest); }
+      if (req.method === 'POST' && seg[1] === 'start') { const b = await readBody(req).catch(() => ({})); const r = await this.ctl.run(id, { profileForCompat: null, concurrency: b.concurrency ?? null }); void b; r.done?.catch?.(() => {}); const { done, ...rest } = r; return send(res, r.ok ? 200 : 409, rest); }
       if (req.method === 'POST' && seg[1] === 'stop') return send(res, 200, this.ctl.requestStop(id));
       if (req.method === 'POST' && seg[1] === 'retry') { const b = await readBody(req); const r = this.ctl.retry(id, b.matchIds ?? []); if (r.ok) { const run = await this.ctl.run(id); run.done?.catch?.(() => {}); } return send(res, r.ok ? 200 : 422, r); }
       if (req.method === 'GET' && seg[1] === 'aggregates') return send(res, 200, this.aggregates(id));

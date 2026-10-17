@@ -10,7 +10,7 @@ import { fingerprint, pad } from './util.js';
 export const LOT_VERSION = 'LOT-MOTOR12-R1';
 export const VENUES = { fixed: 'Local fijo (A en casa)', home_away: 'Ida y vuelta (dos casos por repetición)', alternate: 'Alternada por repetición' };
 export const MODES = { repeat: 'Repetir un enfrentamiento', cross: 'Cruces entre equipos seleccionados', pairs: 'Pares elegidos uno a uno' };
-export const RECORD_LEVELS = { diagnostic: 'Diagnóstico completo', reduced: 'Reducido (sin decisiones calculadas)' };
+export const RECORD_LEVELS = { diagnostic: 'Diagnóstico completo', reduced: 'Reducido (sin decisiones calculadas)', 'world-essential': 'Esencial para el mundo (acta, secuencia compacta, presencia, tiros, táctica observada y estados; mismo resolutor)' };
 export const LOCALIA_NOTE = 'El motor no implementa ninguna ventaja de localía: se conserva la etiqueta local/visitante (el local ocupa el puesto 0 de la entrada) sin inventar un efecto deportivo.';
 
 // Valores por defecto: salen de la tabla `batch` del perfil (administrable); los que no existan se explicitan aquí.
@@ -98,7 +98,7 @@ export function prepareBatch(specIn, profile, { players = null } = {}) {
   if (!RECORD_LEVELS[spec.recordLevel]) problems.push(`nivel de registro desconocido: ${spec.recordLevel}`);
   if (!Number.isInteger(spec.repetitions) || spec.repetitions < 1) problems.push('las repeticiones deben ser un entero positivo');
   if (!Number.isInteger(spec.batchSeed) || spec.batchSeed < 0 || spec.batchSeed > 4294967295) problems.push('la semilla de lote debe ser un entero entre 0 y 4294967295');
-  if (spec.concurrency !== 1) problems.push('solo se admite concurrencia 1 (ejecución serial) en esta versión');
+  if (!(spec.concurrency === 'auto' || [1, 2, 4].includes(spec.concurrency))) problems.push(`concurrencia no admitida: ${spec.concurrency} (admite 1 = secuencial, 2, 4 o «auto» = max(1, min(4, núcleos − 1)))`);
   if (!Number.isFinite(spec.partTargetMiB) || spec.partTargetMiB <= 0) problems.push('el objetivo de parte debe ser un número positivo de MiB');
   if (spec.source?.kind === 'lab') { if (spec.mode !== 'repeat') problems.push('un lote desde escenario LAB11 solo admite el modo «repetir enfrentamiento»'); if (spec.venue !== 'fixed') problems.push('un lote desde escenario LAB11 conserva su emparejamiento: localía fija'); }
   else if (spec.mode === 'pairs') {
