@@ -10,7 +10,7 @@ import { fingerprint, pad } from './util.js';
 export const LOT_VERSION = 'LOT-MOTOR12-R1';
 export const VENUES = { fixed: 'Local fijo (A en casa)', home_away: 'Ida y vuelta (dos casos por repetición)', alternate: 'Alternada por repetición' };
 export const MODES = { repeat: 'Repetir un enfrentamiento', cross: 'Cruces entre equipos seleccionados', pairs: 'Pares elegidos uno a uno' };
-export const RECORD_LEVELS = { diagnostic: 'Diagnóstico completo', reduced: 'Reducido (sin decisiones calculadas)' };
+export const RECORD_LEVELS = { diagnostic: 'Diagnóstico completo', reduced: 'Reducido (sin decisiones calculadas)', 'world-essential': 'Esencial para el mundo (acta, secuencia compacta, presencia, tiros, táctica observada y estados; mismo resolutor)' };
 export const LOCALIA_NOTE = 'El motor no implementa ninguna ventaja de localía: se conserva la etiqueta local/visitante (el local ocupa el puesto 0 de la entrada) sin inventar un efecto deportivo.';
 
 // Valores por defecto: salen de la tabla `batch` del perfil (administrable); los que no existan se explicitan aquí.
