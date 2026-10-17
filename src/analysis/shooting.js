@@ -34,6 +34,19 @@ export function sectorMap(shots) {
   });
 }
 
+// Detalle del tiro exterior/media por la FUNCIÓN que ocupaba el tirador en la disposición vigente (dato propio del hecho; el motor no registra el lado). Se conserva lo que
+// existe y no se sortea izquierda/derecha: «esquina» sigue siendo Z06/Z10 sin distinguir el lado. Sin dato: sin disposición (transición/recurso) o no autorizado para la audiencia.
+export const FN_LABEL = { corner: 'esquina (lado desconocido)', wing: 'ala (lado desconocido)', top: 'cabecera', elbow: 'codo (lado desconocido)', highInside: 'pintura alta', inside: 'pintura', block: 'bloque (lado desconocido)', lowInside: 'poste bajo' };
+export function sectorDetail(shots) {
+  const v = validShots(shots).filter((x) => x.zone === 'three' || x.zone === 'midrange'); const rows = new Map();
+  for (const x of v) {
+    const fn = !('shooterFn' in x) ? '__hidden' : (x.shooterFn ?? '__none'); const key = `${x.zone}|${fn}`;
+    const r = rows.get(key) ?? { zone: x.zone, fn, label: fn === '__hidden' ? 'función del tirador: información propia (no autorizada para esta audiencia)' : fn === '__none' ? 'sin disposición (transición o recurso): función desconocida' : (FN_LABEL[fn] ?? fn), att: 0, made: 0, ids: [] };
+    r.att += 1; if (x.made) r.made += 1; r.ids.push(x.id); rows.set(key, r);
+  }
+  return [...rows.values()].sort((a, b) => (a.zone === b.zone ? b.att - a.att : a.zone < b.zone ? 1 : -1)).map((r) => ({ ...r, pct: pctOf(r.made, r.att) }));
+}
+
 // Calidad previa al desenlace (clasificación existente del motor). No se recalcula desde el acierto ni desde una probabilidad.
 export function qualityTable(shots) {
   const v = validShots(shots); const total = v.length;

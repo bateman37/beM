@@ -4,11 +4,12 @@ import { buildIndex, viewShot, cacheKey, allowed, AUDIENCES, actaOf } from './fa
 import { analysisParams } from './params.js';
 import { CATALOG, runIndicator, playerIndicators } from './catalog.js';
 import { evolution, unansweredRuns, periodScores, shotStreaks } from './evolution.js';
-import { sectorMap, qualityTable, assistReading, fourFactors, ratings, paceReading, production, marginExplanation } from './shooting.js';
-import { originTable, executionTable, executionList, bookTable, directorTable } from './offense.js';
-import { organizationTable, coverageTable, helpChain, responsibilities } from './defense.js';
+import { sectorMap, sectorDetail, qualityTable, assistReading, fourFactors, ratings, paceReading, production, marginExplanation } from './shooting.js';
+import { originTable, executionTable, executionList, bookTable, directorTable, observableActors } from './offense.js';
+import { organizationTable, organizationByFact, coverageTable, helpChain, responsibilities } from './defense.js';
 import { throwInTable, throwInList, foulTable } from './restarts.js';
 import { offBallRows } from './offball.js';
+import { closureTable, productionPer100, CREDITS } from './closures.js';
 import { lineupTable, onOff, groupReading } from './presence.js';
 import { keyCandidates, selectKeys, leaders, chronicle } from './summary.js';
 import { recommendations } from './recommend.js';
@@ -20,6 +21,7 @@ import { ANALYSIS_VERSION } from './formulas.js';
 import { jsonExport, csvTables, markdownExport } from './export.js';
 import { FILTER_FIELDS } from './filters.js';
 
+export { CREDITS };
 export { AUDIENCES, ANALYSIS_VERSION, CATALOG, VISIBILITY, BLOCKS, DEBT_MOTOR09, PENDING_MOTOR10, LATER_DELIVERIES, FILTER_FIELDS, filterCompat, normalizeFilters };
 const INDEX_CACHE = new WeakMap(); // resultado → índice de hechos (no depende de la audiencia: contiene las tres capas)
 const VIEW_CACHE = new WeakMap(); // resultado → Map(audiencia+equipo → Analysis)
@@ -61,9 +63,12 @@ class Analysis {
     });
   }
   indicator(team, id, filters = {}) { return this.indicators(team, filters).find((r) => r.id === id); }
+  closures(team) { return this.m(`cl:${team}`, () => closureTable(this.ix, team)); }
+  production100(pid, credit = 'pts') { return this.m(`p100:${pid}:${credit}`, () => productionPer100(this.ix, pid, credit)); }
   playerIndicators(pid) { return playerIndicators(this.ix, pid, this.params.conventions.ftCoefficient); }
 
   sectors(team, filters = {}) { return sectorMap(this.shots(team, filters).shots); }
+  sectorDetail(team, filters = {}) { return sectorDetail(this.shots(team, filters).shots); }
   quality(team, filters = {}) { return qualityTable(this.shots(team, filters).shots); }
   assists(team) { return assistReading(this.viewedShots(team), this.ix.acta, team); }
   fourFactors() { return this.m('ff', () => fourFactors(this.ix, this.params.conventions.ftCoefficient)); }
@@ -81,16 +86,18 @@ class Analysis {
   executions(team) { return this.m(`ex:${team}`, () => executionTable(this.ix, team, this.ctx)); }
   executionList(team) { return executionList(this.ix, team, this.ctx); }
   book(team) { return bookTable(this.ix, team, this.ctx); }
+  observableActors(team) { return this.m(`oa:${team}`, () => observableActors(this.ix, team)); }
   directors(team) { return allowed('own', { team }, this.ctx) ? directorTable(this.ix, team) : { available: false, reason: 'el director y sus decisiones son información propia o diagnóstico' }; }
 
   organizations(defTeam) { return this.m(`org:${defTeam}`, () => organizationTable(this.ix, defTeam)); }
+  organizationsByFact(defTeam) { return this.m(`orgf:${defTeam}`, () => organizationByFact(this.ix, defTeam)); }
   coverages(defTeam) { return this.m(`cov:${defTeam}`, () => coverageTable(this.ix, defTeam)); }
   help(defTeam) { return helpChain(this.ix, defTeam); }
   responsibilities(defTeam) { return responsibilities(this.ix, defTeam); }
   throwIns(team) { return throwInTable(this.ix, team, this.ctx); }
   throwInList(team) { return throwInList(this.ix, team, this.ctx); }
   fouls(team) { return foulTable(this.ix, team); }
-  offBall(team) { return this.m(`ob:${team}`, () => offBallRows(this.ix, team)); }
+  offBall(team) { return this.m(`ob:${team}`, () => offBallRows(this.ix, team, this.ctx)); }
 
   lineups(team) { return this.m(`lu:${team}`, () => lineupTable(this.ix, team, { minSeconds: this.params.sample.lineupMinSeconds, minAttacks: this.params.sample.lineupMinAttacks })); }
   onOff(ids) { return this.m(`oo:${ids.join('|')}`, () => onOff(this.ix, ids, { minSeconds: this.params.sample.lineupMinSeconds, minAttacks: this.params.sample.lineupMinAttacks })); }

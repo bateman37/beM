@@ -1,7 +1,8 @@
 // Pantalla «Preparación» (MOTOR-04): semilla, quinteto, director, disposición, roles por jugador, siete estilos agrupados,
 // instrucción de media distancia y libro de quince fichas por familia con su ficha legible y su compatibilidad con el quinteto.
 import { h, clear } from './dom.js';
-import { store, PLAY_NAMES, persist, prepProfile, loadDemoPlan } from './store.js';
+import { store, PLAY_NAMES, persist, prepProfile, loadDemoPlan, loadNaturalPlan } from './store.js';
+import { srcText, planSummary } from './population-ui.js';
 import { SLOTS, validateInput, createMatch, deepCopy, defaultParticipationPlan } from '../match/index.js';
 import { defenseControls } from './defense-ui.js';
 import { throwInControls } from './throwin-ui.js';
@@ -114,7 +115,7 @@ function teamPrep(team, idx, profile, cm, root) {
     h('p', { class: 'small muted' }, 'Una ficha desactivada no se borra: solo deja de estar en el plan. La prioridad es preferencia, no cuota ni calidad. La masa de una familia es la de su mejor variante elegible: duplicar variantes no la aumenta.'),
     FAMILY_ORDER.map((f) => h('div', { class: 'fam' }, h('strong', { class: 'small' }, FAMILY_NAMES[f]), Object.keys(rep.plays).filter((id) => rep.plays[id].family === f).map(playRow))),
     h('div', { class: 'row', style: 'margin-top:8px' },
-      h('button', { class: 'btn secondary', onclick: () => { if (confirm('¿Cargar la copia de demostración de MOTOR-04 en este equipo? Sustituye su libro, disposición y media distancia por: DIS02, quince fichas a prioridad 3 y los estilos actuales. Es un escenario de cobertura, no una recomendación táctica.')) { loadDemoPlan(idx); ui.msg = `Plan de demostración MOTOR-04 cargado en ${team.id} (copia identificada; los planes guardados no se tocan salvo este).`; renderPrep(root); } } }, 'Cargar plan de demostración (15 fichas a prioridad 3)'),
+      h('button', { class: 'btn secondary', onclick: () => { if (confirm('¿Cargar la copia de demostración de MOTOR-04 en este equipo? Sustituye su libro, disposición y media distancia por: DIS02, quince fichas a prioridad 3 y los estilos actuales. Es un escenario de cobertura, no una recomendación táctica.')) { ui.msg = loadDemoPlan(idx) ? `Plan de demostración MOTOR-04 cargado en ${team.id} (copia identificada; los planes guardados no se tocan salvo este).` : `No hay plan de demostración de MOTOR-04 para ${team.id} (solo existe para EQ01 y EQ02).`; renderPrep(root); } } }, 'Cargar plan de demostración (15 fichas a prioridad 3)'),
       plan.demo ? h('span', { class: 'pill warn' }, 'plan de demostración de cobertura') : null));
 
   // ---- defensa (MOTOR-05): organización, altura, cinco estilos, cobertura, roles, marcas y especiales
@@ -142,7 +143,10 @@ function teamPrep(team, idx, profile, cm, root) {
   const coach = coachUi ? h('details', { open: ui.open.has(`coach:${idx}`), ontoggle: (e) => { const k = `coach:${idx}`; if (e.target.open) ui.open.add(k); else ui.open.delete(k); } },
     h('summary', {}, h('strong', {}, 'Entrenador'), ` — ${coachUi.summary}`), coachUi.node) : null;
 
-  return h('div', { class: 'card' }, h('h3', {}, `${team.id} — ${team.name}`),
+  const natural = h('div', { class: 'row' },
+    h('button', { class: 'btn secondary', type: 'button', id: `natural-${idx}`, onclick: () => { if (!confirm('¿Cargar el plan natural de la identidad de este equipo? Sustituye el plan (disposición, defensa, estilos, libros, rotación y política) y conserva las fichas y sus ediciones. Es una acción explícita; los planes guardados no se tocan.')) return; const r = loadNaturalPlan(idx); ui.msg = r.ok ? `Plan natural ${r.version} de ${r.id} cargado en ${team.id}.` : `No se cargó: ${r.error}`; renderPrep(root); } }, 'Cargar el plan natural de su identidad'),
+    h('span', { class: 'small muted' }, planSummary(profile, plan)));
+  return h('div', { class: 'card' }, h('h3', {}, `${team.id} — ${team.name}`), h('p', { class: 'small muted' }, srcText(team.source)), natural,
     coach,
     disposition,
     defense,

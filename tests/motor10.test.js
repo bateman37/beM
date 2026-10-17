@@ -184,7 +184,7 @@ test('7. mapa, calidad y sin balón: sector desconocido sin lateralidad inventad
   const ob = Object.fromEntries(a.offBall(0).map((r) => [r.id, r]));
   assert.equal(ob.OB01.counts.n, 2); assert.equal(ob.OB01.counts.useful, 1, 'utilidad = contexto favorable registrado (cómoda), con independencia del resultado');
   assert.equal(ob.OB02.counts.made, 1, 'la canasta tras pantalla es un indicador propio, no AS del bloqueador');
-  assert.equal(ob.OB05.status, 'dependencia'); assert.match(ob.OB05.value, /no registrado/);
+  assert.equal(ob.OB05.status, 'instrumentado'); /* MOTOR-11: instrumentado; sin el dato en el partido sigue «no registrado» */ assert.match(ob.OB05.value, /no registrado|no autorizada/);
 });
 
 test('8. resumen: claves sustentadas y sin redundancia, menos de tres cuando corresponde, líderes con empates y una revisión que actualiza todas las vistas', () => {

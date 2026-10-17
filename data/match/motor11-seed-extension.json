@@ -1,0 +1,3499 @@
+{
+ "seedExtensionId": "SEM-MOTOR11-20261017",
+ "status": "SEM: provisional, no calibrado (población de referencia, planes naturales, receta del generador y escenarios de contraste; ningún efecto deportivo nuevo en el motor).",
+ "basedOn": "SEM-MOTOR01-20261016",
+ "origin": "docs/prompts/MOTOR-11-poblacion-generador-y-escenarios.md (§5 fichas y revisión de edad, §6 planes naturales, §7 libros y rotación, §8–§10 generador, §12 escenarios). Las 144 fichas numéricas siguen siendo las del anexo B de MOTOR-01 (data/fixtures/reference-players-MOTOR01.csv, sin tocar); este archivo añade la revisión de edad, los planes materializados y las recetas.",
+ "additions": {
+  "population": {
+   "version": "POB-MOTOR11-R1",
+   "name": "Población de referencia de MOTOR-11 (doce equipos, 144 plazas, planes naturales y generador)",
+   "provenance": "Valores SEM del encargo MOTOR-11. Las fichas de referencia (revisión R0) proceden literalmente del anexo B de MOTOR-01; la revisión R1 solo cambia la edad de EQ07-J01. «Definido» no es «implementado» ni «calibrado».",
+   "referenceDataset": {
+    "file": "data/fixtures/reference-players-MOTOR01.csv",
+    "originalRevision": "R0",
+    "players": 144,
+    "teams": 12
+   },
+   "revisions": [
+    {
+     "id": "R0",
+     "label": "Inicial (anexo B de MOTOR-01)",
+     "source": "dato inicial",
+     "changes": []
+    },
+    {
+     "id": "R1",
+     "label": "MOTOR-11 (EQ07-J01 con 40 años)",
+     "source": "revisión aceptada (encargo MOTOR-11 §5.3)",
+     "changes": [
+      {
+       "player": "EQ07-J01",
+       "field": "age",
+       "before": 37,
+       "after": 40,
+       "note": "El funcional identifica a EQ07-J01 como referencia de 40 años; capacidades y cuerpo se conservan. La edad no modifica por sí sola el rendimiento."
+      }
+     ]
+    }
+   ],
+   "currentRevision": "R1",
+   "teams": {
+    "EQ01": {
+     "name": "Equilibrado",
+     "identity": "Equilibrado",
+     "planVersion": "NAT-MOTOR11-R1",
+     "sourceTables": {
+      "disposition": "4–1",
+      "defense": "Individual",
+      "p1": [
+       "POS01",
+       "POS05"
+      ],
+      "p2": [
+       "POS07",
+       "POS09",
+       "POS11"
+      ],
+      "starters": "J01 J03 J06 J08 J10",
+      "minutes": "ordinary"
+     },
+     "plan": {
+      "teamId": "EQ01",
+      "disposition": "DIS02",
+      "defense": "ORG01",
+      "coverage": "COB01",
+      "pressureHeight": "normal",
+      "styles": {
+       "organizedPace": 3,
+       "transition": 3,
+       "elaboration": 3,
+       "finishPreference": 3,
+       "freedom": 3,
+       "offensiveRisk": 3,
+       "afterShot": 3
+      },
+      "starters": {
+       "PG": "EQ01-J01",
+       "SG": "EQ01-J03",
+       "SF": "EQ01-J06",
+       "PF": "EQ01-J08",
+       "C": "EQ01-J10"
+      },
+      "directorPriority": [
+       "EQ01-J01",
+       "EQ01-J12",
+       "EQ01-J06",
+       "EQ01-J02"
+      ],
+      "playbook": [
+       {
+        "playId": "POS01",
+        "priority": 1
+       },
+       {
+        "playId": "POS02",
+        "priority": 5
+       },
+       {
+        "playId": "POS03",
+        "priority": 5
+       },
+       {
+        "playId": "POS04",
+        "priority": 5
+       },
+       {
+        "playId": "POS05",
+        "priority": 1
+       },
+       {
+        "playId": "POS06",
+        "priority": 5
+       },
+       {
+        "playId": "POS07",
+        "priority": 2
+       },
+       {
+        "playId": "POS08",
+        "priority": 5
+       },
+       {
+        "playId": "POS09",
+        "priority": 2
+       },
+       {
+        "playId": "POS10",
+        "priority": 5
+       },
+       {
+        "playId": "POS11",
+        "priority": 2
+       },
+       {
+        "playId": "POS12",
+        "priority": 5
+       },
+       {
+        "playId": "POS13",
+        "priority": 5
+       },
+       {
+        "playId": "POS14",
+        "priority": 5
+       },
+       {
+        "playId": "POS15",
+        "priority": 5
+       }
+      ],
+      "initialTeamMoment": 0,
+      "midrange": "openOnly",
+      "defStyles": {
+       "help": 3,
+       "pressure": 3,
+       "receivers": 3,
+       "steal": 3,
+       "protection": 3
+      },
+      "navigation": null,
+      "marks": [],
+      "target": null,
+      "targetAlt": null,
+      "fallbackOrg": "ORG02",
+      "specials": [],
+      "throwInBook": [
+       {
+        "playId": "SaqB01",
+        "priority": 1
+       },
+       {
+        "playId": "SaqB02",
+        "priority": 3
+       },
+       {
+        "playId": "SaqB03",
+        "priority": 3
+       },
+       {
+        "playId": "SaqF03",
+        "priority": 1
+       },
+       {
+        "playId": "SaqF01",
+        "priority": 3
+       },
+       {
+        "playId": "SaqF02",
+        "priority": 3
+       }
+      ],
+      "throwInServers": {
+       "band": {
+        "preferred": null,
+        "alternate": null
+       },
+       "endline": {
+        "preferred": null,
+        "alternate": null
+       }
+      },
+      "throwInDefense": {
+       "band": "DSaqB01",
+       "endline": "DSaqF01",
+       "target": null
+      },
+      "coach": {
+       "policy": "ENTREF02",
+       "delegation": {
+        "rotation": true,
+        "adjustments": true,
+        "fouls": true,
+        "timeouts": true,
+        "endgame": true
+       }
+      },
+      "natural": {
+       "id": "NAT-EQ01",
+       "version": "NAT-MOTOR11-R1"
+      },
+      "participation": {
+       "source": "SEM-MOTOR11: plan natural EQ01; relevos por posición, director y mejor ajuste funcional; objetivos 28/12; los recursos situacionales quedan a cero (revisable)",
+       "pairs": [
+        {
+         "slot": "PG",
+         "starter": "EQ01-J01",
+         "relief": "EQ01-J12",
+         "starterMinutes": 28,
+         "reliefMinutes": 12
+        },
+        {
+         "slot": "SG",
+         "starter": "EQ01-J03",
+         "relief": "EQ01-J05",
+         "starterMinutes": 28,
+         "reliefMinutes": 12
+        },
+        {
+         "slot": "SF",
+         "starter": "EQ01-J06",
+         "relief": "EQ01-J07",
+         "starterMinutes": 28,
+         "reliefMinutes": 12
+        },
+        {
+         "slot": "PF",
+         "starter": "EQ01-J08",
+         "relief": "EQ01-J09",
+         "starterMinutes": 28,
+         "reliefMinutes": 12
+        },
+        {
+         "slot": "C",
+         "starter": "EQ01-J10",
+         "relief": "EQ01-J11",
+         "starterMinutes": 28,
+         "reliefMinutes": 12
+        }
+       ],
+       "situational": [
+        "EQ01-J02",
+        "EQ01-J04"
+       ]
+      }
+     }
+    },
+    "EQ02": {
+     "name": "Exterior",
+     "identity": "Exterior",
+     "planVersion": "NAT-MOTOR11-R1",
+     "sourceTables": {
+      "disposition": "5 abiertos",
+      "defense": "Zona 3–2",
+      "p1": [
+       "POS03",
+       "POS07",
+       "POS08"
+      ],
+      "p2": [
+       "POS05",
+       "POS06",
+       "POS09"
+      ],
+      "starters": "J01 J04 J05 J08 J09",
+      "minutes": "ordinary"
+     },
+     "plan": {
+      "teamId": "EQ02",
+      "disposition": "DIS01",
+      "defense": "ORG03",
+      "coverage": "COB01",
+      "pressureHeight": "normal",
+      "styles": {
+       "organizedPace": 3,
+       "transition": 3,
+       "elaboration": 4,
+       "finishPreference": 4,
+       "freedom": 3,
+       "offensiveRisk": 3,
+       "afterShot": 2
+      },
+      "starters": {
+       "PG": "EQ02-J01",
+       "SG": "EQ02-J04",
+       "SF": "EQ02-J05",
+       "PF": "EQ02-J08",
+       "C": "EQ02-J09"
+      },
+      "directorPriority": [
+       "EQ02-J01",
+       "EQ02-J12",
+       "EQ02-J06",
+       "EQ02-J02"
+      ],
+      "playbook": [
+       {
+        "playId": "POS01",
+        "priority": 5
+       },
+       {
+        "playId": "POS02",
+        "priority": 5
+       },
+       {
+        "playId": "POS03",
+        "priority": 1
+       },
+       {
+        "playId": "POS04",
+        "priority": 5
+       },
+       {
+        "playId": "POS05",
+        "priority": 2
+       },
+       {
+        "playId": "POS06",
+        "priority": 2
+       },
+       {
+        "playId": "POS07",
+        "priority": 1
+       },
+       {
+        "playId": "POS08",
+        "priority": 1
+       },
+       {
+        "playId": "POS09",
+        "priority": 2
+       },
+       {
+        "playId": "POS10",
+        "priority": 5
+       },
+       {
+        "playId": "POS11",
+        "priority": 5
+       },
+       {
+        "playId": "POS12",
+        "priority": 5
+       },
+       {
+        "playId": "POS13",
+        "priority": 5
+       },
+       {
+        "playId": "POS14",
+        "priority": 5
+       },
+       {
+        "playId": "POS15",
+        "priority": 5
+       }
+      ],
+      "initialTeamMoment": 0,
+      "midrange": "openOnly",
+      "defStyles": {
+       "help": 3,
+       "pressure": 3,
+       "receivers": 4,
+       "steal": 2,
+       "protection": 4
+      },
+      "navigation": null,
+      "marks": [],
+      "target": null,
+      "targetAlt": null,
+      "fallbackOrg": "ORG02",
+      "specials": [],
+      "throwInBook": [
+       {
+        "playId": "SaqB01",
+        "priority": 1
+       },
+       {
+        "playId": "SaqB02",
+        "priority": 3
+       },
+       {
+        "playId": "SaqB03",
+        "priority": 3
+       },
+       {
+        "playId": "SaqF03",
+        "priority": 1
+       },
+       {
+        "playId": "SaqF01",
+        "priority": 3
+       },
+       {
+        "playId": "SaqF02",
+        "priority": 3
+       }
+      ],
+      "throwInServers": {
+       "band": {
+        "preferred": null,
+        "alternate": null
+       },
+       "endline": {
+        "preferred": null,
+        "alternate": null
+       }
+      },
+      "throwInDefense": {
+       "band": "DSaqB01",
+       "endline": "DSaqF01",
+       "target": null
+      },
+      "coach": {
+       "policy": "ENTREF02",
+       "delegation": {
+        "rotation": true,
+        "adjustments": true,
+        "fouls": true,
+        "timeouts": true,
+        "endgame": true
+       }
+      },
+      "natural": {
+       "id": "NAT-EQ02",
+       "version": "NAT-MOTOR11-R1"
+      },
+      "participation": {
+       "source": "SEM-MOTOR11: plan natural EQ02; relevos por posición, director y mejor ajuste funcional; objetivos 28/12; los recursos situacionales quedan a cero (revisable)",
+       "pairs": [
+        {
+         "slot": "PG",
+         "starter": "EQ02-J01",
+         "relief": "EQ02-J12",
+         "starterMinutes": 28,
+         "reliefMinutes": 12
+        },
+        {
+         "slot": "SG",
+         "starter": "EQ02-J04",
+         "relief": "EQ02-J03",
+         "starterMinutes": 28,
+         "reliefMinutes": 12
+        },
+        {
+         "slot": "SF",
+         "starter": "EQ02-J05",
+         "relief": "EQ02-J07",
+         "starterMinutes": 28,
+         "reliefMinutes": 12
+        },
+        {
+         "slot": "PF",
+         "starter": "EQ02-J08",
+         "relief": "EQ02-J11",
+         "starterMinutes": 28,
+         "reliefMinutes": 12
+        },
+        {
+         "slot": "C",
+         "starter": "EQ02-J09",
+         "relief": "EQ02-J10",
+         "starterMinutes": 28,
+         "reliefMinutes": 12
+        }
+       ],
+       "situational": [
+        "EQ02-J02",
+        "EQ02-J06"
+       ]
+      }
+     }
+    },
+    "EQ03": {
+     "name": "Interior",
+     "identity": "Interior",
+     "planVersion": "NAT-MOTOR11-R1",
+     "sourceTables": {
+      "disposition": "3–2 ofensivo",
+      "defense": "Zona 2–3",
+      "p1": [
+       "POS11",
+       "POS13"
+      ],
+      "p2": [
+       "POS01",
+       "POS04",
+       "POS12"
+      ],
+      "starters": "J01 J03 J06 J09 J11",
+      "minutes": "ordinary"
+     },
+     "plan": {
+      "teamId": "EQ03",
+      "disposition": "DIS03",
+      "defense": "ORG02",
+      "coverage": "COB01",
+      "pressureHeight": "normal",
+      "styles": {
+       "organizedPace": 2,
+       "transition": 2,
+       "elaboration": 4,
+       "finishPreference": 2,
+       "freedom": 2,
+       "offensiveRisk": 2,
+       "afterShot": 4
+      },
+      "starters": {
+       "PG": "EQ03-J01",
+       "SG": "EQ03-J03",
+       "SF": "EQ03-J06",
+       "PF": "EQ03-J09",
+       "C": "EQ03-J11"
+      },
+      "directorPriority": [
+       "EQ03-J01",
+       "EQ03-J12",
+       "EQ03-J06",
+       "EQ03-J02"
+      ],
+      "playbook": [
+       {
+        "playId": "POS01",
+        "priority": 2
+       },
+       {
+        "playId": "POS02",
+        "priority": 5
+       },
+       {
+        "playId": "POS03",
+        "priority": 5
+       },
+       {
+        "playId": "POS04",
+        "priority": 2
+       },
+       {
+        "playId": "POS05",
+        "priority": 5
+       },
+       {
+        "playId": "POS06",
+        "priority": 5
+       },
+       {
+        "playId": "POS07",
+        "priority": 5
+       },
+       {
+        "playId": "POS08",
+        "priority": 5
+       },
+       {
+        "playId": "POS09",
+        "priority": 5
+       },
+       {
+        "playId": "POS10",
+        "priority": 5
+       },
+       {
+        "playId": "POS11",
+        "priority": 1
+       },
+       {
+        "playId": "POS12",
+        "priority": 2
+       },
+       {
+        "playId": "POS13",
+        "priority": 1
+       },
+       {
+        "playId": "POS14",
+        "priority": 5
+       },
+       {
+        "playId": "POS15",
+        "priority": 5
+       }
+      ],
+      "initialTeamMoment": 0,
+      "midrange": "openOnly",
+      "defStyles": {
+       "help": 4,
+       "pressure": 2,
+       "receivers": 2,
+       "steal": 2,
+       "protection": 2
+      },
+      "navigation": null,
+      "marks": [],
+      "target": null,
+      "targetAlt": null,
+      "fallbackOrg": "ORG02",
+      "specials": [],
+      "throwInBook": [
+       {
+        "playId": "SaqB01",
+        "priority": 1
+       },
+       {
+        "playId": "SaqB02",
+        "priority": 3
+       },
+       {
+        "playId": "SaqB03",
+        "priority": 3
+       },
+       {
+        "playId": "SaqF03",
+        "priority": 1
+       },
+       {
+        "playId": "SaqF01",
+        "priority": 3
+       },
+       {
+        "playId": "SaqF02",
+        "priority": 3
+       }
+      ],
+      "throwInServers": {
+       "band": {
+        "preferred": null,
+        "alternate": null
+       },
+       "endline": {
+        "preferred": null,
+        "alternate": null
+       }
+      },
+      "throwInDefense": {
+       "band": "DSaqB01",
+       "endline": "DSaqF01",
+       "target": null
+      },
+      "coach": {
+       "policy": "ENTREF02",
+       "delegation": {
+        "rotation": true,
+        "adjustments": true,
+        "fouls": true,
+        "timeouts": true,
+        "endgame": true
+       }
+      },
+      "natural": {
+       "id": "NAT-EQ03",
+       "version": "NAT-MOTOR11-R1"
+      },
+      "participation": {
+       "source": "SEM-MOTOR11: plan natural EQ03; relevos por posición, director y mejor ajuste funcional; objetivos 28/12; los recursos situacionales quedan a cero (revisable)",
+       "pairs": [
+        {
+         "slot": "PG",
+         "starter": "EQ03-J01",
+         "relief": "EQ03-J12",
+         "starterMinutes": 28,
+         "reliefMinutes": 12
+        },
+        {
+         "slot": "SG",
+         "starter": "EQ03-J03",
+         "relief": "EQ03-J04",
+         "starterMinutes": 28,
+         "reliefMinutes": 12
+        },
+        {
+         "slot": "SF",
+         "starter": "EQ03-J06",
+         "relief": "EQ03-J07",
+         "starterMinutes": 28,
+         "reliefMinutes": 12
+        },
+        {
+         "slot": "PF",
+         "starter": "EQ03-J09",
+         "relief": "EQ03-J08",
+         "starterMinutes": 28,
+         "reliefMinutes": 12
+        },
+        {
+         "slot": "C",
+         "starter": "EQ03-J11",
+         "relief": "EQ03-J10",
+         "starterMinutes": 28,
+         "reliefMinutes": 12
+        }
+       ],
+       "situational": [
+        "EQ03-J02",
+        "EQ03-J05"
+       ]
+      }
+     }
+    },
+    "EQ04": {
+     "name": "Dos creadores",
+     "identity": "Dos creadores",
+     "planVersion": "NAT-MOTOR11-R1",
+     "sourceTables": {
+      "disposition": "Horns",
+      "defense": "Individual",
+      "p1": [
+       "POS01",
+       "POS05",
+       "POS12"
+      ],
+      "p2": [
+       "POS03",
+       "POS06",
+       "POS09"
+      ],
+      "starters": "J01 J12 J06 J09 J10",
+      "minutes": "ordinary"
+     },
+     "plan": {
+      "teamId": "EQ04",
+      "disposition": "DIS04",
+      "defense": "ORG01",
+      "coverage": "COB01",
+      "pressureHeight": "normal",
+      "styles": {
+       "organizedPace": 3,
+       "transition": 3,
+       "elaboration": 4,
+       "finishPreference": 3,
+       "freedom": 4,
+       "offensiveRisk": 3,
+       "afterShot": 3
+      },
+      "starters": {
+       "PG": "EQ04-J01",
+       "SG": "EQ04-J12",
+       "SF": "EQ04-J06",
+       "PF": "EQ04-J09",
+       "C": "EQ04-J10"
+      },
+      "directorPriority": [
+       "EQ04-J01",
+       "EQ04-J12",
+       "EQ04-J06",
+       "EQ04-J02"
+      ],
+      "playbook": [
+       {
+        "playId": "POS01",
+        "priority": 1
+       },
+       {
+        "playId": "POS02",
+        "priority": 5
+       },
+       {
+        "playId": "POS03",
+        "priority": 2
+       },
+       {
+        "playId": "POS04",
+        "priority": 5
+       },
+       {
+        "playId": "POS05",
+        "priority": 1
+       },
+       {
+        "playId": "POS06",
+        "priority": 2
+       },
+       {
+        "playId": "POS07",
+        "priority": 5
+       },
+       {
+        "playId": "POS08",
+        "priority": 5
+       },
+       {
+        "playId": "POS09",
+        "priority": 2
+       },
+       {
+        "playId": "POS10",
+        "priority": 5
+       },
+       {
+        "playId": "POS11",
+        "priority": 5
+       },
+       {
+        "playId": "POS12",
+        "priority": 1
+       },
+       {
+        "playId": "POS13",
+        "priority": 5
+       },
+       {
+        "playId": "POS14",
+        "priority": 5
+       },
+       {
+        "playId": "POS15",
+        "priority": 5
+       }
+      ],
+      "initialTeamMoment": 0,
+      "midrange": "openOnly",
+      "defStyles": {
+       "help": 3,
+       "pressure": 3,
+       "receivers": 3,
+       "steal": 3,
+       "protection": 3
+      },
+      "navigation": null,
+      "marks": [],
+      "target": null,
+      "targetAlt": null,
+      "fallbackOrg": "ORG02",
+      "specials": [],
+      "throwInBook": [
+       {
+        "playId": "SaqB01",
+        "priority": 1
+       },
+       {
+        "playId": "SaqB02",
+        "priority": 3
+       },
+       {
+        "playId": "SaqB03",
+        "priority": 3
+       },
+       {
+        "playId": "SaqF03",
+        "priority": 1
+       },
+       {
+        "playId": "SaqF01",
+        "priority": 3
+       },
+       {
+        "playId": "SaqF02",
+        "priority": 3
+       }
+      ],
+      "throwInServers": {
+       "band": {
+        "preferred": null,
+        "alternate": null
+       },
+       "endline": {
+        "preferred": null,
+        "alternate": null
+       }
+      },
+      "throwInDefense": {
+       "band": "DSaqB01",
+       "endline": "DSaqF01",
+       "target": null
+      },
+      "coach": {
+       "policy": "ENTREF02",
+       "delegation": {
+        "rotation": true,
+        "adjustments": true,
+        "fouls": true,
+        "timeouts": true,
+        "endgame": true
+       }
+      },
+      "natural": {
+       "id": "NAT-EQ04",
+       "version": "NAT-MOTOR11-R1"
+      },
+      "participation": {
+       "source": "SEM-MOTOR11: plan natural EQ04; relevos por posición, director y mejor ajuste funcional; objetivos 28/12; los recursos situacionales quedan a cero (revisable)",
+       "pairs": [
+        {
+         "slot": "PG",
+         "starter": "EQ04-J01",
+         "relief": "EQ04-J02",
+         "starterMinutes": 28,
+         "reliefMinutes": 12
+        },
+        {
+         "slot": "SG",
+         "starter": "EQ04-J12",
+         "relief": "EQ04-J05",
+         "starterMinutes": 28,
+         "reliefMinutes": 12
+        },
+        {
+         "slot": "SF",
+         "starter": "EQ04-J06",
+         "relief": "EQ04-J07",
+         "starterMinutes": 28,
+         "reliefMinutes": 12
+        },
+        {
+         "slot": "PF",
+         "starter": "EQ04-J09",
+         "relief": "EQ04-J08",
+         "starterMinutes": 28,
+         "reliefMinutes": 12
+        },
+        {
+         "slot": "C",
+         "starter": "EQ04-J10",
+         "relief": "EQ04-J11",
+         "starterMinutes": 28,
+         "reliefMinutes": 12
+        }
+       ],
+       "situational": [
+        "EQ04-J03",
+        "EQ04-J04"
+       ]
+      }
+     }
+    },
+    "EQ05": {
+     "name": "Director pasador con poca anotación",
+     "identity": "Director pasador con poca anotación",
+     "planVersion": "NAT-MOTOR11-R1",
+     "sourceTables": {
+      "disposition": "4–1",
+      "defense": "Zona 1–2–2",
+      "p1": [
+       "POS01",
+       "POS09",
+       "POS12"
+      ],
+      "p2": [
+       "POS05",
+       "POS07",
+       "POS13"
+      ],
+      "starters": "J01 J03 J06 J08 J10",
+      "minutes": "ordinary"
+     },
+     "plan": {
+      "teamId": "EQ05",
+      "disposition": "DIS02",
+      "defense": "ORG05",
+      "coverage": "COB01",
+      "pressureHeight": "normal",
+      "styles": {
+       "organizedPace": 3,
+       "transition": 3,
+       "elaboration": 4,
+       "finishPreference": 3,
+       "freedom": 2,
+       "offensiveRisk": 2,
+       "afterShot": 3
+      },
+      "starters": {
+       "PG": "EQ05-J01",
+       "SG": "EQ05-J03",
+       "SF": "EQ05-J06",
+       "PF": "EQ05-J08",
+       "C": "EQ05-J10"
+      },
+      "directorPriority": [
+       "EQ05-J01",
+       "EQ05-J12",
+       "EQ05-J06",
+       "EQ05-J02"
+      ],
+      "playbook": [
+       {
+        "playId": "POS01",
+        "priority": 1
+       },
+       {
+        "playId": "POS02",
+        "priority": 5
+       },
+       {
+        "playId": "POS03",
+        "priority": 5
+       },
+       {
+        "playId": "POS04",
+        "priority": 5
+       },
+       {
+        "playId": "POS05",
+        "priority": 2
+       },
+       {
+        "playId": "POS06",
+        "priority": 5
+       },
+       {
+        "playId": "POS07",
+        "priority": 2
+       },
+       {
+        "playId": "POS08",
+        "priority": 5
+       },
+       {
+        "playId": "POS09",
+        "priority": 1
+       },
+       {
+        "playId": "POS10",
+        "priority": 5
+       },
+       {
+        "playId": "POS11",
+        "priority": 5
+       },
+       {
+        "playId": "POS12",
+        "priority": 1
+       },
+       {
+        "playId": "POS13",
+        "priority": 2
+       },
+       {
+        "playId": "POS14",
+        "priority": 5
+       },
+       {
+        "playId": "POS15",
+        "priority": 5
+       }
+      ],
+      "initialTeamMoment": 0,
+      "midrange": "openOnly",
+      "defStyles": {
+       "help": 3,
+       "pressure": 3,
+       "receivers": 3,
+       "steal": 2,
+       "protection": 3
+      },
+      "navigation": null,
+      "marks": [],
+      "target": null,
+      "targetAlt": null,
+      "fallbackOrg": "ORG02",
+      "specials": [],
+      "throwInBook": [
+       {
+        "playId": "SaqB01",
+        "priority": 1
+       },
+       {
+        "playId": "SaqB02",
+        "priority": 3
+       },
+       {
+        "playId": "SaqB03",
+        "priority": 3
+       },
+       {
+        "playId": "SaqF03",
+        "priority": 1
+       },
+       {
+        "playId": "SaqF01",
+        "priority": 3
+       },
+       {
+        "playId": "SaqF02",
+        "priority": 3
+       }
+      ],
+      "throwInServers": {
+       "band": {
+        "preferred": null,
+        "alternate": null
+       },
+       "endline": {
+        "preferred": null,
+        "alternate": null
+       }
+      },
+      "throwInDefense": {
+       "band": "DSaqB01",
+       "endline": "DSaqF01",
+       "target": null
+      },
+      "coach": {
+       "policy": "ENTREF02",
+       "delegation": {
+        "rotation": true,
+        "adjustments": true,
+        "fouls": true,
+        "timeouts": true,
+        "endgame": true
+       }
+      },
+      "natural": {
+       "id": "NAT-EQ05",
+       "version": "NAT-MOTOR11-R1"
+      },
+      "participation": {
+       "source": "SEM-MOTOR11: plan natural EQ05; relevos por posición, director y mejor ajuste funcional; objetivos 28/12; los recursos situacionales quedan a cero (revisable)",
+       "pairs": [
+        {
+         "slot": "PG",
+         "starter": "EQ05-J01",
+         "relief": "EQ05-J12",
+         "starterMinutes": 28,
+         "reliefMinutes": 12
+        },
+        {
+         "slot": "SG",
+         "starter": "EQ05-J03",
+         "relief": "EQ05-J05",
+         "starterMinutes": 28,
+         "reliefMinutes": 12
+        },
+        {
+         "slot": "SF",
+         "starter": "EQ05-J06",
+         "relief": "EQ05-J07",
+         "starterMinutes": 28,
+         "reliefMinutes": 12
+        },
+        {
+         "slot": "PF",
+         "starter": "EQ05-J08",
+         "relief": "EQ05-J09",
+         "starterMinutes": 28,
+         "reliefMinutes": 12
+        },
+        {
+         "slot": "C",
+         "starter": "EQ05-J10",
+         "relief": "EQ05-J11",
+         "starterMinutes": 28,
+         "reliefMinutes": 12
+        }
+       ],
+       "situational": [
+        "EQ05-J02",
+        "EQ05-J04"
+       ]
+      }
+     }
+    },
+    "EQ06": {
+     "name": "Anotador dominante con lectura limitada",
+     "identity": "Anotador dominante con lectura limitada",
+     "planVersion": "NAT-MOTOR11-R1",
+     "sourceTables": {
+      "disposition": "5 abiertos",
+      "defense": "Individual",
+      "p1": [
+       "POS14",
+       "POS15"
+      ],
+      "p2": [
+       "POS01",
+       "POS03",
+       "POS05"
+      ],
+      "starters": "J01 J03 J06 J08 J10",
+      "minutes": "ordinary"
+     },
+     "plan": {
+      "teamId": "EQ06",
+      "disposition": "DIS01",
+      "defense": "ORG01",
+      "coverage": "COB01",
+      "pressureHeight": "normal",
+      "styles": {
+       "organizedPace": 4,
+       "transition": 3,
+       "elaboration": 2,
+       "finishPreference": 4,
+       "freedom": 4,
+       "offensiveRisk": 4,
+       "afterShot": 2
+      },
+      "starters": {
+       "PG": "EQ06-J01",
+       "SG": "EQ06-J03",
+       "SF": "EQ06-J06",
+       "PF": "EQ06-J08",
+       "C": "EQ06-J10"
+      },
+      "directorPriority": [
+       "EQ06-J01",
+       "EQ06-J12",
+       "EQ06-J06",
+       "EQ06-J02"
+      ],
+      "playbook": [
+       {
+        "playId": "POS01",
+        "priority": 2
+       },
+       {
+        "playId": "POS02",
+        "priority": 5
+       },
+       {
+        "playId": "POS03",
+        "priority": 2
+       },
+       {
+        "playId": "POS04",
+        "priority": 5
+       },
+       {
+        "playId": "POS05",
+        "priority": 2
+       },
+       {
+        "playId": "POS06",
+        "priority": 5
+       },
+       {
+        "playId": "POS07",
+        "priority": 5
+       },
+       {
+        "playId": "POS08",
+        "priority": 5
+       },
+       {
+        "playId": "POS09",
+        "priority": 5
+       },
+       {
+        "playId": "POS10",
+        "priority": 5
+       },
+       {
+        "playId": "POS11",
+        "priority": 5
+       },
+       {
+        "playId": "POS12",
+        "priority": 5
+       },
+       {
+        "playId": "POS13",
+        "priority": 5
+       },
+       {
+        "playId": "POS14",
+        "priority": 1
+       },
+       {
+        "playId": "POS15",
+        "priority": 1
+       }
+      ],
+      "initialTeamMoment": 0,
+      "midrange": "openOnly",
+      "defStyles": {
+       "help": 3,
+       "pressure": 3,
+       "receivers": 3,
+       "steal": 3,
+       "protection": 3
+      },
+      "navigation": null,
+      "marks": [],
+      "target": null,
+      "targetAlt": null,
+      "fallbackOrg": "ORG02",
+      "specials": [],
+      "throwInBook": [
+       {
+        "playId": "SaqB01",
+        "priority": 1
+       },
+       {
+        "playId": "SaqB02",
+        "priority": 3
+       },
+       {
+        "playId": "SaqB03",
+        "priority": 3
+       },
+       {
+        "playId": "SaqF03",
+        "priority": 1
+       },
+       {
+        "playId": "SaqF01",
+        "priority": 3
+       },
+       {
+        "playId": "SaqF02",
+        "priority": 3
+       }
+      ],
+      "throwInServers": {
+       "band": {
+        "preferred": null,
+        "alternate": null
+       },
+       "endline": {
+        "preferred": null,
+        "alternate": null
+       }
+      },
+      "throwInDefense": {
+       "band": "DSaqB01",
+       "endline": "DSaqF01",
+       "target": null
+      },
+      "coach": {
+       "policy": "ENTREF02",
+       "delegation": {
+        "rotation": true,
+        "adjustments": true,
+        "fouls": true,
+        "timeouts": true,
+        "endgame": true
+       }
+      },
+      "natural": {
+       "id": "NAT-EQ06",
+       "version": "NAT-MOTOR11-R1"
+      },
+      "participation": {
+       "source": "SEM-MOTOR11: plan natural EQ06; relevos por posición, director y mejor ajuste funcional; objetivos 28/12; los recursos situacionales quedan a cero (revisable)",
+       "pairs": [
+        {
+         "slot": "PG",
+         "starter": "EQ06-J01",
+         "relief": "EQ06-J12",
+         "starterMinutes": 28,
+         "reliefMinutes": 12
+        },
+        {
+         "slot": "SG",
+         "starter": "EQ06-J03",
+         "relief": "EQ06-J05",
+         "starterMinutes": 28,
+         "reliefMinutes": 12
+        },
+        {
+         "slot": "SF",
+         "starter": "EQ06-J06",
+         "relief": "EQ06-J07",
+         "starterMinutes": 28,
+         "reliefMinutes": 12
+        },
+        {
+         "slot": "PF",
+         "starter": "EQ06-J08",
+         "relief": "EQ06-J09",
+         "starterMinutes": 28,
+         "reliefMinutes": 12
+        },
+        {
+         "slot": "C",
+         "starter": "EQ06-J10",
+         "relief": "EQ06-J11",
+         "starterMinutes": 28,
+         "reliefMinutes": 12
+        }
+       ],
+       "situational": [
+        "EQ06-J02",
+        "EQ06-J04"
+       ]
+      }
+     }
+    },
+    "EQ07": {
+     "name": "Veteranos técnicos y menos físicos",
+     "identity": "Veteranos técnicos y menos físicos",
+     "planVersion": "NAT-MOTOR11-R1",
+     "sourceTables": {
+      "disposition": "1–4 bajo",
+      "defense": "Individual",
+      "p1": [
+       "POS11",
+       "POS12"
+      ],
+      "p2": [
+       "POS05",
+       "POS07",
+       "POS13"
+      ],
+      "starters": "J01 J03 J06 J08 J10",
+      "minutes": "veterans"
+     },
+     "plan": {
+      "teamId": "EQ07",
+      "disposition": "DIS06",
+      "defense": "ORG01",
+      "coverage": "COB01",
+      "pressureHeight": "normal",
+      "styles": {
+       "organizedPace": 2,
+       "transition": 2,
+       "elaboration": 4,
+       "finishPreference": 3,
+       "freedom": 2,
+       "offensiveRisk": 2,
+       "afterShot": 2
+      },
+      "starters": {
+       "PG": "EQ07-J01",
+       "SG": "EQ07-J03",
+       "SF": "EQ07-J06",
+       "PF": "EQ07-J08",
+       "C": "EQ07-J10"
+      },
+      "directorPriority": [
+       "EQ07-J01",
+       "EQ07-J12",
+       "EQ07-J06",
+       "EQ07-J02"
+      ],
+      "playbook": [
+       {
+        "playId": "POS01",
+        "priority": 5
+       },
+       {
+        "playId": "POS02",
+        "priority": 5
+       },
+       {
+        "playId": "POS03",
+        "priority": 5
+       },
+       {
+        "playId": "POS04",
+        "priority": 5
+       },
+       {
+        "playId": "POS05",
+        "priority": 2
+       },
+       {
+        "playId": "POS06",
+        "priority": 5
+       },
+       {
+        "playId": "POS07",
+        "priority": 2
+       },
+       {
+        "playId": "POS08",
+        "priority": 5
+       },
+       {
+        "playId": "POS09",
+        "priority": 5
+       },
+       {
+        "playId": "POS10",
+        "priority": 5
+       },
+       {
+        "playId": "POS11",
+        "priority": 1
+       },
+       {
+        "playId": "POS12",
+        "priority": 1
+       },
+       {
+        "playId": "POS13",
+        "priority": 2
+       },
+       {
+        "playId": "POS14",
+        "priority": 5
+       },
+       {
+        "playId": "POS15",
+        "priority": 5
+       }
+      ],
+      "initialTeamMoment": 0,
+      "midrange": "seek",
+      "defStyles": {
+       "help": 3,
+       "pressure": 2,
+       "receivers": 2,
+       "steal": 2,
+       "protection": 2
+      },
+      "navigation": null,
+      "marks": [],
+      "target": null,
+      "targetAlt": null,
+      "fallbackOrg": "ORG02",
+      "specials": [],
+      "throwInBook": [
+       {
+        "playId": "SaqB01",
+        "priority": 1
+       },
+       {
+        "playId": "SaqB02",
+        "priority": 3
+       },
+       {
+        "playId": "SaqB03",
+        "priority": 3
+       },
+       {
+        "playId": "SaqF03",
+        "priority": 1
+       },
+       {
+        "playId": "SaqF01",
+        "priority": 3
+       },
+       {
+        "playId": "SaqF02",
+        "priority": 3
+       }
+      ],
+      "throwInServers": {
+       "band": {
+        "preferred": null,
+        "alternate": null
+       },
+       "endline": {
+        "preferred": null,
+        "alternate": null
+       }
+      },
+      "throwInDefense": {
+       "band": "DSaqB01",
+       "endline": "DSaqF01",
+       "target": null
+      },
+      "coach": {
+       "policy": "ENTREF02",
+       "delegation": {
+        "rotation": true,
+        "adjustments": true,
+        "fouls": true,
+        "timeouts": true,
+        "endgame": true
+       }
+      },
+      "natural": {
+       "id": "NAT-EQ07",
+       "version": "NAT-MOTOR11-R1"
+      },
+      "participation": {
+       "source": "SEM-MOTOR11: plan natural EQ07; relevos por posición, director y mejor ajuste funcional; objetivos 24/16; los recursos situacionales quedan a cero (revisable)",
+       "pairs": [
+        {
+         "slot": "PG",
+         "starter": "EQ07-J01",
+         "relief": "EQ07-J12",
+         "starterMinutes": 24,
+         "reliefMinutes": 16
+        },
+        {
+         "slot": "SG",
+         "starter": "EQ07-J03",
+         "relief": "EQ07-J05",
+         "starterMinutes": 24,
+         "reliefMinutes": 16
+        },
+        {
+         "slot": "SF",
+         "starter": "EQ07-J06",
+         "relief": "EQ07-J07",
+         "starterMinutes": 24,
+         "reliefMinutes": 16
+        },
+        {
+         "slot": "PF",
+         "starter": "EQ07-J08",
+         "relief": "EQ07-J09",
+         "starterMinutes": 24,
+         "reliefMinutes": 16
+        },
+        {
+         "slot": "C",
+         "starter": "EQ07-J10",
+         "relief": "EQ07-J11",
+         "starterMinutes": 24,
+         "reliefMinutes": 16
+        }
+       ],
+       "situational": [
+        "EQ07-J02",
+        "EQ07-J04"
+       ]
+      }
+     }
+    },
+    "EQ08": {
+     "name": "Jóvenes atléticos y menor comprensión",
+     "identity": "Jóvenes atléticos y menor comprensión",
+     "planVersion": "NAT-MOTOR11-R1",
+     "sourceTables": {
+      "disposition": "5 abiertos",
+      "defense": "Individual",
+      "p1": [
+       "POS01",
+       "POS09"
+      ],
+      "p2": [
+       "POS02",
+       "POS05",
+       "POS14"
+      ],
+      "starters": "J01 J03 J06 J08 J10",
+      "minutes": "young"
+     },
+     "plan": {
+      "teamId": "EQ08",
+      "disposition": "DIS01",
+      "defense": "ORG01",
+      "coverage": "COB01",
+      "pressureHeight": "normal",
+      "styles": {
+       "organizedPace": 4,
+       "transition": 4,
+       "elaboration": 2,
+       "finishPreference": 3,
+       "freedom": 3,
+       "offensiveRisk": 4,
+       "afterShot": 3
+      },
+      "starters": {
+       "PG": "EQ08-J01",
+       "SG": "EQ08-J03",
+       "SF": "EQ08-J06",
+       "PF": "EQ08-J08",
+       "C": "EQ08-J10"
+      },
+      "directorPriority": [
+       "EQ08-J01",
+       "EQ08-J12",
+       "EQ08-J06",
+       "EQ08-J02"
+      ],
+      "playbook": [
+       {
+        "playId": "POS01",
+        "priority": 1
+       },
+       {
+        "playId": "POS02",
+        "priority": 2
+       },
+       {
+        "playId": "POS03",
+        "priority": 5
+       },
+       {
+        "playId": "POS04",
+        "priority": 5
+       },
+       {
+        "playId": "POS05",
+        "priority": 2
+       },
+       {
+        "playId": "POS06",
+        "priority": 5
+       },
+       {
+        "playId": "POS07",
+        "priority": 5
+       },
+       {
+        "playId": "POS08",
+        "priority": 5
+       },
+       {
+        "playId": "POS09",
+        "priority": 1
+       },
+       {
+        "playId": "POS10",
+        "priority": 5
+       },
+       {
+        "playId": "POS11",
+        "priority": 5
+       },
+       {
+        "playId": "POS12",
+        "priority": 5
+       },
+       {
+        "playId": "POS13",
+        "priority": 5
+       },
+       {
+        "playId": "POS14",
+        "priority": 2
+       },
+       {
+        "playId": "POS15",
+        "priority": 5
+       }
+      ],
+      "initialTeamMoment": 0,
+      "midrange": "openOnly",
+      "defStyles": {
+       "help": 3,
+       "pressure": 4,
+       "receivers": 4,
+       "steal": 4,
+       "protection": 3
+      },
+      "navigation": null,
+      "marks": [],
+      "target": null,
+      "targetAlt": null,
+      "fallbackOrg": "ORG02",
+      "specials": [],
+      "throwInBook": [
+       {
+        "playId": "SaqB01",
+        "priority": 1
+       },
+       {
+        "playId": "SaqB02",
+        "priority": 3
+       },
+       {
+        "playId": "SaqB03",
+        "priority": 3
+       },
+       {
+        "playId": "SaqF03",
+        "priority": 1
+       },
+       {
+        "playId": "SaqF01",
+        "priority": 3
+       },
+       {
+        "playId": "SaqF02",
+        "priority": 3
+       }
+      ],
+      "throwInServers": {
+       "band": {
+        "preferred": null,
+        "alternate": null
+       },
+       "endline": {
+        "preferred": null,
+        "alternate": null
+       }
+      },
+      "throwInDefense": {
+       "band": "DSaqB01",
+       "endline": "DSaqF01",
+       "target": null
+      },
+      "coach": {
+       "policy": "ENTREF02",
+       "delegation": {
+        "rotation": true,
+        "adjustments": true,
+        "fouls": true,
+        "timeouts": true,
+        "endgame": true
+       }
+      },
+      "natural": {
+       "id": "NAT-EQ08",
+       "version": "NAT-MOTOR11-R1"
+      },
+      "participation": {
+       "source": "SEM-MOTOR11: plan natural EQ08; relevos por posición, director y mejor ajuste funcional; objetivos 26/14; los recursos situacionales quedan a cero (revisable)",
+       "pairs": [
+        {
+         "slot": "PG",
+         "starter": "EQ08-J01",
+         "relief": "EQ08-J12",
+         "starterMinutes": 26,
+         "reliefMinutes": 14
+        },
+        {
+         "slot": "SG",
+         "starter": "EQ08-J03",
+         "relief": "EQ08-J05",
+         "starterMinutes": 26,
+         "reliefMinutes": 14
+        },
+        {
+         "slot": "SF",
+         "starter": "EQ08-J06",
+         "relief": "EQ08-J07",
+         "starterMinutes": 26,
+         "reliefMinutes": 14
+        },
+        {
+         "slot": "PF",
+         "starter": "EQ08-J08",
+         "relief": "EQ08-J09",
+         "starterMinutes": 26,
+         "reliefMinutes": 14
+        },
+        {
+         "slot": "C",
+         "starter": "EQ08-J10",
+         "relief": "EQ08-J11",
+         "starterMinutes": 26,
+         "reliefMinutes": 14
+        }
+       ],
+       "situational": [
+        "EQ08-J02",
+        "EQ08-J04"
+       ]
+      }
+     }
+    },
+    "EQ09": {
+     "name": "Protección interior",
+     "identity": "Protección interior",
+     "planVersion": "NAT-MOTOR11-R1",
+     "sourceTables": {
+      "disposition": "3–2 ofensivo",
+      "defense": "Zona 2–3",
+      "p1": [
+       "POS01",
+       "POS11"
+      ],
+      "p2": [
+       "POS04",
+       "POS12",
+       "POS13"
+      ],
+      "starters": "J01 J03 J06 J09 J11",
+      "minutes": "ordinary"
+     },
+     "plan": {
+      "teamId": "EQ09",
+      "disposition": "DIS03",
+      "defense": "ORG02",
+      "coverage": "COB01",
+      "pressureHeight": "normal",
+      "styles": {
+       "organizedPace": 2,
+       "transition": 2,
+       "elaboration": 3,
+       "finishPreference": 2,
+       "freedom": 2,
+       "offensiveRisk": 2,
+       "afterShot": 4
+      },
+      "starters": {
+       "PG": "EQ09-J01",
+       "SG": "EQ09-J03",
+       "SF": "EQ09-J06",
+       "PF": "EQ09-J09",
+       "C": "EQ09-J11"
+      },
+      "directorPriority": [
+       "EQ09-J01",
+       "EQ09-J12",
+       "EQ09-J06",
+       "EQ09-J02"
+      ],
+      "playbook": [
+       {
+        "playId": "POS01",
+        "priority": 1
+       },
+       {
+        "playId": "POS02",
+        "priority": 5
+       },
+       {
+        "playId": "POS03",
+        "priority": 5
+       },
+       {
+        "playId": "POS04",
+        "priority": 2
+       },
+       {
+        "playId": "POS05",
+        "priority": 5
+       },
+       {
+        "playId": "POS06",
+        "priority": 5
+       },
+       {
+        "playId": "POS07",
+        "priority": 5
+       },
+       {
+        "playId": "POS08",
+        "priority": 5
+       },
+       {
+        "playId": "POS09",
+        "priority": 5
+       },
+       {
+        "playId": "POS10",
+        "priority": 5
+       },
+       {
+        "playId": "POS11",
+        "priority": 1
+       },
+       {
+        "playId": "POS12",
+        "priority": 2
+       },
+       {
+        "playId": "POS13",
+        "priority": 2
+       },
+       {
+        "playId": "POS14",
+        "priority": 5
+       },
+       {
+        "playId": "POS15",
+        "priority": 5
+       }
+      ],
+      "initialTeamMoment": 0,
+      "midrange": "openOnly",
+      "defStyles": {
+       "help": 4,
+       "pressure": 2,
+       "receivers": 2,
+       "steal": 2,
+       "protection": 1
+      },
+      "navigation": null,
+      "marks": [],
+      "target": null,
+      "targetAlt": null,
+      "fallbackOrg": "ORG02",
+      "specials": [],
+      "throwInBook": [
+       {
+        "playId": "SaqB01",
+        "priority": 1
+       },
+       {
+        "playId": "SaqB02",
+        "priority": 3
+       },
+       {
+        "playId": "SaqB03",
+        "priority": 3
+       },
+       {
+        "playId": "SaqF03",
+        "priority": 1
+       },
+       {
+        "playId": "SaqF01",
+        "priority": 3
+       },
+       {
+        "playId": "SaqF02",
+        "priority": 3
+       }
+      ],
+      "throwInServers": {
+       "band": {
+        "preferred": null,
+        "alternate": null
+       },
+       "endline": {
+        "preferred": null,
+        "alternate": null
+       }
+      },
+      "throwInDefense": {
+       "band": "DSaqB01",
+       "endline": "DSaqF01",
+       "target": null
+      },
+      "coach": {
+       "policy": "ENTREF02",
+       "delegation": {
+        "rotation": true,
+        "adjustments": true,
+        "fouls": true,
+        "timeouts": true,
+        "endgame": true
+       }
+      },
+      "natural": {
+       "id": "NAT-EQ09",
+       "version": "NAT-MOTOR11-R1"
+      },
+      "participation": {
+       "source": "SEM-MOTOR11: plan natural EQ09; relevos por posición, director y mejor ajuste funcional; objetivos 28/12; los recursos situacionales quedan a cero (revisable)",
+       "pairs": [
+        {
+         "slot": "PG",
+         "starter": "EQ09-J01",
+         "relief": "EQ09-J12",
+         "starterMinutes": 28,
+         "reliefMinutes": 12
+        },
+        {
+         "slot": "SG",
+         "starter": "EQ09-J03",
+         "relief": "EQ09-J05",
+         "starterMinutes": 28,
+         "reliefMinutes": 12
+        },
+        {
+         "slot": "SF",
+         "starter": "EQ09-J06",
+         "relief": "EQ09-J07",
+         "starterMinutes": 28,
+         "reliefMinutes": 12
+        },
+        {
+         "slot": "PF",
+         "starter": "EQ09-J09",
+         "relief": "EQ09-J08",
+         "starterMinutes": 28,
+         "reliefMinutes": 12
+        },
+        {
+         "slot": "C",
+         "starter": "EQ09-J11",
+         "relief": "EQ09-J10",
+         "starterMinutes": 28,
+         "reliefMinutes": 12
+        }
+       ],
+       "situational": [
+        "EQ09-J02",
+        "EQ09-J04"
+       ]
+      }
+     }
+    },
+    "EQ10": {
+     "name": "Velocidad y presión",
+     "identity": "Velocidad y presión",
+     "planVersion": "NAT-MOTOR11-R1",
+     "sourceTables": {
+      "disposition": "4–1",
+      "defense": "Individual · tres cuartos",
+      "p1": [
+       "POS01",
+       "POS02",
+       "POS09"
+      ],
+      "p2": [
+       "POS05",
+       "POS10",
+       "POS14"
+      ],
+      "starters": "J01 J03 J06 J08 J10",
+      "minutes": "ordinary"
+     },
+     "plan": {
+      "teamId": "EQ10",
+      "disposition": "DIS02",
+      "defense": "ORG01",
+      "coverage": "COB03",
+      "pressureHeight": "three_quarters",
+      "styles": {
+       "organizedPace": 4,
+       "transition": 4,
+       "elaboration": 2,
+       "finishPreference": 3,
+       "freedom": 3,
+       "offensiveRisk": 4,
+       "afterShot": 2
+      },
+      "starters": {
+       "PG": "EQ10-J01",
+       "SG": "EQ10-J03",
+       "SF": "EQ10-J06",
+       "PF": "EQ10-J08",
+       "C": "EQ10-J10"
+      },
+      "directorPriority": [
+       "EQ10-J01",
+       "EQ10-J12",
+       "EQ10-J06",
+       "EQ10-J02"
+      ],
+      "playbook": [
+       {
+        "playId": "POS01",
+        "priority": 1
+       },
+       {
+        "playId": "POS02",
+        "priority": 1
+       },
+       {
+        "playId": "POS03",
+        "priority": 5
+       },
+       {
+        "playId": "POS04",
+        "priority": 5
+       },
+       {
+        "playId": "POS05",
+        "priority": 2
+       },
+       {
+        "playId": "POS06",
+        "priority": 5
+       },
+       {
+        "playId": "POS07",
+        "priority": 5
+       },
+       {
+        "playId": "POS08",
+        "priority": 5
+       },
+       {
+        "playId": "POS09",
+        "priority": 1
+       },
+       {
+        "playId": "POS10",
+        "priority": 2
+       },
+       {
+        "playId": "POS11",
+        "priority": 5
+       },
+       {
+        "playId": "POS12",
+        "priority": 5
+       },
+       {
+        "playId": "POS13",
+        "priority": 5
+       },
+       {
+        "playId": "POS14",
+        "priority": 2
+       },
+       {
+        "playId": "POS15",
+        "priority": 5
+       }
+      ],
+      "initialTeamMoment": 0,
+      "midrange": "openOnly",
+      "defStyles": {
+       "help": 3,
+       "pressure": 4,
+       "receivers": 4,
+       "steal": 4,
+       "protection": 3
+      },
+      "navigation": "over_and_recover",
+      "marks": [],
+      "target": null,
+      "targetAlt": null,
+      "fallbackOrg": "ORG02",
+      "specials": [],
+      "throwInBook": [
+       {
+        "playId": "SaqB01",
+        "priority": 1
+       },
+       {
+        "playId": "SaqB02",
+        "priority": 3
+       },
+       {
+        "playId": "SaqB03",
+        "priority": 3
+       },
+       {
+        "playId": "SaqF03",
+        "priority": 1
+       },
+       {
+        "playId": "SaqF01",
+        "priority": 3
+       },
+       {
+        "playId": "SaqF02",
+        "priority": 3
+       }
+      ],
+      "throwInServers": {
+       "band": {
+        "preferred": null,
+        "alternate": null
+       },
+       "endline": {
+        "preferred": null,
+        "alternate": null
+       }
+      },
+      "throwInDefense": {
+       "band": "DSaqB01",
+       "endline": "DSaqF01",
+       "target": null
+      },
+      "coach": {
+       "policy": "ENTREF02",
+       "delegation": {
+        "rotation": true,
+        "adjustments": true,
+        "fouls": true,
+        "timeouts": true,
+        "endgame": true
+       }
+      },
+      "natural": {
+       "id": "NAT-EQ10",
+       "version": "NAT-MOTOR11-R1"
+      },
+      "participation": {
+       "source": "SEM-MOTOR11: plan natural EQ10; relevos por posición, director y mejor ajuste funcional; objetivos 28/12; los recursos situacionales quedan a cero (revisable)",
+       "pairs": [
+        {
+         "slot": "PG",
+         "starter": "EQ10-J01",
+         "relief": "EQ10-J12",
+         "starterMinutes": 28,
+         "reliefMinutes": 12
+        },
+        {
+         "slot": "SG",
+         "starter": "EQ10-J03",
+         "relief": "EQ10-J05",
+         "starterMinutes": 28,
+         "reliefMinutes": 12
+        },
+        {
+         "slot": "SF",
+         "starter": "EQ10-J06",
+         "relief": "EQ10-J07",
+         "starterMinutes": 28,
+         "reliefMinutes": 12
+        },
+        {
+         "slot": "PF",
+         "starter": "EQ10-J08",
+         "relief": "EQ10-J09",
+         "starterMinutes": 28,
+         "reliefMinutes": 12
+        },
+        {
+         "slot": "C",
+         "starter": "EQ10-J10",
+         "relief": "EQ10-J11",
+         "starterMinutes": 28,
+         "reliefMinutes": 12
+        }
+       ],
+       "situational": [
+        "EQ10-J02",
+        "EQ10-J04"
+       ]
+      }
+     }
+    },
+    "EQ11": {
+     "name": "Estrella con poco recambio",
+     "identity": "Estrella con poco recambio",
+     "planVersion": "NAT-MOTOR11-R1",
+     "sourceTables": {
+      "disposition": "4–1",
+      "defense": "Individual",
+      "p1": [
+       "POS01",
+       "POS14"
+      ],
+      "p2": [
+       "POS03",
+       "POS05",
+       "POS15"
+      ],
+      "starters": "J01 J03 J06 J08 J10",
+      "minutes": "star"
+     },
+     "plan": {
+      "teamId": "EQ11",
+      "disposition": "DIS02",
+      "defense": "ORG01",
+      "coverage": "COB01",
+      "pressureHeight": "normal",
+      "styles": {
+       "organizedPace": 3,
+       "transition": 3,
+       "elaboration": 3,
+       "finishPreference": 3,
+       "freedom": 4,
+       "offensiveRisk": 3,
+       "afterShot": 3
+      },
+      "starters": {
+       "PG": "EQ11-J01",
+       "SG": "EQ11-J03",
+       "SF": "EQ11-J06",
+       "PF": "EQ11-J08",
+       "C": "EQ11-J10"
+      },
+      "directorPriority": [
+       "EQ11-J01",
+       "EQ11-J12",
+       "EQ11-J06",
+       "EQ11-J02"
+      ],
+      "playbook": [
+       {
+        "playId": "POS01",
+        "priority": 1
+       },
+       {
+        "playId": "POS02",
+        "priority": 5
+       },
+       {
+        "playId": "POS03",
+        "priority": 2
+       },
+       {
+        "playId": "POS04",
+        "priority": 5
+       },
+       {
+        "playId": "POS05",
+        "priority": 2
+       },
+       {
+        "playId": "POS06",
+        "priority": 5
+       },
+       {
+        "playId": "POS07",
+        "priority": 5
+       },
+       {
+        "playId": "POS08",
+        "priority": 5
+       },
+       {
+        "playId": "POS09",
+        "priority": 5
+       },
+       {
+        "playId": "POS10",
+        "priority": 5
+       },
+       {
+        "playId": "POS11",
+        "priority": 5
+       },
+       {
+        "playId": "POS12",
+        "priority": 5
+       },
+       {
+        "playId": "POS13",
+        "priority": 5
+       },
+       {
+        "playId": "POS14",
+        "priority": 1
+       },
+       {
+        "playId": "POS15",
+        "priority": 2
+       }
+      ],
+      "initialTeamMoment": 0,
+      "midrange": "openOnly",
+      "defStyles": {
+       "help": 3,
+       "pressure": 3,
+       "receivers": 3,
+       "steal": 2,
+       "protection": 3
+      },
+      "navigation": null,
+      "marks": [],
+      "target": null,
+      "targetAlt": null,
+      "fallbackOrg": "ORG02",
+      "specials": [],
+      "throwInBook": [
+       {
+        "playId": "SaqB01",
+        "priority": 1
+       },
+       {
+        "playId": "SaqB02",
+        "priority": 3
+       },
+       {
+        "playId": "SaqB03",
+        "priority": 3
+       },
+       {
+        "playId": "SaqF03",
+        "priority": 1
+       },
+       {
+        "playId": "SaqF01",
+        "priority": 3
+       },
+       {
+        "playId": "SaqF02",
+        "priority": 3
+       }
+      ],
+      "throwInServers": {
+       "band": {
+        "preferred": null,
+        "alternate": null
+       },
+       "endline": {
+        "preferred": null,
+        "alternate": null
+       }
+      },
+      "throwInDefense": {
+       "band": "DSaqB01",
+       "endline": "DSaqF01",
+       "target": null
+      },
+      "coach": {
+       "policy": "ENTREF02",
+       "delegation": {
+        "rotation": true,
+        "adjustments": true,
+        "fouls": true,
+        "timeouts": true,
+        "endgame": true
+       }
+      },
+      "natural": {
+       "id": "NAT-EQ11",
+       "version": "NAT-MOTOR11-R1"
+      },
+      "participation": {
+       "source": "SEM-MOTOR11: plan natural EQ11; relevos por posición, director y mejor ajuste funcional; objetivos 32/8 para J03 y 28/12 en el resto; los recursos situacionales quedan a cero (revisable)",
+       "pairs": [
+        {
+         "slot": "PG",
+         "starter": "EQ11-J01",
+         "relief": "EQ11-J12",
+         "starterMinutes": 28,
+         "reliefMinutes": 12
+        },
+        {
+         "slot": "SG",
+         "starter": "EQ11-J03",
+         "relief": "EQ11-J04",
+         "starterMinutes": 32,
+         "reliefMinutes": 8
+        },
+        {
+         "slot": "SF",
+         "starter": "EQ11-J06",
+         "relief": "EQ11-J07",
+         "starterMinutes": 28,
+         "reliefMinutes": 12
+        },
+        {
+         "slot": "PF",
+         "starter": "EQ11-J08",
+         "relief": "EQ11-J09",
+         "starterMinutes": 28,
+         "reliefMinutes": 12
+        },
+        {
+         "slot": "C",
+         "starter": "EQ11-J10",
+         "relief": "EQ11-J11",
+         "starterMinutes": 28,
+         "reliefMinutes": 12
+        }
+       ],
+       "situational": [
+        "EQ11-J02",
+        "EQ11-J05"
+       ]
+      }
+     }
+    },
+    "EQ12": {
+     "name": "Plantilla profunda",
+     "identity": "Plantilla profunda",
+     "planVersion": "NAT-MOTOR11-R1",
+     "sourceTables": {
+      "disposition": "Horns",
+      "defense": "Zona 1–2–2",
+      "p1": [
+       "POS01",
+       "POS05",
+       "POS12"
+      ],
+      "p2": [
+       "POS03",
+       "POS07",
+       "POS09"
+      ],
+      "starters": "J01 J12 J06 J09 J10",
+      "minutes": "depth"
+     },
+     "plan": {
+      "teamId": "EQ12",
+      "disposition": "DIS04",
+      "defense": "ORG05",
+      "coverage": "COB01",
+      "pressureHeight": "normal",
+      "styles": {
+       "organizedPace": 3,
+       "transition": 3,
+       "elaboration": 4,
+       "finishPreference": 3,
+       "freedom": 3,
+       "offensiveRisk": 3,
+       "afterShot": 3
+      },
+      "starters": {
+       "PG": "EQ12-J01",
+       "SG": "EQ12-J12",
+       "SF": "EQ12-J06",
+       "PF": "EQ12-J09",
+       "C": "EQ12-J10"
+      },
+      "directorPriority": [
+       "EQ12-J01",
+       "EQ12-J12",
+       "EQ12-J06",
+       "EQ12-J02"
+      ],
+      "playbook": [
+       {
+        "playId": "POS01",
+        "priority": 1
+       },
+       {
+        "playId": "POS02",
+        "priority": 5
+       },
+       {
+        "playId": "POS03",
+        "priority": 2
+       },
+       {
+        "playId": "POS04",
+        "priority": 5
+       },
+       {
+        "playId": "POS05",
+        "priority": 1
+       },
+       {
+        "playId": "POS06",
+        "priority": 5
+       },
+       {
+        "playId": "POS07",
+        "priority": 2
+       },
+       {
+        "playId": "POS08",
+        "priority": 5
+       },
+       {
+        "playId": "POS09",
+        "priority": 2
+       },
+       {
+        "playId": "POS10",
+        "priority": 5
+       },
+       {
+        "playId": "POS11",
+        "priority": 5
+       },
+       {
+        "playId": "POS12",
+        "priority": 1
+       },
+       {
+        "playId": "POS13",
+        "priority": 5
+       },
+       {
+        "playId": "POS14",
+        "priority": 5
+       },
+       {
+        "playId": "POS15",
+        "priority": 5
+       }
+      ],
+      "initialTeamMoment": 0,
+      "midrange": "openOnly",
+      "defStyles": {
+       "help": 3,
+       "pressure": 3,
+       "receivers": 3,
+       "steal": 3,
+       "protection": 3
+      },
+      "navigation": null,
+      "marks": [],
+      "target": null,
+      "targetAlt": null,
+      "fallbackOrg": "ORG02",
+      "specials": [],
+      "throwInBook": [
+       {
+        "playId": "SaqB01",
+        "priority": 1
+       },
+       {
+        "playId": "SaqB02",
+        "priority": 3
+       },
+       {
+        "playId": "SaqB03",
+        "priority": 3
+       },
+       {
+        "playId": "SaqF03",
+        "priority": 1
+       },
+       {
+        "playId": "SaqF01",
+        "priority": 3
+       },
+       {
+        "playId": "SaqF02",
+        "priority": 3
+       }
+      ],
+      "throwInServers": {
+       "band": {
+        "preferred": null,
+        "alternate": null
+       },
+       "endline": {
+        "preferred": null,
+        "alternate": null
+       }
+      },
+      "throwInDefense": {
+       "band": "DSaqB01",
+       "endline": "DSaqF01",
+       "target": null
+      },
+      "coach": {
+       "policy": "ENTREF02",
+       "delegation": {
+        "rotation": true,
+        "adjustments": true,
+        "fouls": true,
+        "timeouts": true,
+        "endgame": true
+       }
+      },
+      "natural": {
+       "id": "NAT-EQ12",
+       "version": "NAT-MOTOR11-R1"
+      },
+      "participation": {
+       "source": "SEM-MOTOR11: plan natural EQ12; relevos por posición, director y mejor ajuste funcional; objetivos 24/16; los recursos situacionales quedan a cero (revisable)",
+       "pairs": [
+        {
+         "slot": "PG",
+         "starter": "EQ12-J01",
+         "relief": "EQ12-J02",
+         "starterMinutes": 24,
+         "reliefMinutes": 16
+        },
+        {
+         "slot": "SG",
+         "starter": "EQ12-J12",
+         "relief": "EQ12-J05",
+         "starterMinutes": 24,
+         "reliefMinutes": 16
+        },
+        {
+         "slot": "SF",
+         "starter": "EQ12-J06",
+         "relief": "EQ12-J07",
+         "starterMinutes": 24,
+         "reliefMinutes": 16
+        },
+        {
+         "slot": "PF",
+         "starter": "EQ12-J09",
+         "relief": "EQ12-J08",
+         "starterMinutes": 24,
+         "reliefMinutes": 16
+        },
+        {
+         "slot": "C",
+         "starter": "EQ12-J10",
+         "relief": "EQ12-J11",
+         "starterMinutes": 24,
+         "reliefMinutes": 16
+        }
+       ],
+       "situational": [
+        "EQ12-J03",
+        "EQ12-J04"
+       ]
+      }
+     }
+    }
+   }
+  },
+  "generator": {
+   "version": "GEN-MOTOR11-R1",
+   "datasetVersion": "POB-MOTOR11-R1",
+   "name": "Generador correlacionado condicionado por plantillas de referencia (SEM)",
+   "provenance": "Encargo MOTOR-11 §8–§10. Los coeficientes son semillas SEM administrables, no correlaciones medidas ni una estimación de la población real. Construyen entradas del escenario: no se reaplican como bonus al resolver tareas del encuentro.",
+   "distribution": {
+    "kind": "triangularCentered",
+    "formula": "Z = U1 + U2 − 1",
+    "note": "U1 y U2 son uniformes reproducibles en [0,1) del stream de generación. Z es una variable interna temporal, no una capacidad."
+   },
+   "dispersions": {
+    "contained": 0.5,
+    "ordinary": 1,
+    "wide": 1.5
+   },
+   "defaultDispersion": 1,
+   "groups": {
+    "G01": {
+     "label": "Tiro",
+     "abilities": [
+      "TEC01",
+      "TEC02",
+      "TEC05",
+      "TEC06"
+     ]
+    },
+    "G02": {
+     "label": "Interior/finalización",
+     "abilities": [
+      "TEC03",
+      "TEC04",
+      "TEC09",
+      "TEC11"
+     ]
+    },
+    "G03": {
+     "label": "Control/creación",
+     "abilities": [
+      "TEC07",
+      "TEC08",
+      "TEC10"
+     ]
+    },
+    "G04": {
+     "label": "Defensa/rebote",
+     "abilities": [
+      "TEC12",
+      "TEC13",
+      "TEC14",
+      "TEC15",
+      "TEC16",
+      "TEC17",
+      "TEC18"
+     ]
+    },
+    "G05": {
+     "label": "Movilidad",
+     "abilities": [
+      "FIS01",
+      "FIS02",
+      "FIS03",
+      "FIS05"
+     ]
+    },
+    "G06": {
+     "label": "Contacto/estabilidad",
+     "abilities": [
+      "FIS04",
+      "FIS07"
+     ]
+    },
+    "G07": {
+     "label": "Resistencia",
+     "abilities": [
+      "FIS06"
+     ]
+    },
+    "G08": {
+     "label": "Lectura/mentales",
+     "abilities": [
+      "MEN01",
+      "MEN02",
+      "MEN03",
+      "MEN04",
+      "MEN05",
+      "MEN06",
+      "MEN07"
+     ]
+    }
+   },
+   "coefficients": {
+    "team": 1,
+    "player": 1.5,
+    "residual": 0.75
+   },
+   "cross": {
+    "TEC08": {
+     "G08": 0.35
+    },
+    "TEC10": {
+     "G05": 0.35
+    },
+    "TEC12": {
+     "G05": 0.25
+    },
+    "TEC13": {
+     "G06": 0.25
+    },
+    "TEC15": {
+     "G05": 0.25,
+     "body": 0.25
+    },
+    "TEC17": {
+     "G06": 0.25
+    },
+    "TEC18": {
+     "G05": 0.25,
+     "body": 0.25
+    },
+    "FIS04": {
+     "body": 0.35
+    },
+    "FIS01": {
+     "body": -0.2
+    },
+    "FIS03": {
+     "body": -0.2
+    }
+   },
+   "precision": {
+    "abilityDecimals": 3,
+    "bodyDecimals": 1,
+    "tendencyDecimals": 4
+   },
+   "body": {
+    "heightCm": {
+     "team": 2,
+     "player": 3,
+     "residual": 1
+    },
+    "weightKg": {
+     "team": 1.5,
+     "player": 2,
+     "residual": 0.75
+    },
+    "wingspanCm": {
+     "player": 1,
+     "residual": 1
+    },
+    "limits": {
+     "heightCm": {
+      "min": 170,
+      "max": 220
+     },
+     "weightKg": {
+      "min": 55,
+      "max": 140
+     },
+     "wingspanCm": {
+      "min": 170,
+      "max": 235
+     },
+     "wingspanMinusHeightCm": {
+      "min": -2,
+      "max": 20
+     }
+    },
+    "note": "Límites de esta población ficticia de laboratorio adulta (no afirmaciones clínicas). La altura y la envergadura coinciden con el contrato corporal del perfil (body.heightRangeCm/wingspanRangeCm)."
+   },
+   "age": {
+    "span": 5,
+    "offset": -2,
+    "bounds": {
+     "default": {
+      "min": 18,
+      "max": 42
+     },
+     "EQ07": {
+      "min": 34,
+      "max": 42
+     },
+     "EQ08": {
+      "min": 18,
+      "max": 23
+     }
+    },
+    "note": "edad_base + floor(5·U) − 2; no se aplica otra curva de edad a las 32 capacidades."
+   },
+   "tendencies": {
+    "initiative": 0.1,
+    "finishingVocation": 0.1,
+    "zonePreference": 0.05
+   },
+   "rng": {
+    "derivation": "FNV-1a 32 bits de «semilla|receta|dataset|clave canónica del stream» → xorshift32 del perfil (rng); 4 sorteos de calentamiento descartados",
+    "warmup": 4,
+    "note": "Un stream por tipo/equipo/plaza/campo o grupo: el resultado no depende del orden de generación ni del RNG del partido."
+   },
+   "names": {
+    "pattern": "Jugador <ID>",
+    "note": "Etiqueta estable de plaza (identidad y dorsal no influyen en el desempeño)."
+   },
+   "idPattern": "GEN<identidad:2>_<semilla>_D<dispersión sin coma>"
+  },
+  "lab": {
+   "version": "LAB-MOTOR11-R1",
+   "note": "Catálogo versionado de escenarios MOTOR-11. Cada variante es una COPIA de la entrada con las diferencias exactas listadas (no sobrescribe fichas ni planes). Los marcados «diagnóstico» son entradas preparadas, no acontecimientos naturales. Un solo partido no atribuye causas.",
+   "scenarios": [
+    {
+     "id": "LAB11-00",
+     "name": "Referencia histórica congelada",
+     "diagnostic": false,
+     "historical": true,
+     "pairing": {
+      "a": "EQ01",
+      "b": "EQ02"
+     },
+     "multicause": false,
+     "question": "Los planes históricos de EQ01/EQ02 y las fichas iniciales de MOTOR-10 siguen dando 83–103 con la semilla 20261016 (regresión).",
+     "conserved": [
+      "fichas iniciales (revisión R0)",
+      "planes históricos de MOTOR-10",
+      "semilla deportiva 20261016"
+     ],
+     "variants": [
+      {
+       "id": "base",
+       "label": "Referencia histórica",
+       "ops": []
+      }
+     ]
+    },
+    {
+     "id": "LAB11-01",
+     "name": "Doce planes naturales",
+     "diagnostic": false,
+     "rivalFree": true,
+     "pairing": {
+      "a": "EQ01",
+      "b": "EQ02"
+     },
+     "multicause": true,
+     "fromNaturalPlans": true,
+     "question": "Cada equipo con su plan natural de MOTOR-11 y elección libre de rival.",
+     "conserved": [
+      "fichas de referencia protegidas",
+      "política ENTREF02 y delegación ordinaria"
+     ],
+     "variants": []
+    },
+    {
+     "id": "LAB11-02",
+     "name": "Energía inicial",
+     "diagnostic": true,
+     "pairing": {
+      "a": "EQ01",
+      "b": "EQ02"
+     },
+     "multicause": false,
+     "question": "El mismo director con energía 100, 30 u 8 (reserva crítica): ¿cómo cambia el uso y la rotación?",
+     "conserved": [
+      "capacidades",
+      "Forma",
+      "momentos",
+      "plan"
+     ],
+     "variants": [
+      {
+       "id": "E100",
+       "label": "Energía 100 (base)",
+       "ops": []
+      },
+      {
+       "id": "E30",
+       "label": "Director a energía 30",
+       "ops": [
+        {
+         "op": "state",
+         "who": {
+          "team": 0,
+          "player": "director"
+         },
+         "key": "energy",
+         "value": 30
+        }
+       ]
+      },
+      {
+       "id": "E08",
+       "label": "Director a energía 8 (reserva crítica)",
+       "ops": [
+        {
+         "op": "state",
+         "who": {
+          "team": 0,
+          "player": "director"
+         },
+         "key": "energy",
+         "value": 8
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "LAB11-03",
+     "name": "Referente cansado y recambio",
+     "diagnostic": true,
+     "pairing": {
+      "a": "EQ11",
+      "b": "EQ01"
+     },
+     "multicause": false,
+     "question": "EQ11 con su anotador J03 a energía 30 frente al mismo equipo con J03 a 100. El contraste con EQ12 (plantilla profunda) es multicausa.",
+     "conserved": [
+      "capacidades",
+      "Forma",
+      "momentos",
+      "plan del resto"
+     ],
+     "variants": [
+      {
+       "id": "J03-100",
+       "label": "J03 a energía 100 (base)",
+       "ops": []
+      },
+      {
+       "id": "J03-30",
+       "label": "J03 a energía 30",
+       "ops": [
+        {
+         "op": "state",
+         "who": {
+          "team": 0,
+          "player": "J03"
+         },
+         "key": "energy",
+         "value": 30
+        }
+       ]
+      },
+      {
+       "id": "VS-EQ12",
+       "label": "EQ11 frente a EQ12 (multicausa: cambian plantilla, plan y rotación)",
+       "pairing": {
+        "a": "EQ11",
+        "b": "EQ12"
+       },
+       "multicause": true,
+       "ops": []
+      }
+     ]
+    },
+    {
+     "id": "LAB11-04",
+     "name": "Iniciativa del director",
+     "diagnostic": true,
+     "pairing": {
+      "a": "EQ04",
+      "b": "EQ01"
+     },
+     "multicause": false,
+     "question": "El mismo director con Iniciativa 0,2 o 0,8: ¿cuánto margen toma sobre el plan?",
+     "conserved": [
+      "capacidades",
+      "plan",
+      "Forma y momentos"
+     ],
+     "variants": [
+      {
+       "id": "base",
+       "label": "Iniciativa de la ficha (base)",
+       "ops": []
+      },
+      {
+       "id": "I02",
+       "label": "Iniciativa 0,2",
+       "ops": [
+        {
+         "op": "field",
+         "who": {
+          "team": 0,
+          "player": "director"
+         },
+         "key": "initiative",
+         "value": 0.2
+        }
+       ]
+      },
+      {
+       "id": "I08",
+       "label": "Iniciativa 0,8",
+       "ops": [
+        {
+         "op": "field",
+         "who": {
+          "team": 0,
+          "player": "director"
+         },
+         "key": "initiative",
+         "value": 0.8
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "LAB11-05",
+     "name": "Lectura del director",
+     "diagnostic": false,
+     "pairing": {
+      "a": "EQ04",
+      "b": "EQ01"
+     },
+     "multicause": false,
+     "question": "El mismo director con MEN02 y MEN03 +3 frente a la base (intervención en dos capacidades explícitas, Iniciativa idéntica).",
+     "conserved": [
+      "Iniciativa",
+      "resto de capacidades",
+      "plan"
+     ],
+     "variants": [
+      {
+       "id": "base",
+       "label": "Base",
+       "ops": []
+      },
+      {
+       "id": "M+3",
+       "label": "MEN02 y MEN03 +3",
+       "ops": [
+        {
+         "op": "ability",
+         "who": {
+          "team": 0,
+          "player": "director"
+         },
+         "attrs": [
+          "MEN02",
+          "MEN03"
+         ],
+         "delta": 3
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "LAB11-06",
+     "name": "Veterano y joven",
+     "diagnostic": false,
+     "pairing": {
+      "a": "EQ07",
+      "b": "EQ08"
+     },
+     "multicause": true,
+     "question": "EQ07 (veteranos técnicos, con EQ07-J01 de 40 años) frente a EQ08 (jóvenes atléticos): contraste multicausa. La copia de edad sola comprueba que la etiqueta no añade rendimiento.",
+     "conserved": [
+      "semilla deportiva en la copia de edad"
+     ],
+     "variants": [
+      {
+       "id": "base",
+       "label": "EQ07 – EQ08 (multicausa)",
+       "ops": []
+      },
+      {
+       "id": "AGE",
+       "label": "Copia de edad sola: EQ07-J01 a 28 años (nada más cambia)",
+       "multicause": false,
+       "ops": [
+        {
+         "op": "field",
+         "who": {
+          "team": 0,
+          "player": "J01"
+         },
+         "key": "age",
+         "value": 28
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "LAB11-07",
+     "name": "Forma",
+     "diagnostic": true,
+     "pairing": {
+      "a": "EQ01",
+      "b": "EQ02"
+     },
+     "multicause": false,
+     "question": "El mismo jugador con Forma −0,5 o +0,5 (escala vigente −1…1), energía y momentos iguales.",
+     "conserved": [
+      "energía",
+      "momentos",
+      "capacidades",
+      "plan"
+     ],
+     "variants": [
+      {
+       "id": "F-0.5",
+       "label": "Forma −0,5",
+       "ops": [
+        {
+         "op": "state",
+         "who": {
+          "team": 0,
+          "player": "J03"
+         },
+         "key": "form",
+         "value": -0.5
+        }
+       ]
+      },
+      {
+       "id": "F+0.5",
+       "label": "Forma +0,5",
+       "ops": [
+        {
+         "op": "state",
+         "who": {
+          "team": 0,
+          "player": "J03"
+         },
+         "key": "form",
+         "value": 0.5
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "LAB11-08",
+     "name": "Libertad del libro",
+     "diagnostic": false,
+     "pairing": {
+      "a": "EQ01",
+      "b": "EQ02"
+     },
+     "multicause": false,
+     "question": "Libertad nivel 1 frente a nivel 5 conservando prioridades del libro y capacidades; las prioridades siguen compartidas (preferencias, no cuotas).",
+     "conserved": [
+      "prioridades del libro",
+      "capacidades",
+      "resto de estilos"
+     ],
+     "variants": [
+      {
+       "id": "L1",
+       "label": "Libertad 1",
+       "ops": [
+        {
+         "op": "style",
+         "team": 0,
+         "key": "freedom",
+         "value": 1
+        }
+       ]
+      },
+      {
+       "id": "L5",
+       "label": "Libertad 5",
+       "ops": [
+        {
+         "op": "style",
+         "team": 0,
+         "key": "freedom",
+         "value": 5
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "LAB11-09",
+     "name": "Carga y balance",
+     "diagnostic": false,
+     "pairing": {
+      "a": "EQ01",
+      "b": "EQ02"
+     },
+     "multicause": false,
+     "question": "Después del tiro nivel 2 frente a nivel 4, resto igual.",
+     "conserved": [
+      "resto de estilos",
+      "capacidades",
+      "plan"
+     ],
+     "variants": [
+      {
+       "id": "AT2",
+       "label": "Después del tiro 2",
+       "ops": [
+        {
+         "op": "style",
+         "team": 0,
+         "key": "afterShot",
+         "value": 2
+        }
+       ]
+      },
+      {
+       "id": "AT4",
+       "label": "Después del tiro 4",
+       "ops": [
+        {
+         "op": "style",
+         "team": 0,
+         "key": "afterShot",
+         "value": 4
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "LAB11-10",
+     "name": "Objetivo entra y sale (box and one)",
+     "diagnostic": true,
+     "pairing": {
+      "a": "EQ01",
+      "b": "EQ11"
+     },
+     "multicause": false,
+     "question": "EQ01 defiende box and one sobre el anotador J03 de EQ11, con J01 como alternativa individual y ORG02 como alternativa declarada. La orden prevista del segundo periodo cambia el objetivo solo en una ventana real.",
+     "conserved": [
+      "planes ofensivos",
+      "capacidades"
+     ],
+     "variants": [
+      {
+       "id": "ORG06",
+       "label": "Box and one sobre EQ11-J03 (alternativa EQ11-J01, ORG02 declarada)",
+       "ops": [
+        {
+         "op": "plan",
+         "team": 0,
+         "key": "defense",
+         "value": "ORG06"
+        },
+        {
+         "op": "plan",
+         "team": 0,
+         "key": "target",
+         "value": {
+          "team": 1,
+          "player": "J03"
+         }
+        },
+        {
+         "op": "plan",
+         "team": 0,
+         "key": "targetAlt",
+         "value": {
+          "team": 1,
+          "player": "J01"
+         }
+        },
+        {
+         "op": "plan",
+         "team": 0,
+         "key": "fallbackOrg",
+         "value": "ORG02"
+        }
+       ],
+       "plannedOrders": [
+        {
+         "period": 2,
+         "boundary": "inicio del segundo periodo",
+         "team": 0,
+         "spec": {
+          "type": "defOrg",
+          "defense": "ORG06",
+          "target": {
+           "team": 1,
+           "player": "J01"
+          },
+          "targetAlt": {
+           "team": 1,
+           "player": "J03"
+          },
+          "fallbackOrg": "ORG02"
+         },
+         "note": "Intercambia objetivo y alternativa; se envía desde «Partido» en la frontera del periodo y se aplica en su ventana real."
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "LAB11-11",
+     "name": "Consistencia, momentos e importancia",
+     "diagnostic": true,
+     "reuseContrast": true,
+     "pairing": {
+      "a": "EQ01",
+      "b": "EQ02"
+     },
+     "multicause": false,
+     "question": "Reutiliza las copias C04 (Consistencia alta/baja) y C05 (momentos, T e importancia decisiva) de MOTOR-07 sin inventar otro estado.",
+     "conserved": [
+      "mecanismos de MOTOR-07"
+     ],
+     "variants": [
+      {
+       "id": "C04",
+       "label": "C04 · Consistencia alta / baja",
+       "ref": "C04",
+       "ops": []
+      },
+      {
+       "id": "C05",
+       "label": "C05 · Momentos y T iniciales, importancia decisiva",
+       "ref": "C05",
+       "ops": []
+      }
+     ]
+    },
+    {
+     "id": "LAB11-12",
+     "name": "Equipo generado reproducible",
+     "diagnostic": false,
+     "pairing": {
+      "a": {
+       "generated": {
+        "base": "EQ04",
+        "seed": 20261017,
+        "dispersion": 1
+       }
+      },
+      "b": "EQ01"
+     },
+     "rivalFree": true,
+     "multicause": true,
+     "question": "Equipo generado desde EQ04 con semilla de generación 20261017 y dispersión 1; rival y semilla deportiva independientes de la generación.",
+     "conserved": [
+      "la receta y la semilla de generación"
+     ],
+     "variants": [
+      {
+       "id": "base",
+       "label": "Generado EQ04 · semilla 20261017 · dispersión 1",
+       "ops": []
+      }
+     ]
+    }
+   ]
+  }
+ }
+}

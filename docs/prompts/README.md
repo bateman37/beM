@@ -22,6 +22,7 @@ Directorio de los encargos a Claude Code. **El texto original de un prompt ejecu
 | MOTOR-09 | Reglamento, administración y acta: matriz normativa con estado de contraste, series, combinadas, acta completa, posesiones y F, conciliación, revisiones, casos preparados y ruta B de la memoria | [`MOTOR-09-reglamento-administracion-y-acta.md`](MOTOR-09-reglamento-administracion-y-acta.md) · [recorrido manual](MOTOR-09-recorrido-manual.md) | Ejecutado, **pendiente de revisión de Dennis** | 2026-10-16 (intento 1) | — |
 | MOTOR-08 | Entrenador automático (tres políticas, cinco ámbitos delegables), memoria defensiva colectiva, contrato de información, perfil `SEM-MOTOR08` y cierre acotado de salvedades de MOTOR-07 | [`MOTOR-08-entrenador-y-memoria.md`](MOTOR-08-entrenador-y-memoria.md) · [recorrido manual](MOTOR-08-recorrido-manual.md) | Ejecutado, **pendiente de revisión de Dennis** | 2026-10-16 (intento 1) | — |
 | MOTOR-10 | Análisis, estadísticas, resumen e información: catálogo común de indicadores, evolución y final ajustado, mapa sectorial y calidad, origen y ejecuciones, defensa y responsabilidades, quintetos y on/off, informes por audiencia, resumen con claves sustentadas, recomendaciones REC10-01/02 y exportación analítica; perfil `SEM-MOTOR10` | [`MOTOR-10-analisis-estadisticas-y-resumen.md`](MOTOR-10-analisis-estadisticas-y-resumen.md) · [recorrido manual](MOTOR-10-recorrido-manual.md) | Ejecutado, **pendiente de revisión de Dennis** (PR abierta, sin fusionar) | 2026-10-17 · intento 1 | — |
+| MOTOR-11 | Población de referencia (doce equipos, 144 fichas, revisión de edad), planes naturales, generador correlacionado reproducible, edición masiva con deshacer exacto, variantes y escenarios LAB11; cierre de pendientes de MOTOR-10; perfil `SEM-MOTOR11` | [`MOTOR-11-poblacion-generador-y-escenarios.md`](MOTOR-11-poblacion-generador-y-escenarios.md) · [recorrido manual](MOTOR-11-recorrido-manual.md) | Ejecutado, **pendiente de revisión de Dennis** | 2026-10-17 | — |
 
 ## Fichas de ejecución
 
@@ -204,3 +205,17 @@ Comprobación local de enlaces: hecha por Claude. Presentación en GitHub: no co
 | Comprobaciones realizadas | `npm test` (141 pruebas: 131 + 10 nuevas), `npm run data:check`, `check_engine_docs.py`, `scripts/integration-motor10.js` (cinco partidos: 83–103, 89–95, 80–85, 124–92, 85–108; acta y análisis válidos en los cinco; quinto reproducido idéntico) y recorrido automatizado en Chromium (partido completo, diez grupos de vistas, filtro con aviso de incompatibilidad, cambio de audiencia, descargas JSON y Markdown; sin errores de consola). Base comprobada antes de tocar nada: 131 pruebas y 83–103. No ejecutado: Node 24, otros navegadores, contraste con los PDF de FIBA, activación desde un perfil guardado anterior en el navegador. |
 | Limitaciones | Criterio de asistencias según el extracto de ChatGPT del encargo (el PDF no se abrió); mapa sin lateralidad; organización defensiva leída por posesión; OB05 y disponibilidad de corte no registrados; sin estado propio visible por tramo; sin historial; todo SEM sin calibrar; la cuota y el tiempo de sesión no son medibles. |
 | Pendientes | Validación de Dennis ([recorrido manual](MOTOR-10-recorrido-manual.md)); `DECISIÓN REQUERIDA` de [`../tecnico/motor10.md`](../tecnico/motor10.md) §14; deuda de MOTOR-09 conservada (§4). |
+
+### MOTOR-11
+
+| Campo | Valor |
+|---|---|
+| Objetivo | Hacer utilizables los doce equipos y 144 fichas, añadir generación ficticia correlacionada reproducible y variantes/escenarios controlados; cerrar los pendientes de MOTOR-10. Sin cambio deportivo. |
+| Medio de entrada del texto | Archivo `.md` adjunto (`beM-PROMPT-MOTOR-11-POBLACION-GENERADOR-Y-ESCENARIOS.md`; prefijo añadido por la subida). Copia archivada byte a byte idéntica (SHA-256 `17ba8acd…4e49a`): [`MOTOR-11-poblacion-generador-y-escenarios.md`](MOTOR-11-poblacion-generador-y-escenarios.md). |
+| Fecha real de ejecución | 2026-10-17 · intento 1 (retomado tras reinicio del entorno y reposición de cuota) |
+| Rama | `claude/busy-edison-b1fmnc` (designada por el entorno), rehecha desde `origin/main` (`d18f78c`, con MOTOR-10 fusionado en la PR #11). |
+| PR | Abierta contra `main` (sin fusionar); el enlace consta en la respuesta final. |
+| Resultado breve | `src/population/`, `src/version.js`, `SEM-MOTOR11-20261017`, doce planes naturales, receta del generador, LAB11, `closures.js`, `orgat.js`, instrumentación `instr`, interfaz de Plantillas/Escenarios, `tests/motor11.test.js`. Referencia `20261016` = 83–103 con 6 505 sorteos. |
+| Comprobaciones realizadas | Ver [`../tecnico/motor11.md`](../tecnico/motor11.md) §10. No ejecutado: Node 24, otros navegadores, recorrido humano. |
+| Limitaciones | Todo SEM sin calibrar; lateralidad y desvío de asistencias sin productor; estado propio por tramo y recomendaciones extra pendientes; deuda normativa de MOTOR-09 heredada. |
+| Pendientes | Validación de Dennis ([recorrido manual](MOTOR-11-recorrido-manual.md)). |

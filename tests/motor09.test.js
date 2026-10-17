@@ -22,7 +22,7 @@ const shot = (p, team, zone, points, made, extra = {}) => ({ k: 'shot', p, team,
 const ft = (p, team, i, n, made, series, extra = {}) => ({ k: 'ft', p, team, made, series, i, n, cause: 'falta en acto de tiro', shooting: true, shotEvent: 'E0003', shotMade: false, feed: null, ...extra });
 
 test('1. perfil MOTOR-09: matriz normativa coherente, estado de contraste por fila y una candidata ambigua no es activable', () => {
-  assert.match(profile.effectiveId, /\+SEM-MOTOR09-20261016(\+SEM-MOTOR10-20261016)?$/);
+  assert.match(profile.effectiveId, /\+SEM-MOTOR09-20261016(\+SEM-MOTOR10-20261016)?(\+SEM-MOTOR11-20261017)?$/);
   assert.deepEqual(validateMatrix(profile), []);
   const reg = profile.regulation;
   // honestidad de fuentes: ninguna fila se presenta como lectura directa de un PDF inaccesible; lo contrastado remite al encargo §4.3

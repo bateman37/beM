@@ -2,6 +2,15 @@
 
 Registro breve de entregas. Una entrada por entrega; las más recientes primero.
 
+## MOTOR-11 — Población de referencia, generador y escenarios — 2026-10-17
+
+- **Datos, lectura e interfaz; sin cambio deportivo**: referencia `20261016` sigue en **83–103** con 6 505 sorteos; motor `beM-motor-0.9.0-MOTOR09` y `beM-match-export/8` sin cambios (un `export/8` anterior sigue reproduciéndose).
+- Doce equipos y 144 fichas seleccionables (A/B) con instancias sin colisión, revisión R1 de EQ07-J01 (40 años; R0 conservada), doce planes naturales materializados (`SEM-MOTOR11-20261017`, generados por `scripts/build-motor11-data.js` y verificados por `data:check`), inspección y edición completa de fichas, +1/+3/+5 con deshacer exacto y variantes con diferencias.
+- Generador correlacionado reproducible (FNV-1a → xorshift32, streams por campo, huella SHA-256), guardado con procedencia; escenarios LAB11-00…12 como datos, export/import `beM-scenario/1`, guardado local y resultados individuales sin lotes.
+- Pendientes de MOTOR-10: cuota de cierres y producción por 100 en presencia completa; organización efectiva por tiro; OB05 y corte instrumentados (`instr`, fuera de la proyección deportiva); lateralidad y desvío de asistencias confirmados sin productor; actor observable separado de la configuración privada.
+- Versión común `src/version.js` (consola, cabecera, Panel › Inicio) separada de motor, perfil, dataset y formato de export.
+- **149 pruebas** (8 nuevas), cinco partidos de integración conciliados, Chromium automatizado. Documentación: [`docs/tecnico/motor11.md`](docs/tecnico/motor11.md), [recorrido manual](docs/prompts/MOTOR-11-recorrido-manual.md). Pendiente de validación de Dennis.
+
 ## MOTOR-10 — Análisis, estadísticas y resumen — 2026-10-17
 
 - **Lector del partido, sin cambio deportivo**: capa `src/analysis/` sobre los hechos y el acta de MOTOR-09. La referencia `20261016` sigue en **83–103** con los mismos 6 505 sorteos; motor `beM-motor-0.9.0-MOTOR09` y `beM-match-export/8` sin cambios (el acta no se tocó: la política de asistencias de MOTOR-09 se **auditó** contra los estados funcionales y se confirmó; el criterio procede del extracto de ChatGPT, el PDF no se abrió).

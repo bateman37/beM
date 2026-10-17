@@ -2,7 +2,7 @@
   "name": "bem",
   "version": "0.1.0",
   "private": true,
-  "description": "beM — motor de partidos, laboratorio y análisis del encuentro (MOTOR-10)",
+  "description": "beM — motor de partidos, laboratorio, población y análisis del encuentro (MOTOR-11)",
   "type": "module",
   "engines": {
     "node": ">=22"

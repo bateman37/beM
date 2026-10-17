@@ -26,11 +26,14 @@ P.helpCandidates = function helpCandidates(ex) {
   const prot = this.protectedAttackers(t); const committed = this.poss.committed ?? new Set();
   const dedicated = org.dedicated ? ref.fnOwner[org.chaser] : null;
   let pool = ref.kind === 'individual' ? this.onCourt(t).filter((id) => this.ps[id].available) : this.reliefFor(ex.actor);
-  pool = pool.filter((id) => id !== ex.defend && id !== ex.icpt && id !== ex.denier && id !== dedicated && !committed.has(id));
+  const open0 = pool.filter((id) => id !== ex.defend && id !== ex.icpt && id !== ex.denier && id !== dedicated);
+  const occupied = open0.filter((id) => committed.has(id)).length; // MOTOR-11 (instrumentación de lectura): ya lo calculaba la operación; no añade sorteos ni cambia el resultado
+  pool = open0.filter((id) => !committed.has(id));
   if (ref.kind === 'individual') pool = pool.filter((id) => { const a = this.responsibilityOf(id); return a && ZONE_NEAR.has(this.rep().functions[ref.fnMap[a]].access); });
   const before = pool.length;
   pool = pool.filter((id) => { const a = this.responsibilityOf(id); return !(a && prot.has(a)); }); // ESPD03: no abandonar al tirador protegido
   ex.protectedBlocked = before - pool.length; // se registra: «ayuda no disponible por no abandonar»
+  ex.helpOcc = { elegibles: open0.length, ocupados: occupied, noAbandonar: before - pool.length, candidatos: pool.length }; // OB05: ocupación que limita la ayuda (resultado de la propia operación)
   return pool;
 };
 
@@ -39,18 +42,19 @@ P.tryHelp = function tryHelp(ex) {
   const opp = this.profile.opportunity; const defT = 1 - ex.team; const d = this.dcfg();
   if (ex.zone !== 'rim' && ex.zone !== 'inside') return { K: 0 };
   const cands = this.helpCandidates(ex);
-  if (!cands.length) return { K: 0, blocked: ex.protectedBlocked ?? 0 };
+  const occ = ex.helpOcc;
+  if (!cands.length) return { K: 0, blocked: ex.protectedBlocked ?? 0, occ: { ...occ, decide: 'sin candidatos' } };
   const lv = this.defPlan(defT).defStyles;
   // «Ayudas» orienta cuántas oportunidades adicionales se aceptan; la protección interior pondera esa tarea candidata (no la conversión).
   const ratio = d.styles.additionalHelpOddsRatio[lv.help - 1] * d.styles.interiorProtectionChoiceWeight[lv.protection - 1];
   const pH = oddsAdjust(opp.helpProbability, ratio);
   this.note('ayuda:decisión', { base: opp.helpProbability, ratioAyudas: d.styles.additionalHelpOddsRatio[lv.help - 1], pesoProteccionInterior: d.styles.interiorProtectionChoiceWeight[lv.protection - 1], p: round(pH, 4), candidatos: cands });
-  if (!this.bernoulli(pH, 'ayuda:compromiso')) return { K: 0 };
+  if (!this.bernoulli(pH, 'ayuda:compromiso')) return { K: 0, occ: { ...occ, decide: 'no compromete' } };
   const tags = ['rimHelp', 'teamHelp'];
   const helper = this.pick(cands.map((id) => ({ key: id, w: this.taskValue('TAR09', 'attack', { helper: id }) * this.defRoleBias(id, tags) })), 'ayuda:ayudante').key;
   const abandoned = this.responsibilityOf(helper);
   const Ah = this.taskValue('TAR09', 'attack', { helper }, 'ayuda:ayudante');
-  const res = { K: 0, helper, abandoned, arrives: true, pArrive: null, relief: null, reliefArrives: false, blocked: ex.protectedBlocked ?? 0 };
+  const res = { K: 0, helper, abandoned, arrives: true, pArrive: null, relief: null, reliefArrives: false, blocked: ex.protectedBlocked ?? 0, occ: { ...occ, decide: 'compromete' } };
   let Ar = null;
   if (abandoned) {
     Ar = this.taskValue('TAR09', 'defense', { receiver: abandoned }, 'ayuda:receptor_abandonado');

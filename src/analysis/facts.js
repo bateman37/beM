@@ -2,6 +2,7 @@
 // Cada hecho de análisis separa tres niveles de información: `pub` (observable por cualquiera), `own` (solo para el equipo propio) y `diag`
 // (laboratorio). La audiencia se aplica al construir la vista, ANTES de cualquier consulta, texto o exportación (§18).
 import { buildActa } from '../match/acta.js';
+import { orgAt } from './orgat.js';
 
 export const PERIOD_TENTHS = (p) => (p <= 4 ? 6000 : 3000);
 export const periodName = (p) => (p <= 4 ? `C${p}` : `P${p - 4}`);
@@ -34,8 +35,9 @@ export function buildIndex(res) {
   const creditByEvent = {}; for (const c of acta.credits) if (c.k === 'ast') (creditByEvent[c.event ?? `S:${c.series}`] ??= []).push(c);
 
   // tiros de campo (todos los hechos `shot`), con las tres capas de información
-  const shots = [];
+  const shots = []; const curFn = {}; // función de cada jugador en la disposición vigente de la posesión (se registra una vez por disposición)
   for (const ev of events) {
+    if (ev.intent?.funciones && ev.possessionId) curFn[ev.possessionId] = ev.intent.funciones;
     for (const f of ev.stats ?? []) {
       if (f.k !== 'shot') continue;
       const it = ev.intent ?? {}; const pa = ev.participants ?? {}; const sel = it.seleccion ?? null;
@@ -47,7 +49,7 @@ export function buildIndex(res) {
           familia: it.familia ?? null, origen: it.origen ?? null, contexto: it.contexto ?? null, ejecucion: it.ejecucion ?? null, quality: it.calidad ?? null, window: ev.effects?.ventanaLibre ?? null,
           coverage: it.cobertura?.cobertura ?? null, passer: f.feed?.passer ?? null, moved: !!f.feed?.moved, helper: pa.ayudante ?? null, screener: pa.screener ?? null, cutter: pa.cutter ?? null,
         },
-        own: { procedencia: it.procedencia ?? null, prioridad: sel?.prioridad ?? null, director: pa.director ?? null, disposicion: it.disposicion ?? null, ficha: sel?.ficha ?? null, decide: sel?.decide ?? null, feed: f.feed ?? null },
+        own: { shooterFn: curFn[ev.possessionId]?.[f.p] ?? null, procedencia: it.procedencia ?? null, prioridad: sel?.prioridad ?? null, director: pa.director ?? null, disposicion: it.disposicion ?? null, ficha: sel?.ficha ?? null, decide: sel?.decide ?? null, feed: f.feed ?? null },
         diag: { pConversion: ev.effects?.pConversion ?? null, pFinal: sel?.pFinal ?? null, L: sel?.L ?? null, q: sel?.q ?? null },
         clock: { before: ev.clock?.before ?? null, after: ev.clock?.after ?? null }, scoreBefore: scoreBefore[ev.seq], gameBefore: time[ev.seq].before,
         lineups: ev.lineups, possession: ev.possessionId ?? null, credit: creditByEvent[ev.id]?.[0] ?? null,
@@ -72,7 +74,10 @@ export function buildIndex(res) {
     });
   }
   const players = {}; for (const id of Object.keys(teamOf)) players[id] = { id, team: teamOf[id], name: nameOf[id], starter: starters[teamOf[id]].has(id) };
-  return { res, acta, events, byId, teamOf, players, lineupPlayers, time, scoreBefore, shots, possessions, creditByEvent, starters, totalTenths: g, input: res.input };
+  const ixOut = { res, acta, events, byId, teamOf, players, lineupPlayers, time, scoreBefore, shots, possessions, creditByEvent, starters, totalTenths: g, input: res.input };
+  // organización defensiva efectiva en la frontera de cada tiro (pública: es lo ejecutado); una consulta por hecho, no por posesión
+  for (const sh of shots) sh.pub.defOrg = orgAt(ixOut, 1 - sh.team, sh.seq);
+  return ixOut;
 }
 
 // Vista por audiencia: combina las capas permitidas. `ctx` = { audience: 'public'|'own'|'diagnostic', team }.

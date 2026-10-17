@@ -67,6 +67,7 @@ P.resolveAttempt = function resolveAttempt(ex) {
     t, team: ex.team,
     intent: { origen: ex.origin, continuacion: ex.chain?.length ? ex.chain : (ex.label ?? null), oportunidad: ex.opportunity ?? null, zona: ex.zone, calidad: ex.quality?.cls ?? null, categoria: cat, ejecucion: ex.exec, ...this.directorTrace(), ...this.playTrace(ex) },
     participants: this.participantsOf(ex),
+    ...(ex.instr ? { instr: ex.instr } : {}),
   };
   switch (cat) {
     case 'fieldShot': return this.resolveShot(ex, base, false);
@@ -324,6 +325,7 @@ P.denialAlternative = function denialAlternative(poss, entry, ex, lq) {
   if (cut && ex.exec === 'pass' && ex.role === cut.role) {
     const [cx] = this.buildExits(team, entry.playId, entry.roles, entry.def, [{ role: cut.role, zones: [cut.zone], exec: 'pass', from: cut.from, defend: cut.defend, icpt: cut.icpt, label: cut.label }], true);
     const accC = cx ? this.bernoulli(this.acceptance(team, ex.holder, this.eff(cx.actor, cut.tech)), 'CONT06:aceptación') : null;
+    ex.instr = { ...(ex.instr ?? {}), cut: { disponible: !!cx, cortador: cx?.actor ?? null, aceptada: accC } }; // MOTOR-11: disponibilidad del corte ante negación (resultado de la propia operación)
     if (cx) this.logOpp({ frontier: 'acceptance', situacion: 'CONT06', aceptada: accC, decide: ex.holder });
     if (accC) {
       this.cover('CONT06 corte ante negación');
@@ -360,6 +362,7 @@ P.interactionResolve = function interactionResolve(poss, ex, lq, team, entry, kc
   // ayuda en salidas interiores y lectura de la ventana libre
   const help = this.tryHelp(ex, lq.L, lq.q);
   kctx += help.K;
+  if (help.occ) ex.instr = { ...(ex.instr ?? {}), help: help.occ }; // MOTOR-11: dato de lectura (ocupación y candidatos de ayuda), excluido de la proyección deportiva
   ex.defTrace = { ...intent, ...(double ? { especial: double } : {}), ...(help.helper ? { ayuda: { ayudante: help.helper, deja: help.abandoned, llega: help.arrives, relevo: help.relief, relevoLlega: help.reliefArrives } } : {}), ...(help.blocked ? { ayudaBloqueadaPorNoAbandonar: help.blocked } : {}) };
   if (help.helper) {
     ex.helper = help.helper; ex.helpArrived = help.arrives; ex.helpTrace = { deja: help.abandoned, relevo: help.relief, relevoLlega: help.reliefArrives };
