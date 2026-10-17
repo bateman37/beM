@@ -53,7 +53,7 @@ await p.click('button:has-text("Exportar")'); await p.waitForTimeout(400); const
 step(10, 'Análisis › Exportar', 'el export deportivo con audiencia pública no filtra diagnóstico privado', !/committed|proyeccionDeterminista/.test(expTxt), 'comprobado además por pruebas (M15·8)');
 // 7. lote pequeño esencial con concurrencia, detener/continuar
 await tab('Lotes'); await p.locator('#b-level').selectOption({ index: 2 }); await p.locator('#b-concurrency').selectOption({ index: 1 });
-await p.fill('#b-repetitions', '3'); const btnTxt = (await p.locator('#view button').allInnerTexts()).filter(Boolean);
+await p.fill('#b-repetitions', '3'); await p.press('#b-repetitions', 'Tab'); await p.waitForTimeout(500); const btnTxt = (await p.locator('#view button').allInnerTexts()).filter(Boolean);
 await p.click('button:has-text("Revisar agenda y entradas")'); await p.waitForSelector('#b-start:not([disabled])', { timeout: 30000 }).catch(async () => { const t = await text(); console.log('DEPURACIÓN LOTES', t.split('\n').filter((l) => /rechaz|problema|inválid|error|no se pudo|No se puede|ocupado|curso/i.test(l)).slice(0, 8).join(' | ')); }); await p.click('#b-start'); await p.waitForTimeout(1500);
 let lotTxt = await text(); const stopBtn = p.locator('button:has-text("Detener")').first(); const hadStop = await stopBtn.count();
 if (hadStop) { await stopBtn.click().catch(() => {}); await p.waitForTimeout(2500); lotTxt = await text(); }
