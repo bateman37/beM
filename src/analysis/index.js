@@ -13,6 +13,7 @@ import { closureTable, productionPer100, CREDITS } from './closures.js';
 import { lineupTable, onOff, groupReading } from './presence.js';
 import { keyCandidates, selectKeys, leaders, chronicle } from './summary.js';
 import { recommendations } from './recommend.js';
+import { ownStatesByPeriod } from './statesview.js';
 import { beforeAfter, appliedOrders } from './orders.js';
 import { filterShots, filterPossessions, filterCompat, normalizeFilters } from './filters.js';
 import { coverageMatrix, BLOCKS, DEBT_MOTOR09, PENDING_MOTOR10, LATER_DELIVERIES } from './coverage.js';
@@ -105,6 +106,7 @@ class Analysis {
 
   beforeAfter(orderId) { return beforeAfter(this.ix, orderId, this.params.beforeAfter.attacks); }
   appliedOrders() { return appliedOrders(this.ix); }
+  ownStates(team) { return this.m(`states:${this.ctx.audience}:${team}`, () => ownStatesByPeriod(this.ix, team, this.ctx)); } // MOTOR-15 §9.2: la audiencia forma parte de la clave de caché
   recommendations(team) { return this.m(`rec:${team}`, () => recommendations(this.ix, team, this.ctx, this.params)); }
 
   // Resumen: estado, parciales, claves con evidencia, margen, líderes y crónica. En una ejecución parcial/inválida/administrativa no hay crónica de victoria consumada.

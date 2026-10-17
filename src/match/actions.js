@@ -344,6 +344,21 @@ P.shotDefense = function shotDefense(zone, defender, attacker) {
   return base + reach;
 };
 
+// MOTOR-15 §9.1: productor del candidato causal de asistencia. Registra lo que el núcleo REALMENTE resuelve (último pase, receptor previsto y efectivo, zona de recepción, continuidad y creación propia posterior)
+// y el motivo de cierre; no simula botes ni movimientos para contarlos y no hace otro sorteo. El núcleo no genera desvíos hacia otro destinatario: previsto = efectivo (la invalidación actúa ante el hecho tipado).
+P.assistCandidate = function assistCandidate(ex) {
+  if (!(ex.exec === 'pass' && ex.passer && ex.passer !== ex.actor)) return null;
+  const intended = ex.intendedReceiver ?? ex.actor;
+  let close;
+  if (intended !== ex.actor) close = { eligible: false, reason: 'desvío claro hacia otro destinatario' };
+  else if (ex.kind === 'transition') close = { eligible: false, reason: 'recepción en campo propio con recorrido autónomo' };
+  else if (ex.moved) close = { eligible: false, reason: 'creación propia posterior con movimiento ante defensor colocado' };
+  else if (ex.zone === 'rim' || ex.zone === 'inside') close = { eligible: true, reason: 'pintura: recepción y anotación sin abandonarla' };
+  else if (ex.window) close = { eligible: true, reason: 'continuidad de la ventaja recibida (ventana libre)' };
+  else close = { eligible: true, reason: 'tiro sin bote tras la recepción' };
+  return { passer: ex.passer, moved: !!ex.moved, window: !!ex.window, origin: ex.origin ?? null, intendedReceiver: intended, actualReceiver: ex.actor, receptionZone: ex.zone, continuity: ex.window ? 'ventaja continuada' : (ex.moved ? 'nueva creación' : 'sin bote'), ownCreation: !!ex.moved, close };
+};
+
 // MOTOR-15 §7.1: hitos discretos del tiro de campo dentro de su operación ya existente. `relojLiberacion` y `relojResolucion` son el reloj de juego (décimas restantes) en cada hito.
 P.flightRecord = function flightRecord(ex, base) {
   const f = ex.flight; const t = base.t;
@@ -391,7 +406,7 @@ P.resolveShot = function resolveShot(ex, base, contact) {
   this.perturbNote('shotConversion', mz, { pBase: round(pBase, 5), pFinal: round(p, 5), contraparteOmitidaPorOportunidad: !!ex.mdefUsed && counterIds.length > 0 });
   const made = this.bernoulli(p, `conversión:${ex.zone}`);
   // MOTOR-09: el pase final que alimenta el tiro (candidato único de asistencia) viaja con el hecho; `moved` indica creación propia con movimiento.
-  const feed = ex.exec === 'pass' && ex.passer && ex.passer !== ex.actor ? { passer: ex.passer, moved: !!ex.moved, window: !!ex.window, origin: ex.origin ?? null } : null;
+  const feed = this.assistCandidate(ex);
   const shotFact = { k: 'shot', p: ex.actor, team: ex.team, zone: ex.zone, points: sh.points, made, fromFoul: contact, feed };
   stats.push(shotFact);
   const eff = { zona: ex.zone, pConversion: round(p, 5), pConversionBase: round(pBase, 5), entra: made, defensor: defender ?? null, ventanaLibre: !!ex.window, ...(ex.flight ? { vuelo: this.flightRecord(ex, base) } : {}) };

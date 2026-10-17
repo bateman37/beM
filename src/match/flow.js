@@ -794,6 +794,7 @@ P.finishPeriodStart = function finishPeriodStart() {
   this.clockRunning = false;
   this.emit('period_start', { team, intent: { origen: period === 1 ? 'salto inicial' : 'posesión alterna (flecha)' }, effects: { flechaApunta: this.arrow } });
   this.nextPoss = { team, entry: 'inbound', shotClock: toTenths(rules.shotClockSeconds), throwIn: { kind: 'center', origin: period === 1 ? 'salto inicial' : 'posesión alterna (flecha)' } };
+  this.sampleStates('inicio'); // MOTOR-15 §9.2: estado propio al comenzar el periodo (tras la recuperación del intervalo)
   this.coachFrontier('inicio de periodo'); // MOTOR-08: frontera deportiva de revisión (inicio de periodo)
 };
 // Compatibilidad (MOTOR-01 y pruebas directas): empieza el periodo resolviendo de inmediato sus ventanas.
@@ -843,6 +844,7 @@ P.closePeriod = function closePeriod() {
   const rules = this.profile.rules;
   this.emit('period_end', { intent: { origen: 'bocina de final de periodo' }, effects: { marcador: [...this.score] } });
   this.stopLog.push({ seq: this.eventSeq, period: this.period, remaining: 0, reason: 'final de periodo' }); // MOTOR-15
+  this.sampleStates('final'); // MOTOR-15 §9.2: estado propio al terminar el periodo
   this.expireTimeoutRequests('terminó el periodo sin oportunidad: puedes volver a solicitarlo');
   this.expireThrowCalls(this.period, 'terminó el periodo sin un saque compatible propio: la llamada puntual de saque caduca con él');
   this.releaseLineupControl();

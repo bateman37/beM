@@ -153,10 +153,12 @@ export function buildResult(m, extra = {}) {
       finalEnergy: Object.fromEntries(Object.entries(m.ps).map(([id, s]) => [id, Math.round(s.energy * 100) / 100])),
       finalFouls: Object.fromEntries(Object.entries(m.ps).map(([id, s]) => [id, s.fouls])),
       teamFoulsByPeriod: m.teamFouls,
+      // MOTOR-15: contadores del entrenador, cola de incidencias, correcciones y libro de oportunidades de interferencia (denominadores por tipo de oportunidad)
+      coachCounters: m.coachCounters, incidents: m.incidentLog, corrections: m.correctionLog, stopLog: m.stopLog, interference: m.interfStats,
       timeouts: m.timeouts.map((l) => ({ used: { ...l.used }, finalWindow: l.final })),
       opportunities: m.oppLog, throwInChains: m.throwChains,
       // MOTOR-07: estados y episodios comprometidos (sin materializar nada al exportar); la evolución conserva intervalo deportivo y estado previo/posterior
-      states: m.stateSnapshot(), stateLog: m.stateLog, episodes: m.episodeLog,
+      states: m.stateSnapshot(), stateLog: m.stateLog, stateSamples: m.stateSamples, episodes: m.episodeLog,
       // MOTOR-08: decisiones del entrenador (observación → propuesta → autorización → ejecución), memoria defensiva y delegación efectiva; se regeneran al reproducir
       coach: { decisions: m.decisions, counts: coachCounts(m.decisions, m.orders), delegation: m.coachState.map((s, i) => ({ equipo: m.teams[i].id, politica: s.policy, areas: { ...s.delegation } })), attacks: [...m.attackSeq] },
       memory: { log: m.memLog, final: m.memorySnapshot() },

@@ -104,6 +104,18 @@ export class Encounter {
     return this.match.withdrawPlayer(playerId, { cause });
   }
 
+  // Incidencia tipada (MOTOR-15 §5.3: técnica de jugador/banquillo/entrenador, flagrante, disruptiva). Es un hecho CLASIFICADO que llega de fuera (un árbitro, un escenario): se administra con la misma cola de
+  // sanciones que un encuentro natural; no es una probabilidad. Solo quien controla el equipo infractor o el encuentro completo (`authority` nulo + equipos 0 y 1) puede registrarla. Comando reproducible.
+  requestIncident(incident, { authority = null } = {}) {
+    if (this.done) return { ok: false, state: 'rechazada', reason: `el encuentro está ${this.match.status === 'finished' ? 'terminado' : 'en error'}` };
+    const allowed = authority == null ? this.controlledTeams : new Set(authority);
+    const team = incident?.player && this.match.pl[incident.player] ? this.match.pl[incident.player].teamIdx : incident?.team;
+    if (team != null && !allowed.has(team)) return { ok: false, state: 'rechazada', reason: `sin autoridad sobre el equipo ${team}` };
+    return this.match.requestIncident(incident);
+  }
+  // Corrección del art. 45 (MOTOR-15 §6): entrada tipada con error, clase, hecho original, instante de reconocimiento, valores autorizados y solicitante habilitado. Valida la ventana con hechos del encuentro.
+  requestCorrection(correction) { return this.match.requestCorrection(correction); }
+
   // Consulta SIN efectos deportivos según audiencia: pública = lo observable; propia = estado de un equipo con las categorías autorizadas; diagnóstico = laboratorio.
   query({ audience = 'public', team = 0 } = {}) {
     if (!AUDIENCES.includes(audience)) throw new Error(`audiencia desconocida: ${audience}`);

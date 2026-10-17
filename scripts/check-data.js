@@ -226,14 +226,14 @@ export function checkMotor14(extension14, profile13, profile) {
 }
 
 // MOTOR-15: la extensión añade datos normativos (técnicas, compensación, correcciones, interferencia) y las semillas SEM15 (shotFlight, interference). El resto del perfil efectivo es idéntico al de MOTOR-14.
-const M15_REPLACED = ['regulation.version', 'regulation.matrix.6', 'regulation.matrix.7', 'regulation.matrix.8', 'regulation.matrix.14', 'regulation.matrix.18'];
-const M15_ADDED = ['interference', 'regulation.aliases', 'regulation.compensation', 'regulation.coachDisqualification', 'regulation.corrections', 'regulation.matrix.20', 'regulation.matrix.21', 'regulation.matrix.22', 'regulation.matrix.23', 'regulation.matrix.24', 'regulation.matrix.25', 'regulation.matrix.26', 'regulation.sources.10', 'regulation.sources.7', 'regulation.sources.8', 'regulation.sources.9', 'regulation.technical', 'shotFlight'];
+const M15_REPLACED = ['regulation.version', 'regulation.matrix.6', 'regulation.matrix.7', 'regulation.matrix.8', 'regulation.matrix.14', 'regulation.matrix.18', 'statsPolicy.id', 'statsPolicy.families.1.rule', 'statsPolicy.families.1.reading'];
+const M15_ADDED = ['statsPolicy.assist.causalProducer', 'interference', 'regulation.aliases', 'regulation.compensation', 'regulation.coachDisqualification', 'regulation.corrections', 'regulation.matrix.20', 'regulation.matrix.21', 'regulation.matrix.22', 'regulation.matrix.23', 'regulation.matrix.24', 'regulation.matrix.25', 'regulation.matrix.26', 'regulation.sources.10', 'regulation.sources.7', 'regulation.sources.8', 'regulation.sources.9', 'regulation.technical', 'shotFlight'];
 export function checkMotor15(extension15, profile14, profile) {
   const problems = [];
   if (extension15.seedExtensionId !== 'SEM-MOTOR15-20261017') problems.push('MOTOR-15: identidad de la extensión inesperada');
   if (Object.keys(extension15.additions ?? {}).sort().join() !== [...M15_ADDED].sort().join()) problems.push('MOTOR-15: las adiciones deben ser exactamente las listadas');
   if (Object.keys(extension15.replacements ?? {}).sort().join() !== [...M15_REPLACED].sort().join()) problems.push('MOTOR-15: las sustituciones deben ser exactamente las listadas (trazables con valor anterior)');
-  const strip = (p) => { const q = JSON.parse(JSON.stringify(p)); for (const k of ['extensions', 'effectiveId', 'regulation', 'shotFlight', 'interference']) delete q[k]; return q; };
+  const strip = (p) => { const q = JSON.parse(JSON.stringify(p)); for (const k of ['extensions', 'effectiveId', 'regulation', 'shotFlight', 'interference', 'statsPolicy']) delete q[k]; return q; };
   if (JSON.stringify(strip(profile)) !== JSON.stringify(strip(profile14))) problems.push('MOTOR-15: el perfil con la extensión difiere del de MOTOR-14 fuera de regulation/shotFlight/interference (no puede cambiar otros coeficientes deportivos)');
   const sf = profile.shotFlight; const it = profile.interference;
   if (sf?.pendingLagSeconds !== 0.35) problems.push('MOTOR-15: SEM15-TIR-01 = 0,35 s');

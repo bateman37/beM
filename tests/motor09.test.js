@@ -22,12 +22,12 @@ const shot = (p, team, zone, points, made, extra = {}) => ({ k: 'shot', p, team,
 const ft = (p, team, i, n, made, series, extra = {}) => ({ k: 'ft', p, team, made, series, i, n, cause: 'falta en acto de tiro', shooting: true, shotEvent: 'E0003', shotMade: false, feed: null, ...extra });
 
 test('1. perfil MOTOR-09: matriz normativa coherente, estado de contraste por fila y una candidata ambigua no es activable', () => {
-  assert.match(profile.effectiveId, /\+SEM-MOTOR09-20261016(\+SEM-MOTOR10-20261016)?(\+SEM-MOTOR11-20261017)?(\+SEM-MOTOR12-20261017)?(\+SEM-MOTOR13-20261017)?(\+SEM-MOTOR14-20261017)?$/);
+  assert.match(profile.effectiveId, /\+SEM-MOTOR09-20261016(\+SEM-MOTOR10-20261016)?(\+SEM-MOTOR11-20261017)?(\+SEM-MOTOR12-20261017)?(\+SEM-MOTOR13-20261017)?(\+SEM-MOTOR14-20261017)?(\+SEM-MOTOR15-20261017)?$/);
   assert.deepEqual(validateMatrix(profile), []);
   const reg = profile.regulation;
   // honestidad de fuentes: ninguna fila se presenta como lectura directa de un PDF inaccesible; lo contrastado remite al encargo §4.3 (MOTOR-09) o §7.3 (MOTOR-14)
   assert.ok(reg.sources.every((s) => /403|no/.test(s.access)));
-  for (const r of reg.matrix) { assert.ok(['contrastada', 'heredada', 'provisional', 'pendiente'].includes(r.contrast), r.id); if (r.contrast === 'contrastada') assert.match(r.source.reading, /§4\.3|MOTOR-14 §7\.3/); if (r.contrast === 'pendiente') assert.equal(r.consequence, null); }
+  for (const r of reg.matrix) { assert.ok(['contrastada', 'heredada', 'provisional', 'pendiente'].includes(r.contrast), r.id); if (r.contrast === 'contrastada') assert.match(r.source.reading, /§4\.3|MOTOR-14 §7\.3|MOTOR-15/); if (r.contrast === 'pendiente') assert.equal(r.consequence, null); }
   // una fila incompatible con la misma prioridad: la matriz no es válida y no se desempata alfabéticamente
   const bad = deepCopy(profile); bad.regulation.matrix.push({ ...deepCopy(bad.regulation.matrix.find((r) => r.id === 'RG-F02')), id: 'RG-FX', consequence: { ft: 1, shooter: 'fouled', playerFoul: true, teamFoul: true, resume: { kind: 'afterSeries' } } });
   assert.ok(validateMatrix(bad).some((i) => i.rule === 'ambigüedad'));
@@ -50,8 +50,9 @@ test('2. faltas y contadores: personal, bonus, prórroga, categorías 2026, excl
   const off = resolveFoul(profile, { category: 'ofensiva', shotAction: false }); assert.equal(off.ft, 0); assert.equal(off.turnover, true);
   const nd = resolveFoul(profile, { category: 'personal' }); assert.equal(nd.ok, false); assert.match(nd.diagnostic, /no se asume/);
   assert.equal(resolveFoul(profile, { category: 'rara', shotAction: false }).ok, false);
-  // técnicas/antideportivas: tipadas, sin ejecución y con diagnóstico (no se inventa la sanción)
-  const tc = resolveFoul(profile, { category: 'tecnica1', shotAction: false }); assert.equal(tc.ok, false); assert.equal(tc.pending, true); assert.match(tc.diagnostic, /RG-F07/);
+  // MOTOR-15 §5.2: las técnicas de jugador son ejecutables (RG-F07, antes pendiente: un libre sin alineación, falta individual y colectiva, contador por categoría); «antideportiva» NO es categoría (alias sin correspondencia automática)
+  const tc = resolveFoul(profile, { category: 'tecnica1', shotAction: false }); assert.equal(tc.ok, true); assert.equal(tc.row, 'RG-F07'); assert.equal(tc.ft, 1); assert.equal(tc.shooter, 'designated'); assert.equal(tc.counter, 'tecnica1'); assert.equal(tc.resume.kind, 'priorContext');
+  const ad = resolveFoul(profile, { category: 'antideportiva', shotAction: false }); assert.equal(ad.ok, false); assert.match(ad.diagnostic, /alias histórico/);
   // flujo real: la disruptiva administra por la matriz, retiene posesión con 14 s exactos, cuenta como personal y de equipo, y dos disruptivas NO descalifican
   const m = freshMatch(5);
   m.shotClock = 200; m.disruptiveAdmin('EQ02-J04', 'EQ01-J03', 0); m.disruptiveAdmin('EQ02-J04', 'EQ01-J03', 0);
@@ -106,8 +107,9 @@ test('5. series y combinadas: repetición/anulación sin duplicar, una sola ejec
   const k = caso('CASO-COMBINADAS');
   assert.equal(k.A.status, 'resuelta'); assert.deepEqual(k.A.steps.map((x) => x.ft), [2, 2]); assert.equal(k.A.resume.from, 'S2');
   assert.equal(combineSanctions(profile, [{ id: 'S1', team: 0, order: 1, category: 'personal', shotAction: false, penalty: true }, { id: 'S1', team: 0, order: 2, category: 'personal', shotAction: false, penalty: true }]).steps.length, 1, 'la misma sanción no se ejecuta dos veces');
-  assert.equal(k.B.status, 'pendiente_contraste'); assert.match(k.B.diagnostic, /RG-C02/);
-  assert.equal(k.C.ok, false);
+  // MOTOR-15 §6.1: la compensación del art. 43 es ejecutable (antes «pendiente de contraste»): dos penalizaciones equivalentes de equipos opuestos se compensan por orden, sin borrar las faltas cargadas
+  assert.equal(k.B.status, 'compensada'); assert.deepEqual(k.B.compensated, [['S1', 'S2']]); assert.deepEqual(k.B.keptFouls, ['S1', 'S2']); assert.equal(k.B.resume.kind, 'priorContext');
+  assert.equal(k.C.ok, true); assert.equal(k.C.ft, 1);
 });
 
 test('6. posesión y F: rebote ofensivo conserva el ataque, bonus y técnicas no inventan F ni ataque rival, y el cierre sin ataque no crea posesión vacía', () => {

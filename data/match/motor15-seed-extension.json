@@ -182,21 +182,21 @@
    "title": "FIBA Official Basketball Rules 2026 — Interpretations v1.0",
    "url": "https://assets.fiba.basketball/image/upload/documents-corporate-fiba-official-rules-2026-interpretations-v1-0.pdf",
    "use": "Casos 43 y 45.",
-   "access": "Lectura selectiva de ChatGPT (17/10/2026). Claude: sin lectura directa."
+   "access": "Lectura selectiva de ChatGPT (17/10/2026). Claude: sin lectura directa (HTTP 403 desde el entorno)."
   },
   "regulation.sources.9": {
    "id": "N15-03",
    "title": "FIBA Official Basketball Rules 2026 — Rule changes v10a",
    "url": "https://assets.fiba.basketball/image/upload/documents-corporate-fiba-official-rules-2026-rule-changes-v10a.pdf",
    "use": "Antecedente oficial de cambios 2026; prevalece N15-01 ante discrepancias.",
-   "access": "Contraste de categorías por ChatGPT. Claude: sin lectura directa."
+   "access": "Contraste de categorías por ChatGPT. Claude: sin lectura directa (HTTP 403 desde el entorno)."
   },
   "regulation.sources.10": {
    "id": "N15-04",
    "title": "FIBA Statisticians' Manual 2024",
    "url": "https://assets.fiba.basketball/image/upload/documents-corporate-fiba-statisticians-manual-2024.pdf",
    "use": "Créditos (adaptación a 2026 identificada).",
-   "access": "Lectura selectiva de ChatGPT (cap. 6). Claude: sin lectura directa."
+   "access": "Lectura selectiva de ChatGPT (cap. 6). Claude: sin lectura directa (HTTP 403 desde el entorno)."
   },
   "regulation.matrix.20": {
    "id": "RG-I01",
@@ -458,6 +458,20 @@
     "consume": "incidents.js administerIncident",
     "verify": "tests/motor15 grupo «Compensación»"
    }
+  },
+  "statsPolicy.assist.causalProducer": {
+   "version": "ASIS-MOTOR15-R1",
+   "fields": [
+    "intendedReceiver",
+    "actualReceiver",
+    "receptionZone",
+    "continuity",
+    "ownCreation",
+    "close"
+   ],
+   "ownHalfReceptionExcluded": true,
+   "deflectionExcluded": true,
+   "generationScope": "El núcleo no genera desvíos hacia otro destinatario: receptor previsto = efectivo; la invalidación solo actúa ante el hecho tipado. La recepción en campo propio con recorrido autónomo sí se genera (transición)."
   }
  },
  "replacements": {
@@ -630,13 +644,18 @@
     "consume": "corrections.js evaluateWindow · core.requestCorrection",
     "verify": "tests/motor15 grupo «Art. 45»"
    }
-  }
+  },
+  "statsPolicy.id": "EST-MOTOR15-R1",
+  "statsPolicy.families.1.rule": "Un único candidato: el ÚLTIMO pase que alimenta el tiro. Elegible si el receptor finaliza sin creación propia posterior con movimiento (pintura sin abandonarla, tiro sin bote o continuidad de ventaja). Se excluyen: la recepción en campo propio con recorrido autónomo y el desvío claro hacia otro destinatario. Asistencia a canasta de campo válida; asistencia a libres: una por serie elegible por falta de tiro si anota algún libre. Un fallo y un rebote intermedios rompen la relación anterior. El crédito no recibe un nuevo sorteo: sale del hecho de tiro con su motivo de cierre.",
+  "statsPolicy.families.1.reading": "convención beM sobre N15-04 cap. 6 (síntesis de ChatGPT conservada de MOTOR-10 y aplicada en MOTOR-15 con productor causal)"
  },
  "replacementNotes": {
   "regulation.matrix.6": "MOTOR-15 §5.2: técnicas de jugador ejecutables (RG-F07 pasa de pendiente a contrastada por síntesis de ChatGPT)",
   "regulation.matrix.7": "MOTOR-15 §6.1: cola causal común (orden, técnica primero, último derecho)",
   "regulation.matrix.8": "MOTOR-15 §6.1: compensación del art. 43 ejecutable",
   "regulation.matrix.14": "MOTOR-15 §7.1: liberación y resolución como hitos discretos",
-  "regulation.matrix.18": "MOTOR-15 §6.2: art. 45 con ventanas y operaciones tipadas"
+  "regulation.matrix.18": "MOTOR-15 §6.2: art. 45 con ventanas y operaciones tipadas",
+  "statsPolicy.families.1.rule": "MOTOR-15 §9.1: el productor registra receptor previsto/efectivo, continuidad y motivo de cierre; la recepción en campo propio con recorrido autónomo pasa a excluir el candidato",
+  "statsPolicy.id": "MOTOR-15: política con productor causal de asistencias"
  }
 }

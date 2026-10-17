@@ -79,7 +79,7 @@
     "data/match/motor15-seed-extension.json": {
       "id": "SEM-MOTOR15-20261017",
       "status": "SEM: provisional, no calibrado. Contiene (1) datos NORMATIVOS (técnicas, compensación art. 43, correcciones art. 45, interferencia) con la procedencia de cada lectura y (2) las semillas SEM15-TIR-01 y SEM15-INT-01…04 del encargo MOTOR-15 §8. Ningún otro coeficiente deportivo cambia.",
-      "sha256": "f106892621c11b9e90dbd80ab734814a909ce896c66b47bab621a1858066afa9",
+      "sha256": "25e8e777bb5043bf3c15249162a19643132f2377f777490b5c43b7c3c2ba59c7",
       "origin": "Encargo MOTOR-15 (§5–§8): datos normativos (técnicas, compensación art. 43, correcciones art. 45, interferencia) con procedencia de cada lectura y semillas SEM15-TIR-01 y SEM15-INT-01…04",
       "state": "SEM provisional, no calibrado"
     },

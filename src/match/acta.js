@@ -1,7 +1,7 @@
 // Acta completa de MOTOR-09 (EST01, EST02, EST04): proyección determinista desde los HECHOS del encuentro y la política versionada.
 // No hay acumuladores paralelos: marcador, acta individual y colectiva, parciales, series, finalizaciones F, posesiones, presencia y más-menos salen
 // de la misma lectura ordenada por la secuencia estable de hechos. Una consulta no consume azar ni concede créditos nuevos.
-export const ACTA_POLICY_ID = 'ACTA-MOTOR09-R1';
+export const ACTA_POLICY_ID = 'ACTA-MOTOR15-R1'; // MOTOR-15: asistencias con productor causal (motivo de cierre); el resto de la política no cambia
 
 const ATTACK_TYPES = new Set(['attempt', 'foul', 'free_throw', 'loose_ball', 'rebound', 'reorganization', 'throw_in']);
 const POSSESSION_CLOSE = {
@@ -18,6 +18,7 @@ const zeroLine = () => ({
 export function buildActa(src, policy = {}) {
   const { events, input } = src;
   const asst = { requiresDirectContinuation: true, fieldGoal: true, freeThrowSeries: true, maxPerSeries: 1, ...(policy.assist ?? {}) };
+  const feedOk = (feed) => !!feed && (feed.close ? feed.close.eligible : !(asst.requiresDirectContinuation && feed.moved)); // MOTOR-15: el motivo de cierre del productor decide; un hecho anterior sin él usa la regla de MOTOR-09
   const players = {}; const teamOf = {}; const info = {};
   input.teams.forEach((t, ti) => t.players.forEach((p) => {
     players[p.id] = zeroLine(); teamOf[p.id] = ti;
@@ -66,7 +67,7 @@ export function buildActa(src, policy = {}) {
           if (f.made) { pl.pts += f.points; addPoint(ev, f.team, f.points, 'fg', f.p, { zone: f.zone }); }
           if (f.blockedBy) { pl.blkRec += 1; credits.push({ k: 'trec', p: f.p, event: ev.id }); }
           // asistencia a canasta: el pase final alimenta un tiro válido del receptor sin creación propia con movimiento
-          if (f.made && asst.fieldGoal && f.feed && (!asst.requiresDirectContinuation || !f.feed.moved)) { players[f.feed.passer].ast += 1; players[f.feed.passer].astFg += 1; credits.push({ k: 'ast', type: 'canasta', p: f.feed.passer, shooter: f.p, event: ev.id }); }
+          if (f.made && asst.fieldGoal && feedOk(f.feed)) { players[f.feed.passer].ast += 1; players[f.feed.passer].astFg += 1; credits.push({ k: 'ast', type: 'canasta', p: f.feed.passer, shooter: f.p, event: ev.id }); }
           // F: la acción de tiro abre una finalización (también la falta sobre un tiro fallado, aunque no cuente como FGA); un tiro anulado no abre F
           if (f.annulled) break;
           const F = { id: `F${String(finals.length + 1).padStart(3, '0')}`, possession: ev.possessionId, team: f.team, shooter: f.p, event: ev.id, period: ev.period, zone: f.zone, value: f.points, made: !!f.made, fromFoul: !!f.fromFoul, blocked: !!f.blockedBy, series: null, fieldPoints: f.made ? f.points : 0, seriesPoints: 0, closed: !f.fromFoul };
@@ -112,7 +113,7 @@ export function buildActa(src, policy = {}) {
     const F = s.shotEvent ? finalByShot[s.shotEvent] : null;
     if (F) { F.series = s.id; F.seriesPoints += madeN; F.closed = !s.pending; s.final = F.id; }
     // asistencia a una serie elegible: tiro fallado con falta, pase final elegible y al menos un libre convertido (una por serie)
-    if (asst.freeThrowSeries && s.shooting && !s.shotMade && s.feed && (!asst.requiresDirectContinuation || !s.feed.moved) && madeN >= 1) {
+    if (asst.freeThrowSeries && s.shooting && !s.shotMade && feedOk(s.feed) && madeN >= 1) {
       players[s.feed.passer].ast += asst.maxPerSeries; players[s.feed.passer].astFt += asst.maxPerSeries;
       credits.push({ k: 'ast', type: 'libres', p: s.feed.passer, shooter: s.shooter, series: s.id });
     }
