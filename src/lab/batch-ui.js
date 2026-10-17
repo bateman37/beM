@@ -45,6 +45,7 @@ const post = (path, data) => api(path, { method: 'POST', body: JSON.stringify(da
 
 export function renderBatch(root) {
   ui.root = root; ui.spec ??= defaults(); stopPoll();
+  root.replaceChildren(); // la vista es compartida: se vacía al entrar para que el repintado diferido pueda distinguir si «Lotes» sigue siendo la pestaña activa
   repaint();
   api('list').then((r) => {
     ui.list = r.body.batches ?? [];
