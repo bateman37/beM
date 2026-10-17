@@ -1,0 +1,26 @@
+{
+ "seedExtensionId": "SEM-MOTOR12-20261017",
+ "status": "SEM: provisional, no calibrado (parámetros técnicos de ejecución, registro y exportación de lotes; ningún efecto deportivo: no son pesos, probabilidades ni coeficientes de juego).",
+ "basedOn": "SEM-MOTOR01-20261016",
+ "origin": "docs/prompts/MOTOR-12-simulacion-masiva-y-extraccion.md (§15.1 objetivo de parte, §20 tabla de parámetros de ejecución, §8.3 convención estadística). Son preferencias de ejecución y de formato: se aplican al orquestar y exportar, nunca al resolver una acción del partido.",
+ "additions": {
+  "batch": {
+   "version": "LOT-MOTOR12-R1",
+   "name": "Ejecución masiva y extracción completa de MOTOR-12",
+   "provenance": "Valores SEM del encargo MOTOR-12 §20. Un lote en marcha conserva los valores que tenía al congelarse: cambiar este panel después no altera su agenda, sus semillas ni su registro.",
+   "packageSchema": "beM-analysis-package/1",
+   "concurrency": 1,
+   "repetitionShortcuts": [10, 100, 1000],
+   "defaultRecordLevel": "diagnostic",
+   "defaultProse": "omitted",
+   "partTargetMiB": 64,
+   "progressIntervalMs": 500,
+   "maxExecutionsPerJob": 5000,
+   "maxExecutionsReason": "Límite técnico visible y administrable de ejecuciones lógicas por trabajo (no recorta en silencio: una petición mayor se rechaza con este motivo antes de empezar). Con registro diagnóstico cada partido ocupa decenas de MiB sin comprimir; ajusta el valor tras medir tu entorno.",
+   "quantileMethod": "linear-(n-1)p",
+   "stdMethod": "sample-n-1",
+   "defaultObjective": "auditoría general de coherencia y distribuciones",
+   "seedDerivation": "LOT-SEED-R1"
+  }
+ }
+}

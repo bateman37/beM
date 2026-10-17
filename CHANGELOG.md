@@ -2,6 +2,17 @@
 
 Registro breve de entregas. Una entrada por entrega; las más recientes primero.
 
+## MOTOR-12 — Simulación masiva y extracción completa — 2026-10-17
+
+- **Orquestación, registro y exportación; sin cambio deportivo**: referencia `20261016` sigue en **83–103** con 6 505 sorteos (con registro completo y reducido, misma huella de trayectoria); motor `beM-motor-0.9.0-MOTOR09` y `beM-match-export/8` sin cambios.
+- Pestaña **Lotes**: repetir enfrentamiento, cruces y pares elegidos con cantidades desglosadas (12 equipos → 66 pares → 132 casos → 264 ejecuciones con dos variantes), localía fija/ida-vuelta/alternada (sin efecto deportivo), variantes con diferencias exactas o desde LAB11, tres semillas distintas (lista `LOT-SEED-R1` congelada por adelantado), snapshot efectivo completo, progreso responsive, detener tras el actual, continuar sin duplicar, reintento explícito y recuperación tras reinicio (el intento en curso se repite desde su inicio congelado).
+- Servidor local con `worker_thread`, escritura progresiva y atómica en `out/batches/` (confirmación por directorio + índice append-only), estados de trabajo y de ejecución que reconcilian, bloqueo de continuación con versiones distintas.
+- Registro diagnóstico completo capturado de las operaciones existentes (sin sorteos nuevos): hechos, órdenes (incl. programadas), estados/episodios, recetas con capacidad base/efectiva y peso, distribuciones, oportunidades, entrenador, memoria y **todos** los sorteos con ordinal; nivel reducido y prosa opcionales.
+- Paquete **`beM-analysis-package/1`**: ZIP autocontenido con 15 tablas CSV, JSONL, diccionario, guía para ChatGPT, resumen, agregados (tasas por exposición, distribuciones con cuantiles/n−1, comparación base/candidata con pares incompletos, lectura táctica, capacidades), auditoría y cobertura; partes por casos completos con índice y fragmentación por secuencia; **tres huellas separadas** (archivo, entrada, trayectoria).
+- **`npm run batch:check`**: 15 controles (hashes, registros lógicos, duplicados, referencias, conteos, marcador/minutos, sorteos, agregados recalculados, permisos) sin re-simular; detecta archivos alterados, filas duplicadas y referencias rotas.
+- Extensión `SEM-MOTOR12-20261017` (tabla `batch`, seis filas LAB01), versión común `MOTOR-12`, favicon declarado, corrección de AN08 en la conciliación analítica (hallazgo del lote de cierre).
+- ****161 pruebas** (12 nuevas)**, lote de cierre de diez encuentros reales verificado, Chromium automatizado con descargas reales. Documentación: [`docs/tecnico/motor12.md`](docs/tecnico/motor12.md), [recorrido manual](docs/prompts/MOTOR-12-recorrido-manual.md). Pendiente de validación de Dennis.
+
 ## MOTOR-11 — Población de referencia, generador y escenarios — 2026-10-17
 
 - **Datos, lectura e interfaz; sin cambio deportivo**: referencia `20261016` sigue en **83–103** con 6 505 sorteos; motor `beM-motor-0.9.0-MOTOR09` y `beM-match-export/8` sin cambios (un `export/8` anterior sigue reproduciéndose).

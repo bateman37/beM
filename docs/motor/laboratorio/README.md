@@ -14,6 +14,10 @@
 |---|---|---|
 | [c24-modalidades-y-primer-laboratorio.md](c24-modalidades-y-primer-laboratorio.md) | 2985 | 24.1. Requisitos solicitados del primer laboratorio; 24.2. Plantillas y fichas iniciales; 24.3. Edición masiva; 24.4. Preparación y tres modalidades; 24.5. Simulación masiva; 24.6. Resultados y comparación; 24.7. Exportación completa del lote para análisis; 24.8. Recorrido funcional y relación con el panel; …(5 más) |
 
+## Estado de implementación
+
+La simulación masiva (§24.5), los resultados y la comparación (§24.6) y la exportación completa del lote (§24.7) están **implementadas en MOTOR-12** (pestaña *Lotes*, paquete `beM-analysis-package/1`, comprobador `npm run batch:check`): ver [`../../tecnico/motor12.md`](../../tecnico/motor12.md). «Implementado» no significa validado por Dennis ni calibrado; las auditorías de comportamiento, sensibilidad y calibración (MOTOR-13) y el rendimiento (MOTOR-14) siguen pendientes.
+
 ## Dependencias directas
 
 Relaciones funcionales principales con otros temas. Consulta solo las que afecten a la tarea; si aparece otra durante el trabajo, amplía la lectura de forma dirigida.

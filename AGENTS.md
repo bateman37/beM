@@ -87,7 +87,7 @@ Los estados del funcional (DEC, FUN, SEM, CARGA, EVAL, Ilustración) no son equi
 
 ## 7. Logs y paquetes masivos de partidos
 
-Los paquetes masivos son **artefactos descargables** vinculados a una ejecución o auditoría. El repositorio conserva su identificación, ubicación, versión de motor y configuración, manifiesto y conclusiones cuando existan; no se pegan logs masivos en los índices ni se exige leerlos en cada tarea. El contrato de exportación está en el tema [laboratorio](docs/motor/laboratorio/README.md).
+Los paquetes masivos son **artefactos descargables** vinculados a una ejecución o auditoría. El repositorio conserva su identificación, ubicación, versión de motor y configuración, manifiesto y conclusiones cuando existan; no se pegan logs masivos en los índices ni se exige leerlos en cada tarea. El contrato de exportación está en el tema [laboratorio](docs/motor/laboratorio/README.md); su implementación (esquema `beM-analysis-package/1`, partición y comprobador `npm run batch:check`) está en [`docs/tecnico/motor12.md`](docs/tecnico/motor12.md).
 
 ## 8. Utilidades documentales
 

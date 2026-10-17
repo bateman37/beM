@@ -1,0 +1,499 @@
+{
+ "identity": {
+  "package_id": "LOT-c268fba2",
+  "batch_id": "LOT-c268fba2",
+  "scope": "indice",
+  "part": null,
+  "n_parts": 9,
+  "created_at": "2026-10-17T08:09:07.136Z",
+  "revision": 1,
+  "label": "cierre MOTOR-12",
+  "package_schema": "beM-analysis-package/1"
+ },
+ "state": {
+  "job_state": "completado",
+  "completeness": "completo",
+  "scope_description": "indice",
+  "selection": "lote",
+  "record_level": "diagnostic",
+  "coverage": {
+   "level": "diagnostic",
+   "file": "auditoria/cobertura.csv"
+  },
+  "integrity_verified": true
+ },
+ "versions": {
+  "package_schema": "beM-analysis-package/1",
+  "lot": "LOT-MOTOR12-R1",
+  "records": "REG-MOTOR12-R1",
+  "engine": "beM-motor-0.9.0-MOTOR09",
+  "instrumentation": "INSTR-MOTOR11-R1",
+  "app": "MOTOR-12",
+  "rng": "xorshift32",
+  "seed_derivation": "LOT-SEED-R1",
+  "rules_profile": "FIBA-2026-v1.1",
+  "content_profile": "SEM-MOTOR01-20261016",
+  "effective_profile_id": "SEM-MOTOR01-20261016+SEM-MOTOR02-20261016+SEM-MOTOR03-20261016+SEM-MOTOR04-20261016+SEM-MOTOR05-20261016+SEM-MOTOR06-20261016+SEM-MOTOR07-20261016+SEM-MOTOR08-20261016+SEM-MOTOR09-20261016+SEM-MOTOR10-20261016+SEM-MOTOR11-20261017+SEM-MOTOR12-20261017",
+  "extensions": [
+   "SEM-MOTOR02-20261016",
+   "SEM-MOTOR03-20261016",
+   "SEM-MOTOR04-20261016",
+   "SEM-MOTOR05-20261016",
+   "SEM-MOTOR06-20261016",
+   "SEM-MOTOR07-20261016",
+   "SEM-MOTOR08-20261016",
+   "SEM-MOTOR09-20261016",
+   "SEM-MOTOR10-20261016",
+   "SEM-MOTOR11-20261017",
+   "SEM-MOTOR12-20261017"
+  ],
+  "analysis": "ANA-MOTOR10-R1",
+  "acta_policy": "ACTA-MOTOR09-R1",
+  "trajectory": "TRAY-MOTOR12-R1",
+  "input_fingerprint": "ENT-MOTOR12-R1",
+  "population_dataset": "POB-MOTOR11-R1",
+  "generator": "GEN-MOTOR11-R1",
+  "lab_catalog": "LAB-MOTOR11-R1"
+ },
+ "agenda": {
+  "executions_total": 10,
+  "cases_total": 5,
+  "variants": [
+   "V0",
+   "V1"
+  ],
+  "base_variant": "V0",
+  "executions_in_package": 10,
+  "seeds": {
+   "batch_seed": 20261017,
+   "derivation": "LOT-SEED-R1",
+   "count": 5,
+   "collisions": 0
+  },
+  "agenda_fp": "c268fba2fa9dedac",
+  "profile_id": "d038f6bf4fd9e516",
+  "entries": 10
+ },
+ "counts_scope": "lote completo (global); los totales de esta parte están en partition.part_totals",
+ "counts": {
+  "solicitados": 10,
+  "iniciados": 10,
+  "pendientes": 0,
+  "en_curso": 0,
+  "terminados": 10,
+  "fallidos": 0,
+  "interrumpidos": 0,
+  "validos": 10,
+  "elegibles": 10,
+  "reintentados": 0,
+  "reconciled": true
+ },
+ "aggregation": {
+  "scope": "lote",
+  "unit_of_sample": "team_games (equipos) · match_count (resultados)",
+  "universes": "solo partidos deportivos finalizados válidos y cubiertos por el indicador; el resto queda en las tablas de incidencias y conteos",
+  "formula": "tasa agregada = escala × Σnum/Σden; distribución entre partidos con n propio; comparación sobre casos emparejados",
+  "exclusions": [
+   "pendiente",
+   "en_curso",
+   "fallida",
+   "interrumpida",
+   "no_valida",
+   "sin exposición"
+  ],
+  "quantiles": "cuantil interpolado: índice (n−1)·p con interpolación lineal entre posiciones contiguas (p ∈ [0,1]); desviación muestral n−1 (n<2: no calculable, vacío)"
+ },
+ "audience": {
+  "package": "diagnostic",
+  "note": "Paquete de diagnóstico del laboratorio: contiene información que no ve el entrenador automático ni un informe público."
+ },
+ "fingerprints": {
+  "input": "input_id = SHA-256(entry_id | semilla)[:16]; entry_id = huella canónica de la entrada sin semilla (equipos, planes, órdenes programadas)",
+  "profile": "profile_id = SHA-256 canónico del perfil efectivo completo; profile_sport_fp excluye identificación y tablas de lectura/construcción (batch, analysis, population, generator, lab)",
+  "trajectory": "trajectory_fp = SHA-256 canónico de la proyección deportiva sin nombre de perfil (src/batch/fingerprint.js)"
+ },
+ "partition": {
+  "target_bytes": 67108864,
+  "part": null,
+  "n_parts": 9,
+  "matches": [
+   "M000001",
+   "M000002",
+   "M000003",
+   "M000004",
+   "M000005",
+   "M000006",
+   "M000007",
+   "M000008",
+   "M000009",
+   "M000010"
+  ],
+  "fragments": [],
+  "index_file": "beM-lote-LOT-c268fba2-indice.zip",
+  "global_totals": {
+   "ejecuciones": 10
+  },
+  "part_totals": {
+   "ejecuciones": 10
+  },
+  "parts": [
+   {
+    "part": 1,
+    "file": "beM-lote-LOT-c268fba2-parte-001-de-009.zip",
+    "bytes": 4776463,
+    "sha256": "524b4d03e534576855b99fe2a75fbcb51c35b7beeaa0d925f9989311bfce818e"
+   },
+   {
+    "part": 2,
+    "file": "beM-lote-LOT-c268fba2-parte-002-de-009.zip",
+    "bytes": 2754929,
+    "sha256": "7821c52192cf62ab5ff4b34a40dd2349e2425384cb417167d938781345f65b9a"
+   },
+   {
+    "part": 3,
+    "file": "beM-lote-LOT-c268fba2-parte-003-de-009.zip",
+    "bytes": 2756609,
+    "sha256": "cb8840e31c32ed0c3e5c99c3e929774cf7ce1bc7a3133eb6c79c9c0431df3653"
+   },
+   {
+    "part": 4,
+    "file": "beM-lote-LOT-c268fba2-parte-004-de-009.zip",
+    "bytes": 3134814,
+    "sha256": "e6e2b3cea6a35837f9567af8491bc45ed39bc4c9e02e5ad480a56825ff9b771b"
+   },
+   {
+    "part": 5,
+    "file": "beM-lote-LOT-c268fba2-parte-005-de-009.zip",
+    "bytes": 3134965,
+    "sha256": "3bc70a6a00943751ce148e8ba8ca106c8076d623e60702496f8761e7f503f6fe"
+   },
+   {
+    "part": 6,
+    "file": "beM-lote-LOT-c268fba2-parte-006-de-009.zip",
+    "bytes": 2950096,
+    "sha256": "1578d9265d67d46e9231b3e0e80d8ad775536ed58dc00473cfc7e67a70ff0a77"
+   },
+   {
+    "part": 7,
+    "file": "beM-lote-LOT-c268fba2-parte-007-de-009.zip",
+    "bytes": 2917537,
+    "sha256": "b0d272f5765f1238b97e398e0334534b04ca9e1e154968be65d6862ab34d8e23"
+   },
+   {
+    "part": 8,
+    "file": "beM-lote-LOT-c268fba2-parte-008-de-009.zip",
+    "bytes": 3292069,
+    "sha256": "fe253e27b692e67651b24b6e265b602dd3f0e8849b64bf6331665877baf47421"
+   },
+   {
+    "part": 9,
+    "file": "beM-lote-LOT-c268fba2-parte-009-de-009.zip",
+    "bytes": 2847044,
+    "sha256": "ebeb4f41c4577b9eb5f12c1403571b7505672bf6d4c7eb65dc6cd9cda2b66196"
+   }
+  ]
+ },
+ "relations": [
+  {
+   "id": "batch_id",
+   "type": "string",
+   "resolved_by": "entradas/lote.json"
+  },
+  {
+   "id": "variant_id",
+   "type": "string",
+   "resolved_by": "entradas/variantes.json"
+  },
+  {
+   "id": "case_id",
+   "type": "string",
+   "resolved_by": "entradas/lote.json → cases"
+  },
+  {
+   "id": "match_id",
+   "type": "string",
+   "resolved_by": "estadisticas/partidos.csv"
+  },
+  {
+   "id": "attempt_id",
+   "type": "string",
+   "resolved_by": "estadisticas/intentos.csv"
+  },
+  {
+   "id": "entry_id / input_id",
+   "type": "string",
+   "resolved_by": "entradas/partidos/<entry_id>.json"
+  },
+  {
+   "id": "profile_id",
+   "type": "string",
+   "resolved_by": "entradas/perfiles/<profile_id>.json"
+  },
+  {
+   "id": "team_instance_id / source_team_id",
+   "type": "string",
+   "resolved_by": "entradas/equipos/*.json, entradas/partidos/*.json"
+  },
+  {
+   "id": "player_instance_id / source_player_id",
+   "type": "string",
+   "resolved_by": "entradas/equipos/*.json"
+  },
+  {
+   "id": "event_id / sequence",
+   "type": "string / int",
+   "resolved_by": "eventos/eventos-*.jsonl"
+  },
+  {
+   "id": "possession_id",
+   "type": "string",
+   "resolved_by": "estadisticas/posesiones.csv"
+  },
+  {
+   "id": "execution_id",
+   "type": "string",
+   "resolved_by": "estadisticas/ejecuciones.csv"
+  },
+  {
+   "id": "finalization_id",
+   "type": "string",
+   "resolved_by": "estadisticas/finalizaciones.csv"
+  },
+  {
+   "id": "series_id",
+   "type": "string",
+   "resolved_by": "estadisticas/series.csv"
+  },
+  {
+   "id": "stint_id / lineup_id",
+   "type": "string",
+   "resolved_by": "estadisticas/tramos.csv, quintetos.csv"
+  },
+  {
+   "id": "decision_id / draw_index",
+   "type": "string / int",
+   "resolved_by": "decisiones/decisiones-*.jsonl, decisiones/sorteos-*.jsonl"
+  },
+  {
+   "id": "revision_id",
+   "type": "string",
+   "resolved_by": "—"
+  }
+ ],
+ "files": [
+  {
+   "path": "README.md",
+   "format": "markdown",
+   "encoding": "utf-8",
+   "bytes": 5217,
+   "records": null,
+   "sha256": "7a7b4aebdd602156eef6bd236a1b032197ca24d5ebc2c7d4be8e18f395a1a350",
+   "scope": "global",
+   "audience": "public",
+   "kind": "doc"
+  },
+  {
+   "path": "agregados/capacidades.csv",
+   "format": "csv",
+   "encoding": "utf-8",
+   "bytes": 1031943,
+   "records": 2832,
+   "sha256": "ab09722f7a1bf8c3c6cae472f2d83ea2235a04790b09283b6b3fcfbb80c0e4f3",
+   "scope": "global",
+   "audience": "diagnostic",
+   "kind": "agregado",
+   "table": "capacidades"
+  },
+  {
+   "path": "agregados/comparaciones.csv",
+   "format": "csv",
+   "encoding": "utf-8",
+   "bytes": 225045,
+   "records": 630,
+   "sha256": "f894161e43db62474b3e9004a585e338084a10bf0efcbe15cd42c1dedecabd4e",
+   "scope": "global",
+   "audience": "public",
+   "kind": "agregado",
+   "table": "comparaciones"
+  },
+  {
+   "path": "agregados/distribuciones.csv",
+   "format": "csv",
+   "encoding": "utf-8",
+   "bytes": 512715,
+   "records": 2392,
+   "sha256": "d5083b366c6873dd019df42abfb694354e2aaba1bde2025afda0d2a377859fb6",
+   "scope": "global",
+   "audience": "public",
+   "kind": "agregado",
+   "table": "distribuciones"
+  },
+  {
+   "path": "agregados/indicadores.csv",
+   "format": "csv",
+   "encoding": "utf-8",
+   "bytes": 303554,
+   "records": 1380,
+   "sha256": "abc36c25ea7a61d3ee5680ebb2e915bffeec047243fcc858d2ed1810072544c1",
+   "scope": "global",
+   "audience": "public",
+   "kind": "agregado",
+   "table": "indicadores"
+  },
+  {
+   "path": "agregados/tactica.csv",
+   "format": "csv",
+   "encoding": "utf-8",
+   "bytes": 321302,
+   "records": 1156,
+   "sha256": "28a39bbe3ccf21cea967bcb18e565ca6d8fcf218cf462ea2a9d62f8f140eece5",
+   "scope": "global",
+   "audience": "public",
+   "kind": "agregado",
+   "table": "tactica"
+  },
+  {
+   "path": "auditoria/cobertura.csv",
+   "format": "csv",
+   "encoding": "utf-8",
+   "bytes": 10587,
+   "records": 45,
+   "sha256": "f3939adbd376ab279a04a3753cb2e8a92306c8b20df722db8c013a46469316c9",
+   "scope": "global",
+   "audience": "public",
+   "kind": "auditoria"
+  },
+  {
+   "path": "auditoria/incidencias.jsonl",
+   "format": "jsonl",
+   "encoding": "utf-8",
+   "bytes": 0,
+   "records": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "scope": "global",
+   "audience": "public",
+   "kind": "auditoria"
+  },
+  {
+   "path": "auditoria/validaciones.jsonl",
+   "format": "jsonl",
+   "encoding": "utf-8",
+   "bytes": 446,
+   "records": 2,
+   "sha256": "2d3ee421cb548e14b5315fe9915aa1b8f0693bc60f07afe57e1ad3c73b9d9ad0",
+   "scope": "global",
+   "audience": "public",
+   "kind": "auditoria"
+  },
+  {
+   "path": "diccionario.json",
+   "format": "json",
+   "encoding": "utf-8",
+   "bytes": 130726,
+   "records": 1,
+   "sha256": "339c3cb2f54e74ac6fa93528cb0c1e882e616a18d8cd7e245f5391d2a97b7b44",
+   "scope": "global",
+   "audience": "public",
+   "kind": "doc"
+  },
+  {
+   "path": "diccionario.md",
+   "format": "markdown",
+   "encoding": "utf-8",
+   "bytes": 68743,
+   "records": null,
+   "sha256": "478bcc9e9924eada8595bad52a68d40683db27784c66d231fe9a62c2ca2ae2d5",
+   "scope": "global",
+   "audience": "public",
+   "kind": "doc"
+  },
+  {
+   "path": "entradas/lote.json",
+   "format": "json",
+   "encoding": "utf-8",
+   "bytes": 9626,
+   "records": 1,
+   "sha256": "2dd5d379fbaf08a2044b90fa277d3271d42d6fb21e7b5c9e2dd855a670cc7fe9",
+   "scope": "global-compartido",
+   "audience": "diagnostic",
+   "kind": "entrada"
+  },
+  {
+   "path": "entradas/variantes.json",
+   "format": "json",
+   "encoding": "utf-8",
+   "bytes": 2607,
+   "records": 1,
+   "sha256": "9734d48a49648e778fb171e9f9df7e1be9aaf97f4e05f49b5fb00d43c3d88641",
+   "scope": "global-compartido",
+   "audience": "diagnostic",
+   "kind": "entrada"
+  },
+  {
+   "path": "estadisticas/intentos.csv",
+   "format": "csv",
+   "encoding": "utf-8",
+   "bytes": 2153,
+   "records": 10,
+   "sha256": "bce38d21c71c40ee22972517a7c43e5d5b3e9b44561fba8d84756fba63775d4b",
+   "scope": "global",
+   "audience": "public",
+   "kind": "tabla",
+   "table": "intentos",
+   "note": "catálogo global de todas las ejecuciones; las filas detalladas están en las partes"
+  },
+  {
+   "path": "estadisticas/partidos.csv",
+   "format": "csv",
+   "encoding": "utf-8",
+   "bytes": 3457,
+   "records": 10,
+   "sha256": "f2f2ead017f03848b6831a04fcbfed8db7338a42c35ecd14f6fa7184c24e2198",
+   "scope": "global",
+   "audience": "public",
+   "kind": "tabla",
+   "table": "partidos",
+   "note": "catálogo global de todas las ejecuciones; las filas detalladas están en las partes"
+  },
+  {
+   "path": "indice.json",
+   "format": "json",
+   "encoding": "utf-8",
+   "bytes": 4989,
+   "records": 1,
+   "sha256": "3fc9702c5bc16cea64ba1d92ec7fa301e780c918b6cd1c42d13dc0e760939d1e",
+   "scope": "global",
+   "audience": "public",
+   "kind": "indice"
+  },
+  {
+   "path": "resumen.md",
+   "format": "markdown",
+   "encoding": "utf-8",
+   "bytes": 6258,
+   "records": null,
+   "sha256": "c09430d08c3273e40fb27e01b27ee025073aefe20bbeb35cc8bc21763603d805",
+   "scope": "global",
+   "audience": "public",
+   "kind": "doc"
+  }
+ ],
+ "audit": {
+  "validations": [
+   {
+    "id": "IDX01",
+    "status": "pass"
+   },
+   {
+    "id": "IDX02",
+    "status": "pass"
+   }
+  ],
+  "failures": [],
+  "incidents": 0,
+  "warnings": [],
+  "measurements": "las mediciones están en cada parte (auditoria/rendimiento.csv)",
+  "coverage": "auditoria/cobertura.csv",
+  "file_name": "beM-lote-LOT-c268fba2-indice.zip"
+ }
+}

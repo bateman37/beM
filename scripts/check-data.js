@@ -4,8 +4,8 @@
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { join } from 'node:path';
-import { ROOT, PROFILE_PATH, PLAYERS_PATH, EXTENSION_PATH, EXTENSION3_PATH, EXTENSION4_PATH, EXTENSION5_PATH, EXTENSION6_PATH, EXTENSION7_PATH, EXTENSION8_PATH, EXTENSION9_PATH, EXTENSION10_PATH, EXTENSION11_PATH, loadData } from './node-data.js';
-import { validateProfileAndFixtures, validateExtension } from '../src/match/data.js';
+import { ROOT, PROFILE_PATH, PLAYERS_PATH, EXTENSION_PATH, EXTENSION3_PATH, EXTENSION4_PATH, EXTENSION5_PATH, EXTENSION6_PATH, EXTENSION7_PATH, EXTENSION8_PATH, EXTENSION9_PATH, EXTENSION10_PATH, EXTENSION11_PATH, EXTENSION12_PATH, loadData } from './node-data.js';
+import { validateProfileAndFixtures, validateExtension, applyExtension } from '../src/match/data.js';
 import { buildExtension11, serialize } from './build-motor11-data.js';
 import { referenceTeams } from '../src/population/reference.js';
 import { validateReferenceSet } from '../src/population/validate.js';
@@ -189,9 +189,26 @@ export function checkMotor11(extension11, profile, players) {
   return problems;
 }
 
+// MOTOR-12: la extensión solo añade la tabla técnica `batch` (sin tocar el deporte): el perfil efectivo con ella es idéntico al de MOTOR-11 salvo `batch`, `extensions` y `effectiveId`.
+export function checkMotor12(extension12, baseProfile, exts, profile) {
+  const problems = [];
+  if (extension12.seedExtensionId !== 'SEM-MOTOR12-20261017') problems.push('MOTOR-12: identidad de la extensión inesperada');
+  if (Object.keys(extension12.additions ?? {}).join() !== 'batch') problems.push('MOTOR-12: la extensión solo puede añadir batch (parámetros técnicos de lotes, sin tocar el deporte)');
+  if (extension12.replacements) problems.push('MOTOR-12: la extensión no puede sustituir ningún valor del perfil');
+  const prev = applyExtension(baseProfile, ...exts);
+  const { batch, extensions, effectiveId, ...rest } = profile; const { extensions: e2, effectiveId: i2, ...rest0 } = prev;
+  void batch; void extensions; void effectiveId; void e2; void i2;
+  if (JSON.stringify(rest) !== JSON.stringify(rest0)) problems.push('MOTOR-12: el perfil con la extensión difiere del de MOTOR-11 en algo distinto de la tabla batch');
+  const b = profile.batch;
+  if (b.concurrency !== 1) problems.push('MOTOR-12: la concurrencia precargada debe ser 1');
+  if (JSON.stringify(b.repetitionShortcuts) !== '[10,100,1000]') problems.push('MOTOR-12: accesos rápidos 10, 100, 1000');
+  if (b.partTargetMiB !== 64 || b.progressIntervalMs !== 500) problems.push('MOTOR-12: objetivo de parte 64 MiB y progreso 500 ms');
+  return problems;
+}
+
 export function checkData() {
   const problems = [];
-  const { profile, baseProfile, extension, extension3, extension4, extension5, extension6, extension7, extension8, extension9, extension10, extension11, players } = loadData();
+  const { profile, baseProfile, extension, extension3, extension4, extension5, extension6, extension7, extension8, extension9, extension10, extension11, extension12, players } = loadData();
   for (const e of validateProfileAndFixtures(profile, players)) problems.push(`${e.path}: ${e.message}`);
   for (const e of validateExtension(baseProfile, extension)) problems.push(`extensión MOTOR-02: ${e}`);
   for (const e of validateExtension(baseProfile, extension3)) problems.push(`extensión MOTOR-03: ${e}`);
@@ -206,7 +223,9 @@ export function checkData() {
   problems.push(...checkMotor10(extension10));
   for (const e of validateExtension(baseProfile, extension11, profile)) problems.push(`extensión MOTOR-11: ${e}`);
   problems.push(...checkMotor11(extension11, profile, players));
-  const hashes = { profile: sha(PROFILE_PATH), players: sha(PLAYERS_PATH), prompt: sha(PROMPT), extension: sha(EXTENSION_PATH), extension3: sha(EXTENSION3_PATH), extension4: sha(EXTENSION4_PATH), extension5: sha(EXTENSION5_PATH), extension6: sha(EXTENSION6_PATH), extension7: sha(EXTENSION7_PATH), extension8: sha(EXTENSION8_PATH), extension9: sha(EXTENSION9_PATH), extension10: sha(EXTENSION10_PATH), extension11: sha(EXTENSION11_PATH) };
+  for (const e of validateExtension(baseProfile, extension12, profile)) problems.push(`extensión MOTOR-12: ${e}`);
+  problems.push(...checkMotor12(extension12, baseProfile, [extension, extension3, extension4, extension5, extension6, extension7, extension8, extension9, extension10, extension11], profile));
+  const hashes = { profile: sha(PROFILE_PATH), players: sha(PLAYERS_PATH), prompt: sha(PROMPT), extension: sha(EXTENSION_PATH), extension3: sha(EXTENSION3_PATH), extension4: sha(EXTENSION4_PATH), extension5: sha(EXTENSION5_PATH), extension6: sha(EXTENSION6_PATH), extension7: sha(EXTENSION7_PATH), extension8: sha(EXTENSION8_PATH), extension9: sha(EXTENSION9_PATH), extension10: sha(EXTENSION10_PATH), extension11: sha(EXTENSION11_PATH), extension12: sha(EXTENSION12_PATH) };
   if (existsSync(PROMPT4)) problems.push(...checkMotor04Annex(extension4, extractAnnexA4(readFileSync(PROMPT4, 'utf8'))));
   else problems.push('falta el prompt archivado de MOTOR-04');
   if (existsSync(PROMPT5)) problems.push(...checkMotor05Annex(extension5, extractAnnexA5(readFileSync(PROMPT5, 'utf8'))));
@@ -238,13 +257,14 @@ export function checkData() {
     if (cat.files['data/match/motor09-seed-extension.json']?.sha256 !== hashes.extension9) problems.push('hash de la extensión de MOTOR-09 distinto del catálogo');
     if (cat.files['data/match/motor10-seed-extension.json']?.sha256 !== hashes.extension10) problems.push('hash de la extensión de MOTOR-10 distinto del catálogo');
     if (cat.files['data/match/motor11-seed-extension.json']?.sha256 !== hashes.extension11) problems.push('hash de la extensión de MOTOR-11 distinto del catálogo');
+    if (cat.files['data/match/motor12-seed-extension.json']?.sha256 !== hashes.extension12) problems.push('hash de la extensión de MOTOR-12 distinto del catálogo');
   } else problems.push('falta data/catalog.json');
   return { problems, hashes, profile, baseProfile, players };
 }
 
 if (process.argv[1] && process.argv[1].endsWith('check-data.js')) {
   if (process.argv.includes('--write-catalog')) {
-    const { baseProfile: profile, extension, extension3, extension4, extension5, extension6, extension7, extension8, extension9, extension10, extension11 } = loadData();
+    const { baseProfile: profile, extension, extension3, extension4, extension5, extension6, extension7, extension8, extension9, extension10, extension11, extension12 } = loadData();
     const cat = {
       description: 'Catálogo de datos: identidad y estado de los materiales (MOTOR-01 cargados literalmente de los anexos del prompt; extensión de MOTOR-02 aparte, sin tocar el perfil original).',
       source: 'docs/prompts/MOTOR-01-primer-partido-completo.md (Anexo A y Anexo B); docs/prompts/MOTOR-02-modos-y-direccion.md (apartado 8.4); docs/prompts/MOTOR-03-panel-y-perfiles.md (apartado 4.1); docs/prompts/MOTOR-04-ataque-posicional.md (anexo A); docs/prompts/MOTOR-05-defensa-completa.md (anexo A); docs/prompts/MOTOR-06-transicion-y-saques.md (anexo A); docs/prompts/MOTOR-07-capacidades-y-estados.md (anexo A); docs/prompts/MOTOR-08-entrenador-y-memoria.md (apartados 6.1, 7.1, 10.2, 10.3 y 11.4)',
@@ -260,6 +280,7 @@ if (process.argv[1] && process.argv[1].endsWith('check-data.js')) {
         'data/match/motor09-seed-extension.json': { id: extension9.seedExtensionId, status: extension9.status, sha256: sha(EXTENSION9_PATH), origin: 'Encargo MOTOR-09 (§4 fuentes, §5 matriz, §12 política estadística, §16.3 ruta B): matriz normativa con estado de contraste por fila (los PDF de S09-01 a S09-04 no fueron accesibles) y política estadística beM', state: 'SEM provisional en parámetros; matriz normativa con estados contrastada/heredada/provisional/pendiente' },
         'data/match/motor10-seed-extension.json': { id: extension10.seedExtensionId, status: extension10.status, sha256: sha(EXTENSION10_PATH), origin: 'Encargo MOTOR-10 (§7.1 final ajustado, §14 antes/después, §15.3 selección editorial, §17.5 REC10-01/02, §19 precargas): parámetros editoriales y de muestra del análisis', state: 'SEM provisional, no calibrado; sin efecto deportivo' },
         'data/match/motor11-seed-extension.json': { id: extension11.seedExtensionId, status: extension11.status, sha256: sha(EXTENSION11_PATH), origin: 'Encargo MOTOR-11 (§5–§12): planes naturales materializados por scripts/build-motor11-data.js, revisión R1 de EQ07-J01, receta del generador y catálogo LAB11' },
+        'data/match/motor12-seed-extension.json': { id: extension12.seedExtensionId, status: extension12.status, sha256: sha(EXTENSION12_PATH), origin: 'Encargo MOTOR-12 (§15.1, §20): parámetros técnicos de ejecución, registro y exportación de lotes (tabla batch); sin efecto deportivo', state: 'SEM provisional, no calibrado' },
         'data/match/motor04-seed-extension.json': { id: extension4.seedExtensionId, status: extension4.status, sha256: sha(EXTENSION4_PATH), origin: 'Anexo A del prompt de MOTOR-04 (cifras SEM, literales) + contenido declarativo del repertorio (anexo B) y funciones por disposición: lectura de Claude, a revisar por Dennis', state: 'SEM provisional, no calibrado; sustituye explícitamente el efecto abstracto de carga y amplía el catálogo activo' },
       },
       promptSha256: sha(PROMPT),
@@ -281,6 +302,7 @@ if (process.argv[1] && process.argv[1].endsWith('check-data.js')) {
   console.log('sha256 ext. M9', r.hashes.extension9);
   console.log('sha256 ext. M10', r.hashes.extension10);
   console.log('sha256 ext. M11', r.hashes.extension11);
+  console.log('sha256 ext. M12', r.hashes.extension12);
   if (r.problems.length) { console.log('PROBLEMAS:'); r.problems.forEach((p) => console.log(' -', p)); process.exit(1); }
   console.log('datos correctos');
 }
