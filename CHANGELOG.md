@@ -2,6 +2,15 @@
 
 Registro breve de entregas. Una entrada por entrega; las más recientes primero.
 
+## MOTOR-10 — Análisis, estadísticas y resumen — 2026-10-17
+
+- **Lector del partido, sin cambio deportivo**: capa `src/analysis/` sobre los hechos y el acta de MOTOR-09. La referencia `20261016` sigue en **83–103** con los mismos 6 505 sorteos; motor `beM-motor-0.9.0-MOTOR09` y `beM-match-export/8` sin cambios (el acta no se tocó: la política de asistencias de MOTOR-09 se **auditó** contra los estados funcionales y se confirmó; el criterio procede del extracto de ChatGPT, el PDF no se abrió).
+- Catálogo común de 26 indicadores (identidad, naturaleza, unidad, fuente, universo, cálculo, cobertura, información, muestra, evidencia) con numerador y denominador del mismo universo, `—` con motivo en lugar de ceros y agregación ponderada; indicadores no registrados o dependientes de datos declarados, no rellenados.
+- Evolución (curva escalonada, ventaja máxima, empates, cambios de líder, tiempo por delante, parciales sin respuesta, final ajustado 120 s / 5 puntos previos), mapa sectorial (zona real, sin lateralidad inventada) y calidad previa, origen único de posesión y ejecuciones encadenadas, libro/director (solo información propia), organización/cobertura/ayuda/responsabilidades, saques banda/fondo, trabajo sin balón derivado de hechos existentes, quintetos/grupos/on-off descriptivo (completas, mixtas y parciales separadas) y antes/después de una orden aplicada.
+- Resumen con hasta tres claves sustentadas y deduplicadas (siembras SEM editoriales), líderes con empates, crónica por periodo sin futuro, recomendaciones condicionadas REC10-01/02 y exportación analítica (JSON `beM-analysis-export/1`, CSV, Markdown) con audiencia pública/propia/diagnóstico aplicada **antes** de construir consultas, textos, caché y export.
+- Pestaña «Análisis» en el laboratorio, catálogo en Panel › Estadística e información, extensión `SEM-MOTOR10-20261016` (23 filas editables, `optional`: un perfil anterior sigue jugando y reproduciéndose), conciliación analítica de 23 comprobaciones, matriz de cobertura heredada y tres listas de pendientes separadas.
+- **141 pruebas** (10 nuevas), cinco partidos de integración con acta y análisis conciliados, recorrido automatizado en Chromium. Documentación: [`docs/tecnico/motor10.md`](docs/tecnico/motor10.md), [recorrido manual](docs/prompts/MOTOR-10-recorrido-manual.md). Pendiente de validación de Dennis.
+
 ## MOTOR-09 — Reglamento, administración y acta — 2026-10-16
 
 - Matriz normativa REG (19 filas) con **estado de contraste por fila** (`contrastada`, `heredada`, `provisional`, `pendiente`): los PDF de FIBA (S09-01 a S09-04) devolvieron HTTP 403, así que ninguna fila es lectura directa del PDF; lo contrastado procede del texto del encargo §4.3. La administración de faltas defensivas, la disruptiva (libres y saque con 14 s) y la descalificación acumulada consultan ya la matriz. Técnicas/antideportivas, compensación de sanciones y art. 45 quedan **tipadas sin ejecución** (diagnóstico, no una regla inventada).

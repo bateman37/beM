@@ -4,9 +4,10 @@ import { renderTeams } from './teams.js';
 import { renderPrep } from './prep.js';
 import { renderGame } from './game.js';
 import { renderCoverage } from './coverage.js';
+import { renderAnalysis } from './analysis-ui.js';
 import { renderPanel } from './panel/index.js';
 
-const TABS = [['teams', 'Plantillas', renderTeams], ['prep', 'Preparación', renderPrep], ['game', 'Partido', renderGame], ['panel', 'Panel de ajustes', renderPanel], ['cov', 'Cobertura', renderCoverage]];
+const TABS = [['teams', 'Plantillas', renderTeams], ['prep', 'Preparación', renderPrep], ['game', 'Partido', renderGame], ['analysis', 'Análisis', renderAnalysis], ['panel', 'Panel de ajustes', renderPanel], ['cov', 'Cobertura', renderCoverage]];
 let current = 'teams';
 
 function paint() {

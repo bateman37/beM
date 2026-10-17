@@ -10,6 +10,8 @@ import { describeCoverage } from '../../profiles/validate.js';
 import { store } from '../store.js';
 import { canonical } from '../../profiles/util.js';
 import { validateMatrix } from '../../match/regs.js';
+import { CATALOG } from '../../analysis/catalog.js';
+import { VISIBILITY } from '../../analysis/visibility.js';
 
 const go = (tab, extra = {}) => { ps.tab = tab; Object.assign(ps, extra); repaint(); };
 const light = (state, label, detail) => h('div', { class: `light ${state}` }, h('strong', {}, label), h('div', { class: 'small' }, detail));
@@ -26,8 +28,12 @@ export function renderHome() {
     h('button', { class: 'btn', type: 'button', id: 'legacy-activate', onclick: () => { L.activate(L.baseId, 'activar la base de MOTOR-09'); window.dispatchEvent(new Event('beM:repaint')); repaint(); } }, 'Activar la base de MOTOR-09'), ' ',
     h('button', { class: 'btn secondary', type: 'button', id: 'legacy-upgrade', onclick: () => { const r = L.upgradeCandidate(a.id); if (r.ok) { ps.editing = r.draft.id; ps.tab = 'perfiles'; } else alert(r.error); repaint(); } }, 'Crear candidata MOTOR-09 desde esta versión'),
     h('p', { class: 'small muted' }, 'La candidata es un borrador sobre la base de MOTOR-09 con los valores que esta versión había cambiado (las filas sustituidas por la extensión no se trasladan). Hay que validarla y publicarla.')) : null;
+  const noAnalysis = !legacyCard && !L.version(a.id)?.effective?.analysis;
+  const analysisCard = noAnalysis ? h('div', { class: 'card' }, h('strong', {}, 'El perfil activo no incluye la política analítica de MOTOR-10. '), 'Puede jugar con normalidad: el análisis usa entonces los valores por defecto del código y lo identifica («por defecto del código»). ',
+    h('button', { class: 'btn secondary', type: 'button', id: 'activate-m10', onclick: () => { L.activate(L.baseId, 'activar la base de MOTOR-10 (política analítica administrable)'); window.dispatchEvent(new Event('beM:repaint')); repaint(); } }, 'Activar la base de MOTOR-10'),
+    h('p', { class: 'small muted' }, 'La activación es explícita y no migra nada en silencio; una versión activa anterior sigue siendo jugable y reproducible.')) : null;
   return h('div', {},
-    legacyCard,
+    legacyCard, analysisCard,
     h('div', { class: 'card' }, h('h3', { style: 'margin-top:0' }, 'Perfil activo para futuros partidos'),
       h('div', { class: 'row' }, h('strong', { style: 'font-size:18px' }, `${a.id} · ${a.label}`), h('span', { class: 'pill warn' }, `${a.status}`), h('span', { class: 'pill' }, a.kind), h('code', { title: a.hash }, a.hash.slice(0, 12))),
       h('p', { class: 'small muted' }, `Versión ${a.id}${a.parent ? `, hereda de ${a.parent.id} «${a.parent.label}» (huella ${a.parent.hash.slice(0, 8)})` : ', base protegida sin padre'} · creada ${a.createdAt.slice(0, 16).replace('T', ' ')} por ${a.actor}`),
@@ -96,7 +102,7 @@ export function renderVistas() {
   const rows = c.cRows.rows.filter((r) => r.views.includes(v));
   const groups = GROUPS.filter((g) => g.view === v);
   if (v === 'reglamento') root.append(regulationCard(c.consult.effective));
-  if (v === 'estadistica') root.append(statsPolicyCard(c.consult.effective));
+  if (v === 'estadistica') root.append(statsPolicyCard(c.consult.effective), analysisCatalogCard(c.consult.effective));
   root.append(h('div', { class: 'card' }, h('h3', { style: 'margin-top:0' }, `${VIEWS[v]}: grupos funcionales de este tema`),
     table(['ID', 'Responsabilidad', 'Filas activas', 'Cobertura', 'Entrega prevista'], groups.map((g) => { const n = c.cRows.rows.filter((r) => r.grp === g.id).length; return [g.id, g.resp, n, h('span', { class: `pill ${n ? 'ok' : 'warn'}` }, n ? 'parcial' : 'pendiente'), g.delivery]; }))));
   if (rows.length) { ps.filters.view = v; root.append(masterTable({ lockView: v, title: `Filas de «${VIEWS[v]}»` })); } else root.append(h('div', { class: 'card' }, h('p', { class: 'muted' }, 'Este tema no tiene todavía filas ejecutadas por el motor actual. Su ficha funcional está arriba; no se rellena con valores inventados ni con ceros.')));
@@ -123,6 +129,16 @@ function statsPolicyCard(profile) {
   return h('div', { class: 'card' }, h('h3', { style: 'margin-top:0' }, `Acta y créditos · ${sp.id}`), h('p', { class: 'small' }, sp.name, '. ', sp.basedOn),
     table(['Familia', 'Lectura', 'Regla', 'Contraste'], sp.families.map((f) => [f.label, f.reading, f.rule, f.contrast])),
     h('p', { class: 'small muted' }, `No representado por el hecho (se muestra «—», no 0): ${sp.unrepresented.join(', ')}. Fórmula de valoración: ${sp.valuation.formula}.`));
+}
+
+// MOTOR-10: catálogo común de indicadores del análisis (definición, naturaleza, unidad, fuente, universo, cálculo, cobertura, información, mínimo SEM y punto de consumo).
+// Los parámetros editoriales y de muestra son filas del perfil (tabla maestra, vista «Estadística e información»); el catálogo en sí es contenido declarativo del código.
+function analysisCatalogCard(profile) {
+  const a = profile.analysis; const min = (d) => (d.sample != null ? `${a?.sample?.warnBelow ?? 5} (aviso)` : '—');
+  return h('div', { class: 'card' }, h('h3', { style: 'margin-top:0' }, `Análisis del encuentro · ${a?.version ?? 'sin tabla analysis (se usan los valores por defecto del código)'}`),
+    h('p', { class: 'small' }, 'Catálogo común: la misma definición alimenta tabla, gráfico, resumen, informe y exportación. No hay una tabla física por indicador ni fórmulas ejecutables desde el panel. Los parámetros editoriales y de muestra (final ajustado, antes/después, avisos, destaques del resumen, REC10-01/02) son filas editables en una candidata; no son multiplicadores deportivos.'),
+    h('div', { class: 'scroll tall' }, table(['Id', 'Indicador', 'Naturaleza', 'Unidad', 'Fuente', 'Universo', 'Cálculo', 'Cobertura', 'Información', 'Mínimo de muestra', 'Consumo'], CATALOG.map((d) => [d.id, d.label, d.nature, d.unit, d.source, d.universe, d.calc, d.coverage, d.info === 'diag' ? 'diagnóstico' : 'público', min(d), 'src/analysis/catalog.js'])),),
+    h('details', {}, h('summary', {}, 'Matriz de visibilidad (EST07)'), table(['Campo', 'Público/rival', 'Propia', 'Diagnóstico'], VISIBILITY.map((v) => [v.field, v.public, v.own, v.diag]))));
 }
 
 export function renderCatalog() {

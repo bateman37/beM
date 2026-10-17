@@ -1,6 +1,6 @@
 # Estado del proyecto
 
-Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANGELOG.md)). Última actualización: 2026-10-16, entrega MOTOR-09.
+Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANGELOG.md)). Última actualización: 2026-10-17, entrega MOTOR-10.
 
 ## Qué hay realmente en el repositorio
 
@@ -9,6 +9,15 @@ Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANG
 - **Copia original congelada** del funcional unificado y **exportado completo vigente** generado: ver [`historico/`](historico/README.md) y [`exportados/`](exportados/README.md).
 - **Utilidades documentales** en `scripts/docs/` (Python 3, librería estándar).
 
+## MOTOR-10 (ejecutado, pendiente de Dennis)
+
+- **Existe**: capa de análisis `src/analysis/` (lector del partido sobre hechos y acta), pestaña **Análisis** en el laboratorio (Resumen, Acta y comparación, Evolución, Tiro y calidad, Ataque, Defensa, Rotaciones y quintetos, Informes, Diagnóstico y cobertura, Exportar), catálogo común de 26 indicadores, evolución y final ajustado (120 s / 5 puntos), mapa sectorial por zona real y calidad previa, origen único y ejecuciones encadenadas, libro y director (información propia), coberturas, ayuda y responsabilidades, saques, trabajo sin balón derivado de hechos existentes, quintetos/grupos/on-off descriptivo, antes/después de una orden aplicada, resumen con hasta tres claves sustentadas, recomendaciones REC10-01/02, permisos por audiencia (pública, propia, diagnóstico) y exportación analítica (JSON, CSV, Markdown). Perfil `+SEM-MOTOR10-20261016` con 23 filas editables de lectura. Ver [`tecnico/motor10.md`](tecnico/motor10.md) y [recorrido manual](prompts/MOTOR-10-recorrido-manual.md).
+- **No cambia el deporte**: referencia `20261016` = 83–103 con los mismos 6 505 sorteos; `export/8` y el motor `0.9.0-MOTOR09` sin cambios; el acta no se tocó (la política de asistencias de MOTOR-09 se auditó y confirmó; criterio según el extracto de ChatGPT, PDF no abierto).
+- **Sin contrastar / honesto**: ninguna fila normativa es lectura directa del PDF; un acta cuadrada prueba consistencia, no conformidad. Mapa sin lateralidad; organización defensiva leída por posesión; OB05 y disponibilidad de corte no registrados; sin estado propio visible por tramo; sin historial ni percentiles. Umbrales del resumen SEM editoriales, nada calibrado.
+- **Comprobado por Claude**: 141 pruebas (10 nuevas), `data:check`, comprobación documental, cinco partidos de integración con acta y análisis conciliados (83–103, 89–95, 80–85, 124–92, 85–108; el quinto reproducido idéntico) y un recorrido **automatizado** en Chromium sin errores de consola. **Pendiente de Dennis**: todo el recorrido manual (también el de MOTOR-08 y MOTOR-09). **No ejecutado**: Node 24, otros navegadores, activación desde un perfil guardado anterior, contraste con los PDF.
+- **Pendiente**: tres listas separadas (deuda de MOTOR-09, pendientes de MOTOR-10, entregas posteriores) en [`tecnico/motor10.md`](tecnico/motor10.md) §4 y §14.
+- Siguiente: lo que ordene Dennis (MOTOR-11, población y generador; no iniciado).
+
 ## MOTOR-09 (ejecutado, pendiente de Dennis)
 
 - **Existe**: matriz normativa REG de 19 filas con estado de contraste por fila (consumida por la administración de faltas defensivas, la disruptiva y la descalificación), series de libres como unidad causal, sanciones combinadas en cola, disponibilidad/terminación (casos preparados), acta completa desde los hechos (AS a canasta/libres, REC, TAP/TREC, FC/FR, más-menos por intervalos, VAL, DNP, sujetos colectivos, parciales), posesiones beM, finalizaciones F y dos particiones de puntos, conciliación de 33 comprobaciones, revisiones estadística/reglamentaria/técnica, casos de laboratorio preparados, informe de memoria con denominadores y **ruta B**, `export/8`. Ver [`tecnico/motor09.md`](tecnico/motor09.md) y [recorrido manual](prompts/MOTOR-09-recorrido-manual.md).
@@ -16,7 +25,7 @@ Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANG
 - **Cambia los resultados**: referencia `20261016` 88–110 → 83–103 (ruta B); un fallo con falta de tiro ya no cuenta como intento de campo.
 - **Comprobado por Claude**: 131 pruebas (13 nuevas), `data:check`, cinco partidos de integración conciliados y recorrido en Chromium (panel Reglamento/Estadística, partido completo con acta y conciliación, cinco casos preparados, sin errores de consola). **Pendiente de Dennis**: todo el recorrido manual (también el de MOTOR-08). **No ejecutado**: Node 24, otros navegadores, contraste con los PDF.
 - **No implementado**: interferencia como familia propia, tiro en vuelo, técnicas/flagrantes generadas, inferioridad natural, continuación desde snapshot, MOTOR-10 (análisis, informes, mapas, on/off).
-- Siguiente: lo que ordene Dennis (MOTOR-10; no iniciado).
+- Siguiente: MOTOR-10 (ejecutado: análisis, estadísticas y resumen).
 
 ## MOTOR-08 (ejecutado, pendiente de Dennis)
 

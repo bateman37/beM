@@ -1,0 +1,60 @@
+// Cobertura honesta (MOTOR-10 §4.1 y §22.2). «Todas las conciliaciones pasan» prueba consistencia bajo las reglas vigentes, NO conformidad normativa completa.
+// Ninguna fila es lectura directa del PDF de FIBA: se conserva la procedencia declarada por MOTOR-09 sin borrar su historial.
+export const COVERAGE_CATEGORIES = {
+  A: 'Dato producido y política acreditada (solo contra el texto del encargo de MOTOR-09; no es lectura directa del PDF)',
+  B: 'Dato producido bajo convención beM o regla heredada/provisional identificada',
+  C: 'Administración preparada pero no ejecutable en flujo natural',
+  D: 'Campo no registrado o caso no implementado',
+  E: 'Ejecución inválida, parcial o administrativa',
+};
+
+export function classifyRow(m) {
+  const admin = m.coverage?.admin ?? ''; const natural = m.coverage?.natural ?? '';
+  if (m.contrast === 'pendiente' || admin.startsWith('tipada')) return 'D';
+  if (['RG-D02', 'RG-T01'].includes(m.id) || admin.startsWith('parcial')) return 'E';
+  if (natural.startsWith('implementada') || natural.startsWith('disruptiva implementada')) return m.contrast === 'contrastada' ? 'A' : 'B';
+  return 'C';
+}
+export function coverageMatrix(res) {
+  const matrix = res.profile?.regulation?.matrix ?? [];
+  return matrix.map((m) => ({ id: m.id, family: m.family, contrast: m.contrast, category: classifyRow(m), categoryText: COVERAGE_CATEGORIES[classifyRow(m)], admin: m.coverage?.admin, exposure: m.coverage?.exposure, natural: m.coverage?.natural }));
+}
+
+// Disponibilidad de las preguntas analíticas por bloque (productor, consulta, permiso, cobertura): catálogo del funcional, no una lista de deseos.
+export const BLOCKS = [
+  { id: 'acta', block: 'Acta y comparación', producer: 'acta.js (MOTOR-09)', query: 'catalog.js, shooting.js', permission: 'público', coverage: 'disponible', note: 'Mates y rebotes colectivos naturales: no representados.' },
+  { id: 'formulas', block: 'Fórmulas del §6.2 y cuatro factores', producer: 'acta + posesiones beM', query: 'catalog.js, formulas.js', permission: 'público', coverage: 'disponible', note: 'Rebote por oportunidad solo en diagnóstico; historial: dependiente de datos.' },
+  { id: 'evolution', block: 'Evolución, parciales y final ajustado', producer: 'pointEvents + intervalos de juego vivo', query: 'evolution.js', permission: 'público', coverage: 'disponible', note: 'Los hechos con el mismo reloj conservan su secuencia.' },
+  { id: 'map', block: 'Mapa sectorial y calidad previa', producer: 'hecho shot (zona) + intent.calidad', query: 'shooting.js', permission: 'público (categoría); probabilidad exacta solo diagnóstico', coverage: 'parcial', note: 'Sin lateralidad: el motor registra aro/pintura/media/triple, no Z03–Z10 por separado.' },
+  { id: 'offense', block: 'Origen, ejecuciones, libro y director', producer: 'intent y participants del hecho de intento', query: 'offense.js', permission: 'acción observada: público; procedencia, prioridad y director: propio', coverage: 'disponible', note: 'Alternativas no percibidas: diagnóstico.' },
+  { id: 'defense', block: 'Organización, coberturas, ayuda y responsabilidades', producer: 'plan + órdenes defOrg + intent.cobertura/defensa', query: 'defense.js', permission: 'ejecutado: público', coverage: 'parcial', note: 'La organización no se guarda por hecho: se lee por posesión desde el plan y las órdenes activadas.' },
+  { id: 'restarts', block: 'Saques y continuidad', producer: 'diagnostics.throwInChains', query: 'restarts.js', permission: 'receptor y desenlace: público; ficha y sacador preferido: propio', coverage: 'disponible', note: 'Casos reglamentarios no ejecutados se listan aparte (no son cero incidencias).' },
+  { id: 'offball', block: 'Trabajo útil sin balón', producer: 'hechos existentes (pantalla, corte, ayuda, relevo, encargos de rebote, cadena de robo, balón suelto)', query: 'offball.js', permission: 'público', coverage: 'parcial', note: 'OB05 (ocupación que limita ayuda) y la disponibilidad de corte no se conservan: dependencia de productor.' },
+  { id: 'presence', block: 'Quintetos, grupos y on/off', producer: 'lineups + intervalos del acta', query: 'presence.js', permission: 'público', coverage: 'disponible', note: 'Diferencia observada, no causal; sin exposición completa no hay diferencia finita.' },
+  { id: 'summary', block: 'Resumen, claves, líderes y crónica', producer: 'consultas del catálogo', query: 'summary.js', permission: 'según audiencia', coverage: 'disponible', note: 'Menos de tres claves es un resultado válido.' },
+  { id: 'reports', block: 'Informes propio, rival e individual', producer: 'las mismas consultas con audiencia', query: 'index.js', permission: 'propio/rival/diagnóstico separados', coverage: 'disponible', note: 'El estado propio visible solo se ofrece si su exposición temporal está conservada: hoy no lo está (no se muestra).' },
+  { id: 'export', block: 'Exportación analítica', producer: 'export.js', query: 'JSON, CSV y Markdown de la audiencia', permission: 'según audiencia', coverage: 'disponible', note: 'El ZIP masivo es de MOTOR-12.' },
+];
+
+export const DEBT_MOTOR09 = [
+  { item: 'Contraste con los PDF de FIBA (S09-01 a S09-04, HTTP 403)', impact: 'Ninguna fila es lectura directa; las conciliaciones prueban consistencia, no conformidad.', close: 'Acceso a las fuentes o contenido exacto.' },
+  { item: 'Técnicas y antideportivas 2026 (RG-F07)', impact: 'No se generan; sin faltas técnicas/flagrantes naturales en los informes.', close: 'Capítulo de técnicas/antideportivas 2026.' },
+  { item: 'Compensación de sanciones iguales (RG-C02) y art. 45 (RG-R01)', impact: 'Combinadas sin compensación; correcciones reglamentarias sin validar.', close: 'Artículos y interpretaciones aplicables.' },
+  { item: 'Inferioridad natural, umbral y terminación administrativa (RG-D02, RG-T01)', impact: 'Un partido sin cinco elegibles falla con diagnóstico (ejecución inválida); no hay resumen de victoria normal.', close: 'Artículos de continuación con menos de cinco y de terminación.' },
+  { item: 'Tiro en vuelo e interferencia como familias propias', impact: 'El motor salta al siguiente acontecimiento; no hay estadística de esas situaciones.', close: 'Decisión de contenido y productor.' },
+  { item: 'Persistencia de suspensión y continuación desde snapshot', impact: 'Un partido suspendido solo existe como acta parcial de sesión.', close: 'Plataforma de guardado (entrega posterior).' },
+  { item: 'Política de asistencias de S09-03 cap. 6 sin auditar el PDF', impact: 'Criterio beM verificable con estados funcionales; extracto de ChatGPT, no lectura directa.', close: 'Lectura del capítulo 6 y estados «continuación de ventaja» y «desviación».' },
+];
+export const PENDING_MOTOR10 = [
+  { item: 'Lateralidad del mapa (Z03–Z10)', impact: 'Mapa con zonas aro/pintura/media/triple y sector desconocido; no hay izquierda/derecha.', close: 'Productor que registre lado del tiro.' },
+  { item: 'Organización defensiva efectiva por hecho', impact: 'Se lee por posesión desde plan y órdenes; los ataques que cruzan un cambio van a «mixta».', close: 'Registrar la organización activa en cada hecho de intento.' },
+  { item: 'Ocupación que limita ayuda (OB05) y disponibilidad de corte', impact: 'Se declaran como «no registrado»; no hay cifra.', close: 'Hecho compacto en el cálculo de ayuda y en las opciones de corte.' },
+  { item: 'Estado propio visible con exposición temporal', impact: 'Los informes no filtran por estado propio (energía/Forma) porque la exposición por tramo no se conserva.', close: 'Conservar el estado propio visible por intervalo.' },
+  { item: 'Asistencia: estados «continuación de ventaja» y «desviación»', impact: 'Un receptor con movimiento no recibe asistencia (creación propia); no se distingue continuación de ventaja.', close: 'Productor que informe de si el receptor creó una ventaja nueva.' },
+  { item: 'Recomendaciones fuera de REC10-01 y REC10-02', impact: 'No hay otras estrategias (no se amplía el asesor).', close: 'Encargo posterior.' },
+];
+export const LATER_DELIVERIES = [
+  { item: 'Población completa, generador y variantes de equipos/jugadores', where: 'MOTOR-11' },
+  { item: 'Simulación masiva, agregados de lotes y extracción ZIP completa', where: 'MOTOR-12' },
+  { item: 'Calibración y validación amplia; historial, temporada y percentiles', where: 'entregas posteriores del roadmap' },
+];
