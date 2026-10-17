@@ -1,6 +1,6 @@
 # Estado del proyecto
 
-Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANGELOG.md)). Última actualización: 2026-10-17, entrega MOTOR-14 (parcial).
+Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANGELOG.md)). Última actualización: 2026-10-17, entrega MOTOR-15.
 
 ## Qué hay realmente en el repositorio
 
@@ -8,6 +8,15 @@ Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANG
 - **Diseño funcional del motor y del primer laboratorio**, organizado por temas en [`motor/`](motor/README.md) (34 capítulos). Es **especificación**: está *definida*, no implementada.
 - **Copia original congelada** del funcional unificado y **exportado completo vigente** generado: ver [`historico/`](historico/README.md) y [`exportados/`](exportados/README.md).
 - **Utilidades documentales** en `scripts/docs/` (Python 3, librería estándar).
+
+## MOTOR-15 (ejecutado; coste NO alcanzado; pendiente de Dennis)
+
+- **Existe**: panel que abre con perfiles anteriores (tarjeta de compatibilidad y recuperación explícita; el error «reading 'policies'» venía de perfiles sin `coach`); técnicas/contadores, compensación y cola del art. 43, correcciones del art. 45, tiro pendiente (SEM15-TIR-01 = 0,35 s), interferencia condicionada (SEM15-INT-01..04), asistencias causales, estado propio por tramo y REC10-01/02; nivel `world-essential`, pool persistente de workers (1/2/4/auto); pestaña **Cierre**; paquetes de revisión (`out/motor15/`, fuera de Git).
+- **Cambio deportivo versionado** (`SEM-MOTOR15-20261017`, motor `0.15.0-MOTOR15`, `export/9`): referencia 83–98, 6 684 sorteos; con semillas a cero reproduce MOTOR-14. **Semillas sin calibrar.**
+- **Coste:** 100 partidos en ≈22,8 s con 4 workers frente al objetivo de 5 s (**no alcanzado**); 200 partidos ≈46 s, estimación no ejecutada.
+- **Límites:** consecuencias de interferencia provisionales; 45.4.x sin lectura directa; sin generación natural de técnicas; sin desvío de asistencia; fuentes FIBA ilegibles.
+- **Comprobado por Claude**: pruebas, `data:check`, comprobación documental, equivalencia, benchmark real (2 ejecuciones de cien), integración C15-01..06, auditorías y recorrido en Chromium. **Pendiente de Dennis**: recorrido manual, otros navegadores, Node 24. **No ejecutado**: 200 partidos reales y campaña de MOTOR-16.
+- Detalle: [`tecnico/motor15.md`](tecnico/motor15.md). Siguiente: MOTOR-16 (evaluación y calibración del mundo; preparado en `tecnico/evidencia-motor15/14-PENDIENTES-MOTOR16.md`, no ejecutado).
 
 ## MOTOR-14 (parcial; candidato con bloqueos, pendiente de Dennis)
 
