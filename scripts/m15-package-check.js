@@ -25,7 +25,7 @@ export function checkPackage(path) {
     const col = (n, c) => T[n]?.header.indexOf(c); const val = (n, r, c) => r[col(n, c)];
     const p5 = T['05-PARTIDOS.csv']; if (p5) {
       const ids = p5.rows.map((r) => val('05-PARTIDOS.csv', r, 'row_id')); add('05 sin row_id duplicados', new Set(ids).size === ids.length);
-      const bench = p5.rows.filter((r) => val('05-PARTIDOS.csv', r, 'kind') === 'benchmark100'); const keyOf = (r) => `${val('05-PARTIDOS.csv', r, 'kind')}|${val('05-PARTIDOS.csv', r, 'run')}|${val('05-PARTIDOS.csv', r, 'attempt_id')}`; add('05 sin intentos duplicados', new Set(p5.rows.map(keyOf)).size === p5.rows.length);
+      const bench = p5.rows.filter((r) => val('05-PARTIDOS.csv', r, 'kind') === 'benchmark100'); const keyOf = (r) => `${val('05-PARTIDOS.csv', r, 'kind')}|${val('05-PARTIDOS.csv', r, 'ref')}|${val('05-PARTIDOS.csv', r, 'run')}|${val('05-PARTIDOS.csv', r, 'attempt_id')}`; add('05 sin intentos duplicados', new Set(p5.rows.map(keyOf)).size === p5.rows.length);
       add('05 agenda del benchmark = 100', bench.length === 100 && man.counts.benchmark_scheduled === 100); const fin = bench.filter((r) => val('05-PARTIDOS.csv', r, 'exec_state') === 'terminada'); add('05 terminados = manifiesto', fin.length === man.counts.benchmark_finished);
       add('05 válidos = manifiesto', bench.filter((r) => val('05-PARTIDOS.csv', r, 'valid') === 'true').length === man.counts.benchmark_valid);
       add('05 un fallo/interrupción no tiene marcador ni cuenta como derrota', p5.rows.filter((r) => val('05-PARTIDOS.csv', r, 'exec_state') !== 'terminada').every((r) => val('05-PARTIDOS.csv', r, 'score_home') === '' && val('05-PARTIDOS.csv', r, 'score_away') === ''));

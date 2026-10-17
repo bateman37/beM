@@ -59,7 +59,7 @@ let lotTxt = await text(); const stopBtn = p.locator('button:has-text("Detener")
 if (hadStop) { await stopBtn.click().catch(() => {}); await p.waitForTimeout(2500); lotTxt = await text(); }
 step(7, 'Lotes', 'lote esencial con 2 workers; detener (no despacha nuevos y espera los activos)', /Esencial|esencial/.test(lotTxt) && /2/.test(lotTxt), `botones: ${btnTxt.slice(0, 6).join(' | ')} · ${lotTxt.replace(/\s+/g, ' ').match(/(En curso[^.]*\.|Detenido[^.]*\.|detenid[^.]*\.)/)?.[0] ?? ''}`.slice(0, 260));
 const contLote = p.locator('button:has-text("Continuar pendientes")').first(); if (await contLote.count()) { await contLote.click().catch(() => {}); }
-await p.waitForFunction(() => /completado|terminad|Completado/i.test(document.querySelector('#view')?.innerText ?? ''), null, { timeout: 120000 }).catch(() => {});
+await p.waitForFunction(() => /Completado/.test(document.querySelector('#view')?.innerText ?? ''), null, { timeout: 120000 }).catch(() => {});
 lotTxt = await text(); step(7, 'Lotes', 'continuar hasta completar; resultados y errores diferenciados', /completado|Completado/i.test(lotTxt), lotTxt.replace(/\s+/g, ' ').slice(0, 220));
 // 8. auditorías y cierre
 await tab('Auditorías'); const au = await text(); step(8, 'Auditorías', 'catálogo AUD01–32', /AUD01/.test(au) && /AUD32/.test(au), au.replace(/\s+/g, ' ').slice(0, 140));
