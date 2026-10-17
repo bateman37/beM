@@ -16,9 +16,10 @@ export const EXTENSION8_PATH = join(ROOT, 'data/match/motor08-seed-extension.jso
 export const EXTENSION9_PATH = join(ROOT, 'data/match/motor09-seed-extension.json');
 export const EXTENSION10_PATH = join(ROOT, 'data/match/motor10-seed-extension.json');
 export const EXTENSION11_PATH = join(ROOT, 'data/match/motor11-seed-extension.json');
+export const EXTENSION12_PATH = join(ROOT, 'data/match/motor12-seed-extension.json');
 export const PLAYERS_PATH = join(ROOT, 'data/fixtures/reference-players-MOTOR01.csv');
 
-// `profile` es el perfil EFECTIVO (SEM de MOTOR-01 + extensiones SEM de MOTOR-02 a MOTOR-11); `baseProfile` es el original sin tocar.
+// `profile` es el perfil EFECTIVO (SEM de MOTOR-01 + extensiones SEM de MOTOR-02 a MOTOR-12); `baseProfile` es el original sin tocar.
 export function loadData() {
   const baseProfile = JSON.parse(readFileSync(PROFILE_PATH, 'utf8'));
   const extension = JSON.parse(readFileSync(EXTENSION_PATH, 'utf8'));
@@ -31,6 +32,7 @@ export function loadData() {
   const extension9 = JSON.parse(readFileSync(EXTENSION9_PATH, 'utf8'));
   const extension10 = JSON.parse(readFileSync(EXTENSION10_PATH, 'utf8'));
   const extension11 = JSON.parse(readFileSync(EXTENSION11_PATH, 'utf8'));
+  const extension12 = JSON.parse(readFileSync(EXTENSION12_PATH, 'utf8'));
   const players = parsePlayersCsv(readFileSync(PLAYERS_PATH, 'utf8'), baseProfile);
-  return { profile: applyExtension(baseProfile, extension, extension3, extension4, extension5, extension6, extension7, extension8, extension9, extension10, extension11), baseProfile, extension, extension3, extension4, extension5, extension6, extension7, extension8, extension9, extension10, extension11, players };
+  return { profile: applyExtension(baseProfile, extension, extension3, extension4, extension5, extension6, extension7, extension8, extension9, extension10, extension11, extension12), baseProfile, extension, extension3, extension4, extension5, extension6, extension7, extension8, extension9, extension10, extension11, extension12, players };
 }

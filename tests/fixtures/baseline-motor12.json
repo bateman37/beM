@@ -1,0 +1,30 @@
+{
+ "20261016": {
+  "score": [
+   83,
+   103
+  ],
+  "periodScores": [
+   [
+    22,
+    30
+   ],
+   [
+    20,
+    30
+   ],
+   [
+    22,
+    20
+   ],
+   [
+    19,
+    23
+   ]
+  ],
+  "draws": 6505,
+  "sha256": "9fb4b1e8ec7de7196fccecd8beabbca4017acd5d8717f0002f42551662b4ef71",
+  "trajectorySha256": "ed353769858813fe7ae3bedd271946c6f7c0aef7885ce00e2bbe27d0acc13bc5",
+  "note": "sha256 = proyección deportiva con la identidad de perfil de MOTOR-12 (cambia solo por el id del perfil en las decisiones del entrenador, igual que en MOTOR-10 y MOTOR-11); trajectorySha256 = huella de trayectoria sin identidad de perfil (src/batch/fingerprint.js), la que NO cambia con renombrados decorativos."
+ }
+}
