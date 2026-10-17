@@ -1,6 +1,7 @@
 // Conciliación de la capa analítica (MOTOR-10): comprueba que las tablas y consultas derivadas CUADRAN con el acta y con los hechos. Prueba consistencia de la lectura,
 // no conformidad normativa. Una desviación se muestra; no se corrige alterando el acta.
 import { analyze } from './index.js';
+import { groupReading } from './presence.js';
 
 export function reconcileAnalysis(res) {
   const a = analyze(res, { audience: 'diagnostic', team: 0 }); const ix = a.ix; const acta = ix.acta; const checks = [];
@@ -18,7 +19,10 @@ export function reconcileAnalysis(res) {
     add(`AN07-${t}`, 'presencia', 'minutos de quintetos = tiempo total de juego', Math.round(ix.totalTenths) / 600, Math.round(lineupMin * 600) / 600);
     const nonAdmin = acta.pointEvents.filter((p) => p.team === t && p.kind !== 'admin').reduce((s, p) => s + p.pts, 0);
     add(`AN09-${t}`, 'presencia', 'puntos a favor sumados por quintetos', nonAdmin, lt.reduce((s, r) => s + r.ptsFor, 0));
-    const partial = 0; add(`AN08-${t}`, 'posesiones completas y mixtas', 'cada posesión cuenta una vez en la unidad del equipo', ix.possessions.length, lt.reduce((s, r) => s + r.ownComplete + r.rivalComplete + r.mixed, 0) + partial);
+    // MOTOR-12: una posesión que cruza un cambio de quinteto es «mixta» para CADA quinteto implicado (el que sale y el que entra): la tabla de cada quinteto la muestra, y es correcto. Lo que debe
+    // cuadrar es que CADA posesión aparezca al menos una vez como completa o mixta; se cuentan posesiones DISTINTAS (antes se sumaban las filas y una posesión mixta para dos quintetos contaba dos veces).
+    const seen = new Set(); for (const l of (ix.res.lineups ?? []).filter((x) => x.team === t)) { const g = groupReading(ix, l.key.split('|')); for (const side of ['own', 'rival']) for (const k of ['complete', 'mixed']) for (const pp of g.with[side][k]) seen.add(pp.id); }
+    add(`AN08-${t}`, 'posesiones completas y mixtas', 'cada posesión aparece al menos una vez como completa o mixta de algún quinteto del equipo (posesiones distintas)', ix.possessions.length, seen.size);
   }
   add('AN04', 'margen', 'diferencia del tanteo de cancha', true, a.margin().ok);
   const e = a.ev(); const last = e.curve[e.curve.length - 1]; add('AN12', 'evolución', 'marcador final de la curva', acta.score, last.score);

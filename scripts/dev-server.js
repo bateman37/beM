@@ -5,16 +5,20 @@ import { readFile } from 'node:fs/promises';
 import { join, normalize, extname, sep } from 'node:path';
 import { ROOT } from './node-data.js';
 import { appLine } from '../src/version.js';
+import { BatchService } from '../src/batch/api.js';
 
 const PORT = Number(process.env.PORT ?? 5173);
 const HOST = process.env.HOST ?? '127.0.0.1';
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8', '.csv': 'text/csv; charset=utf-8', '.md': 'text/markdown; charset=utf-8', '.svg': 'image/svg+xml' };
 const ALLOWED = ['src', 'data'];
 
-export function createLabServer() {
-  return createServer(async (req, res) => {
+export function createLabServer({ batchRoot = undefined } = {}) {
+  // MOTOR-12: servicio local de lotes (ejecución en hilo de trabajo, persistencia progresiva en out/batches/, descargas). Se crea de forma perezosa en la primera petición /api/batch.
+  let batch = null; const service = () => (batch ??= new BatchService({ root: batchRoot }));
+  const server = createServer(async (req, res) => {
     try {
       let path = decodeURIComponent(new URL(req.url, 'http://x').pathname);
+      if (path.startsWith('/api/batch/')) { await service().handle(req, res, path); return; }
       if (path === '/' || path === '/index.html') path = '/src/lab/index.html';
       const file = normalize(join(ROOT, path));
       const rel = file.slice(ROOT.length + 1).split(sep);
@@ -24,6 +28,9 @@ export function createLabServer() {
       res.end(body);
     } catch { res.writeHead(404).end('No encontrado'); }
   });
+  server.on('close', () => { batch?.close(); });
+  server.batchService = service;
+  return server;
 }
 
 if (process.argv[1] && process.argv[1].endsWith('dev-server.js')) {
