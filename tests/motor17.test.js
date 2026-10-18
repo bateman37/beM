@@ -85,8 +85,8 @@ test('M17·5 sensibilidad: el tope de cada término se registra, la reconstrucci
   const { res } = play(natural('EQ01', 'EQ02', 3));
   let n = 0; let bad = 0;
   for (const e of res.events) for (const c of e.calc ?? []) for (const t of c.terminos ?? []) {
-    if (!/^receta:TAR/.test(c.label)) continue; n += 1; assert.equal(typeof t.tope, 'number', `${c.label}: término sin tope`);
-    if (Math.abs(effectiveAbility(profile, t.base, t.energia, t.cap, t.tope) - t.efectiva) > 3e-3) bad += 1; // tolerancia = redondeo registrado (energía a 2 decimales, efectiva a 3)
+    if (!/^receta:/.test(c.label)) continue; n += 1; assert.equal(typeof t.tope, 'number', `${c.label}: término sin tope`);
+    if (/^receta:TAR/.test(c.label) && Math.abs(effectiveAbility(profile, t.base, t.energia, t.cap, t.tope) - t.efectiva) > 3e-3) bad += 1; // tolerancia = redondeo registrado (energía a 2 decimales, efectiva a 3)
   }
   assert.ok(n > 500); assert.equal(bad, 0, 'la operación pura con el tope registrado reproduce el valor efectivo (sin reconstrucción sin tope)');
   const mk = (over) => ({ cap: 'TEC08', base: 30, eff: 30, energia: 100, taskMax: 3, topeRegistrado: true, stratum: 'TAR07.attack|passer', gdec: 'g', decision_id: 'd', event_id: 'e', label: 'receta:TAR07.attack', player: 'p', rol: 'passer', peso: 0.8, valor: 28.4, terminos: [{ rol: 'passer', jugador: 'p', cap: 'TEC08', base: 30, efectiva: 30, peso: 0.8, energia: 100 }, { rol: 'passer', jugador: 'q', cap: 'MEN03', base: 20, efectiva: 20, peso: 0.2, energia: 100 }], ...over });

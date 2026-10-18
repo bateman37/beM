@@ -38,8 +38,8 @@ P.libertyAndReading = function libertyAndReading(team, decider) {
   const q = (sel.readingMix.MEN02 * e2 + sel.readingMix.MEN03 * m3 - 1) / 29;
   // MOTOR-14 (FIS/MEN02/MEN03): entradas de q registradas desde el mismo cálculo; sin sorteos ni cálculo adicional. MEN03 conserva su valoración efectiva tras la presión.
   if (this.opts.detail === 'full') this.note('receta:seleccion.lectura', { valor: round(sel.readingMix.MEN02 * e2 + sel.readingMix.MEN03 * m3, 4), q: round(clamp(q, 0, 1), 5), penalizacionPresion: round(pen, 4), importanciaYTension: round(this.pressureNow().P, 4), libertad: round(L, 4), terminos: [
-    { rol: 'decisor', jugador: decider, cap: 'MEN02', base: this.pl[decider].abilities.MEN02, efectiva: round(e2, 3), peso: sel.readingMix.MEN02, energia: round(this.ps[decider].energy, 2) },
-    { rol: 'decisor', jugador: decider, cap: 'MEN03', base: this.pl[decider].abilities.MEN03, efectiva: round(m3, 3), peso: sel.readingMix.MEN03, energia: round(this.ps[decider].energy, 2), efectivaSinPresion: round(e3, 3) }] });
+    { rol: 'decisor', jugador: decider, cap: 'MEN02', base: this.pl[decider].abilities.MEN02, efectiva: round(e2, 3), peso: sel.readingMix.MEN02, energia: round(this.ps[decider].energy, 2), tope: this.penFor('MEN02', null) },
+    { rol: 'decisor', jugador: decider, cap: 'MEN03', base: this.pl[decider].abilities.MEN03, efectiva: round(m3, 3), peso: sel.readingMix.MEN03, energia: round(this.ps[decider].energy, 2), tope: this.penFor('MEN03', null), efectivaSinPresion: round(e3, 3) }] });
   return { L, q: clamp(q, 0, 1), F, I, team };
 };
 const normalize = (arr, f) => { const s = arr.reduce((a, x) => a + f(x), 0); return arr.map((x) => (s > 0 ? f(x) / s : 0)); };
