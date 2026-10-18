@@ -2,6 +2,15 @@
 
 Registro breve de entregas. Una entrada por entrega; las más recientes primero.
 
+## MOTOR-17 — Ajustes, rendimiento y auditoría de cierre — 2026-10-18
+
+- **Crédito y registro:** criterio único de robo por pérdida viva recuperada con control en las rutas organizada, avance, saque y balón suelto (solo estadístico; `EST/ACTA-MOTOR17-R1`); cierre de registro de las cadenas de saque (9 → 0 abiertas); identidad global en la auditoría (`matches`, contextos), `team_index` explícito, `tope` registrado en cada término de receta (sensibilidad exacta), `resumen.json` de auditoría.
+- **Defecto hallado con la candidata:** responsabilidad obsoleta tras un relevo en la posesión abortaba un partido de cien; corregido sin cambiar los que ya terminaban.
+- **Rendimiento:** optimización exacta (poda, memo en seco, claves sin cadenas, huella sin asignaciones; ≈ 7 %, salida idéntica); objetivo de cien en cinco segundos **no alcanzado** (≈ 30 s); cien y doscientos medidos de verdad en proceso nuevo.
+- **Propuesta numérica (sin aceptar):** `energy.costPerLiveMinute` 2 → 3 (C17-01) / 3,5 (C17-02, elegida para el cierre antes de abrir resultados); Panel con borrador no activo.
+- **Campaña de cierre** `MOTOR17-CIERRE-20261018` (R0 frente a R17, 472 ejecuciones + 600 de coste) y paquetes para ChatGPT fuera de Git.
+- Motor `0.17.0-MOTOR17`, `SEM-MOTOR17-20261018`, export `beM-match-export/9` sin cambio de esquema; referencia 83–98 / 6.684 sorteos sin cambio con la base. **Pendiente de Dennis.** Ver [`docs/tecnico/motor17.md`](docs/tecnico/motor17.md).
+
 ## MOTOR-15B — Cierre de MOTOR-15 y diagnóstico técnico de robos — 2026-10-18
 
 - **Norma:** RG-I03 administra el punto concedido, la técnica de categoría 2 al defensor y un libre adicional real, con una única reanudación; art. 45 numerado (45.4.1–45.4.8, 45.6). Procedencia: síntesis de ChatGPT; sin lectura directa de Claude.

@@ -40,7 +40,7 @@ for (const cr of crs) {
   const st = ctl.status(cr.batchId, { rows: true }); const snap = ctl.snapshot(cr.batchId); for (const k of Object.keys(counters)) counters[k] += st.counters[k] ?? 0;
   for (const m of st.matches) {
     const info = snap.info.get(m.match_id); const att = info.canonical ?? info.attempts[info.attempts.length - 1]; const t = att?.timings ?? {}; const coord = att?.coordinator ?? {};
-    for (const k of Object.keys(per)) if (t[k] != null) per[k].push(t[k]);
+    for (const k of Object.keys(per)) { const val = t[`${k}_ms`] ?? t[k]; if (val != null) per[k].push(val); }
     const f = (att?.files ?? []).find((x) => x.path.startsWith('esencial/')); let es = null;
     if (f) { const p = join(store.dir(cr.batchId), 'intentos', m.match_id, att.attempt_id, f.path); const buf = readFileSync(p); bytes += buf.length; es = JSON.parse(buf.toString('utf8')); eff.possessions += es.acta.possessions?.length ?? es.acta.possessions ?? 0; eff.events += es.integrity.events ?? 0; eff.steps += es.integrity.steps ?? 0; eff.draws += es.integrity.sporting_draws ?? 0; }
     rows.push({ lot: cr.batchId, match_id: m.match_id, attempt_id: att?.attempt_id, valid: !!att?.valid, exec_ms: att?.exec_ms ?? null, wall_ms_coordinator: coord.wall_ms ?? null, concurrency: coord.concurrency ?? null, score: es ? es.result.court_score : null, fp: es?.integrity?.trajectory_fp ?? null, draws: es?.integrity?.sporting_draws ?? null, seed: es?.identity?.seed ?? null });

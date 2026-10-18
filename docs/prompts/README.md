@@ -29,6 +29,7 @@ Directorio de los encargos a Claude Code. **El texto original de un prompt ejecu
 | MOTOR-15 | Cierre funcional, compatibilidad y rendimiento del mundo: panel con perfiles anteriores, técnicas/compensación/art. 45, tiro pendiente e interferencia, asistencias causales, estado por tramo, REC10, nivel `world-essential`, workers, benchmark y paquetes | [`MOTOR-15-cierre-funcional-y-rendimiento-del-mundo.md`](MOTOR-15-cierre-funcional-y-rendimiento-del-mundo.md) · [recorrido manual](MOTOR-15-recorrido-manual.md) | Ejecutado (**objetivo de coste NO alcanzado**), pendiente de revisión de Dennis | 2026-10-17 (intento 1) | — |
 | MOTOR-15B | Cierre de MOTOR-15 (RG-I03, art. 45, procedencia de auditorías y equivalencia, paquetes) y diagnóstico técnico de robos | **Ejecutado** (pendiente de Dennis) | [MOTOR-15B-cierre-y-diagnostico-de-robos.md](MOTOR-15B-cierre-y-diagnostico-de-robos.md) · [recorrido manual](MOTOR-15B-recorrido-manual.md) |
 | MOTOR-16 | Campaña masiva y extracción de evidencia para ChatGPT (3.732 ejecuciones con las herramientas existentes; sin corregir ni calibrar) | [MOTOR-16-campana-y-extraccion-para-chatgpt.md](MOTOR-16-campana-y-extraccion-para-chatgpt.md) | **Ejecutado** (campaña completa; análisis pendiente en ChatGPT) | 2026-10-18 · [ficha](#motor-16) | — |
+| MOTOR-17 | Ajustes, rendimiento y auditoría de cierre: crédito de robo y registro, rendimiento exacto, candidatas numéricas acotadas y campaña comparativa R0/R17 con paquetes para ChatGPT | [MOTOR-17-ajustes-rendimiento-y-auditoria-de-cierre.md](MOTOR-17-ajustes-rendimiento-y-auditoria-de-cierre.md) · [recorrido manual](MOTOR-17-recorrido-manual.md) | **Ejecutado** (propuesta numérica sin aceptar; pendiente de Dennis; objetivo de coste NO alcanzado) | 2026-10-18 · [ficha](#motor-17) | — |
 
 ## Fichas de ejecución
 
@@ -281,3 +282,17 @@ Comprobación local de enlaces: hecha por Claude. Presentación en GitHub: no co
 | Comprobaciones realizadas | `batch:check` sobre 64 paquetes diagnóstico/reducido (todos correctos), `audit:check` del paquete AUD, SHA-256 y parseo de los 3.504 ficheros esenciales, CRC y SHA-256 de las 14 partes. No ejecutado: suite completa, navegador, benchmark de cien. |
 | Limitaciones | Los esenciales no conservan sorteos con ordinal ni cálculo por decisión (solo los 224 diagnósticos); `batch:check` no cubre lotes esenciales ni el contenedor externo. |
 | Pendientes | Análisis en ChatGPT y decisiones de MOTOR-17. Nada se ha calibrado ni cambiado. |
+
+### MOTOR-17
+
+| Campo | Valor |
+|---|---|
+| Objetivo | Implementar las recomendaciones aceptadas tras MOTOR-16 (crédito de robo, cadenas de saque, identidades y lectores, sensibilidad, rendimiento exacto, rotaciones/energía con hasta dos candidatas) y cerrar con la campaña comparativa `MOTOR17-CIERRE-20261018` (R0 frente a R17) y sus paquetes para ChatGPT. |
+| Medio de entrada del texto | Archivo `.md` adjunto (`beM-PROMPT-MOTOR-17-AJUSTES-RENDIMIENTO-Y-AUDITORIA-DE-CIERRE.md`; prefijo añadido por la subida). Copia archivada byte a byte: [`MOTOR-17-ajustes-rendimiento-y-auditoria-de-cierre.md`](MOTOR-17-ajustes-rendimiento-y-auditoria-de-cierre.md). |
+| Fecha real de ejecución | 2026-10-18 · intento 1 (con una revisión B de R17 documentada en [`../tecnico/motor17.md`](../tecnico/motor17.md) §9) |
+| Rama | `claude/busy-edison-b1fmnc` (la designada para la sesión; contiene también MOTOR-15/15B/16, no fusionados en `main`). |
+| Código que produjo la evidencia | R0 `6a6814c` (MOTOR-15B); R17 = último commit de la rama (ver `evidencia-motor17/RESUMEN-OPERATIVO.md` §1); motor `beM-motor-0.17.0-MOTOR17`. |
+| Resultado breve | Correcciones demostradas, optimización exacta, propuesta `energy.costPerLiveMinute` 2 → 3 / 3,5 (C17-02 elegida para el cierre antes de abrir resultados, sin aceptación deportiva), 472 ejecuciones de cierre válidas + 600 de coste, auditorías por versión y paquetes `MOTOR-17-*` fuera de Git (`out/motor17/entrega-final/`). |
+| Comprobaciones realizadas | Ver [`../tecnico/evidencia-motor17/RESUMEN-OPERATIVO.md`](../tecnico/evidencia-motor17/RESUMEN-OPERATIVO.md) §9. No ejecutado: otros navegadores, Node 24, lectura directa de FIBA, recorrido humano. |
+| Limitaciones | Objetivo de 5 s no alcanzado; crédito de recogida sin intervención revisable; H11/H12 sin resolver; dos semillas por mecanismo no certifican efectos universales. |
+| Pendientes | Validación de Dennis ([recorrido manual](MOTOR-17-recorrido-manual.md)); análisis externo y aceptación de la propuesta numérica. |
