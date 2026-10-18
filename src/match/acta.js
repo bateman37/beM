@@ -1,11 +1,11 @@
 // Acta completa de MOTOR-09 (EST01, EST02, EST04): proyección determinista desde los HECHOS del encuentro y la política versionada.
 // No hay acumuladores paralelos: marcador, acta individual y colectiva, parciales, series, finalizaciones F, posesiones, presencia y más-menos salen
 // de la misma lectura ordenada por la secuencia estable de hechos. Una consulta no consume azar ni concede créditos nuevos.
-export const ACTA_POLICY_ID = 'ACTA-MOTOR15B-R1'; // MOTOR-15B: robo por balón suelto ganado en disputa real (antes sin crédito). MOTOR-15: ACTA-MOTOR15-R1 (asistencias con productor causal). Un acta anterior no se reinterpreta con esta política
+export const ACTA_POLICY_ID = 'ACTA-MOTOR17-R1'; // MOTOR-17: robo con criterio único por pérdida viva recuperada con control (todas las rutas). MOTOR-15B: ACTA-MOTOR15B-R1 (solo balón suelto ganado en disputa). MOTOR-15: ACTA-MOTOR15-R1 (asistencias con productor causal). Un acta anterior no se reinterpreta con esta política
 
 const ATTACK_TYPES = new Set(['attempt', 'foul', 'free_throw', 'loose_ball', 'rebound', 'reorganization', 'throw_in']);
 const POSSESSION_CLOSE = {
-  madeFG: 'canasta', ftMade: 'último libre anotado', dreb: 'rebote defensivo', steal: 'pérdida con robo', liveTurnover: 'pérdida viva sin robo', deadTurnover: 'pérdida o infracción con balón muerto',
+  madeFG: 'canasta', ftMade: 'último libre anotado', dreb: 'rebote defensivo', steal: 'pérdida con robo', liveTurnover: 'pérdida viva recuperada por la defensa (con o sin robo acreditado)', deadTurnover: 'pérdida o infracción con balón muerto',
   looseLost: 'balón suelto perdido', blockRecovery: 'tapón con control defensivo', periodEnd: 'fin de periodo con ataque activo', blockedOOB: 'tapón fuera',
 };
 const pct = (m, a) => (a > 0 ? m / a : null);

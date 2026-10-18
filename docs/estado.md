@@ -1,6 +1,6 @@
 # Estado del proyecto
 
-Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANGELOG.md)). Última actualización: 2026-10-18, entrega MOTOR-15B.
+Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANGELOG.md)). Última actualización: 2026-10-18, entrega MOTOR-17.
 
 ## Qué hay realmente en el repositorio
 
@@ -8,6 +8,20 @@ Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANG
 - **Diseño funcional del motor y del primer laboratorio**, organizado por temas en [`motor/`](motor/README.md) (34 capítulos). Es **especificación**: está *definida*, no implementada.
 - **Copia original congelada** del funcional unificado y **exportado completo vigente** generado: ver [`historico/`](historico/README.md) y [`exportados/`](exportados/README.md).
 - **Utilidades documentales** en `scripts/docs/` (Python 3, librería estándar).
+
+## MOTOR-17 (ejecutado; campaña de cierre y paquetes entregados; propuesta numérica SIN aceptar; pendiente de Dennis)
+
+- **Existe**: criterio de robo único por pérdida viva recuperada con control (`EST/ACTA-MOTOR17-R1`; solo estadístico), cierre de registro de las cadenas de saque (9 → 0 abiertas), identidad global en la auditoría (`matches` 2 → 12), `tope` registrado en cada término de receta (sensibilidad **exacta** en las 2.304 filas de R17), `team_index` explícito, `resumen.json` de auditoría, optimización exacta del coste (`P17`), corrección de una excepción latente (responsabilidad obsoleta tras un relevo en la posesión), candidatas **C17-01/C17-02** en el Panel (borrador no activo) y vista Cierre con descarga real. Detalle: [`tecnico/motor17.md`](tecnico/motor17.md) · [evidencia](tecnico/evidencia-motor17/00-LEEME.md) · [recorrido manual](prompts/MOTOR-17-recorrido-manual.md).
+- **Cambio acotado y versionado** (motor `0.17.0-MOTOR17`, `SEM-MOTOR17-20261018`, solo crédito): ningún coeficiente cambia. Referencia `20261016` con la base: 83–98 y 6.684 sorteos (sin cambio). **Propuesta numérica** (fuera del perfil efectivo): `energy.costPerLiveMinute` 2 → 3 (C17-01) o 3,5 (C17-02, **elegida para R17 antes de abrir la campaña**); sin aceptación deportiva.
+- **Campaña `MOTOR17-CIERRE-20261018`**: 472 ejecuciones de cierre (R0 y R17: 224 de comparación + 12 diagnósticos por versión), todas terminadas y válidas, y 600 de coste; auditorías AUD01–32 por versión; paquetes `MOTOR-17-revision-rapida.zip`, `MOTOR-17-indice-partes.json` y partes de evidencia detallada fuera de Git (`out/motor17/entrega-final/`). Cifras exactas: [`evidencia-motor17/RESUMEN-OPERATIVO.md`](tecnico/evidencia-motor17/RESUMEN-OPERATIVO.md).
+- **Coste**: objetivo de cien en cinco segundos **NO alcanzado** (≈ 30 s con cuatro workers; doscientos medidos de verdad); mejora exacta de la optimización ≈ 7 % con salida idéntica; variación de ±10 % entre pasadas del mismo trabajo.
+- **Comprobado por Claude**: `npm test` 208/208, `data:check`, comprobador documental (en copia limpia), equivalencia A17f↔P17 (completo y mínimo) y `npm run equivalence` de ambas versiones, recorrido Chromium (consola 0, red 0), recuperación de perfil anterior, verificación mecánica de la entrega. **Pendiente de Dennis**: recorrido manual ([guía](prompts/MOTOR-17-recorrido-manual.md)), aceptación de MOTOR-08…17 y de la propuesta numérica. **No ejecutado**: otros navegadores, Node 24, lectura directa de FIBA, calibración externa.
+- **Límites**: el crédito de recogida sin intervención es una interpretación de producto revisable (función aislada); H11/H12 (reloj/faltas, eficiencia de tiro) sin resolver y sin ajuste; dos semillas por mecanismo no certifican efectos universales.
+
+## MOTOR-16 (campaña ejecutada; análisis pendiente en ChatGPT)
+
+- **Qué es**: ejecución y extracción de datos, sin cambio de código ni de deporte. Estudio `MOTOR16-EVIDENCIA-20261018` sobre el commit de código `109b9f8` (solo documental sobre `6a6814c`), motor `0.15.1-MOTOR15B`: 3.732 ejecuciones físicas (A 2.640, B 384, C 384, D 80, 224 diagnósticos, 20 técnicas), todas terminadas y válidas. Paquetes `MOTOR-16-*` fuera de Git (`out/motor16/entrega-final/`). Ficha: [`prompts/README.md`](prompts/README.md#motor-16).
+- **No hecho**: análisis, calibración, candidata ni MOTOR-17; el motor sigue siendo MOTOR-15B.
 
 ## MOTOR-15B (ejecutado; cierre de MOTOR-15 y diagnóstico de robos; pendiente de Dennis)
 

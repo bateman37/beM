@@ -1,0 +1,25 @@
+{
+ "seedExtensionId": "SEM-MOTOR17-20261018",
+ "status": "SEM: provisional, no calibrado. Solo CRÉDITO estadístico (criterio compartido de robo por pérdida viva recuperada con control, FIBA Statisticians' Manual 2024 §7); ningún coeficiente deportivo cambia. Las candidatas numéricas C17-01/C17-02 NO forman parte de esta extensión ni del perfil efectivo: son filas explícitas aparte (data/match/motor17-candidates.json) y su activación es siempre una acción explícita de Dennis.",
+ "basedOn": "SEM-MOTOR01-20261016",
+ "origin": "Encargo MOTOR-17 §5: criterio estadístico verificado por ChatGPT el 18/10/2026 sobre FIBA Statisticians' Manual 2024 v1.0, §7, p. PDF 24 (síntesis; Claude sin lectura directa del documento).",
+ "additions": {
+  "regulation.sources.12": {
+   "id": "M17-01",
+   "title": "Encargo MOTOR-17 §5.1 (síntesis de FIBA Statisticians' Manual 2024 v1.0, §7, p. PDF 24)",
+   "url": "docs/prompts/MOTOR-17-ajustes-rendimiento-y-auditoria-de-cierre.md",
+   "use": "Criterio de crédito de robo: recogida controlada tras error ofensivo, primer desvío, balón muerto y exclusiones.",
+   "access": "Verificado por ChatGPT el 18/10/2026 (https://assets.fiba.basketball/image/upload/documents-corporate-fiba-statisticians-manual-2024.pdf). Claude: no hay lectura directa del documento."
+  }
+ },
+ "replacements": {
+  "statsPolicy.id": "EST-MOTOR17-R1",
+  "statsPolicy.families.2.reading": "convención beM; MOTOR-17 aplica el criterio de robo del Statisticians' Manual 2024 §7 (síntesis verificada por ChatGPT el 18/10/2026; sin lectura directa de Claude)",
+  "statsPolicy.families.2.rule": "La pérdida se atribuye al sujeto responsable resuelto (pasador, manejador, infractor o equipo). El robo se acredita con UN criterio compartido por todas las rutas (interacción organizada, avance presionado, saque forzado y balón suelto): con balón VIVO que la defensa recupera con control, al interceptor que inició el desvío si hubo intento de intervención, o al recuperador resuelto si el error ofensivo no tuvo intervención previa (recogida controlada). Todo robo comparte hecho con una pérdida individual rival y no se duplica. Balón muerto, violación, falta ofensiva o recuperador sin defensor resuelto (sorteo de recuperador) no acreditan robo: no se fabrica un autor. El crédito es solo estadístico: no cambia la transición, el origen de la posesión siguiente ni el estado del partido."
+ },
+ "replacementNotes": {
+  "statsPolicy.id": "MOTOR-17: política de crédito con versión propia; los partidos anteriores no se reinterpretan",
+  "statsPolicy.families.2.reading": "MOTOR-17 §5",
+  "statsPolicy.families.2.rule": "MOTOR-17 §5: criterio de robo compartido por todas las rutas; sin cambiar ninguna probabilidad ni transición"
+ }
+}

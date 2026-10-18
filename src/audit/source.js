@@ -28,7 +28,7 @@ export class BatchSource {
   // Lista canónica (último intento terminado de cada ejecución lógica) con sus claves de relación; el reparto caso/variante sale de la agenda congelada.
   attempts() {
     const ex = new Map(); for (const e of this.lote.agenda ?? []) ex.set(e.match_id, e);
-    return [...this.matches.values()].map((a) => { const e = ex.get(a.match_id) ?? {}; return { match_id: a.match_id, attempt_id: a.attempt_id, case_id: e.case_id ?? null, variant_id: e.variant_id ?? null, pair_id: e.pair_id ?? null, level: a.record_level, valid: !!a.valid, facts: a.facts, files: a.files, counts: a.counts, exec_ms: a.exec_ms, engine_version: a.engine_version, record: a }; });
+    return [...this.matches.values()].map((a) => { const e = ex.get(a.match_id) ?? {}; return { batch_id: this.batchId, match_id: a.match_id, attempt_id: a.attempt_id, case_id: e.case_id ?? null, variant_id: e.variant_id ?? null, pair_id: e.pair_id ?? null, level: a.record_level, valid: !!a.valid, facts: a.facts, files: a.files, counts: a.counts, exec_ms: a.exec_ms, engine_version: a.engine_version, record: a }; });
   }
   verifyIntegrity() {
     const problems = []; let files = 0; let bytes = 0;
@@ -65,7 +65,7 @@ export class PackageSource {
   }
   read(p, path) { if (!p.has(path)) return null; return rowsAsObjects(parseCsv(p.read(path).toString('utf8'))); }
   attempts() {
-    return this.matches.filter((m) => m.exec_state === 'terminada').map((m) => ({ match_id: m.match_id, attempt_id: m.attempt_id, case_id: m.case_id, variant_id: m.variant_id, pair_id: m.pair_id, level: m.record_level, valid: m.valid === 'true', facts: { score_home: num(m.score_home), score_away: num(m.score_away), draws: num(m.draws), events: num(m.events), possessions: num(m.possessions), trajectory_fp: m.trajectory_fp, reconciliation_ok: m.reconciliation_ok === 'true', analysis_ok: m.analysis_ok === 'true' }, _p: m._p, files: null }));
+    return this.matches.filter((m) => m.exec_state === 'terminada').map((m) => ({ batch_id: m.batch_id ?? null, match_id: m.match_id, attempt_id: m.attempt_id, case_id: m.case_id, variant_id: m.variant_id, pair_id: m.pair_id, level: m.record_level, valid: m.valid === 'true', facts: { score_home: num(m.score_home), score_away: num(m.score_away), draws: num(m.draws), events: num(m.events), possessions: num(m.possessions), trajectory_fp: m.trajectory_fp, reconciliation_ok: m.reconciliation_ok === 'true', analysis_ok: m.analysis_ok === 'true' }, _p: m._p, files: null }));
   }
   verifyIntegrity() { const r = verifySet(this.providers); return { ok: r.ok, files: null, bytes: null, problems: r.problems ?? [], method: `comprobador de paquete (${r.checks?.length ?? 0} controles)`, checks: r.checks?.map((c) => ({ id: c.id, status: c.status })) }; }
   stream(a, name) { const path = `${STREAMS[name].dir}/${STREAMS[name].prefix}-${a.match_id}--${a.attempt_id}.jsonl`; const p = a._p; if (p.has(path)) return p.read(path); const m = this.parts.find((x) => x.p.has(path)); return m ? m.p.read(path) : null; }

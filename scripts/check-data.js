@@ -4,7 +4,7 @@
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { join } from 'node:path';
-import { ROOT, PROFILE_PATH, PLAYERS_PATH, EXTENSION_PATH, EXTENSION3_PATH, EXTENSION4_PATH, EXTENSION5_PATH, EXTENSION6_PATH, EXTENSION7_PATH, EXTENSION8_PATH, EXTENSION9_PATH, EXTENSION10_PATH, EXTENSION11_PATH, EXTENSION12_PATH, EXTENSION13_PATH, EXTENSION14_PATH, EXTENSION15_PATH, EXTENSION15B_PATH, loadData } from './node-data.js';
+import { ROOT, PROFILE_PATH, PLAYERS_PATH, EXTENSION_PATH, EXTENSION3_PATH, EXTENSION4_PATH, EXTENSION5_PATH, EXTENSION6_PATH, EXTENSION7_PATH, EXTENSION8_PATH, EXTENSION9_PATH, EXTENSION10_PATH, EXTENSION11_PATH, EXTENSION12_PATH, EXTENSION13_PATH, EXTENSION14_PATH, EXTENSION15_PATH, EXTENSION15B_PATH, EXTENSION17_PATH, CANDIDATES17_PATH, loadData } from './node-data.js';
 import { validateProfileAndFixtures, validateExtension, applyExtension } from '../src/match/data.js';
 import { buildExtension11, serialize } from './build-motor11-data.js';
 import { referenceTeams } from '../src/population/reference.js';
@@ -245,6 +245,38 @@ export function checkMotor15(extension15, profile14, profile) {
 
 // MOTOR-15B: solo datos normativos (RG-I03, numeración del art. 45). Ningún coeficiente deportivo cambia: el perfil efectivo es idéntico al de MOTOR-15 salvo `regulation` y `extensions`/`effectiveId`.
 const M15B_REPLACED = ['regulation.corrections', 'regulation.matrix.18', 'regulation.matrix.22', 'regulation.version', 'statsPolicy.families.2.reading', 'statsPolicy.families.2.rule', 'statsPolicy.id'];
+// MOTOR-17: solo CRÉDITO estadístico (criterio compartido de robo). Ningún coeficiente deportivo cambia: el perfil efectivo es idéntico al de MOTOR-15B salvo `regulation.sources`, `statsPolicy` y `extensions`/`effectiveId`.
+// Las candidatas C17-01/C17-02 viven en `data/match/motor17-candidates.json`, FUERA del perfil efectivo: se comprueba que sus filas existen, que el valor anterior es el efectivo y que no superan seis controles.
+const M17_REPLACED = ['statsPolicy.families.2.reading', 'statsPolicy.families.2.rule', 'statsPolicy.id'];
+export function checkMotor17(extension17, profile15b, profile, candidates) {
+  const problems = [];
+  if (extension17.seedExtensionId !== 'SEM-MOTOR17-20261018') problems.push('MOTOR-17: identidad de la extensión inesperada');
+  if (Object.keys(extension17.additions ?? {}).join() !== 'regulation.sources.12') problems.push('MOTOR-17: la única adición es la fuente M17-01');
+  if (Object.keys(extension17.replacements ?? {}).sort().join() !== M17_REPLACED.join()) problems.push('MOTOR-17: las sustituciones deben ser exactamente las listadas');
+  const strip = (p) => { const q = JSON.parse(JSON.stringify(p)); for (const k of ['extensions', 'effectiveId', 'statsPolicy']) delete q[k]; delete q.regulation.sources; return q; };
+  if (JSON.stringify(strip(profile)) !== JSON.stringify(strip(profile15b))) problems.push('MOTOR-17: el perfil difiere del de MOTOR-15B fuera de statsPolicy y regulation.sources (no puede cambiar ningún coeficiente deportivo)');
+  const sp = JSON.parse(JSON.stringify(profile.statsPolicy)); const sp0 = JSON.parse(JSON.stringify(profile15b.statsPolicy)); for (const x of [sp, sp0]) { delete x.id; delete x.families[2].rule; delete x.families[2].reading; }
+  if (JSON.stringify(sp) !== JSON.stringify(sp0)) problems.push('MOTOR-17: statsPolicy solo puede cambiar id y la regla/lectura de «Pérdidas y robos»');
+  if (profile.statsPolicy.id !== 'EST-MOTOR17-R1') problems.push('MOTOR-17: política estadística EST-MOTOR17-R1');
+  const src = profile.regulation.sources.find((x) => x.id === 'M17-01'); if (!src) problems.push('MOTOR-17: falta la fuente M17-01');
+  // candidatas explícitas
+  if (!candidates || candidates.schema !== 'beM-candidates/1') problems.push('MOTOR-17: falta data/match/motor17-candidates.json');
+  else {
+    if (candidates.candidates.length > 2) problems.push('MOTOR-17: como máximo dos candidatas');
+    const get = (path) => path.split('.').reduce((o, k) => (o == null ? o : o[k]), profile);
+    for (const c of candidates.candidates) {
+      if (!c.controls?.length || c.controls.length > 6 || c.controlsCount !== c.controls.length) problems.push(`MOTOR-17: ${c.id} debe tener entre 1 y 6 controles declarados`);
+      for (const k of c.controls ?? []) {
+        const v = get(k.row);
+        if (v === undefined) problems.push(`MOTOR-17: ${c.id}: la fila ${k.row} no existe en el perfil efectivo`);
+        else if (v !== k.before) problems.push(`MOTOR-17: ${c.id}: ${k.row} vale ${v} en el perfil efectivo y la candidata declara ${k.before}`);
+        for (const f of ['unit', 'consumer', 'cause', 'expected']) if (!k[f]) problems.push(`MOTOR-17: ${c.id}: ${k.row} sin ${f}`);
+      }
+    }
+  }
+  return problems;
+}
+
 export function checkMotor15b(extension15b, profile15, profile) {
   const problems = [];
   if (extension15b.seedExtensionId !== 'SEM-MOTOR15B-20261017') problems.push('MOTOR-15B: identidad de la extensión inesperada');
@@ -283,7 +315,7 @@ export function checkMotor13(extension13, baseProfile, exts, profile) {
 
 export function checkData() {
   const problems = [];
-  const { profile, baseProfile, extension, extension3, extension4, extension5, extension6, extension7, extension8, extension9, extension10, extension11, extension12, extension13, extension14, extension15, extension15b, players } = loadData();
+  const { profile, baseProfile, extension, extension3, extension4, extension5, extension6, extension7, extension8, extension9, extension10, extension11, extension12, extension13, extension14, extension15, extension15b, extension17, players } = loadData();
   for (const e of validateProfileAndFixtures(profile, players)) problems.push(`${e.path}: ${e.message}`);
   for (const e of validateExtension(baseProfile, extension)) problems.push(`extensión MOTOR-02: ${e}`);
   for (const e of validateExtension(baseProfile, extension3)) problems.push(`extensión MOTOR-03: ${e}`);
@@ -313,8 +345,13 @@ export function checkData() {
   const profile15 = applyExtension(baseProfile, ...exts14, extension15); // perfil efectivo SIN la extensión de MOTOR-15B
   problems.push(...checkMotor15(extension15, profile14, profile15));
   for (const e of validateExtension(baseProfile, extension15b, profile15)) problems.push(`extensión MOTOR-15B: ${e}`);
-  problems.push(...checkMotor15b(extension15b, profile15, profile));
-  const hashes = { profile: sha(PROFILE_PATH), players: sha(PLAYERS_PATH), prompt: sha(PROMPT), extension: sha(EXTENSION_PATH), extension3: sha(EXTENSION3_PATH), extension4: sha(EXTENSION4_PATH), extension5: sha(EXTENSION5_PATH), extension6: sha(EXTENSION6_PATH), extension7: sha(EXTENSION7_PATH), extension8: sha(EXTENSION8_PATH), extension9: sha(EXTENSION9_PATH), extension10: sha(EXTENSION10_PATH), extension11: sha(EXTENSION11_PATH), extension12: sha(EXTENSION12_PATH), extension13: sha(EXTENSION13_PATH), extension14: sha(EXTENSION14_PATH), extension15: sha(EXTENSION15_PATH), extension15b: sha(EXTENSION15B_PATH) };
+  const exts15b = [...exts14, extension15, extension15b];
+  const profile15bEff = applyExtension(baseProfile, ...exts15b); // perfil efectivo SIN la extensión de MOTOR-17
+  problems.push(...checkMotor15b(extension15b, profile15, profile15bEff));
+  for (const e of validateExtension(baseProfile, extension17, profile15bEff)) problems.push(`extensión MOTOR-17: ${e}`);
+  const candidates17 = existsSync(CANDIDATES17_PATH) ? JSON.parse(readFileSync(CANDIDATES17_PATH, 'utf8')) : null;
+  problems.push(...checkMotor17(extension17, profile15bEff, profile, candidates17));
+  const hashes = { profile: sha(PROFILE_PATH), players: sha(PLAYERS_PATH), prompt: sha(PROMPT), extension: sha(EXTENSION_PATH), extension3: sha(EXTENSION3_PATH), extension4: sha(EXTENSION4_PATH), extension5: sha(EXTENSION5_PATH), extension6: sha(EXTENSION6_PATH), extension7: sha(EXTENSION7_PATH), extension8: sha(EXTENSION8_PATH), extension9: sha(EXTENSION9_PATH), extension10: sha(EXTENSION10_PATH), extension11: sha(EXTENSION11_PATH), extension12: sha(EXTENSION12_PATH), extension13: sha(EXTENSION13_PATH), extension14: sha(EXTENSION14_PATH), extension15: sha(EXTENSION15_PATH), extension15b: sha(EXTENSION15B_PATH), extension17: sha(EXTENSION17_PATH), candidates17: sha(CANDIDATES17_PATH) };
   if (existsSync(PROMPT4)) problems.push(...checkMotor04Annex(extension4, extractAnnexA4(readFileSync(PROMPT4, 'utf8'))));
   else problems.push('falta el prompt archivado de MOTOR-04');
   if (existsSync(PROMPT5)) problems.push(...checkMotor05Annex(extension5, extractAnnexA5(readFileSync(PROMPT5, 'utf8'))));
@@ -351,13 +388,15 @@ export function checkData() {
     if (cat.files['data/match/motor14-seed-extension.json']?.sha256 !== hashes.extension14) problems.push('hash de la extensión de MOTOR-14 distinto del catálogo');
     if (cat.files['data/match/motor15-seed-extension.json']?.sha256 !== hashes.extension15) problems.push('hash de la extensión de MOTOR-15 distinto del catálogo');
     if (cat.files['data/match/motor15b-seed-extension.json']?.sha256 !== hashes.extension15b) problems.push('hash de la extensión de MOTOR-15B distinto del catálogo');
+    if (cat.files['data/match/motor17-seed-extension.json']?.sha256 !== hashes.extension17) problems.push('hash de la extensión de MOTOR-17 distinto del catálogo');
+    if (cat.files['data/match/motor17-candidates.json']?.sha256 !== hashes.candidates17) problems.push('hash de las candidatas de MOTOR-17 distinto del catálogo');
   } else problems.push('falta data/catalog.json');
   return { problems, hashes, profile, baseProfile, players };
 }
 
 if (process.argv[1] && process.argv[1].endsWith('check-data.js')) {
   if (process.argv.includes('--write-catalog')) {
-    const { baseProfile: profile, extension, extension3, extension4, extension5, extension6, extension7, extension8, extension9, extension10, extension11, extension12, extension13, extension14, extension15, extension15b } = loadData();
+    const { baseProfile: profile, extension, extension3, extension4, extension5, extension6, extension7, extension8, extension9, extension10, extension11, extension12, extension13, extension14, extension15, extension15b, extension17 } = loadData();
     const cat = {
       description: 'Catálogo de datos: identidad y estado de los materiales (MOTOR-01 cargados literalmente de los anexos del prompt; extensión de MOTOR-02 aparte, sin tocar el perfil original).',
       source: 'docs/prompts/MOTOR-01-primer-partido-completo.md (Anexo A y Anexo B); docs/prompts/MOTOR-02-modos-y-direccion.md (apartado 8.4); docs/prompts/MOTOR-03-panel-y-perfiles.md (apartado 4.1); docs/prompts/MOTOR-04-ataque-posicional.md (anexo A); docs/prompts/MOTOR-05-defensa-completa.md (anexo A); docs/prompts/MOTOR-06-transicion-y-saques.md (anexo A); docs/prompts/MOTOR-07-capacidades-y-estados.md (anexo A); docs/prompts/MOTOR-08-entrenador-y-memoria.md (apartados 6.1, 7.1, 10.2, 10.3 y 11.4)',
@@ -374,6 +413,8 @@ if (process.argv[1] && process.argv[1].endsWith('check-data.js')) {
         'data/match/motor10-seed-extension.json': { id: extension10.seedExtensionId, status: extension10.status, sha256: sha(EXTENSION10_PATH), origin: 'Encargo MOTOR-10 (§7.1 final ajustado, §14 antes/después, §15.3 selección editorial, §17.5 REC10-01/02, §19 precargas): parámetros editoriales y de muestra del análisis', state: 'SEM provisional, no calibrado; sin efecto deportivo' },
         'data/match/motor11-seed-extension.json': { id: extension11.seedExtensionId, status: extension11.status, sha256: sha(EXTENSION11_PATH), origin: 'Encargo MOTOR-11 (§5–§12): planes naturales materializados por scripts/build-motor11-data.js, revisión R1 de EQ07-J01, receta del generador y catálogo LAB11' },
         'data/match/motor15-seed-extension.json': { id: extension15.seedExtensionId, status: extension15.status, sha256: sha(EXTENSION15_PATH), origin: 'Encargo MOTOR-15 (§5–§8): datos normativos (técnicas, compensación art. 43, correcciones art. 45, interferencia) con procedencia de cada lectura y semillas SEM15-TIR-01 y SEM15-INT-01…04', state: 'SEM provisional, no calibrado' },
+        'data/match/motor17-seed-extension.json': { id: extension17.seedExtensionId, status: extension17.status, sha256: sha(EXTENSION17_PATH), origin: 'Encargo MOTOR-17 (§5): criterio estadístico compartido de robo (síntesis verificada por ChatGPT de FIBA Statisticians\' Manual 2024 §7); ningún coeficiente cambia', state: 'SEM provisional; solo crédito estadístico' },
+        'data/match/motor17-candidates.json': { id: 'MOTOR-17-candidatas', status: 'propuestas cuantificadas sin aceptación deportiva', sha256: sha(CANDIDATES17_PATH), origin: 'Encargo MOTOR-17 (§10): hasta dos candidatas numéricas explícitas sobre los controles existentes; no forman parte del perfil efectivo', state: 'propuesta; activación explícita' },
         'data/match/motor15b-seed-extension.json': { id: extension15b.seedExtensionId, status: extension15b.status, sha256: sha(EXTENSION15B_PATH), origin: 'Encargo MOTOR-15B (§4): consecuencia de RG-I03 (técnica de categoría 2) y numeración 45.4.1–45.4.8 / 45.6; procedencia ChatGPT, sin lectura directa', state: 'normativa contrastada con síntesis de ChatGPT; ningún coeficiente cambia' },
         'data/match/motor14-seed-extension.json': { id: extension14.seedExtensionId, status: extension14.status, sha256: sha(EXTENSION14_PATH), origin: 'Encargo MOTOR-14 (§7.2–§7.4, §8): terminación administrativa por falta de jugadores (art. 21, lectura de ChatGPT de F14-01) y trazabilidad de fuentes; sin coeficientes deportivos nuevos', state: 'SEM provisional; contenido normativo contrastado por ChatGPT, sin lectura directa del PDF por Claude' },
         'data/match/motor13-seed-extension.json': { id: extension13.seedExtensionId, status: extension13.status, sha256: sha(EXTENSION13_PATH), origin: 'Encargo MOTOR-13 (§15.4, §14.3, §18): parámetros de auditoría, lectura y calibración (tabla audit); sin efecto deportivo', state: 'SEM provisional, no calibrado' },

@@ -1,0 +1,95 @@
+{
+ "versions": {
+  "extension": "SEM-MOTOR17-20261018",
+  "statsPolicy": "ACTA-MOTOR17-R1",
+  "reference": "campaña MOTOR17-CIERRE-20261018 (R0 = 6a6814c frente a R17); referencia histórica 20261016",
+  "snapshot": "ESE-MOTOR17-R1 / PRJ-MOTOR17-R1",
+  "package": "MOTOR-17-revision-rapida.zip + MOTOR-17-indice-partes.json + partes detalladas"
+ },
+ "axes": [
+  {
+   "axis": "Funcional",
+   "state": "completo en su alcance (con límites)",
+   "detail": "Crédito de robo con criterio único, cierre de cadenas, identidad global, sensibilidad con tope, team_index, candidatas en el Panel y Cierre con descargas; 208/208 pruebas."
+  },
+  {
+   "axis": "Rendimiento",
+   "state": "objetivo NO alcanzado",
+   "detail": "Cien en 30.2 s (R0: 34.2 s) y doscientos en 60.8 s (R0: 60.5 s) con 4 workers, medidos; optimización exacta ≈ 7.4 %."
+  },
+  {
+   "axis": "Evaluación deportiva",
+   "state": "campaña ejecutada; análisis externo pendiente",
+   "detail": "472 ejecuciones de cierre (R0 y R17), 24 diagnósticos, AUD por versión; candidata C17-02 propuesta sin aceptación; calibración externa pendiente."
+  },
+  {
+   "axis": "Aceptación",
+   "state": "pendiente de Dennis",
+   "detail": "Recorrido manual no realizado por Dennis; nada se marca como aceptado."
+  }
+ ],
+ "coverage": [
+  [
+   "Ejecuciones de cierre",
+   "472 (todas terminadas y válidas: true)"
+  ],
+  [
+   "AUD R0 (lector R0)",
+   "{\"conforme\":16,\"inconcluso\":16}"
+  ],
+  [
+   "AUD R0 (lector R17)",
+   "{\"conforme\":16,\"inconcluso\":16}"
+  ],
+  [
+   "AUD R17 (lector R17)",
+   "{\"conforme\":17,\"inconcluso\":15}"
+  ],
+  [
+   "Sensibilidad R17",
+   "{\"exacta\":2304}"
+  ],
+  [
+   "Cadenas de saque abiertas (diagnósticos)",
+   "R0 1 · R17 0"
+  ]
+ ],
+ "cost": [
+  [
+   "R0-100",
+   "34.2 s de pared (34.8 s con arranque)",
+   "100 encuentros world-essential, 4 workers, proceso nuevo, 100 válidos; RSS 496 MiB"
+  ],
+  [
+   "R0-200",
+   "60.5 s de pared (61.2 s con arranque)",
+   "200 encuentros world-essential, 4 workers, proceso nuevo, 200 válidos; RSS 523 MiB"
+  ],
+  [
+   "R17-100",
+   "30.2 s de pared (30.8 s con arranque)",
+   "100 encuentros world-essential, 4 workers, proceso nuevo, 100 válidos; RSS 606 MiB"
+  ],
+  [
+   "R17-200",
+   "60.8 s de pared (61.5 s con arranque)",
+   "200 encuentros world-essential, 4 workers, proceso nuevo, 200 válidos; RSS 640 MiB"
+  ]
+ ],
+ "costNote": "Medidas reales (no extrapoladas). Entorno: 4 vCPU Xeon 2,8 GHz, Node 22.22. La variación entre pasadas del mismo trabajo es de ±10 %. La comparación R0/R17 incluye el efecto de la candidata; la mejora exacta de la optimización está en `coste-atribucion/alternadas.json`.",
+ "reports": [
+  {
+   "path": "docs/tecnico/motor17.md",
+   "what": "documentación técnica de la entrega"
+  },
+  {
+   "path": "docs/tecnico/evidencia-motor17/",
+   "what": "hipótesis, cambios, diccionario, resumen operativo y estado de cierre"
+  },
+  {
+   "path": "docs/prompts/MOTOR-17-recorrido-manual.md",
+   "what": "recorrido manual para Dennis"
+  }
+ ],
+ "checker": "python3 scripts/m17-verify-delivery.py (CRC, tamaños, SHA-256, agenda, tablas, auditorías y coste)"
+}

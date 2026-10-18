@@ -245,7 +245,7 @@ test('8. entrada: estados explícitos y acotados, migración identificada, visib
   const q0 = m.libertyAndReading(0, B); for (const id of m.teams[1].ids) { m.ps[id].form = -1; for (const k of MOMENT_SCOPES) m.ps[id].mom[k].v = -1; } m.tm[1].v = -1;
   assert.deepEqual(m.libertyAndReading(0, B), q0);
   // formato de exportación: MOTOR-08 sube a export/7; sigue el rechazo explícito de export/5 (y export/6) sin tocarlos
-  assert.match(EXPORT_SCHEMA, /export\/[789]$/); assert.match(ENGINE_VERSION, /MOTOR(0[89]|15)/);
+  assert.match(EXPORT_SCHEMA, /export\/[789]$/); assert.match(ENGINE_VERSION, /MOTOR(0[89]|15|17)/);
   const v5 = validateReplayFile({ schema: 'beM-match-export/5', meta: { engineVersion: 'beM-motor-0.6.0-MOTOR06' } }); assert.equal(v5.legacy, true); assert.equal(v5.reproducible, false); assert.match(v5.problems[0], /MOTOR-06/);
 });
 

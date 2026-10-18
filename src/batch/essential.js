@@ -12,7 +12,7 @@ import { sha256 } from './hashing.js';
 
 export const ESSENTIAL_LEVEL = 'world-essential';
 export const ESSENTIAL_SCHEMA = 'beM-essential-record/1';
-export const ESSENTIAL_VERSION = 'ESE-MOTOR15-R1';
+export const ESSENTIAL_VERSION = 'ESE-MOTOR17-R1'; // MOTOR-17: `team_index` explícito por jugador (pertenencia real a la entrada congelada). ESE-MOTOR15-R1 no lo incluía
 // Huella de trayectoria: `incremental` (observador durante la simulación, por defecto), `full` (TRAY-MOTOR12-R1 sobre el resultado) o `none` (no se calcula y se declara así).
 export const FINGERPRINT_MODES = ['incremental', 'full', 'none'];
 // Validación: `full` (conciliación del acta + conciliación analítica, las mismas operaciones comunes que el resto de niveles) o `acta` (solo la conciliación del acta; declarado).
@@ -48,7 +48,7 @@ export function compactTactics(res) {
   }
   return [...byPoss.values()];
 }
-const lineByPlayer = (a) => Object.values(a.players).map((p) => ({ id: p.id, team: p.team, participation: p.participation, min_tenths: p.minTenths, pts: p.pts, fg2m: p.fg2m, fg2a: p.fg2a, fg3m: p.fg3m, fg3a: p.fg3a, ftm: p.ftm, fta: p.fta, oreb: p.oreb, dreb: p.dreb, ast: p.ast, ast_fg: p.astFg, ast_ft: p.astFt, tov: p.tov, stl: p.stl, blk: p.blk, blk_rec: p.blkRec, pf: p.pf, fr: p.fr, pm: p.pm, val: p.val, fouls: p.fouls }));
+const lineByPlayer = (a) => Object.values(a.players).map((p) => ({ id: p.id, team: p.team, team_index: p.team, participation: p.participation, min_tenths: p.minTenths, pts: p.pts, fg2m: p.fg2m, fg2a: p.fg2a, fg3m: p.fg3m, fg3a: p.fg3a, ftm: p.ftm, fta: p.fta, oreb: p.oreb, dreb: p.dreb, ast: p.ast, ast_fg: p.astFg, ast_ft: p.astFt, tov: p.tov, stl: p.stl, blk: p.blk, blk_rec: p.blkRec, pf: p.pf, fr: p.fr, pm: p.pm, val: p.val, fouls: p.fouls }));
 
 export function buildEssential(res, { keys, validity, fp, fpMode, sim }) {
   const a = res.acta; const dg = res.diagnostics ?? {};

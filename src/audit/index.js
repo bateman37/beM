@@ -23,7 +23,7 @@ function projectAll(src, attempts, profile, policyFp, cacheDir) {
     const fpKey = sha({ f: (a.files ?? []).map((x) => x.sha256), kind: src.kind, id: a.attempt_id, m: src.kind === 'paquete' ? src.fingerprint('x') : null, v: PROJECTION_VERSION, pol: policyFp }).slice(0, 20);
     const cp = join(cacheDir, `${fpKey}.json`);
     if (existsSync(cp)) { out.push(JSON.parse(readFileSync(cp, 'utf8'))); hits += 1; continue; }
-    const t0 = performance.now(); const P = projectAttempt(src, a, profile, {}); ms += performance.now() - t0; bytes += Object.values(P.bytes).reduce((x, y) => x + y, 0);
+    const t0 = performance.now(); const P = projectAttempt(src, a, profile, { sourceId: src.describe().id }); ms += performance.now() - t0; bytes += Object.values(P.bytes).reduce((x, y) => x + y, 0);
     P.source_id = src.describe().id; writeFileSync(cp, JSON.stringify(P)); out.push(P);
   }
   return { projs: out, hits, ms, bytes };

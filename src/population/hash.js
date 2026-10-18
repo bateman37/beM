@@ -2,10 +2,18 @@
 // Sin Math.random, sin fecha, sin dependencias: funcionan igual en Node y en el navegador.
 
 // Serialización canónica: claves ordenadas, sin espacios; `undefined` se omite como en JSON.
+// MOTOR-17 (P17): mismo texto exacto que la versión anterior (map/filter/sort/join) con menos asignaciones: concatenación directa y caché acotada de claves ya serializadas. Equivalencia comprobada en tests/motor17.test.js.
+const KEY_STR = new Map();
+const keyStr = (k) => { let s = KEY_STR.get(k); if (s === undefined) { s = JSON.stringify(k); if (KEY_STR.size < 8192) KEY_STR.set(k, s); } return s; };
 export function canonicalJson(v) {
   if (v === null || typeof v !== 'object') return JSON.stringify(v);
-  if (Array.isArray(v)) return `[${v.map((x) => (x === undefined ? 'null' : canonicalJson(x))).join(',')}]`;
-  return `{${Object.keys(v).filter((k) => v[k] !== undefined).sort().map((k) => `${JSON.stringify(k)}:${canonicalJson(v[k])}`).join(',')}}`;
+  if (Array.isArray(v)) {
+    const n = v.length; if (n === 0) return '[]';
+    let s = '['; for (let i = 0; i < n; i++) { const x = v[i]; if (i) s += ','; s += x === undefined ? 'null' : canonicalJson(x); } return `${s}]`;
+  }
+  const keys = Object.keys(v).sort(); let s = '{'; let first = true;
+  for (let i = 0; i < keys.length; i++) { const k = keys[i]; const x = v[k]; if (x === undefined) continue; if (first) first = false; else s += ','; s += `${keyStr(k)}:${canonicalJson(x)}`; }
+  return `${s}}`;
 }
 
 export function fnv1a32(text) {

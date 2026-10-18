@@ -163,7 +163,7 @@ export class MatchCore {
       if (!pid) throw new Error(`receta: falta el actor del rol ${role}`);
       const e = this.eff(pid, attr, taskMax);
       num += w * e; den += w;
-      if (this.opts.detail === 'full') trace.push({ rol: role, jugador: pid, cap: attr, base: this.pl[pid].abilities[attr], efectiva: round(e, 3), peso: w, energia: round(this.ps[pid].energy, 2) });
+      if (this.opts.detail === 'full') trace.push({ rol: role, jugador: pid, cap: attr, base: this.pl[pid].abilities[attr], efectiva: round(e, 3), peso: w, energia: round(this.ps[pid].energy, 2), tope: this.penFor(attr, taskMax) }); // MOTOR-17 §7.1: el tope aplicado hace exacta la reconstrucción de la sensibilidad
     }
     const value = num / den;
     if (label) this.note(`receta:${label}`, { valor: round(value, 4), terminos: trace });
@@ -202,7 +202,7 @@ export class MatchCore {
           const l = this.duty?.[id] ? clamp(load * this.duty[id], e.loadBounds[0], e.loadBounds[1]) : load;
           const before = s.energy;
           s.energy = clamp(s.energy - e.costPerLiveMinute * mins * l * this.enduranceFactor(id), e.range[0], e.range[1]);
-          if (trace) trace.push({ rol: 'en_pista', jugador: id, cap: 'FIS06', base: this.pl[id].abilities.FIS06, efectiva: this.pl[id].abilities.FIS06, peso: 1, energia: round(before, 2), carga: round(l, 4), factor: round(this.enduranceFactor(id), 5), gasto: round(before - s.energy, 5) });
+          if (trace) trace.push({ rol: 'en_pista', jugador: id, cap: 'FIS06', base: this.pl[id].abilities.FIS06, efectiva: this.pl[id].abilities.FIS06, tope: 0, peso: 1, energia: round(before, 2), carga: round(l, 4), factor: round(this.enduranceFactor(id), 5), gasto: round(before - s.energy, 5) });
           s.stintTenths += dur; s.playedTenths += dur;
         } else {
           s.energy = clamp(s.energy + e.benchRecoveryPerLiveMinute * mins, e.range[0], e.range[1]);

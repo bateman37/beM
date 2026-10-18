@@ -83,6 +83,20 @@
       "origin": "Encargo MOTOR-15 (§5–§8): datos normativos (técnicas, compensación art. 43, correcciones art. 45, interferencia) con procedencia de cada lectura y semillas SEM15-TIR-01 y SEM15-INT-01…04",
       "state": "SEM provisional, no calibrado"
     },
+    "data/match/motor17-seed-extension.json": {
+      "id": "SEM-MOTOR17-20261018",
+      "status": "SEM: provisional, no calibrado. Solo CRÉDITO estadístico (criterio compartido de robo por pérdida viva recuperada con control, FIBA Statisticians' Manual 2024 §7); ningún coeficiente deportivo cambia. Las candidatas numéricas C17-01/C17-02 NO forman parte de esta extensión ni del perfil efectivo: son filas explícitas aparte (data/match/motor17-candidates.json) y su activación es siempre una acción explícita de Dennis.",
+      "sha256": "b718cabc3a661f30dfcc3365b1fdbd1a12c151e6b78da02d5e42a7d04a2da6d2",
+      "origin": "Encargo MOTOR-17 (§5): criterio estadístico compartido de robo (síntesis verificada por ChatGPT de FIBA Statisticians' Manual 2024 §7); ningún coeficiente cambia",
+      "state": "SEM provisional; solo crédito estadístico"
+    },
+    "data/match/motor17-candidates.json": {
+      "id": "MOTOR-17-candidatas",
+      "status": "propuestas cuantificadas sin aceptación deportiva",
+      "sha256": "8679645cc8bbe7bc5133a710bad4fc9b2df096b8e904fab9b9e1700d74b1c09f",
+      "origin": "Encargo MOTOR-17 (§10): hasta dos candidatas numéricas explícitas sobre los controles existentes; no forman parte del perfil efectivo",
+      "state": "propuesta; activación explícita"
+    },
     "data/match/motor15b-seed-extension.json": {
       "id": "SEM-MOTOR15B-20261017",
       "status": "SEM: provisional, no calibrado. Solo datos NORMATIVOS y de CRÉDITO estadístico (consecuencia de RG-I03, numeración del art. 45 y criterio de robo) con procedencia ChatGPT; ningún coeficiente deportivo cambia. Una consecuencia reglamentaria o un crédito no son una probabilidad ajustable.",

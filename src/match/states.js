@@ -211,7 +211,7 @@ P.defensiveReading = function defensiveReading(pid) {
   for (const [cap, wt] of Object.entries(w)) {
     const v = cap === 'MEN03' ? Math.max(lo, this.eff(pid, 'MEN03', tm) - this.choicePenalty(pid)) : this.eff(pid, cap, tm);
     s += wt * v;
-    if (this.opts.detail === 'full') terminos.push({ rol: 'lector', jugador: pid, cap, base: this.pl[pid].abilities[cap], efectiva: round(v, 3), peso: wt, energia: round(this.ps[pid].energy, 2) });
+    if (this.opts.detail === 'full') terminos.push({ rol: 'lector', jugador: pid, cap, base: this.pl[pid].abilities[cap], efectiva: round(v, 3), peso: wt, energia: round(this.ps[pid].energy, 2), tope: tm });
   }
   if (this.opts.detail === 'full') { const W = terminos.reduce((a, x) => a + x.peso, 0) || 1; this.note('receta:lectura_defensiva', { valor: round(s / W, 4), suma: round(s, 4), terminos }); } // MOTOR-14 (MEN02/MEN03/MEN04 del defensor)
   return s;

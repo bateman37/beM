@@ -250,7 +250,7 @@ test('9. exportar y reproducir conservan decisiones, hechos y órdenes automáti
   const used = (r) => r.diagnostics.timeouts.map((l) => JSON.stringify(l.used)); assert.deepEqual(used(rep.result), used(ra), 'cada tiempo muerto consume su recurso una sola vez');
   assert.equal(rep.result.events.filter((e) => e.type === 'timeout').length, ra.events.filter((e) => e.type === 'timeout').length);
   // contrato: export/7; export/6 y anteriores se rechazan con motivo y sin migrarse
-  assert.equal(ra.schema, EXPORT_SCHEMA); assert.match(EXPORT_SCHEMA, /export\/[789]$/); assert.match(ENGINE_VERSION, /MOTOR(0[89]|15)/);
+  assert.equal(ra.schema, EXPORT_SCHEMA); assert.match(EXPORT_SCHEMA, /export\/[789]$/); assert.match(ENGINE_VERSION, /MOTOR(0[89]|15|17)/);
   const v6 = validateReplayFile({ schema: 'beM-match-export/6', meta: { engineVersion: 'beM-motor-0.7.0-MOTOR07' } }); assert.equal(v6.legacy, true); assert.equal(v6.reproducible, false); assert.match(v6.problems[0], /MOTOR-07.*entrenador automático/);
   // la entrada anterior sin política ni plan se migra de forma explícita y anotada; lo ya configurado no se sobrescribe
   const old = deepCopy(input()); delete old.teams[0].plan.coach; delete old.teams[0].plan.participation; old.teams[1].plan.coach.delegation.rotation = false;

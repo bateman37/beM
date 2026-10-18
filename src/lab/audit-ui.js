@@ -127,10 +127,22 @@ async function launch(x) {
 }
 
 // ------------------------------------------------------------------------------------------------------------------------------ calibración
+// MOTOR-17 §10–§11: candidatas PROPUESTAS (hasta dos, ≤ 6 controles cada una). Se muestran con fila localizable, unidad, valor base/candidata, consumidor, causa y efectos previsto y observado en desarrollo.
+// «Crear borrador» usa el mismo mecanismo de candidatas de MOTOR-13 (borrador no activo sobre la versión activa): no activa nada ni toca lotes ni encuentros.
+function candidates17Card() {
+  const c = store.candidates17; if (!c?.candidates?.length) return h('p', { class: 'small muted' }, 'Sin candidatas MOTOR-17 cargadas (data/match/motor17-candidates.json).');
+  return h('div', { id: 'audit-cand17' }, h('h4', {}, 'Candidatas propuestas por MOTOR-17 (sin aceptación deportiva)'), h('p', { class: 'small muted' }, c.status),
+    ...c.candidates.map((cd) => h('div', { class: 'card', id: `cand-${cd.id}` }, h('strong', {}, `${cd.id} · ${cd.name}`), h('p', { class: 'small' }, cd.hypothesis),
+      table(['Fila (Panel)', 'Unidad', 'Base → candidata', 'Consumidor', 'Causa', 'Efecto previsto', 'Observado en desarrollo (24 encuentros)'], cd.controls.map((k) => [k.row, k.unit, `${k.before} → ${k.after}`, k.consumer, k.cause, k.expected, k.observedDev ? `energía final ${k.observedDev.energia_final_media}; <30: ${(k.observedDev.energia_final_bajo_30 * 100).toFixed(1)} %; con un jugador de 40:00: ${(k.observedDev.con_jugador_de_40 * 100).toFixed(1)} %; minutos máx. ${k.observedDev.minutos_maximos_medios}` : '—'])),
+      h('p', { class: 'small muted' }, `Control contra doble conteo: ${cd.doubleCountGuard}.`),
+      h('button', { class: 'btn secondary', type: 'button', id: `cand-draft-${cd.id}`, onclick: () => { const lib = store.library; if (!lib) { ui.msg = 'El Panel aún no está cargado.'; return repaint(); } const baseId = lib.activeVersion().id; const made = lib.createDraft(baseId, { name: `Candidata MOTOR-17 ${cd.id}`, reason: `${cd.id}: ${cd.hypothesis}` }); if (!made.ok) { ui.msg = `${cd.id}: ${made.reason ?? 'no se pudo crear el borrador'}`; return repaint(); } const ed = lib.editDraft(made.draft.id, Object.fromEntries(cd.controls.map((k) => [k.row, k.after])), `${cd.id}: ${cd.hypothesis}`); ui.msg = ed.ok ? `${cd.id}: borrador ${made.draft.id} creado en el Panel (NO activado; la versión activa sigue siendo ${lib.activeVersion().id}).` : `${cd.id}: ${ed.reason ?? 'no se pudo editar el borrador'}`; repaint(); } }, 'Crear borrador en el Panel (no activa)'))),
+    h('p', { class: 'small muted' }, 'Las candidatas no forman parte del perfil efectivo MOTOR-17. Elegir la que se propone para el cierre y su justificación: docs/tecnico/motor17.md §8.'));
+}
 function calibCard() {
   return h('div', { class: 'card', id: 'audit-calib' }, h('h3', { style: 'margin-top:0' }, 'Calibración: candidatas explícitas, nunca automáticas'),
     h('p', { class: 'small' }, 'Desde un hallazgo se abre la fila de parámetros en el Panel, se copia la base a una candidata, se edita con el paso del editor y se previsualiza el diff. «Guardar candidata» no toca el perfil activo, lotes congelados ni encuentros históricos; validar, evaluar, recomendar y activar son estados distintos y la activación es siempre una acción explícita tuya.'),
     h('p', { class: 'small' }, `Presupuesto de la primera pasada: ${store.baseNew?.audit?.calibrationStep?.maxHypotheses ?? 1} hipótesis y hasta ${store.baseNew?.audit?.calibrationStep?.maxChangedRows ?? 3} filas efectivas. Pasos precargados: p0 binaria ±${store.baseNew?.audit?.calibrationStep?.p0Absolute ?? 0.01}, sensibilidad logit ±${store.baseNew?.audit?.calibrationStep?.logitPerPoint ?? 0.005}, carga/desgaste ±${(store.baseNew?.audit?.calibrationStep?.loadFactorRelative ?? 0.05) * 100} %. No se aplican a umbrales reglamentarios.`),
+    candidates17Card(),
     h('div', { class: 'row' }, h('button', { class: 'btn secondary', type: 'button', id: 'audit-open-panel', onclick: () => window.dispatchEvent(new CustomEvent('beM:goto', { detail: 'panel' })) }, 'Abrir el Panel de ajustes'), h('button', { class: 'btn secondary', type: 'button', onclick: () => { ui.tab = 'dl'; repaint(); } }, 'Ver la conclusión y las descargas')),
     h('p', { class: 'small muted' }, 'La conclusión del primer ciclo (base mantenida con evidencia y límites, o candidata) está en el informe de calibración y en docs/tecnico/motor13.md.'));
 }

@@ -424,7 +424,7 @@ test('9. robo: acceso, decisión (una vez), ejecución, control y crédito se di
     const res = buildResult(m); assert.deepEqual(res.errors, []);
     for (const e of res.events) {
       if (e.effects?.perdida && e.type === 'attempt') { losses += 1; assert.ok(e.effects.cadenaRobo, 'la cadena queda registrada'); }
-      if (e.effects?.robo && e.type === 'attempt') { steals += 1; assert.equal(e.effects.cadenaRobo.acceso, true); assert.equal(e.effects.cadenaRobo.intento, true, 'no hay robo sin intento de intervenir'); assert.equal(e.effects.cadenaRobo.control, true); }
+      if (e.effects?.robo && e.type === 'attempt') { steals += 1; assert.equal(e.effects.cadenaRobo.acceso, true); if (e.effects.cadenaRobo.control) assert.equal(e.effects.cadenaRobo.intento, true, 'el control del interceptor exige intento de intervenir'); else assert.ok(e.stats.some((x) => x.k === 'stl' && x.fuente === 'pérdida viva recuperada con control'), 'MOTOR-17: sin control propio solo hay robo por pérdida viva recuperada con control'); }
     }
   }
   assert.ok(decisions > 100);
@@ -466,7 +466,7 @@ test('10. órdenes y datos de saques: export/reproducción dentro de la versión
   ]);
   assert.ok(orders.every((o) => o.state !== 'rechazada'), orders.map((o) => o.reason).join('; '));
   const res = buildResult(m); integrity(res);
-  assert.equal(res.schema, EXPORT_SCHEMA); assert.equal(res.meta.engineVersion, ENGINE_VERSION); assert.match(EXPORT_SCHEMA, /export\/[56789]$/); assert.match(ENGINE_VERSION, /MOTOR(0[6789]|15)/); // el contrato de la versión vigente lo fija motor07.test.js
+  assert.equal(res.schema, EXPORT_SCHEMA); assert.equal(res.meta.engineVersion, ENGINE_VERSION); assert.match(EXPORT_SCHEMA, /export\/[56789]$/); assert.match(ENGINE_VERSION, /MOTOR(0[6789]|15|17)/); // el contrato de la versión vigente lo fija motor07.test.js
   assert.ok(res.diagnostics.opportunities.length > 100 && res.diagnostics.throwInChains.length > 20, 'se exportan oportunidades y cadenas de saque');
   assert.ok(res.events.some((e) => e.type === 'throw_in' && e.intent.respuestaDefensiva === 'DSaqB03') || res.events.some((e) => e.intent?.respuestaDefensiva === 'DSaqB03'));
   const file = JSON.parse(JSON.stringify(res));

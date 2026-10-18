@@ -32,7 +32,7 @@ import { terminate } from '../src/match/regs.js';
 import { reconcileAnalysis } from '../src/analysis/reconcile.js';
 
 const { profile, players } = data; const REF = 20261016;
-const baseline = JSON.parse(readFileSync(new URL('./fixtures/baseline-motor15b.json', import.meta.url), 'utf8'))[String(REF)];
+const baseline = JSON.parse(readFileSync(new URL('./fixtures/baseline-motor17.json', import.meta.url), 'utf8'))[String(REF)];
 const root = mkdtempSync(join(tmpdir(), 'bem-m14-'));
 const SCRIPT = [
   { period: 1, label: 'guion P1', specs: [{ team: 0, type: 'styles', styles: { freedom: 5, organizedPace: 4 } }] },

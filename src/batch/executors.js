@@ -33,7 +33,7 @@ export class WorkerExecutor {
   get busy() { return this.pending.size > 0; }
   start() {
     if (this.worker) return;
-    this.worker = new Worker(new URL('./worker.js', import.meta.url), { workerData: { root: this.store.root, index: this.index } }); this.spawned += 1;
+    this.worker = new Worker(new URL('./worker.js', import.meta.url), { workerData: { root: this.store.root, index: this.index }, resourceLimits: { maxYoungGenerationSizeMb: 64 } }); this.spawned += 1; // MOTOR-17 (P17): generación joven mayor = menos recolecciones menores (parámetro de ejecución; no toca el deporte)
     this.worker.on('message', (m) => { const p = this.pending.get(m.id); if (!p) return; this.pending.delete(m.id); if (m.error) p.reject(Object.assign(new Error(m.error.message), { phase: m.error.phase ?? 'proceso' })); else p.resolve(m.result ?? m.outcome); });
     this.worker.on('error', (e) => this.fail(e)); this.worker.on('exit', (code) => { if (this.pending.size) this.fail(new Error(`el worker terminó inesperadamente (código ${code})`)); this.worker = null; });
   }

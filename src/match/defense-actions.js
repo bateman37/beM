@@ -29,7 +29,9 @@ P.helpCandidates = function helpCandidates(ex) {
   const open0 = pool.filter((id) => id !== ex.defend && id !== ex.icpt && id !== ex.denier && id !== dedicated);
   const occupied = open0.filter((id) => committed.has(id)).length; // MOTOR-11 (instrumentación de lectura): ya lo calculaba la operación; no añade sorteos ni cambia el resultado
   pool = open0.filter((id) => !committed.has(id));
-  if (ref.kind === 'individual') pool = pool.filter((id) => { const a = this.responsibilityOf(id); return a && ZONE_NEAR.has(this.rep().functions[ref.fnMap[a]].access); });
+  // MOTOR-17 (defecto hallado en la prueba de coste con la candidata C17-02, semilla 310000057): tras un relevo dentro de la posesión (balón muerto con ventana), `poss.cur` conserva a un atacante que ya no está en pista y
+  // `ref.fnMap` no lo conoce → `functions[undefined].access` abortaba el partido. Esa responsabilidad obsoleta se sustituye por la vigente de la referencia; sin atacante obsoleto el cálculo es idéntico al anterior.
+  if (ref.kind === 'individual') pool = pool.filter((id) => { let a = this.responsibilityOf(id); if (a && !(a in ref.fnMap)) a = this.liveResponsibilityOf(id, ref); return a && ZONE_NEAR.has(this.rep().functions[ref.fnMap[a]].access); });
   const before = pool.length;
   pool = pool.filter((id) => { const a = this.responsibilityOf(id); return !(a && prot.has(a)); }); // ESPD03: no abandonar al tirador protegido
   ex.protectedBlocked = before - pool.length; // se registra: «ayuda no disponible por no abandonar»
@@ -353,7 +355,9 @@ P.pressedAdvance = function pressedAdvance(poss, height) {
       this.endPossession('deadTurnover', { team }); return { end: 'deadTurnover' };
     }
     const carrier = this.pickRecoverer(defT, presser);
-    this.emit('advance', { ...base, intent: { origen: 'avance presionado', ...trace }, stats, effects: { perdida: true, robo: null, balonVivo: true, recupera: carrier } });
+    const credit = this.liveStealCredit({ team: defT, icpt: presser, attempt, recoverer: carrier, fuente: 'pérdida viva recuperada con control' });
+    if (credit) stats.push(credit);
+    this.emit('advance', { ...base, intent: { origen: 'avance presionado', ...trace }, stats, effects: { perdida: true, robo: credit?.p ?? null, balonVivo: true, recupera: carrier } });
     this.endPossession('live', { team, origin: 'pérdida', carrier }); return { end: 'liveTurnover' };
   }
   if (outcome === 'contact') {
