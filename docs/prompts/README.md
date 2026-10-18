@@ -27,6 +27,7 @@ Directorio de los encargos a Claude Code. **El texto original de un prompt ejecu
 | MOTOR-13 | Auditorías AUD01–32, sensibilidad de las 32 capacidades, campaña inicial de doce contrastes y primer ciclo de calibración | [`MOTOR-13-auditorias-sensibilidad-y-calibracion.md`](MOTOR-13-auditorias-sensibilidad-y-calibracion.md) · [recorrido manual](MOTOR-13-recorrido-manual.md) | Ejecutado, **pendiente de revisión de Dennis** | 2026-10-17 (intento 1) | — |
 | MOTOR-14 | Rendimiento, cierre funcional y candidato a motor v1: siete capacidades registradas, guardar/continuar, inferioridad natural, equivalencia/AUD29, contrato para el manager y coste | [`MOTOR-14-rendimiento-cierre-y-motor-v1.md`](MOTOR-14-rendimiento-cierre-y-motor-v1.md) · [recorrido manual](MOTOR-14-recorrido-manual.md) | Ejecutado **parcialmente** (candidato con bloqueos), pendiente de revisión de Dennis | 2026-10-17 (intento 1) | — |
 | MOTOR-15 | Cierre funcional, compatibilidad y rendimiento del mundo: panel con perfiles anteriores, técnicas/compensación/art. 45, tiro pendiente e interferencia, asistencias causales, estado por tramo, REC10, nivel `world-essential`, workers, benchmark y paquetes | [`MOTOR-15-cierre-funcional-y-rendimiento-del-mundo.md`](MOTOR-15-cierre-funcional-y-rendimiento-del-mundo.md) · [recorrido manual](MOTOR-15-recorrido-manual.md) | Ejecutado (**objetivo de coste NO alcanzado**), pendiente de revisión de Dennis | 2026-10-17 (intento 1) | — |
+| MOTOR-15B | Cierre de MOTOR-15 (RG-I03, art. 45, procedencia de auditorías y equivalencia, paquetes) y diagnóstico técnico de robos | **Ejecutado** (pendiente de Dennis) | [MOTOR-15B-cierre-y-diagnostico-de-robos.md](MOTOR-15B-cierre-y-diagnostico-de-robos.md) · [recorrido manual](MOTOR-15B-recorrido-manual.md) |
 
 ## Fichas de ejecución
 
@@ -251,3 +252,17 @@ Comprobación local de enlaces: hecha por Claude. Presentación en GitHub: no co
 | Comprobaciones realizadas | Ver [`../tecnico/motor13.md`](../tecnico/motor13.md) §15. No ejecutado: lotes de 100/1.000, reserva de validación, Node 24, otros navegadores, recorrido humano, fuentes FIBA (403), archivos del lote de cierre de MOTOR-12 (ausentes). |
 | Limitaciones | Todo SEM sin calibrar; 4 partidos con diagnóstico completo; 7 capacidades consumidas sin receta registrada; ninguna referencia externa numérica; un caso por intervención. |
 | Pendientes | Validación de Dennis ([recorrido manual](MOTOR-13-recorrido-manual.md)); MOTOR-14 (rendimiento, cierre de registro y contratos para el manager; inventario en `motor13.md` §14). |
+
+### MOTOR-15B
+
+| Campo | Valor |
+|---|---|
+| Objetivo | Cerrar los cuatro pendientes de MOTOR-15 (consecuencia de RG-I03 y numeración del art. 45; procedencia de auditorías, energía crítica y AUD26; equivalencia con campos y observador; documentación y commit verificado) y revisar técnicamente la cadena que produce y acredita los robos, sin calibrar. |
+| Medio de entrada del texto | Archivo `.md` adjunto (`beM-PROMPT-MOTOR-15B-CIERRE-Y-DIAGNOSTICO-DE-ROBOS.md`; prefijo añadido por la subida). Copia archivada byte a byte: [`MOTOR-15B-cierre-y-diagnostico-de-robos.md`](MOTOR-15B-cierre-y-diagnostico-de-robos.md). |
+| Fecha real de ejecución | 2026-10-17/18 · intento 1 |
+| Rama | `claude/busy-edison-b1fmnc` (la misma de MOTOR-15; su PR [#16](https://github.com/bateman37/beM/pull/16) seguía abierta y sin fusionar); la entrega se añade a esa PR. |
+| PR | La #16 (sin fusionar); el enlace consta en la respuesta final. |
+| Resultado breve | `SEM-MOTOR15B-20261017` (RG-I03 con técnica de categoría 2 y libre adicional; numeración 45.4.x; crédito de robo por balón suelto ganado; solo norma y crédito), motor `0.15.1-MOTOR15B`, relevo obligatorio antes del tiempo muerto, lector de AUD17/AUD26 y lotes de reproducción de C15, diagnóstico de robos, caso preparado RG-I03, paquetes `MOTOR-15B-*.zip` con comprobador. |
+| Comprobaciones realizadas | Ver [`../tecnico/motor15b.md`](../tecnico/motor15b.md) §10. No ejecutado: benchmark de cien, campaña de MOTOR-16, otros navegadores, Node 24, recorrido humano. |
+| Limitaciones | Sin lectura directa de los PDF (HTTP 403); RG-I01/I02/I04 provisionales; frecuencias SEM sin calibrar; toque defensivo no representado; C15-06 no auditado en lote; objetivo de coste pendiente. |
+| Pendientes | Validación de Dennis ([recorrido manual](MOTOR-15B-recorrido-manual.md)); MOTOR-16 (auditoría/evaluación) y MOTOR-17 (calibración). |

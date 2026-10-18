@@ -337,5 +337,9 @@ Se desean dos familias de indicador:
 
 No siempre coinciden. La segunda puede excluir finales de periodo, sanciones con balón retenido u otras situaciones sin disputa; la primera puede verse afectada por cómo se acreditan rebotes de equipo. Se etiquetan de manera distinta y se conserva el denominador.
 
+### Nota de implementación MOTOR-15B (robo)
+
+Síntesis de B15-N2 (cap. 7) incorporada por MOTOR-15B (`docs/tecnico/motor15b.md`): el robo exige un toque o recuperación defensiva resuelta, sin requerir control inmediato ni un intento previo de arrebato; todo robo tiene una pérdida individual rival. El motor acredita hoy el robo (a) por interceptación o arrebato resueltos (decisión de intervenir + control) y (b) por la **disputa real de un balón suelto** tras error atacante ganada por el defensor (política `ACTA-MOTOR15B-R1`). No conserva el toque ni el primer defensor que desvía; una pérdida viva recuperada sin intervención resuelta **no** se acredita (límite declarado, pendiente de MOTOR-16/17). Los partidos anteriores no se reinterpretan con la política nueva.
+
 <!-- beM:pie-inicio -->
 > [Índice del tema](README.md) · Anterior: [c20-p02-principios-de-interpretacion-y-presentacion](c20-p02-principios-de-interpretacion-y-presentacion.md) · Siguiente: [c20-p04-faltas-sanciones-lesiones-y-disponibilidad](c20-p04-faltas-sanciones-lesiones-y-disponibilidad.md)

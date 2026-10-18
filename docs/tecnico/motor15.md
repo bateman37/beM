@@ -2,6 +2,8 @@
 
 > [Prompt archivado](../prompts/MOTOR-15-cierre-funcional-y-rendimiento-del-mundo.md) · [Recorrido manual](../prompts/MOTOR-15-recorrido-manual.md) · [Estado](../estado.md) · evidencia en [`evidencia-motor15/`](evidencia-motor15/00-LEEME.md) ([resumen](evidencia-motor15/01-RESUMEN.md) · [diccionario](evidencia-motor15/DICCIONARIO.md)) · bloque C: [esencial y workers](motor15-c-esencial-y-workers.md) · [matriz de consultas](motor15-c-matriz-consultas.md)
 
+> **Suplemento MOTOR-15B** ([`motor15b.md`](motor15b.md)): cierra la consecuencia pendiente de RG-I03 (técnica de categoría 2 con libre adicional), la numeración 45.4.x suministrada, la procedencia de las auditorías (el lote analizado no contenía los C15) y la equivalencia con campos y observador; corrige un crédito de robo omitido y el relevo obligatorio antes del tiempo muerto. Este informe es **histórico** y se conserva tal cual (incluidos los límites que 15B cierra: «sanción adicional pendiente», «45.4.x sin lectura directa» y la cifra intermedia de ≈23 s).
+
 **Veredicto honesto:** funcionalmente completo en el alcance del encargo, con los límites de §9; **objetivo de coste NO alcanzado** (100 partidos en ≈27 s con 4 workers frente a 5 s); calibración deportiva **no realizada**; pruebas de Dennis **pendientes**.
 
 ## 1. Base

@@ -1,0 +1,117 @@
+{
+ "generated_by": "node scripts/m15b-package.js",
+ "code_commit": "6a6814c",
+ "engine": "beM-motor-0.15.1-MOTOR15B",
+ "axes": [
+  {
+   "axis": "Cierre MOTOR-15B",
+   "state": "C1–C4 y R completos en el alcance; límites declarados",
+   "detail": "RG-I03 con técnica de categoría 2 y libre adicional; art. 45 con numeración suministrada; auditorías con fuente real, C15-05 leído y AUD26 clasificado; equivalencia con campos y observador; defecto de crédito de robo corregido y defecto latente del relevo obligatorio. Límite: sin lectura directa de los PDF; C15-06 no se audita en lote."
+  },
+  {
+   "axis": "Robos",
+   "state": "Error de crédito corregido; evaluación de frecuencia pendiente",
+   "detail": "Balón suelto ganado en disputa real: 7 créditos añadidos en 5 casos (9 → 16 robos en cinco encuentros), hechos y sorteos idénticos. Coeficientes conservados; tasas y toque defensivo para MOTOR-16/17."
+  },
+  {
+   "axis": "Rendimiento",
+   "state": "Objetivo de 5 s pendiente; referencia histórica identificada",
+   "detail": "Cien partidos world-essential con 4 workers: 27.2 s (MOTOR-15, histórico, no repetido). 200 partidos: estimación lineal 54 s, no ejecutada. Perfil de CPU leído: ver 07-RENDIMIENTO.csv."
+  },
+  {
+   "axis": "Evaluación deportiva",
+   "state": "Calibración poblacional pendiente (MOTOR-16/17)",
+   "detail": "Ninguna probabilidad calibrada; semillas SEM15 sin tocar. Lo nuevo de MOTOR-15B es normativa y crédito."
+  },
+  {
+   "axis": "Aceptación",
+   "state": "Pruebas de Claude hechas; recorrido manual de Dennis pendiente",
+   "detail": "Suite, comprobadores y recorrido real de Chromium ejecutados por Claude (13-NAVEGADOR.md). Recorrido manual de Dennis, otros navegadores y Node 24: no ejecutados. Nada de MOTOR-08…15B está marcado como aceptado por Dennis."
+  }
+ ],
+ "versions": {
+  "extension": "SEM-MOTOR15B-20261017",
+  "statsPolicy": "EST-MOTOR15B-R1 / ACTA-MOTOR15B-R1",
+  "reference": "83–98, 6.684 sorteos (sin cambio respecto a MOTOR-15)",
+  "snapshot": "beM-match-snapshot/1 (motor beM-motor-0.15.1-MOTOR15B)",
+  "package": "beM-m15b-quick-review/1"
+ },
+ "coverage": [
+  [
+   "Auditorías por universo",
+   "3 universos × 32 (C15-normales 16 conformes · 16 inconclusas · 0 señal; extremo y histórico en 09)"
+  ],
+  [
+   "AUD17 con exposición crítica",
+   "conforme/observada (extremo C15-05); normales inconcluso/insuficiente; histórico inconcluso/insuficiente"
+  ],
+  [
+   "Cadenas de saque (histórico)",
+   "{\"ejecutada\":511,\"interrumpida_fin_periodo\":8,\"sin_entrega_valida\":1,\"sin_cierre_tras_desenlace\":2}"
+  ],
+  [
+   "Capacidades auditadas",
+   "32 de 32 en cada universo"
+  ],
+  [
+   "Filas normativas de la matriz",
+   "39"
+  ],
+  [
+   "Comparaciones de equivalencia",
+   "49 filas (43 igualdades; cada una con campos y evidencia)"
+  ]
+ ],
+ "cost": [
+  [
+   "Pared de 100 partidos (4 workers, frío; MOTOR-15, histórico)",
+   "27.2 s",
+   "medición histórica"
+  ],
+  [
+   "Producción del lote por encuentro (ejecución/100)",
+   "272 ms",
+   "producción del lote, NO latencia"
+  ],
+  [
+   "Mediana de trabajo individual",
+   "993.1 ms",
+   "medición histórica (solapada entre workers)"
+  ],
+  [
+   "Objetivo de producto",
+   "5 s",
+   "no alcanzado"
+  ],
+  [
+   "200 partidos",
+   "54 s",
+   "ESTIMACIÓN (no ejecutada)"
+  ],
+  [
+   "Pico de memoria (proceso completo)",
+   "502 MiB RSS",
+   "medición histórica"
+  ]
+ ],
+ "costNote": "Entorno histórico: Intel(R) Xeon(R) Processor @ 2.10GHz; 4 vCPU; 15.7 GiB; Node v22.22.0; commit b6756bf. MOTOR-15B no repite el benchmark: no cambia el coste del resolutor. El tiempo por trabajo con varios workers se solapa y no equivale a la espera del usuario.",
+ "reports": [
+  {
+   "path": "docs/tecnico/motor15b.md",
+   "what": "documentación técnica de la entrega"
+  },
+  {
+   "path": "docs/tecnico/evidencia-motor15b/",
+   "what": "tablas pequeñas versionadas y resumen de cierre"
+  },
+  {
+   "path": "docs/tecnico/motor15.md",
+   "what": "MOTOR-15 (histórico) con la nota de lo que cierra MOTOR-15B"
+  },
+  {
+   "path": "docs/prompts/MOTOR-15B-recorrido-manual.md",
+   "what": "recorrido manual para Dennis"
+  }
+ ],
+ "checker": "node scripts/m15b-package-check.js out/motor15b/MOTOR-15B-revision-rapida.zip"
+}

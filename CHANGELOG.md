@@ -2,6 +2,14 @@
 
 Registro breve de entregas. Una entrada por entrega; las más recientes primero.
 
+## MOTOR-15B — Cierre de MOTOR-15 y diagnóstico técnico de robos — 2026-10-18
+
+- **Norma:** RG-I03 administra el punto concedido, la técnica de categoría 2 al defensor y un libre adicional real, con una única reanudación; art. 45 numerado (45.4.1–45.4.8, 45.6). Procedencia: síntesis de ChatGPT; sin lectura directa de Claude.
+- **Auditorías:** fuentes reales identificadas (el lote analizado en MOTOR-15 no contenía los C15); C15-01…05 reproducidos con semillas explícitas; AUD17 por ámbito y tarea (C15-05 leído aparte); AUD26 clasificado por cadena.
+- **Robos:** defecto de crédito demostrado y corregido (balón suelto ganado en disputa real): hechos, sorteos y marcador idénticos, solo cambia el crédito (`EST/ACTA-MOTOR15B-R1`); coeficientes conservados; toque defensivo no representado (MOTOR-16/17).
+- **Otros:** relevo obligatorio antes del tiempo muerto (defecto latente de MOTOR-15), cierre legible de cadenas de saque, guion de C15-06 aplicado (en MOTOR-15 no se aplicó), `bytes` UTF-8 reales.
+- Motor `0.15.1-MOTOR15B`, `SEM-MOTOR15B-20261017`; referencia 83–98 / 6.684 sorteos sin cambio. **Pendiente de Dennis**; benchmark no repetido; objetivo de coste y calibración pendientes. Ver [`docs/tecnico/motor15b.md`](docs/tecnico/motor15b.md).
+
 ## MOTOR-15 — Cierre funcional, compatibilidad y rendimiento del mundo — 2026-10-17
 
 - **Panel:** corregido «reading 'policies'» con perfiles anteriores (sin `coach`); tarjeta de compatibilidad y recuperación explícita, sin convertir ni activar nada solo.
