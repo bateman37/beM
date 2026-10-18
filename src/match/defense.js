@@ -96,17 +96,23 @@ P.defScore = function defScore(pid, recipe, tags, retained) {
 
 // Mejor reparto de defensores (en orden de identificador) entre ranuras, respetando asignaciones forzadas. Determinista: ante empate
 // gana la primera permutación en orden estable. Son a lo sumo 120 combinaciones: no hay búsqueda de futuros de partido.
-function bestAssignment(defs, slots, score, forced) {
+function bestAssignment(defs, slots, score, forced, prune = false) {
   const ds = [...defs].sort();
   const taken = new Set(); const out = {};
   for (const [slot, d] of Object.entries(forced)) { if (ds.includes(d) && slots.includes(slot) && !taken.has(d) && !(slot in out)) { out[slot] = d; taken.add(d); } }
   const freeSlots = slots.filter((s) => !(s in out)); const freeDefs = ds.filter((d) => !taken.has(d));
   const memo = new Map(); const sc = (s, d) => { const k = `${s}\u0000${d}`; let v = memo.get(k); if (v === undefined) { v = score(s, d); memo.set(k, v); } return v; }; // MOTOR-14 (coste): puntuación pura por pareja, una vez por llamada
   let best = null; let bestV = -Infinity;
+  // MOTOR-17 (P17): poda EXACTA. `ub[i]` = suma de la mejor puntuación posible de las ranuras i… (con cualquier defensor libre y cada una por separado): ningún reparto completo de una rama puede superarlo. Solo se descarta una
+  // rama cuyo máximo alcanzable es MENOR que el mejor ya hallado con margen (1e-9 ≫ 1e-12 del desempate y ≫ el error de punto flotante): una rama así nunca habría sustituido a `best`, de modo que el primer óptimo en el orden estable es el mismo.
+  const nF = freeSlots.length; const ub = new Array(nF + 1).fill(0);
+  // Solo sin rastreo de parámetros (registro `minimal`/esencial): con `full` el orden de primera consulta numera las filas consultadas y debe ser idéntico al de A17.
+  if (!prune || freeDefs.length < nF) ub.fill(Infinity); else { for (let i = nF - 1; i >= 0; i--) { let mx = -Infinity; for (const d of freeDefs) { const x = sc(freeSlots[i], d); if (x > mx) mx = x; } ub[i] = ub[i + 1] + mx; } }
   const rec = (i, used, acc, v) => {
-    if (i === freeSlots.length) { if (v > bestV + 1e-12) { bestV = v; best = { ...acc }; } return; }
+    if (i === nF) { if (v > bestV + 1e-12) { bestV = v; best = { ...acc }; } return; }
+    if (v + ub[i] < bestV - 1e-9) return;
     for (const d of freeDefs) { if (used.has(d)) continue; used.add(d); acc[freeSlots[i]] = d; rec(i + 1, used, acc, v + sc(freeSlots[i], d)); used.delete(d); delete acc[freeSlots[i]]; }
-    if (freeDefs.length < freeSlots.length) rec(i + 1, used, acc, v - 1e6); // MOTOR-14 (inferioridad): con menos defensores que ranuras una queda SIN defensor (concesión estructural); con los cinco completos esta rama nunca se explora
+    if (freeDefs.length < nF) rec(i + 1, used, acc, v - 1e6); // MOTOR-14 (inferioridad): con menos defensores que ranuras una queda SIN defensor (concesión estructural); con los cinco completos esta rama nunca se explora
   };
   rec(0, new Set(), {}, 0);
   return { ...out, ...best };
@@ -144,7 +150,7 @@ P.computeReference = function computeReference(t) {
   if (org.kind === 'individual') {
     const forced = {}; for (const m of marks) { forced[m.attacker] = m.defender; why.push(`marca manual ${m.defender} → ${m.attacker}`); }
     const score = (att, d) => { const f = rep.attackerFunctions[fnMap[att]]; return this.defScore(d, f.fit, f.tags, prev.has(`${att}|${d}`)); };
-    const asg = bestAssignment(defs, atts, score, forced);
+    const asg = bestAssignment(defs, atts, score, forced, !this.tracker);
     for (const att of atts) { ref.assign[att] = asg[att] ?? null; if (asg[att]) { ref.defFn[asg[att]] = att; pairs.add(`${att}|${asg[att]}`); } }
   } else {
     const fnKeys = Object.keys(org.functions);
@@ -158,7 +164,7 @@ P.computeReference = function computeReference(t) {
     }
     if (org.kind === 'boxAndOne' && e.objective) { /* el perseguidor se elige por adecuación al encargo (función X) salvo marca */ }
     const score = (slot, d) => { const f = org.functions[slot]; return this.defScore(d, f.fit, f.tags, prev.has(`${slot}|${d}`)); };
-    const asg = bestAssignment(defs, fnKeys, score, forced);
+    const asg = bestAssignment(defs, fnKeys, score, forced, !this.tracker);
     for (const k of fnKeys) { ref.fnOwner[k] = asg[k] ?? null; if (asg[k]) { ref.defFn[asg[k]] = k; pairs.add(`${k}|${asg[k]}`); } }
     // cobertura: cada atacante recibe la función de su área (primera referencia o relevo) sin que una función cubra a dos a la vez
     const pending = [...atts].sort((a, b) => rep.attackerPriority.indexOf(fnMap[a]) - rep.attackerPriority.indexOf(fnMap[b]) || (a < b ? -1 : 1));
@@ -186,10 +192,12 @@ P.computeReference = function computeReference(t) {
 // Referencia vigente: se recalcula solo ante un cambio pertinente (posesión, disposición, reorganización, quinteto o plan).
 P.defRef = function defRef(t) {
   const poss = this.poss; const s = this.def[t];
-  const key = [poss?.id ?? '-', poss?.layout?.dis ?? '-', poss?.layout?.director ?? '-', poss?.reorgCount ?? 0, this.lineupId[0], this.lineupId[1], this.defPlanVer[t], s.eff?.org ?? '-', s.eff?.objective ?? '-'].join('|');
-  if (s.ref && s.key === key) return s.ref;
+  // MOTOR-17 (P17): la clave se compara por componentes (sin construir una cadena en cada consulta; se consulta muchas veces por posesión). Misma condición de invalidación que la clave `a|b|c…` anterior.
+  const k = s.keyParts; const lay = poss?.layout; const e = s.eff;
+  const id = poss?.id ?? '-'; const dis = lay?.dis ?? '-'; const dir = lay?.director ?? '-'; const reorg = poss?.reorgCount ?? 0; const l0 = this.lineupId[0]; const l1 = this.lineupId[1]; const pv = this.defPlanVer[t]; const eo = e?.org ?? '-'; const ob = e?.objective ?? '-';
+  if (s.ref && k && k[0] === id && k[1] === dis && k[2] === dir && k[3] === reorg && k[4] === l0 && k[5] === l1 && k[6] === pv && k[7] === eo && k[8] === ob) return s.ref;
   const ref = this.computeReference(t);
-  s.ref = ref; s.key = key;
+  s.ref = ref; s.keyParts = [id, dis, dir, reorg, l0, l1, pv, eo, ob];
   this.cover('referencias defensivas calculadas');
   return ref;
 };

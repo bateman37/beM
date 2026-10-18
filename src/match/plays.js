@@ -106,7 +106,19 @@ function matchable(roleList, candOf) {
 
 // Asigna funciones de la ficha. Devuelve { roles, def, spec, layout } o { fail } (motivo funcional, no nominal).
 // `dry` evalúa realizabilidad sin sorteos. `poss` aporta las negaciones observadas (POS10).
-P.assignRoles = function assignRoles(team, playId, director, layout, poss, { dry = false } = {}) {
+// MOTOR-17 (P17): la comprobación en seco (`dry`) es una función PURA de (ficha, director, disposición y su mapa de funciones, jugadores en pista y disponibles): no sortea ni registra nada. Se memoriza por encuentro
+// (nunca compartida entre encuentros) solo sin rastreo de parámetros (registro `minimal`/esencial: con `full` cada consulta numera filas y debe repetirse igual que en A17) y sin contexto de negación (depende de la posesión).
+const LAYOUT_SIG = new WeakMap();
+const layoutSig = (layout) => { let v = LAYOUT_SIG.get(layout); if (v === undefined) { v = `${layout.dis}~${Object.entries(layout.map).map(([id, fn]) => `${id}:${fn}`).join(',')}`; LAYOUT_SIG.set(layout, v); } return v; };
+P.assignRoles = function assignRoles(team, playId, director, layout, poss, opts = {}) {
+  if (!opts.dry || this.tracker) return this.assignRolesImpl(team, playId, director, layout, poss, opts);
+  const spec = this.playDef(playId).spec; if (spec.requires?.context === 'denial') return this.assignRolesImpl(team, playId, director, layout, poss, opts);
+  const key = `${team}|${playId}|${director}|${layoutSig(layout)}|${this.onCourt(team).filter((id) => this.ps[id].available).join(',')}`;
+  const memo = (this.dryRoleMemo ??= new Map()); let v = memo.get(key);
+  if (v === undefined) { const r = this.assignRolesImpl(team, playId, director, layout, poss, opts); v = r.ok ? true : r.fail; memo.set(key, v); }
+  return v === true ? { ok: true, spec, layout } : { fail: v };
+};
+P.assignRolesImpl = function assignRolesImpl(team, playId, director, layout, poss, { dry = false } = {}) {
   const play = this.playDef(playId); const spec = play.spec;
   const roles = { director };
   const taken = new Set([director]);
@@ -133,7 +145,8 @@ P.assignRoles = function assignRoles(team, playId, director, layout, poss, { dry
   }
   if (dry) return { ok: true, spec, layout };
   // orden de ocupación: obligatorias antes que opcionales; dentro, la de menos candidatos primero (estable)
-  const order = [...pools].sort((a, b) => ((a[1].opt ? 1 : 0) - (b[1].opt ? 1 : 0)) || (candOf(a[0]).length - candOf(b[0]).length));
+  const nCand = new Map(pools.map(([r]) => [r, candOf(r).length])); // MOTOR-17 (P17): una sola evaluación por función antes de ocupar ninguna (el orden resultante es el mismo)
+  const order = [...pools].sort((a, b) => ((a[1].opt ? 1 : 0) - (b[1].opt ? 1 : 0)) || (nCand.get(a[0]) - nCand.get(b[0])));
   for (const [role, def] of order) {
     let cands = candOf(role);
     // no consumir a quien otra función obligatoria pendiente necesita
