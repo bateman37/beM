@@ -12,7 +12,7 @@ Este documento reúne el diseño por materias. Para utilizarlo no es necesario r
 
 La experiencia buscada es un partido completo de baloncesto, con jugadores diferentes y decisiones tácticas reconocibles. El cálculo avanza por acontecimientos pertinentes dentro de posesiones, conserva un contexto activo pequeño y reutiliza operaciones compartidas. El primer resultado deportivo que debe demostrarse es el partido completo con motor, tácticas, capacidades, dirección, administración y estadísticas conectados.
 
-> **Exportado generado: no editar a mano.** Reconstruido con `python3 scripts/docs/build_engine_docs.py` a partir de las secciones de [`docs/motor/`](../motor/README.md), en el orden de [`manifest.json`](../motor/manifest.json). La referencia congelada de la importación es [`unificado-original.md`](../historico/motor/unificado-original.md) (SHA-256 `df05edda480c7da556ba6a24009bedcd0a7f96c25e54f57c983951e63fc01fdd`). Revisión de composición: `DOC-001-r1`. Huella SHA-256 del contenido compuesto (sin esta nota): `e15be3b1c2818aefdfe21c64b7188c877ccd4fe63e7c72afef070f77fad37ec3`. Los índices de este archivo se generan a partir de los encabezados; el índice original se conserva solo en la copia histórica. Diseño definido no equivale a implementado, validado ni calibrado.
+> **Exportado generado: no editar a mano.** Reconstruido con `python3 scripts/docs/build_engine_docs.py` a partir de las secciones de [`docs/motor/`](../motor/README.md), en el orden de [`manifest.json`](../motor/manifest.json). La referencia congelada de la importación es [`unificado-original.md`](../historico/motor/unificado-original.md) (SHA-256 `df05edda480c7da556ba6a24009bedcd0a7f96c25e54f57c983951e63fc01fdd`). Revisión de composición: `DOC-001-r1`. Huella SHA-256 del contenido compuesto (sin esta nota): `c13be41bd6f52738e5e03aee7d2e41ebbb11e44fc4741f27eebc5c12dcac0887`. Los índices de este archivo se generan a partir de los encabezados; el índice original se conserva solo en la copia histórica. Diseño definido no equivale a implementado, validado ni calibrado.
 
 ## Índice general
 
@@ -293,6 +293,7 @@ La unificación solicitada queda realizada mediante este documento; deja de ser 
 - [18.1. Reglamento y administración deportiva](#grupo-18-01)
 - [18.2. Reglas y acontecimientos menos frecuentes](#grupo-18-02)
 - [18.3. Reglamento: REG01–REG04](#grupo-18-03)
+- Nota de implementación MOTOR-15B (norma e interferencia)
 
 **[19. Registro, conservación y reproducción](#cap-19)**
 
@@ -317,6 +318,7 @@ La unificación solicitada queda realizada mediante este documento; deja de ser 
 - [20.11. Creación, pases y asistencias](#grupo-20-11)
 - [20.12. Pérdidas, recuperaciones y robos](#grupo-20-12)
 - [20.13. Tapones, rebotes y balones disputados](#grupo-20-13)
+- Nota de implementación MOTOR-15B (robo)
 - [20.14. Faltas, sanciones, lesiones y disponibilidad](#grupo-20-14)
 - [20.15. Minutos, tramos y más-menos](#grupo-20-15)
 - [20.16. Posesiones, continuaciones y eficiencia](#grupo-20-16)
@@ -418,10 +420,12 @@ La unificación solicitada queda realizada mediante este documento; deja de ser 
 - [28.1. Población, modalidades y conservación](#grupo-28-01)
 - [28.2. Auditorías y comparaciones](#grupo-28-02)
 - [28.3. Casos de aceptación del conjunto](#grupo-28-03)
+- Nota de implementación MOTOR-15B (equivalencia)
 - [28.4. Conciliaciones y aceptación del catálogo](#grupo-28-04)
 - [28.5. Casos de atribución que debe cubrir el diseño](#grupo-28-05)
 - [28.6. Auditorías y casos de aceptación](#grupo-28-06)
 - [28.7. Referencias y auditorías: REF y LAB](#grupo-28-07)
+- Nota de implementación MOTOR-15B (auditorías)
 - [28.8. Criterios de aceptación documental y funcional](#grupo-28-08)
 - [28.9. Modalidades, presentación y rendimiento](#grupo-28-09)
 - [28.10. Comprobación sobre partidos completos](#grupo-28-10)
@@ -6762,6 +6766,10 @@ Recepción independiente, técnica específica de cada tipo de pase o repertorio
 | Cambios/pausas | Solicitante, ventana, concesión, recursos y reanudación. |
 | Combinadas/especiales | Orden de administración, correcciones y terminación aplicable. |
 
+### Nota de implementación MOTOR-15B (norma e interferencia)
+
+Aclaraciones registradas por el encargo MOTOR-15B (`docs/tecnico/motor15b.md`) sin cambiar este funcional: la interferencia defensiva en el último libre concede un punto y carga al defensor infractor una **técnica de categoría 2** con un libre adicional (falta individual y colectiva; no suma para la descalificación por técnicas de categoría 1) y una única reanudación aplicable; las nueve operaciones de corrección del art. 45 se enlazan a 45.4.1–45.4.8 y 45.6. Procedencia: síntesis de ChatGPT sobre FIBA 2026 v1.1 (31.3.3, 36.2/36.3, 45.4, 45.6); **sin lectura directa de Claude** (HTTP 403). Las otras tres consecuencias de interferencia (RG-I01, I02, I04) siguen siendo provisionales.
+
 <a id="cap-19"></a>
 
 ## 19. Registro, conservación y reproducción
@@ -8048,6 +8056,10 @@ Se desean dos familias de indicador:
 2. **Por oportunidades registradas:** capturas/ofertas de rebote elegibles dentro de un universo explícito de fallos.
 
 No siempre coinciden. La segunda puede excluir finales de periodo, sanciones con balón retenido u otras situaciones sin disputa; la primera puede verse afectada por cómo se acreditan rebotes de equipo. Se etiquetan de manera distinta y se conserva el denominador.
+
+### Nota de implementación MOTOR-15B (robo)
+
+Síntesis de B15-N2 (cap. 7) incorporada por MOTOR-15B (`docs/tecnico/motor15b.md`): el robo exige un toque o recuperación defensiva resuelta, sin requerir control inmediato ni un intento previo de arrebato; todo robo tiene una pérdida individual rival. El motor acredita hoy el robo (a) por interceptación o arrebato resueltos (decisión de intervenir + control) y (b) por la **disputa real de un balón suelto** tras error atacante ganada por el defensor (política `ACTA-MOTOR15B-R1`). No conserva el toque ni el primer defensor que desvía; una pérdida viva recuperada sin intervención resuelta **no** se acredita (límite declarado, pendiente de MOTOR-16/17). Los partidos anteriores no se reinterpretan con la política nueva.
 
 <a id="grupo-20-14"></a>
 
@@ -12446,6 +12458,10 @@ Una nueva ficha debe poder expresarse mediante requisitos, funciones y operacion
 
 Si añadir contenido exige otro simulador, una red de excepciones por cruce o nuevos estados que duplican los existentes, se revisa el diseño antes de ampliar. La complejidad útil debe verse en el partido y en las decisiones del usuario.
 
+### Nota de implementación MOTOR-15B (equivalencia)
+
+Cada comparación de equivalencia declara entradas, versión, órdenes efectivas, niveles o modos, campos contrastados, observador y evidencia (`docs/tecnico/motor15b.md`). Completo, reducido y esencial se comparan con el mismo observador incremental (`TRAYINC-MOTOR15-R1`) y, además, acta y créditos, estados, órdenes e incidencias; las huellas de contratos distintos (`TRAY-MOTOR12-R1` y `TRAYINC-MOTOR15-R1`) no se comparan entre sí. Una corrección de crédito no iguala los campos históricos: se distingue la igualdad dentro de una versión de la diferencia legítima entre versiones, con su causa.
+
 <a id="grupo-28-04"></a>
 
 ### 28.4. Conciliaciones y aceptación del catálogo
@@ -12765,6 +12781,10 @@ Un promedio conveniente no compensa que una familia monopolice toda producción,
 Se conserva base y candidata, entradas, hipótesis, cambios, métricas, muestra y limitaciones. Las mismas semillas pueden ayudar a comparar, pero un cambio de decisiones puede cambiar también la secuencia de consumos aleatorios; no se promete identidad contrafactual de cada acción.
 
 El resultado admite mantener, ajustar, descartar o recoger más evidencia. No se aprueba un perfil por una sola victoria ni se persigue corregir un marcador elegido.
+
+### Nota de implementación MOTOR-15B (auditorías)
+
+Una auditoría identifica sus fuentes reales (lote, caso, intento, semilla, versión) y el informe incluye el universo efectivo (`docs/tecnico/motor15b.md`). AUD17 se lee por ámbito y tarea con la energía registrada en cada término (no el estado final), con el caso extremo evaluado aparte; AUD26 clasifica cada cadena de saque con su última transición (ejecutada, sin entrega válida con causa, interrumpida por final de periodo, sin cierre tras desenlace). No se persigue obtener 32 auditorías conformes.
 
 <a id="grupo-28-08"></a>
 

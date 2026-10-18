@@ -170,8 +170,8 @@ export function capacityRows(capUse, ctx) {
 }
 
 // Fila de `partidos` (fragmento por intento): el empaquetado la completa con la agenda.
-export function matchFacts(res, ctx, validity) {
+export function matchFacts(res, ctx, validity, { skipFingerprint = false } = {}) {
   const fin = res.status === 'finished'; const [h, a] = res.score;
-  return { score_home: fin ? h : res.score?.[0] ?? null, score_away: fin ? a : res.score?.[1] ?? null, winner: validity.valid ? (h === a ? 'tie' : h > a ? 'home' : 'away') : null, periods: res.periodScores?.length ?? null, overtime_periods: Math.max(0, (res.periodScores?.length ?? 4) - 4), game_tenths: res.events.reduce((s, e) => s + (e.durationTenths ?? 0), 0), events: res.events.length, possessions: res.diagnostics?.possessions ?? null, steps: res.result?.stepCount ?? null, draws: res.diagnostics?.sportingDraws ?? null, reconciliation_ok: validity.reconciliation_ok, analysis_ok: validity.analysis_ok, trajectory_fp: res.events.length ? trajectoryFingerprint(res) : null };
+  return { score_home: fin ? h : res.score?.[0] ?? null, score_away: fin ? a : res.score?.[1] ?? null, winner: validity.valid ? (h === a ? 'tie' : h > a ? 'home' : 'away') : null, periods: res.periodScores?.length ?? null, overtime_periods: Math.max(0, (res.periodScores?.length ?? 4) - 4), game_tenths: res.events.reduce((s, e) => s + (e.durationTenths ?? 0), 0), events: res.events.length, possessions: res.diagnostics?.possessions ?? null, steps: res.result?.stepCount ?? null, draws: res.diagnostics?.sportingDraws ?? null, reconciliation_ok: validity.reconciliation_ok, analysis_ok: validity.analysis_ok, trajectory_fp: res.events.length && !skipFingerprint ? trajectoryFingerprint(res) : null };
 }
 export const tableText = (rows) => rows.map((r) => csvLine(r)).join('');

@@ -1,0 +1,14 @@
+requirement,source,consumer,recording,exposure,verification,state,evidence
+Consecuencia de RG-I03 (punto + técnica de categoría 2 + libre adicional + una reanudación),§4.2,incident-admin.js interferenceTechnical,hechos foul/free_throw con origenInterferencia y administracion,natural condicionada (SEM15-INT-03) y caso preparado,tests/motor15b B1; PREP-RG-I03,completo; frecuencia sin calibrar,11-NORMATIVA.csv RG-I03; integracion/PREP-RG-I03.json
+Numeración del art. 45 (45.4.1–45.4.8 y 45.6),§4.3,correction-admin.js corrections.js,hecho correction con clase y artículo,entrada tipada,tests/motor15b B2; tests/motor15 M15·4,completo con límite (sin lectura directa del PDF),11-NORMATIVA.csv ART45:*
+Fuentes reales de las auditorías y reproducción de C15-01…05,§5.1,scripts/m15b-audit.js; src/batch/schedule.js,reproduccion.json (huellas iguales),Auditorías (lotes de reproducción),scripts/m15b-audit.js,completo; C15-06 no se audita en lote (guion de órdenes),08-EQUIVALENCIA.csv; 17-TRAZABILIDAD.csv
+AUD17 con exposición de energía crítica (C15-05),§5.2,evaluators.js AUD17; analysis.js energyByTask,celdas ámbito·tarea con numerador denominador y ejemplos,Auditorías (informe),tests/motor15b B3,completo; el extremo se evalúa aparte,09-AUDITORIAS.csv
+AUD26 clasificación de cadenas y causas,§5.3,evaluators.js AUD26; project.js classifyChains,casos con caso/intento/cadena/última transición/causa,Auditorías (hallazgos),tests/motor15b B3; throwin.js chainHook,completo,09-AUDITORIAS.csv
+Equivalencia: campos y observador por comparación,§6,src/match/equivalence.js; src/batch/observer.js,informe EQV sellado; B4,Auditorías (AUD29),tests/motor15b B4; tests/motor15-c; npm run equivalence,completo con límites declarados,08-EQUIVALENCIA.csv
+Cadena de robos: rutas y contadores,§7.3–7.4,scripts/m15b-robos.js,diagnostico.json,15-ROBOS.csv,tests/motor15b B6,completo en el alcance (6 encuentros),15-ROBOS.csv; 16-CASOS-ROBOS.csv
+Crédito de robo por balón suelto ganado,§7.2,actions.js resolveLooseBall; acta.js,stats stl con fuente,Acta y análisis,tests/motor15b B6,completo,16-CASOS-ROBOS.csv
+Relevo obligatorio antes del tiempo muerto,§4.2 (retirada obligatoria),flow.js processWindow,orden de eventos,Partido,tests/motor15b B5,completo,16-CASOS-ROBOS.csv
+Rendimiento: cifras y etiquetas correctas y perfil de CPU,§8,scripts/m15b-package.js,07-RENDIMIENTO.csv,Cierre,perfil .cpuprofile leído,medido (histórico); objetivo NO alcanzado,07-RENDIMIENTO.csv
+Versiones y referencias,§9,data.js; version.js,identidad,Cierre › Versiones,tests/motor11 · motor12 · motor13,completo,12-COMPATIBILIDAD.csv
+Paquetes y comprobador,§13–§14,scripts/m15b-package*.js,ZIP fuera de Git,Cierre › Descargas,scripts/m15b-package-check.js,completo,manifest.json
+Calibración poblacional,§22,—,—,—,—,NO realizado (MOTOR-16/17),14-PENDIENTES-MOTOR16.md

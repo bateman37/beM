@@ -1,0 +1,11 @@
+item,kind,read_history,replay,continue,edit,adaptation_or_rejection,evidence
+export/9 de MOTOR-15 (motor 0.15.0-MOTOR15),formato de exportación,sí,no (motor distinto: no se aparenta reproducibilidad),no aplica,no,"rechazo con motivo: «versión del motor distinta»; el archivo se conserva",src/match/replay.js
+export/9 de MOTOR-15B (motor 0.15.1-MOTOR15B),formato de exportación,sí,sí (mismo motor y perfil congelado),no aplica,no,—,tests/motor15 M15·9; tests/motor15b B1
+export/8 (MOTOR-09..14),formato de exportación,sí,no,no,no,rechazo con motivo,src/match/replay.js
+beM-match-snapshot/1 con motor 0.15.1-MOTOR15B,guardado,sí,no aplica,sí,no,—,PREP-RG-I03 (entre la técnica y su libre adicional); SAVE-PENDIENTE; SAVE-PERIODO
+beM-match-snapshot/1 con motor 0.15.0-MOTOR15,guardado,no,no aplica,no,no,rechazo: «guardado con el motor …»; una lectura histórica no autoriza continuar con reglas distintas,tests/motor14 grupo 3
+Perfil V0 (hasta MOTOR-04),perfil en la biblioteca,"sí (identidad, módulos, filas)",no,no,no (candidata explícita desde la base actual),tarjeta de compatibilidad; original protegido intacto,tests/motor15 M15·1; scripts/browser/panel-recovery.mjs
+Perfil +SEM-MOTOR15-20261017 (sin SEM15B),perfil en la biblioteca,sí,no,no,candidata explícita,"abre con la tarjeta; no se convierte ni se activa solo; la base MOTOR-15 se conserva protegida",tests/motor15 M15·1
+Perfil +SEM-MOTOR15B-20261017,perfil base,sí,sí,sí,sí,—,scripts/check-data.js (checkMotor15b)
+Acta con política ACTA-MOTOR15-R1,acta de un partido anterior,sí,no,no,no,no se reinterpreta con ACTA-MOTOR15B-R1 (robo por balón suelto),tests/motor15b B6
+Paquete beM-m15b-quick-review/1,paquete de devolución,sí,no aplica,no aplica,no,el comprobador rechaza alterado o incompleto,scripts/m15b-package-check.js

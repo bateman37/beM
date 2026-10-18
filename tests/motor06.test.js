@@ -339,7 +339,7 @@ test('7b. cadena de saque: empieza con su ejecución, termina por resultado o nu
   assert.ok(chains.length > 60);
   const closes = {}; let ptsChains = 0; let ptsAll = 0;
   for (const { c, res } of chains) {
-    assert.ok(c.status === 'cerrada' || c.status === 'abierta');
+    assert.ok(['cerrada', 'abierta', 'interrumpida'].includes(c.status)) /* MOTOR-15B: «interrumpida» = el final de periodo impide el desarrollo (antes quedaba «abierta») */;
     if (c.cierre) { const k = c.cierre.split(':')[0]; closes[k] = (closes[k] ?? 0) + 1; }
     const evs = res.events.filter((e) => e.possessionId === c.possession);
     const own = evs.filter((e) => e.intent?.cadenaSaque === c.id); let pts = 0;
@@ -466,7 +466,7 @@ test('10. órdenes y datos de saques: export/reproducción dentro de la versión
   ]);
   assert.ok(orders.every((o) => o.state !== 'rechazada'), orders.map((o) => o.reason).join('; '));
   const res = buildResult(m); integrity(res);
-  assert.equal(res.schema, EXPORT_SCHEMA); assert.equal(res.meta.engineVersion, ENGINE_VERSION); assert.match(EXPORT_SCHEMA, /export\/[5678]$/); assert.match(ENGINE_VERSION, /MOTOR0[6789]/); // el contrato de la versión vigente lo fija motor07.test.js
+  assert.equal(res.schema, EXPORT_SCHEMA); assert.equal(res.meta.engineVersion, ENGINE_VERSION); assert.match(EXPORT_SCHEMA, /export\/[56789]$/); assert.match(ENGINE_VERSION, /MOTOR(0[6789]|15)/); // el contrato de la versión vigente lo fija motor07.test.js
   assert.ok(res.diagnostics.opportunities.length > 100 && res.diagnostics.throwInChains.length > 20, 'se exportan oportunidades y cadenas de saque');
   assert.ok(res.events.some((e) => e.type === 'throw_in' && e.intent.respuestaDefensiva === 'DSaqB03') || res.events.some((e) => e.intent?.respuestaDefensiva === 'DSaqB03'));
   const file = JSON.parse(JSON.stringify(res));

@@ -88,7 +88,8 @@ test('5. escenario: instancias sin colisión, guardar/recargar, export/import co
 
 test('6. lectores: cierres con fila colectiva conciliada, producción por 100 con mismas unidades e instrumentación sin efecto deportivo', () => {
   const res = runMatch(P.buildLabVariant(profile, players, 'LAB11-00', 'base').input, profile, { detail: 'full' });
-  assert.deepEqual(res.score, [83, 103]); assert.equal(res.diagnostics.sportingDraws, 6505);
+  const ref15 = JSON.parse(readFileSync(new URL('./fixtures/baseline-motor15b.json', import.meta.url), 'utf8'))['20261016']; // MOTOR-15: nueva referencia (la de MOTOR-14 era 83–103, 6.505 sorteos)
+  assert.deepEqual(res.score, ref15.score); assert.equal(res.diagnostics.sportingDraws, ref15.draws);
   const ix = analyze(res, { audience: 'public', team: 0 });
   for (const t of [0, 1]) { const c = ix.closures(t); assert.ok(c.reconciled); assert.equal(c.individual + c.collective.n, c.eligible); assert.ok(c.collective.n >= 0); }
   const x = ix.production100('EQ01-J03', 'pts'); assert.equal(x.complete.attacks + x.mixed.attacks + x.partial.attacks + x.absent.attacks, ix.closures(0).eligible, 'cada ataque propio está en un solo universo');
@@ -99,14 +100,14 @@ test('6. lectores: cierres con fila colectiva conciliada, producción por 100 co
   // los datos de lectura no cambian el deporte (misma proyección sin `instr`) y OB05 no es público
   assert.ok(res.events.some((e) => e.instr)); const own = analyze(res, { audience: 'own', team: 0 }).offBall(0).find((r) => r.id === 'OB05');
   assert.match(own.value, /evaluaciones de ayuda/); assert.match(ix.offBall(0).find((r) => r.id === 'OB05').value, /no autorizada/);
-  const base = JSON.parse(readFileSync(new URL('./fixtures/baseline-motor11.json', import.meta.url), 'utf8'))['20261016']; assert.deepEqual(res.score, base.score);
+  assert.deepEqual(res.score, ref15.score); // MOTOR-15: la referencia vigente (baseline-motor11.json conserva la de MOTOR-11)
   // organización por hecho: cada tiro válido está en exactamente una fila
   const o = ix.organizationsByFact(0); assert.equal(o.rows.reduce((s, r) => s + r.att, 0), o.total);
 });
 
-test('7. versiones: una fuente común y el export/8 anterior sigue reproduciéndose', () => {
-  assert.equal(APP_VERSION, 'MOTOR-14'); assert.match(appLine(), /MOTOR-14.*beM-motor-0\.9\.0-MOTOR09.*beM-match-export\/8/);
-  assert.match(profile.effectiveId, /\+SEM-MOTOR11-20261017\+SEM-MOTOR12-20261017(\+SEM-MOTOR13-20261017)?(\+SEM-MOTOR14-20261017)?$/);
+test('7. versiones: una fuente común y un export producido sin instrumentación sigue reproduciéndose', () => {
+  assert.equal(APP_VERSION, 'MOTOR-15B'); assert.match(appLine(), /MOTOR-15B.*beM-motor-0\.15\.1-MOTOR15B.*beM-match-export\/9/);
+  assert.match(profile.effectiveId, /\+SEM-MOTOR11-20261017\+SEM-MOTOR12-20261017(\+SEM-MOTOR13-20261017)?(\+SEM-MOTOR14-20261017)?(\+SEM-MOTOR15-20261017)?(\+SEM-MOTOR15B-20261017)?$/);
   const html = readFileSync(new URL('../src/lab/index.html', import.meta.url), 'utf8'); assert.ok(!/MOTOR-0\d|MOTOR-10/.test(html), 'la cabecera estática no fija una versión propia');
   const res = runMatch(P.buildLabVariant(profile, players, 'LAB11-00', 'base').input, profile, { detail: 'full' });
   const old = JSON.parse(JSON.stringify(res)); for (const e of old.events) delete e.instr; delete old.diagnostics.instrumentation; // export producido sin instrumentación

@@ -1,5 +1,6 @@
 // Selección de intención, resolución de acontecimientos y flujo de posesiones.
 // Una resolución agrupa preparación, lectura, elección y ejecución; el tiempo se descuenta una vez por hecho.
+import { flightSplit, lagConfiguredTenths, interferenceMasses, interferenceOutcome, resolveInterference } from './incidents.js';
 import { clamp, sigmoid, logit, round } from './mathx.js';
 import { shotLogit, vocationFactor } from './formulas.js';
 import { SLOTS } from './data.js';
@@ -287,7 +288,7 @@ P.durationKindFor = function durationKindFor(ex, cat) {
 };
 
 // Planifica una duración: trunca a < límite; si ni el mínimo cabe, un tiro usa la distribución urgente; si tampoco, expira.
-P.planDuration = function planDuration(spec, cat, purpose) {
+P.planDuration = function planDuration(spec, cat, purpose, { noFlight = false } = {}) {
   const lim = this.limit();
   const d = this.profile.durationSeconds;
   const isShot = cat === 'fieldShot' || cat === 'shootingFoul';
@@ -296,8 +297,15 @@ P.planDuration = function planDuration(spec, cat, purpose) {
     if (isShot && lim > Math.round(d.urgentShot[0] * 10)) { dist = d.urgentShot; factor = 1; tag = 'tiro urgente'; this.cover('ESP16 final de posesión'); }
     else return { expired: true };
   }
-  const tenths = this.sampleDuration(dist, `${purpose}:${tag}`, { factor, limit: lim });
-  return { tenths, load, tag };
+  // MOTOR-15 §7.1 (SEM15-TIR-01): el tiro de campo tiene dos hitos discretos dentro de su operación ya existente, LIBERACIÓN (inicio + duración − margen) y RESOLUCIÓN (frontera final). Lo que debe caber antes de la
+  // señal del reloj de juego es la LIBERACIÓN: la resolución puede quedar a la bocina (reloj a 0, sin tiempo negativo ni minutos posteriores). Con el reloj de posesión como límite no se extiende (violación de 24 s).
+  // El margen no añade un sorteo de duración: la misma u se proyecta sobre el rango con límite de liberación.
+  const gameBinds = this.clock < this.shotClock || !this.shotClockOn;
+  const lagCfg = isShot && !noFlight && gameBinds ? lagConfiguredTenths(this.profile) : 0;
+  const tenths = this.sampleDuration(dist, `${purpose}:${tag}`, { factor, limit: lim + lagCfg });
+  const out = { tenths, load, tag };
+  if (isShot && !noFlight) { const f = flightSplit(this.profile, tenths); out.flight = { operationTenths: tenths, lagTenths: f.lagTenths, releaseAfterTenths: f.releaseAfterTenths, crossesSignal: gameBinds && tenths >= this.clock }; }
+  return out;
 };
 
 // Procesa un límite alcanzado antes de que ocurra el hecho: bocina o reloj de posesión.
@@ -334,6 +342,27 @@ P.shotDefense = function shotDefense(zone, defender, attacker) {
   const reach = this.profile.body.contestAbilitySensitivity * (this.pl[defender].reach - this.pl[attacker].reach);
   this.note('alcance', { defensor: round(this.pl[defender].reach, 3), atacante: round(this.pl[attacker].reach, 3), ajuste: round(reach, 3) });
   return base + reach;
+};
+
+// MOTOR-15 §9.1: productor del candidato causal de asistencia. Registra lo que el núcleo REALMENTE resuelve (último pase, receptor previsto y efectivo, zona de recepción, continuidad y creación propia posterior)
+// y el motivo de cierre; no simula botes ni movimientos para contarlos y no hace otro sorteo. El núcleo no genera desvíos hacia otro destinatario: previsto = efectivo (la invalidación actúa ante el hecho tipado).
+P.assistCandidate = function assistCandidate(ex) {
+  if (!(ex.exec === 'pass' && ex.passer && ex.passer !== ex.actor)) return null;
+  const intended = ex.intendedReceiver ?? ex.actor;
+  let close;
+  if (intended !== ex.actor) close = { eligible: false, reason: 'desvío claro hacia otro destinatario' };
+  else if (ex.kind === 'transition') close = { eligible: false, reason: 'recepción en campo propio con recorrido autónomo' };
+  else if (ex.moved) close = { eligible: false, reason: 'creación propia posterior con movimiento ante defensor colocado' };
+  else if (ex.zone === 'rim' || ex.zone === 'inside') close = { eligible: true, reason: 'pintura: recepción y anotación sin abandonarla' };
+  else if (ex.window) close = { eligible: true, reason: 'continuidad de la ventaja recibida (ventana libre)' };
+  else close = { eligible: true, reason: 'tiro sin bote tras la recepción' };
+  return { passer: ex.passer, moved: !!ex.moved, window: !!ex.window, origin: ex.origin ?? null, intendedReceiver: intended, actualReceiver: ex.actor, receptionZone: ex.zone, continuity: ex.window ? 'ventaja continuada' : (ex.moved ? 'nueva creación' : 'sin bote'), ownCreation: !!ex.moved, close };
+};
+
+// MOTOR-15 §7.1: hitos discretos del tiro de campo dentro de su operación ya existente. `relojLiberacion` y `relojResolucion` son el reloj de juego (décimas restantes) en cada hito.
+P.flightRecord = function flightRecord(ex, base) {
+  const f = ex.flight; const t = base.t;
+  return { margenDecimas: f.lagTenths, operacionDecimas: f.operationTenths, relojLiberacion: t.clockBefore - f.releaseAfterTenths, relojResolucion: t.clockAfter, consumidasDecimas: t.dur, resolucionTrasSenal: f.crossesSignal, version: this.profile.shotFlight.version };
 };
 
 P.resolveShot = function resolveShot(ex, base, contact) {
@@ -377,11 +406,19 @@ P.resolveShot = function resolveShot(ex, base, contact) {
   this.perturbNote('shotConversion', mz, { pBase: round(pBase, 5), pFinal: round(p, 5), contraparteOmitidaPorOportunidad: !!ex.mdefUsed && counterIds.length > 0 });
   const made = this.bernoulli(p, `conversión:${ex.zone}`);
   // MOTOR-09: el pase final que alimenta el tiro (candidato único de asistencia) viaja con el hecho; `moved` indica creación propia con movimiento.
-  const feed = ex.exec === 'pass' && ex.passer && ex.passer !== ex.actor ? { passer: ex.passer, moved: !!ex.moved, window: !!ex.window, origin: ex.origin ?? null } : null;
+  const feed = this.assistCandidate(ex);
   const shotFact = { k: 'shot', p: ex.actor, team: ex.team, zone: ex.zone, points: sh.points, made, fromFoul: contact, feed };
   stats.push(shotFact);
-  const eff = { zona: ex.zone, pConversion: round(p, 5), pConversionBase: round(pBase, 5), entra: made, defensor: defender ?? null, ventanaLibre: !!ex.window };
-  if (made) this.addPoints(ex.team, sh.points);
+  const eff = { zona: ex.zone, pConversion: round(p, 5), pConversionBase: round(pBase, 5), entra: made, defensor: defender ?? null, ventanaLibre: !!ex.window, ...(ex.flight ? { vuelo: this.flightRecord(ex, base) } : {}) };
+  // MOTOR-15 §7.2: oportunidad de interferencia CONDICIONADA (solo un lanzamiento válido de aro/pintura sin contacto ni tapón, con participantes ya representados). Una única u por oportunidad elegible.
+  const itf = contact ? this.interferenceExclude('fieldGoal', 'falta en el tiro') : this.fieldGoalInterference(ex, made);
+  let scored = made;
+  if (itf) {
+    eff.interferencia = this.applyInterference(itf, { shotFact, stats, team: ex.team, made });
+    scored = shotFact.made;
+    eff.entra = scored; if (scored !== made) eff.entraSegunTiro = made;
+  }
+  if (scored) this.addPoints(ex.team, sh.points);
   if (contact) {
     const committer = defender;
     this.cover('falta en tiro');
@@ -393,13 +430,70 @@ P.resolveShot = function resolveShot(ex, base, contact) {
     return { cont: 'foulWindow' };
   }
   this.emit('attempt', { ...base, stats, effects: eff });
-  this.episodesAfterShot(ex, { made, pBase, contact: false });
-  if (made) {
-    this.cover(`canasta ${ex.zone}`);
+  this.episodesAfterShot(ex, { made: scored, pBase, contact: false });
+  if (itf?.side === 'offensive') { // sin puntos y posesión del rival; sin rebote ni segunda oportunidad en el mismo desenlace
+    this.cover('interferencia ofensiva');
+    this.endPossession('deadTurnover', { team: ex.team });
+    return { end: 'deadTurnover' };
+  }
+  if (scored) {
+    this.cover(itf ? 'interferencia defensiva: canasta concedida' : `canasta ${ex.zone}`);
     this.endPossession('madeFG', { team: ex.team });
     return { end: 'madeFG' };
   }
   return this.afterMiss(ex, ex.zone);
+};
+
+// ---------------------------------------------------------------- interferencia (MOTOR-15 §7.2–§7.3)
+// Libro de denominadores por tipo de oportunidad: consideradas, exclusiones, elegibilidad por lado y resultados. Nada se infiere de «todos los tiros».
+P.interferenceBook = function interferenceBook(situation) {
+  this.interfStats ??= {};
+  return (this.interfStats[situation] ??= { considered: 0, excluded: {}, eligible: { defensive: 0, offensive: 0, both: 0, none: 0 }, withoutMass: 0, drawn: 0, results: { defensive: 0, offensive: 0, none: 0 } });
+};
+P.interferenceExclude = function interferenceExclude(situation, why) { const b = this.interferenceBook(situation); b.considered += 1; b.excluded[why] = (b.excluded[why] ?? 0) + 1; return null; };
+const rankByRebound = (m, ids) => [...ids].sort((a, b) => m.reboundStrength(b) - m.reboundStrength(a) || (a < b ? -1 : 1));
+
+// Oportunidad en un tiro de campo. Defensiva: un defensor participante en la disputa/intervención (`ex.defend`, presente y disponible). Ofensiva: otro atacante ya comprometido en la disputa próxima
+// (los que cargan al rebote según el encargo vigente), nunca un receptor inventado. La infractora se elige por una regla determinista (fuerza de cierre, desempate por identificador): sin otra tirada.
+P.fieldGoalInterference = function fieldGoalInterference(ex, made) {
+  const cfg = this.profile.interference.fieldGoal; const b = this.interferenceBook('fieldGoal'); b.considered += 1;
+  if (!cfg.zones.includes(ex.zone)) { b.excluded['zona sin intervención próxima al aro'] = (b.excluded['zona sin intervención próxima al aro'] ?? 0) + 1; return null; }
+  const defender = ex.defend && this.ps[ex.defend]?.onCourt && this.ps[ex.defend].available ? ex.defend : null;
+  const crash = rankByRebound(this, this.reboundCommitments(ex.team, ex, ex.zone).crash.filter((id) => id !== ex.actor && this.ps[id].available));
+  return this.drawInterference('fieldGoal', { defensive: !!defender, offensive: crash.length > 0 }, { defensive: defender, offensive: crash[0] ?? null }, b, made);
+};
+// Oportunidad en el ÚLTIMO libre de una serie con balón vivo posterior (excluye las que reanudan con balón muerto: técnica, disruptiva). Participantes: los de la disputa de ese libre.
+P.lastFreeThrowInterference = function lastFreeThrowInterference(shooter, f, made) {
+  const rb = this.profile.rebound; const b = this.interferenceBook('lastFreeThrow'); b.considered += 1;
+  if (f.retain || f.stepOnly || (f.plan && f.plan.resume.kind !== 'afterSeries')) { b.excluded['balón muerto o sanción incompatible'] = (b.excluded['balón muerto o sanción incompatible'] ?? 0) + 1; return null; }
+  const offT = f.shotTeam; const defT = 1 - offT;
+  const off = rankByRebound(this, this.playersAtSlots(offT, rb.liveLastFreeThrowOffenseSlots).filter((id) => id !== shooter));
+  const def = rankByRebound(this, this.playersAtSlots(defT, rb.liveLastFreeThrowDefenseSlots));
+  return this.drawInterference('lastFreeThrow', { defensive: def.length > 0, offensive: off.length > 0 }, { defensive: def[0] ?? null, offensive: off[0] ?? null }, b, made);
+};
+P.drawInterference = function drawInterference(situation, eligible, who, book, made) {
+  if (eligible.defensive && eligible.offensive) book.eligible.both += 1; else if (eligible.defensive) book.eligible.defensive += 1; else if (eligible.offensive) book.eligible.offensive += 1; else { book.eligible.none += 1; return null; }
+  const masses = interferenceMasses(this.profile, situation, eligible);
+  if (!(masses.sum > 0)) { book.withoutMass += 1; return null; } // sin masa no se sortea: una oportunidad desactivada no consume azar
+  const u = this.draw(`interferencia:${situation}`); book.drawn += 1;
+  const side = interferenceOutcome(masses, u);
+  book.results[side ?? 'none'] += 1;
+  this.note(`interferencia:${situation}`, { masas: masses, u: round(u, 8), resultado: side ?? 'ninguna' });
+  if (!side) return null;
+  const res = resolveInterference(this.profile, situation, side);
+  if (!res.ok) throw new Error(`interferencia sin consecuencia válida: ${res.diagnostic}`);
+  return { situation, side, res, infractor: who[side], masses, u, madeBefore: made };
+};
+// Consecuencia sobre el hecho de tiro ya sorteado: validez, crédito extraordinario y reanudación salen de la fila (RG-I01…I04); aquí no hay otro sorteo de mérito.
+P.applyInterference = function applyInterference(itf, { shotFact, stats, team, made }) {
+  const r = itf.res;
+  const rec = { situacion: itf.situation, lado: itf.side, infractor: itf.infractor, regla: r.row, contraste: r.contrast, validez: r.validity, masas: { defensiva: itf.masses.defensive, ofensiva: itf.masses.offensive, residual: itf.masses.residual }, u: itf.u, sancionAdicional: r.additionalSanction ?? null, resumen: r.explanation };
+  if (itf.side === 'defensive') { shotFact.made = true; shotFact.conceded = 'interferencia defensiva'; rec.efecto = made ? 'el tiro ya entraba: sin cambio de marcador' : 'canasta concedida con el valor del tiro'; }
+  else {
+    if (made) { shotFact.made = false; shotFact.annulled = true; shotFact.cancelledBy = 'interferencia ofensiva'; rec.efecto = 'el tiro entraba: se anula (no es intento válido)'; } else rec.efecto = 'el tiro fallaba: fallo normal; posesión del rival sin rebote';
+    if (itf.infractor) stats.push({ k: 'tov', p: itf.infractor, team, cause: 'interferencia ofensiva' });
+  }
+  return rec;
 };
 
 P.resolveBlocked = function resolveBlocked(ex, base, blocker) {
@@ -522,7 +616,7 @@ P.foulAdmin = function foulAdmin(committer, fouled, { shooting, ftCount = 0, sho
     stats: [{ k: 'foul', p: committer, team: defTeam, kind: shooting ? 'tiro' : 'personal', teamFoul: true, sobre: fouled }],
     effects: { faltasPersonales: this.ps[committer].fouls, faltasColectivasPeriodo: this.teamFouls[defTeam][key], penalizacion: penalty, tirosLibres: n, excluido: out, causaTirosLibres: kind, regla: cons.row },
   });
-  this.pendingFoul = { fouled, n, shotTeam, shooting, shotMade, kind, shotEvent, feed };
+  this.pendingFoul = { fouled, n, shotTeam, shooting, shotMade, kind, shotEvent, feed, sanction: { id: `FAL${String(this.eventSeq).padStart(4, '0')}`, order: ++this.sanctionOrder, team: defTeam, category: 'personal', shotAction: !!shooting, shotPoints: shooting ? shotPoints : null, shotMade: !!shotMade, penalty, committer, fouled, startedLive: false } };
   this.deadBall('falta');
 };
 
@@ -549,16 +643,35 @@ P.shootFreeThrows = function shootFreeThrows(shooter, n, f, ex) {
     const mz = this.momentZ('freeThrow', [shooter], []);
     const p = perturbBinary(pBase, mz.Z, mz.alpha);
     this.perturbNote('freeThrow', mz, { pBase: round(pBase, 5), pFinal: round(p, 5) });
-    const made = this.bernoulli(p, 'libre');
-    if (made) this.addPoints(f.shotTeam, sh.points);
+    const madeShot = this.bernoulli(p, 'libre');
     const last = i === n;
-    this.emit('free_throw', {
+    // MOTOR-15 §7.2: interferencia en el último libre con disputa posible (participantes y condiciones de esa serie); un libre intermedio o con balón muerto posterior no es elegible
+    const itf = last ? this.lastFreeThrowInterference(shooter, f, madeShot) : null;
+    const ftStat = { k: 'ft', p: shooter, team: f.shotTeam, made: madeShot, series: seriesId, i, n, cause: f.kind, shooting: !!f.shooting, shotEvent: f.shotEvent ?? null, shotMade: !!f.shotMade, feed: f.feed ?? null };
+    const ftStats = [ftStat]; let interferencia;
+    if (itf) {
+      interferencia = { situacion: itf.situation, lado: itf.side, infractor: itf.infractor, regla: itf.res.row, contraste: itf.res.contrast, validez: itf.res.validity, masas: { defensiva: itf.masses.defensive, ofensiva: itf.masses.offensive, residual: itf.masses.residual }, u: itf.u, sancionAdicional: itf.res.additionalSanction ?? null, resumen: itf.res.explanation };
+      if (itf.side === 'defensive') { ftStat.made = true; ftStat.conceded = 'interferencia defensiva'; interferencia.efecto = madeShot ? 'el libre ya entraba: sin cambio' : 'punto concedido'; }
+      else { ftStat.made = false; if (itf.infractor) ftStats.push({ k: 'tov', p: itf.infractor, team: f.shotTeam, cause: 'interferencia ofensiva' }); interferencia.efecto = madeShot ? 'el libre entraba: no cuenta como convertido (intento válido fallado)' : 'el libre fallaba: posesión del rival sin rebote'; }
+    }
+    const made = ftStat.made;
+    if (made) this.addPoints(f.shotTeam, sh.points);
+    const ftEv = this.emit('free_throw', {
       team: f.shotTeam,
       intent: { origen: f.kind, serie: `${i}/${n}` },
       participants: { lanzador: shooter },
-      stats: [{ k: 'ft', p: shooter, team: f.shotTeam, made, series: seriesId, i, n, cause: f.kind, shooting: !!f.shooting, shotEvent: f.shotEvent ?? null, shotMade: !!f.shotMade, feed: f.feed ?? null }],
-      effects: { pLibre: round(p, 5), entra: made, ultimo: last },
+      stats: ftStats,
+      effects: { pLibre: round(p, 5), entra: made, ultimo: last, ...(interferencia ? { interferencia } : {}) },
     });
+    // MOTOR-15B §4.2 (RG-I03): la interferencia defensiva en el último libre concede el punto (ya acreditado arriba, una sola vez) y administra una técnica de categoría 2 con un libre adicional
+    // por la cola común. La decisión de interferencia ya se sorteó: aquí no hay otro sorteo de procedencia.
+    if (itf?.side === 'defensive' && itf.res.additionalSanction?.status === 'administrada') { this.cover('interferencia defensiva en el último libre'); return this.interferenceTechnical(itf, f, ftEv, seriesId); }
+    if (itf?.side === 'offensive') { this.cover('interferencia ofensiva en el último libre'); this.endPossession('deadTurnover', { team: f.shotTeam }); return { end: 'deadTurnover' }; }
+    if (last && f.stepOnly) return { cont: 'incident' }; // MOTOR-15: serie intermedia de la cola de sanciones; la reanudación única la aplica la última
+    if (last && f.plan) {
+      if (f.plan.resume.kind !== 'afterSeries') return this.applyResume(f.plan.resume, f.plan, f, ex);
+      this.adminPlan = null; // balón vivo tras el último libre: continúa por la cola normal (canasta → saque del rival; fallo → rebote)
+    }
     if (last && f.retain) {
       // Falta disruptiva (OBR 2026 v1.1, arts. 37.2/38.2, 17.2.7 y 29.2.6; resumen del encargo MOTOR-08): lanza quien recibió la falta, la posesión corresponde a SU EQUIPO (no a la persona) y se reanuda
       // con saque en la línea de pista delantera, enfrente de la mesa, con exactamente catorce segundos de lanzamiento (no «al menos»: el saque de penalización no conserva un reloj mayor).
@@ -589,7 +702,10 @@ P.resolveLooseBall = function resolveLooseBall(ex, base) {
     this.poss.disorganized = true; this.poss.recovery = { kind: 'loose', holder: ex.actor };
     return { cont: 'looseKept' };
   }
-  this.emit('loose_ball', { t, team: ex.team, participants: { disputa: [ex.actor, opposer] }, stats: [{ k: 'tov', p: ex.actor, team: ex.team, cause: 'balón suelto perdido' }], effects: { pControlAtaque: round(p, 4), control: 'defensa', recupera: opposer } });
+  // MOTOR-15B §7.2 (B15-N2, cap. 7): el defensor que gana la disputa REAL de un balón suelto tras el error atacante lo recupera con balón vivo: robo, sin exigir un intento previo de arrebato (el crédito es solo
+  // estadístico: no hay otro sorteo, ni cambia la transición ni el origen de la posesión siguiente). La pérdida individual rival sigue en el mismo hecho (conciliación ROB01).
+  const stl = opposer != null ? [{ k: 'stl', p: opposer, team: 1 - ex.team, fuente: 'balón suelto ganado en disputa' }] : [];
+  this.emit('loose_ball', { t, team: ex.team, participants: { disputa: [ex.actor, opposer] }, stats: [{ k: 'tov', p: ex.actor, team: ex.team, cause: 'balón suelto perdido' }, ...stl], effects: { pControlAtaque: round(p, 4), control: 'defensa', recupera: opposer, ...(stl.length ? { robo: opposer } : {}) } });
   this.endPossession('live', { team: ex.team, origin: 'balón suelto', carrier: opposer });
   return { end: 'looseLost' };
 };
@@ -652,7 +768,7 @@ P.defenseReboundParticipants = function defenseReboundParticipants(t, n) {
   const TIER = { rim: 0, mid: 1, far: 2 }; const LINE = { back: 0, mid: 1, wing: 1, high: 1, front: 2, chase: 2 };
   const tier = (id) => {
     let base = 1;
-    if (ref.kind === 'individual') { const a = this.responsibilityOf(id); base = a ? TIER[this.rep().functions[ref.fnMap[a]].access] : 1; }
+    if (ref.kind === 'individual') { const a = this.responsibilityOf(id); const fn = a ? ref.fnMap[a] : null; base = fn ? TIER[this.rep().functions[fn].access] : 1; } // MOTOR-15 (defecto hallado por el benchmark, seed 376412896): un atacante sin función en la referencia (p. ej. el que entró tras un cambio) no tiene acceso al aro conocido: tramo medio, no un error
     else { const f = ref.defFn[id]; base = f ? LINE[org.functions[f].line] : 1; }
     return base + (committed.has(id) ? 2 : 0);
   };
@@ -717,6 +833,7 @@ P.afterMiss = function afterMiss(ex, zone) {
 // Balón muerto: abre una ventana reglamentaria (tiempo muerto / sustitución) que se resuelve en la frontera siguiente.
 P.deadBall = function deadBall(reason) {
   this.clockRunning = false;
+  this.stopLog.push({ seq: this.eventSeq, period: this.period, remaining: this.clock, reason }); // MOTOR-15: parada (balón muerto) para las ventanas del art. 45
   this.queueWindow({ reason, timeoutTeams: [0, 1], subs: true });
 };
 
@@ -734,6 +851,7 @@ P.endPossession = function endPossession(kind, info) {
     }
     case 'ftMade': this.deadBall('último libre'); this.nextPoss = { team: opp, entry: 'inbound', shotClock: toTenths(rules.shotClockSeconds), throwIn: { kind: 'endline', origin: 'último libre anotado' } }; break;
     case 'deadTurnover': this.deadBall('balón muerto'); this.nextPoss = { team: opp, entry: 'inbound', shotClock: toTenths(rules.shotClockSeconds), throwIn: { kind: 'band', origin: 'balón fuera o infracción' } }; break;
+    case 'sanctionRight': this.deadBall('derecho sancionador'); this.nextPoss = { team, entry: 'inbound', shotClock: toTenths(rules.penaltyThrowInShotClockSeconds), throwIn: info.throwIn }; break; // MOTOR-15: la cola de sanciones concede la posesión al otro equipo
     case 'live': this.nextPoss = { team: opp, entry: 'live', origin: info.origin, carrier: info.carrier, deficit: info.deficit ?? 0, shotClock: toTenths(rules.shotClockSeconds) }; this.clockRunning = true; break;
     default: throw new Error(`fin de posesión desconocido ${kind}`);
   }

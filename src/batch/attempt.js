@@ -9,11 +9,13 @@ import { makeCtx, eventStreams, buildTables, capacityRows, validityOf, matchFact
 import { streamFile, TABLES, STREAMS } from './schema.js';
 import { sha256 } from './hashing.js';
 import { jsonl } from './util.js';
+import { ESSENTIAL_LEVEL, executeEssential } from './essential.js';
 
-export const LEVEL_DETAIL = { diagnostic: 'full', reduced: 'minimal' };
+// `world-essential` (MOTOR-15 §11): el MISMO resolutor con detalle mínimo; solo cambia lo que se conserva (ver essential.js). No sustituye el registro diagnóstico del laboratorio.
+export const LEVEL_DETAIL = { diagnostic: 'full', reduced: 'minimal', 'world-essential': 'minimal' };
 
 // Simulación por defecto: motor real con órdenes programadas inyectadas en su frontera deportiva (inicio de periodo), por el mismo mecanismo de órdenes y ventanas.
-export function defaultSimulate(input, profile, { level, planned = [], profileRef = null }) {
+export function defaultSimulate(input, profile, { level, planned = [], profileRef = null, observer = null }) {
   const out = { res: null, error: null, scheduledLog: [] }; let m = null;
   try { m = createMatch(input, profile, { detail: LEVEL_DETAIL[level] ?? 'full', direction: null, profileRef }); }
   catch (e) { out.error = { phase: 'preparacion', message: e.message, validation: e.validation ?? null, stack: String(e.stack ?? '').split('\n').slice(0, 6) }; return out; }
@@ -21,9 +23,10 @@ export function defaultSimulate(input, profile, { level, planned = [], profileRe
   const fire = (cond) => { for (const o of pend) if (!o.done && cond(o)) { o.done = true; const base = { boundary: o.boundary, period: o.period, team_index: o.team, spec: o.spec, actor: 'programado', frontier_after_step: m.stepSeq }; try { const ord = m.submit({ ...o.spec, team: o.team }); out.scheduledLog.push({ ...base, order_id: ord.id, state: ord.state, reason: ord.reason ?? null }); } catch (e) { out.scheduledLog.push({ ...base, order_id: null, state: 'rechazada', reason: e.message }); } } };
   try {
     fire((o) => o.period === 1);
-    while (m.step()) { if (m.periodBreak != null) fire((o) => o.period === m.periodBreak); }
+    while (m.step()) { if (observer) observer.consume(m.events); if (m.periodBreak != null) fire((o) => o.period === m.periodBreak); }
     for (const o of pend) if (!o.done) out.scheduledLog.push({ boundary: o.boundary, period: o.period, team_index: o.team, spec: o.spec, actor: 'programado', frontier_after_step: m.stepSeq, order_id: null, state: 'no_alcanzada', reason: 'el partido terminó antes de esa frontera' });
   } catch (e) { out.error = { phase: 'simulacion', message: e.message, stack: String(e.stack ?? '').split('\n').slice(0, 6) }; }
+  if (observer) { try { out.observed = observer.finish(m); } catch (e) { out.observedError = e.message; } }
   try { out.res = buildResult(m); } catch (e) { out.error ??= { phase: 'registro', message: `no se pudo construir el resultado: ${e.message}`, stack: String(e.stack ?? '').split('\n').slice(0, 6) }; }
   if (out.res?.status === 'error' && !out.error) out.error = { phase: 'simulacion', message: out.res.errors?.[0]?.message ?? 'error de ejecución del motor', stack: out.res.errors?.[0]?.stack ?? null };
   return out;
@@ -36,6 +39,7 @@ function put(dir, rel, content, files, meta) {
 
 // Ejecuta y escribe. `task`: { frozen, ex, attemptNo, attemptId, outDir, level, prose, now, simulate }.
 export function executeAttempt(task) {
+  if (task.level === ESSENTIAL_LEVEL) return executeEssential(task, defaultSimulate);
   const { frozen, ex, attemptNo, attemptId, outDir, level, prose = 'omitted', now = Date.now, simulate = defaultSimulate } = task;
   const startedAt = now(); const t0 = performance.now(); const files = []; let error = null; let res = null; let scheduledLog = [];
   const keys = { batch_id: frozen.batch_id, variant_id: ex.variant_id, case_id: ex.case_id, match_id: ex.match_id, attempt_id: attemptId };

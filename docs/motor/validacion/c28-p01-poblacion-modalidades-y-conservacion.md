@@ -261,5 +261,9 @@ Una nueva ficha debe poder expresarse mediante requisitos, funciones y operacion
 
 Si añadir contenido exige otro simulador, una red de excepciones por cruce o nuevos estados que duplican los existentes, se revisa el diseño antes de ampliar. La complejidad útil debe verse en el partido y en las decisiones del usuario.
 
+### Nota de implementación MOTOR-15B (equivalencia)
+
+Cada comparación de equivalencia declara entradas, versión, órdenes efectivas, niveles o modos, campos contrastados, observador y evidencia (`docs/tecnico/motor15b.md`). Completo, reducido y esencial se comparan con el mismo observador incremental (`TRAYINC-MOTOR15-R1`) y, además, acta y créditos, estados, órdenes e incidencias; las huellas de contratos distintos (`TRAY-MOTOR12-R1` y `TRAYINC-MOTOR15-R1`) no se comparan entre sí. Una corrección de crédito no iguala los campos históricos: se distingue la igualdad dentro de una versión de la diferencia legítima entre versiones, con su causa.
+
 <!-- beM:pie-inicio -->
 > [Índice del tema](README.md) · Anterior: [c27-p03-diccionario-de-tablas-y-parametros](../configuracion/c27-p03-diccionario-de-tablas-y-parametros.md) · Siguiente: [c28-p02-conciliaciones-y-aceptacion-del-catalogo](c28-p02-conciliaciones-y-aceptacion-del-catalogo.md)

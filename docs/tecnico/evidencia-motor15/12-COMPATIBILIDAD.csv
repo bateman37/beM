@@ -1,0 +1,9 @@
+item,kind,read_history,replay,continue,edit,adaptation_or_rejection,evidence
+export/9 (MOTOR-15),formato de exportación,sí,sí (mismo motor y perfil congelado),no aplica,no,—,tests/motor15 M15·9; equivalencia
+export/8 (MOTOR-09..14),formato de exportación,sí,no,no,no,"rechazo con motivo: MOTOR-15 cambia el deporte y añade incidencias, correcciones y muestras de estado",src/match/replay.js
+beM-match-snapshot/1 con motor 0.15.0-MOTOR15,guardado,sí,no aplica,sí,no,—,SAVE-PENDIENTE; SAVE-PERIODO
+beM-match-snapshot/1 con motor 0.9.0-MOTOR09,guardado,no,no aplica,no,no,rechazo: «guardado con el motor …»; no se reinterpreta con otras reglas,tests/motor14 grupo 3
+Perfil V0 (hasta MOTOR-04),perfil en la biblioteca,"sí (identidad, módulos, filas)",no,no,no (candidata explícita desde la base actual),tarjeta de compatibilidad; original protegido intacto,tests/motor15 M15·1; panel-recovery.mjs
+Perfil hasta MOTOR-14 (sin SEM15),perfil en la biblioteca,sí,no,no,candidata explícita,filas requeridas ausentes: no listo para jugar,assessProfile
+Perfil +SEM-MOTOR15-20261017,perfil base,sí,sí,sí,sí,—,scripts/check-data.js
+Paquete beM-m15-quick-review/1,paquete de devolución,sí,no aplica,no aplica,no,el comprobador rechaza alterado o incompleto,scripts/m15-package-check.js

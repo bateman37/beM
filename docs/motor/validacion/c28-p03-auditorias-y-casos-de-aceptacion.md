@@ -198,5 +198,9 @@ Se conserva base y candidata, entradas, hipótesis, cambios, métricas, muestra 
 
 El resultado admite mantener, ajustar, descartar o recoger más evidencia. No se aprueba un perfil por una sola victoria ni se persigue corregir un marcador elegido.
 
+### Nota de implementación MOTOR-15B (auditorías)
+
+Una auditoría identifica sus fuentes reales (lote, caso, intento, semilla, versión) y el informe incluye el universo efectivo (`docs/tecnico/motor15b.md`). AUD17 se lee por ámbito y tarea con la energía registrada en cada término (no el estado final), con el caso extremo evaluado aparte; AUD26 clasifica cada cadena de saque con su última transición (ejecutada, sin entrega válida con causa, interrumpida por final de periodo, sin cierre tras desenlace). No se persigue obtener 32 auditorías conformes.
+
 <!-- beM:pie-inicio -->
 > [Índice del tema](README.md) · Anterior: [c28-p02-conciliaciones-y-aceptacion-del-catalogo](c28-p02-conciliaciones-y-aceptacion-del-catalogo.md) · Siguiente: [c28-p04-criterios-de-aceptacion-documental-y-funcional](c28-p04-criterios-de-aceptacion-documental-y-funcional.md)

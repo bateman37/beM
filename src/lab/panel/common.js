@@ -3,6 +3,7 @@ import { h } from '../dom.js';
 import { store } from '../store.js';
 import { buildRows, indexRows, CLASSES, COVERAGE_STATES } from '../../profiles/rows.js';
 import { validateProfile } from '../../profiles/validate.js';
+import { assessProfile } from '../../profiles/compat.js';
 import { fmtNum } from '../../profiles/util.js';
 import { PRESENTATION } from '../../match/session.js';
 
@@ -32,6 +33,16 @@ function validation(key, effective, base) {
   validCache.set(key, v); if (validCache.size > 20) validCache.delete(validCache.keys().next().value);
   return v;
 }
+const assessCache = new Map();
+function assessed(v, degraded) {
+  const k = `${v.id}:${v.hash}:${degraded ? 'd' : 'ok'}`;
+  if (!assessCache.has(k)) {
+    const a = assessProfile(v.effective);
+    assessCache.set(k, degraded ? { ...a, ready: false, error: degraded.message, summary: `no se pudo leer: ${degraded.message}` } : a);
+    if (assessCache.size > 40) assessCache.delete(assessCache.keys().next().value);
+  }
+  return assessCache.get(k);
+}
 // Contexto de la vista: perfil consultado (versión), borrador en edición y base protegida.
 export function ctx() {
   const L = lib();
@@ -40,8 +51,12 @@ export function ctx() {
   const base = L.version(L.baseId);
   const draft = ps.editing && L.draft(ps.editing)?.status === 'abierto' ? L.draft(ps.editing) : null;
   if (!draft) ps.editing = null;
-  const cRows = rowsOf(consult.effective, `v:${consult.id}:${consult.hash}`);
+  // MOTOR-15: el perfil consultado puede ser anterior o ilegible. Un fallo al construir sus filas NO tira el panel: queda registrado
+  // en `degraded` (con su traza) y el panel ofrece identidad, compatibilidad y recuperación sin depender de esa vista.
+  let cRows; let degraded = null;
+  try { cRows = rowsOf(consult.effective, `v:${consult.id}:${consult.hash}`); } catch (e) { degraded = { message: e.message, stack: String(e.stack ?? '') }; cRows = { rows: [], byId: new Map() }; }
   const bRows = rowsOf(base.effective, `v:${base.id}:${base.hash}`);
+  const assessment = assessed(consult, degraded);
   let dRows = null; let dVal = null; let dEff = null; let parentRows = null;
   if (draft) {
     dEff = L.draftEffective(draft.id);
@@ -51,7 +66,7 @@ export function ctx() {
   }
   const issuesByRow = new Map();
   if (dVal) for (const i of dVal.issues) { const k = i.group ?? i.id; if (!issuesByRow.has(k)) issuesByRow.set(k, []); issuesByRow.get(k).push(i); if (i.group) { /* los miembros del grupo la heredan */ } }
-  return { L, consult, base, draft, cRows, bRows, dRows, dVal, dEff, parentRows, issuesByRow, active: L.activeVersion() };
+  return { L, consult, base, draft, degraded, assessment, cRows, bRows, dRows, dVal, dEff, parentRows, issuesByRow, active: L.activeVersion() };
 }
 export const rowIssues = (c, row) => [...(c.issuesByRow.get(row.id) ?? []), ...(row.group ? c.issuesByRow.get(row.group) ?? [] : [])];
 

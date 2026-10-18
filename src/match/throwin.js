@@ -310,6 +310,16 @@ P.closeChain = function closeChain(poss, how) {
 // Llamado desde emit: asocia el hecho a la cadena abierta y acumula la producción DIRECTA (no los puntos de una posesión ya reorganizada).
 P.chainHook = function chainHook(ev) {
   const poss = this.poss; const c = poss?.chain; if (!c || ev.possessionId !== poss.id || ev.type === 'throw_in') return;
+  // MOTOR-15B §5.3: cierre legible. Una cadena no se queda «abierta» tras un desenlace ya ocurrido en su posesión; solo registro (no cambia hechos, sorteos ni marcador). Un final de periodo que
+  // impide el desarrollo es una INTERRUPCIÓN, no una ejecución terminada: estado propio `interrumpida`, fuera del universo de las tasas de cadenas ejecutadas.
+  if (c.status === 'abierta') {
+    if (ev.type === 'period_end' || (ev.type === 'expiry' && ev.effects?.fin === 'periodo')) { c.status = 'interrumpida'; c.cierre = 'interrumpida: final de periodo'; }
+    else if (ev.type === 'expiry') { // violaciones de reloj con balón muerto; la de 5 s del sacador la cierra su propia ruta («infracción del plazo») justo después de emitir
+      const cause = (ev.stats ?? []).find((x) => x.k === 'tov')?.cause;
+      if (cause === 'violacion_24') this.closeChain(poss, 'resultado: violación de reloj de posesión'); else if (cause === 'violacion_8') this.closeChain(poss, 'resultado: violación de 8 segundos');
+    }
+    else if (ev.type === 'advance' && ev.effects?.perdida) this.closeChain(poss, 'resultado: pérdida en el avance presionado');
+  }
   const direct = c.status === 'abierta' || c.tail;
   if (!direct) return;
   let pts = 0;

@@ -183,5 +183,9 @@ Recepción independiente, técnica específica de cada tipo de pase o repertorio
 | Cambios/pausas | Solicitante, ventana, concesión, recursos y reanudación. |
 | Combinadas/especiales | Orden de administración, correcciones y terminación aplicable. |
 
+### Nota de implementación MOTOR-15B (norma e interferencia)
+
+Aclaraciones registradas por el encargo MOTOR-15B (`docs/tecnico/motor15b.md`) sin cambiar este funcional: la interferencia defensiva en el último libre concede un punto y carga al defensor infractor una **técnica de categoría 2** con un libre adicional (falta individual y colectiva; no suma para la descalificación por técnicas de categoría 1) y una única reanudación aplicable; las nueve operaciones de corrección del art. 45 se enlazan a 45.4.1–45.4.8 y 45.6. Procedencia: síntesis de ChatGPT sobre FIBA 2026 v1.1 (31.3.3, 36.2/36.3, 45.4, 45.6); **sin lectura directa de Claude** (HTTP 403). Las otras tres consecuencias de interferencia (RG-I01, I02, I04) siguen siendo provisionales.
+
 <!-- beM:pie-inicio -->
 > [Índice del tema](README.md) · Anterior: [c17-memoria-defensiva-y-adaptacion](../direccion/c17-memoria-defensiva-y-adaptacion.md) · Siguiente: [c19-registro-conservacion-y-reproduccion](../estadisticas/c19-registro-conservacion-y-reproduccion.md)

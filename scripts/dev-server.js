@@ -8,13 +8,16 @@ import { appLine } from '../src/version.js';
 import { BatchService } from '../src/batch/api.js';
 import { AuditService } from '../src/audit/api.js';
 import { SaveService } from '../src/match/saves-api.js';
+import { ClosureService } from '../src/batch/closure-api.js';
 
 const PORT = Number(process.env.PORT ?? 5173);
 const HOST = process.env.HOST ?? '127.0.0.1';
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8', '.csv': 'text/csv; charset=utf-8', '.md': 'text/markdown; charset=utf-8', '.svg': 'image/svg+xml' };
 const ALLOWED = ['src', 'data'];
 
-export function createLabServer({ batchRoot = undefined, savesRoot = undefined } = {}) {
+export function createLabServer({ batchRoot = undefined, savesRoot = undefined, closureRoot = undefined } = {}) {
+  // MOTOR-15: vista «Cierre» (resumen y descarga de los paquetes de devolución; solo lectura, lista cerrada de nombres).
+  let closure = null; const closureService = () => (closure ??= new ClosureService(closureRoot ? { root: closureRoot } : {}));
   // MOTOR-12: servicio local de lotes (ejecución en hilo de trabajo, persistencia progresiva en out/batches/, descargas). Se crea de forma perezosa en la primera petición /api/batch.
   let batch = null; const service = () => (batch ??= new BatchService({ root: batchRoot }));
   // MOTOR-13: servicio de auditoría (lectura de evidencia; no simula). Comparte la raíz de lotes.
@@ -26,6 +29,7 @@ export function createLabServer({ batchRoot = undefined, savesRoot = undefined }
       let path = decodeURIComponent(new URL(req.url, 'http://x').pathname);
       if (path.startsWith('/api/batch/')) { await service().handle(req, res, path); return; }
       if (path === '/api/saves' || path.startsWith('/api/saves/')) { await saveService().handle(req, res, path); return; }
+      if (path === '/api/closure/summary' || path.startsWith('/api/closure/download/')) { await closureService().handle(req, res, path); return; }
       if (path.startsWith('/api/audit/')) { await auditService().handle(req, res, path); return; }
       if (path === '/' || path === '/index.html') path = '/src/lab/index.html';
       const file = normalize(join(ROOT, path));

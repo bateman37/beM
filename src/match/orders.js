@@ -429,6 +429,8 @@ P.applyCommand = function applyCommand(c) {
   if (c.kind === 'batch') return this.submitBatch(c.payload.specs, c.payload.label);
   if (c.kind === 'cancel') return this.cancel(c.payload.orderId);
   if (c.kind === 'withdraw') return this.withdrawPlayer(c.payload.pid, { cause: c.payload.cause });
+  if (c.kind === 'incident') return this.requestIncident(c.payload.incident);
+  if (c.kind === 'correction') return this.requestCorrection(c.payload.correction);
   throw new Error(`comando desconocido: ${c.kind}`);
 };
 

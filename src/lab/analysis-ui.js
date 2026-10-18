@@ -204,6 +204,7 @@ const VIEW_FN = {
     out.push(h('div', { class: 'card' }, h('h3', { style: 'margin-top:0' }, 'Jugador, pareja o grupo: con / sin'),
       h('div', { class: 'chips' }, ids.map((id) => h('button', { type: 'button', class: `chip ${sel.includes(id) ? 'on' : ''}`, onclick: () => { st.group = sel.includes(id) ? sel.filter((x) => x !== id) : [...sel, id]; repaint(); } }, id))),
       sel.length ? onOffTable(a, sel) : h('p', { class: 'small muted' }, 'Elige uno o varios jugadores (de este equipo). La presencia no obliga a un quinteto fijo: una pareja permanece aunque cambie un tercer compañero.')));
+    out.push(statesCard(res, a, t));
     return out;
   },
 
@@ -320,4 +321,15 @@ function curveSvg(curve, res) {
   const t1 = mk('text', { x: 2, y: 12, 'font-size': 10, fill: '#5d667a' }); t1.textContent = `+${max} ${res.teams[0].id}`; svg.append(t1);
   const t2 = mk('text', { x: 2, y: H - 4, 'font-size': 10, fill: '#5d667a' }); t2.textContent = `−${max} ${res.teams[1].id}`; svg.append(t2);
   return h('div', { class: 'scroll' }, svg);
+}
+
+// MOTOR-15 §9.2: estado propio por tramo (energía con número y barra; Forma y momentos como categorías; valores internos solo en diagnóstico).
+function statesCard(res, a, t) {
+  const q = a.ownStates(t);
+  if (!q.available) return h('div', { class: 'card', id: 'states-card' }, h('h3', { style: 'margin-top:0' }, `Estado propio por tramo de ${res.teams[t].id}`), h('p', { class: 'small' }, q.reason));
+  const diag = q.audience === 'diagnostic';
+  return h('div', { class: 'card', id: 'states-card' }, h('h3', { style: 'margin-top:0' }, `Estado propio por tramo de ${res.teams[t].id}`),
+    table(['Jugador', 'Forma', 'Energía inicial', ...q.boundaries.map((b) => `${b.kind === 'inicio' ? 'Inicio' : 'Final'} ${b.period <= 4 ? `C${b.period}` : `P${b.period - 4}`}`)],
+      q.rows.map((r) => [r.player, diag ? `${r.form} (${r.formValue})` : r.form, r.initialEnergy, ...q.boundaries.map((b) => { const x = r.samples.find((s) => s.n === b.n); return x ? `${x.energy.value} ${x.energy.bar} · ${Object.values(x.moments).map((m) => m.category).join('/')}${x.onCourt ? '' : ' (banquillo)'}` : '—'; })])),
+    h('p', { class: 'small muted' }, `Momentos: ${Object.values(q.rows[0]?.samples[0]?.moments ?? {}).map((m) => m.scope).join(' / ')}. Equipo (T): ${q.team.map((x) => x.category).join(' → ')}. ${q.note}`));
 }

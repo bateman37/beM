@@ -12,6 +12,8 @@ import { canonical } from '../../profiles/util.js';
 import { validateMatrix } from '../../match/regs.js';
 import { CATALOG } from '../../analysis/catalog.js';
 import { VISIBILITY } from '../../analysis/visibility.js';
+import { compatCard } from './compat-ui.js';
+import { assessProfile } from '../../profiles/compat.js';
 import { APP_VERSION, ENGINE_VERSION, EXPORT_SCHEMA } from '../../version.js';
 
 const go = (tab, extra = {}) => { ps.tab = tab; Object.assign(ps, extra); repaint(); };
@@ -25,19 +27,17 @@ export function renderHome() {
   const mods = c.draft ? Object.keys(c.draft.overrides).length : 0;
   const dv = c.draft?.validation && L.validationIsCurrent(c.draft.id) ? c.draft.validation.summary : null;
   const evals = c.draft ? L.evaluationsFor(c.draft.id).length : 0;
-  const legacyCard = L.isLegacy(a.id) ? h('div', { class: 'errbox' }, h('strong', { class: 'err' }, 'El perfil activo es anterior a MOTOR-09. '), 'Conserva su identidad y no se migra en silencio: no puede jugar el motor actual (matriz reglamentaria con series y estado de contraste, acta completa, ruta B de la memoria). ',
-    h('button', { class: 'btn', type: 'button', id: 'legacy-activate', onclick: () => { L.activate(L.baseId, 'activar la base de MOTOR-09'); window.dispatchEvent(new Event('beM:repaint')); repaint(); } }, 'Activar la base de MOTOR-09'), ' ',
-    h('button', { class: 'btn secondary', type: 'button', id: 'legacy-upgrade', onclick: () => { const r = L.upgradeCandidate(a.id); if (r.ok) { ps.editing = r.draft.id; ps.tab = 'perfiles'; } else alert(r.error); repaint(); } }, 'Crear candidata MOTOR-09 desde esta versión'),
-    h('p', { class: 'small muted' }, 'La candidata es un borrador sobre la base de MOTOR-09 con los valores que esta versión había cambiado (las filas sustituidas por la extensión no se trasladan). Hay que validarla y publicarla.')) : null;
-  const noAnalysis = !legacyCard && !L.version(a.id)?.effective?.analysis;
+  // MOTOR-15: la tarjeta de compatibilidad (identidad, módulos no compatibles y recuperación explícita) sustituye a la de «anterior a MOTOR-09».
+  const legacyCard = compatCard({ ...c, consult: a, assessment: c.consult.id === a.id ? c.assessment : assessProfile(a.effective), degraded: c.consult.id === a.id ? c.degraded : null });
+  const noAnalysis = !L.isLegacy(a.id) && !L.version(a.id)?.effective?.analysis;
   const analysisCard = noAnalysis ? h('div', { class: 'card' }, h('strong', {}, 'El perfil activo no incluye la política analítica de MOTOR-10. '), 'Puede jugar con normalidad: el análisis usa entonces los valores por defecto del código y lo identifica («por defecto del código»). ',
     h('button', { class: 'btn secondary', type: 'button', id: 'activate-m10', onclick: () => { L.activate(L.baseId, 'activar la base de MOTOR-10 (política analítica administrable)'); window.dispatchEvent(new Event('beM:repaint')); repaint(); } }, 'Activar la base de MOTOR-10'),
     h('p', { class: 'small muted' }, 'La activación es explícita y no migra nada en silencio; una versión activa anterior sigue siendo jugable y reproducible.')) : null;
-  const noPopulation = !legacyCard && !L.version(a.id)?.effective?.population;
+  const noPopulation = !L.isLegacy(a.id) && !L.version(a.id)?.effective?.population;
   const popCard = noPopulation ? h('div', { class: 'card' }, h('strong', {}, 'El perfil activo no incluye la población y el generador de MOTOR-11. '), 'Puede jugar con normalidad: Plantillas usa entonces la receta y los equipos de la base de MOTOR-11 y lo identifica («de la base de MOTOR-11»). ',
     h('button', { class: 'btn secondary', type: 'button', id: 'activate-m11', onclick: () => { L.activate(L.baseId, 'activar la base de MOTOR-11 (población de referencia, planes naturales, receta del generador y escenarios; +SEM-MOTOR11-20261017)'); window.dispatchEvent(new Event('beM:repaint')); repaint(); } }, 'Activar la base de MOTOR-11'),
     h('p', { class: 'small muted' }, 'La activación es explícita y no migra nada en silencio: tus perfiles antiguos, candidatas, planes y variantes guardadas se conservan; cargar los planes naturales sigue siendo una acción visible en Preparación.')) : null;
-  const noBatch = !legacyCard && !L.version(a.id)?.effective?.batch;
+  const noBatch = !L.isLegacy(a.id) && !L.version(a.id)?.effective?.batch;
   const batchCard = noBatch ? h('div', { class: 'card' }, h('strong', {}, 'El perfil activo no incluye los parámetros técnicos de lotes de MOTOR-12. '), 'Puede jugar con normalidad: la pestaña Lotes usa entonces la base de MOTOR-12 (con sus valores técnicos precargados) y lo identifica. ',
     h('button', { class: 'btn secondary', type: 'button', id: 'activate-m12', onclick: () => { L.activate(L.baseId, 'activar la base de MOTOR-12 (parámetros técnicos de lotes; +SEM-MOTOR12-20261017, sin cambio deportivo)'); window.dispatchEvent(new Event('beM:repaint')); repaint(); } }, 'Activar la base de MOTOR-12'),
     h('p', { class: 'small muted' }, 'Son preferencias de ejecución y exportación (concurrencia, atajos, objetivo de parte, progreso, límite de ejecuciones): no cambian ningún peso ni probabilidad de juego. La activación es explícita; un lote ya congelado conserva sus valores.')) : null;
