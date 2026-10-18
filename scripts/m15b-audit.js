@@ -21,6 +21,8 @@ const C15 = arg('c15', 'out/motor15'); const HISTORIC = arg('historic', 'out/mot
 const { profile, players } = loadData();
 const c15 = JSON.parse(readFileSync(join(C15, 'integracion/resumen.json'), 'utf8'));
 const fpOf = (id) => c15.cases.find((c) => c.id === id);
+const c15b = JSON.parse(readFileSync(join(arg('c15b', 'out/motor15b'), 'integracion/resumen.json'), 'utf8')); // reejecución de los C15 con el motor actual
+const fpB = (id) => c15b.cases.find((c) => c.id === id);
 const team = (id) => P.referenceTeam(profile, players, id);
 // C15-01 usa el escenario por defecto del perfil (planes de `profile.scenario.plans`), no el plan natural de referenceTeam: se congela con ese plan para que la entrada sea la misma.
 const scenarioTeam = (id) => { const plan = profile.scenario.plans.find((x) => x.teamId === id); return { id, name: profile.fixtureContract.teamNames[id], players: JSON.parse(JSON.stringify(players.filter((p) => p.teamId === id))), plan: JSON.parse(JSON.stringify(plan)) }; };
@@ -39,11 +41,16 @@ for (const L of lots) {
   const cr = ctl.create(spec, profile, { players, label: `M15B reproducción ${L.label}` }); if (!cr.ok) { console.error(cr.problems); process.exit(1); }
   const run = await ctl.run(cr.batchId); await run.done;
   const att = store.readIndex(cr.batchId).filter((r) => r.type === 'attempt' && r.exec_state === 'terminada');
-  const cases = L.cases.map((id, i) => { const a = att.find((x) => x.match_id === `M${String(i + 1).padStart(6, '0')}`); const ref = fpOf(id); return { c15: id, case_id: `C${String(i + 1).padStart(6, '0')}`, match_id: a?.match_id ?? null, attempt_id: a?.attempt_id ?? null, seed: ref.seed, trajectory_fp_c15: ref.trajectory_fp, trajectory_fp_reproduccion: a?.facts?.trajectory_fp ?? null, identica: a?.facts?.trajectory_fp === ref.trajectory_fp, score_c15: ref.score, score_reproduccion: a ? [a.facts.score_home, a.facts.score_away] : null, draws_c15: ref.draws, draws_reproduccion: a?.facts?.draws ?? null, valid: !!a?.valid }; });
+  const cases = L.cases.map((id, i) => { const a = att.find((x) => x.match_id === `M${String(i + 1).padStart(6, '0')}`); const ref = fpOf(id); const rb = fpB(id); const rep = a?.facts?.trajectory_fp ?? null;
+    return { c15: id, case_id: `C${String(i + 1).padStart(6, '0')}`, match_id: a?.match_id ?? null, attempt_id: a?.attempt_id ?? null, seed: ref.seed,
+      trajectory_fp_c15: ref.trajectory_fp, trajectory_fp_integracion_15b: rb.trajectory_fp, trajectory_fp_reproduccion: rep,
+      identica: rep === rb.trajectory_fp, // la reproducción es la misma ejecución que el C15 reejecutado con este motor
+      mismo_deporte_que_motor15: !!a && a.facts.score_home === ref.score[0] && a.facts.score_away === ref.score[1] && a.facts.draws === ref.draws, // marcador y sorteos de MOTOR-15; la huella de MOTOR-15 difiere solo por el crédito de robo
+      score_c15: ref.score, score_reproduccion: a ? [a.facts.score_home, a.facts.score_away] : null, draws_c15: ref.draws, draws_reproduccion: a?.facts?.draws ?? null, valid: !!a?.valid }; });
   repro.lots.push({ key: L.key, batch_id: cr.batchId, root, label: L.label, cases });
   specs.push({ kind: 'lote', id: cr.batchId, root });
 }
-repro.allIdentical = repro.lots.every((l) => l.cases.every((c) => c.identica));
+repro.allIdentical = repro.lots.every((l) => l.cases.every((c) => c.identica && c.mismo_deporte_que_motor15));
 writeFileSync(join(OUT, 'reproduccion.json'), JSON.stringify(repro, null, 1));
 
 const opts = { profile, players, equivalenceDir: 'out/equivalence' };
