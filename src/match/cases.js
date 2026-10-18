@@ -1,7 +1,8 @@
 // Casos de laboratorio preparados (MOTOR-09 §18.3): situaciones difíciles de encontrar de forma natural. Están ROTULADOS como preparados, muestran sus
 // entradas y se ejecutan sobre copias: no tocan plantillas, planes ni partidos históricos. Son flujos de hechos tipados que pasan por las mismas
 // funciones comunes (matriz REG, acta, conciliación, revisiones) que un encuentro natural; no hay un segundo motor para las excepciones.
-import { createMatch, buildMatchInput } from './index.js';
+import { createMatch, buildMatchInput, buildResult } from './index.js';
+import { snapshotMatch, restoreMatch } from './snapshot.js';
 import { buildActa } from './acta.js';
 import { reconcile } from './reconcile.js';
 import { applyRevisions } from './revisions.js';
@@ -152,6 +153,28 @@ export const LAB_CASES = [
       const c5 = combineSanctions(profile, [mk('S1', 1, 1, 'personal', { shotAction: true, shotPoints: 2, shotMade: true }), mk('S2', 0, 2, 'tecnica1')]);
       const c7 = combineSanctions(profile, [mk('S1', 1, 1, 'flagrante', { shotAction: true, shotPoints: 2, shotMade: true }), mk('S2', 0, 2, 'tecnica1')]);
       return { c5, c7, highlights: { '43-5': { estado: c5.status, compensadas: c5.compensated, reanudacion: c5.resume.kind }, '43-7': { estado: c7.status, orden: c7.steps.map((x) => x.id), reanudacion: c7.resume.kind, derechoDe: c7.resume.from } } };
+    },
+  },
+  {
+    id: 'CASO-RG-I03', title: 'Interferencia defensiva en el último libre (RG-I03, MOTOR-15B)', area: 'REG02 · REG04 · MOTOR-15B',
+    inputs: ['Copia SEM de laboratorio del perfil que solo expone la oportunidad existente (SEM15-INT-03 = 0,35; el resto de la interferencia a 0): NO mide ninguna frecuencia', 'Encuentro EQ01–EQ02 con semilla 1: el sorteo de la interferencia ya se tomó; la consecuencia no se vuelve a sortear',
+      'Se guarda entre la técnica y su libre adicional y se continúa desde el guardado'],
+    expected: ['El libre original concede UN punto (una sola vez)', 'Técnica de categoría 2 al defensor infractor: falta individual y colectiva, sin sumar a la descalificación por técnicas de categoría 1', 'Un libre adicional real (lanzador elegido por la política existente), con crédito y posibilidad de fallo',
+      'Una única reanudación: saque de fondo del rival, sin rebote ni posesión por la técnica', 'Continuar desde el guardado no repite punto, sanción ni intento (mismo marcador, mismos libres y misma acta)'],
+    run({ profile, players }) {
+      const X = JSON.parse(JSON.stringify(profile)); X.interference.lastFreeThrow.defensiveP = 0.35; X.interference.lastFreeThrow.offensiveP = 0; X.interference.fieldGoal.defensiveP = 0; X.interference.fieldGoal.offensiveP = 0;
+      const input = baseInput(X, players, 1); const drive = (m) => { while (m.step()); return buildResult(m); };
+      const a = createMatch(input, X, { detail: 'minimal' }); let guard = 0;
+      while (a.step() && guard++ < 400) { const e = a.events.at(-1); if (e.type === 'foul' && e.effects?.origenInterferencia) break; }
+      const pendiente = { libreAdicionalPendiente: !!a.adminPlan, origen: a.adminPlan?.origin ?? null, marcadorEnLaFrontera: [...a.score] };
+      const snap = JSON.parse(JSON.stringify(snapshotMatch(a, { label: 'guardado entre la técnica y su libre adicional (RG-I03)' }))); const ra = drive(a); const rb = drive(restoreMatch(snap));
+      const i = ra.events.findIndex((e) => e.effects?.interferencia?.lado === 'defensive' && e.effects.interferencia.situacion === 'lastFreeThrow');
+      const orig = ra.events[i]; const foul = ra.events.slice(i + 1).find((e) => e.type === 'foul'); const tech = ra.events.slice(i + 1).find((e) => e.type === 'free_throw'); const next = ra.events.slice(i + 1).find((e) => ['throw_in', 'rebound'].includes(e.type));
+      const highlights = { libreOriginal: { evento: orig.id, lanzador: orig.stats[0].p, interferencia: orig.effects.interferencia.lado, infractor: orig.effects.interferencia.infractor, puntoConcedido: orig.stats[0].made },
+        tecnica: { evento: foul.id, categoria: foul.effects.categoria, regla: foul.effects.regla, infractor: foul.participants.infractor, contadores: foul.effects.contadores, faltasColectivasDelPeriodo: foul.effects.faltasColectivasPeriodo, excluido: foul.effects.excluido },
+        libreAdicional: { evento: tech.id, lanzador: tech.stats[0].p, entra: tech.stats[0].made, marcador: tech.score }, reanudacion: { evento: next.id, tipo: next.type, equipo: next.team },
+        guardado: pendiente, continuacionIgual: ra.score.join('–') === rb.score.join('–') && ra.diagnostics.sportingDraws === rb.diagnostics.sportingDraws && JSON.stringify(ra.acta) === JSON.stringify(rb.acta), libresEnTotal: [ra.events.filter((e) => e.type === 'free_throw').length, rb.events.filter((e) => e.type === 'free_throw').length] };
+      return { res: ra, acta: ra.acta, reconciliation: ra.reconciliation, highlights };
     },
   },
 ];

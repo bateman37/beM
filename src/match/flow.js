@@ -757,6 +757,9 @@ P.queueWindow = function queueWindow(w) { this.windowSeq += 1; this.pendingWindo
 // abre una oportunidad de sustitución para ambos equipos que se resuelve en la frontera siguiente (permite revisar el plan).
 P.processWindow = function processWindow() {
   const w = this.pendingWindows.shift();
+  // MOTOR-15B (retirada obligatoria): un jugador excluido o descalificado no puede seguir en pista durante un tiempo muerto concedido en la misma ventana (hallado: con `check`, 4 de 60 semillas de MOTOR-15
+  // fallaban el invariante «en pista no disponible»). El relevo obligatorio es administración no delegable y va primero; las sustituciones voluntarias siguen después del tiempo muerto como antes.
+  if ([0, 1].some((t) => this.onCourt(t).some((id) => !this.ps[id].available))) for (let team = 0; team < 2; team++) this.coachMandatory(team, w.reason, new Set());
   const granted = this.grantTimeouts(w);
   if (granted.length) {
     this.queueWindowFirst({ reason: 'tiempo muerto', subs: true });

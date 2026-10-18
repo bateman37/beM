@@ -20,9 +20,10 @@ export const EXTENSION12_PATH = join(ROOT, 'data/match/motor12-seed-extension.js
 export const EXTENSION13_PATH = join(ROOT, 'data/match/motor13-seed-extension.json');
 export const EXTENSION14_PATH = join(ROOT, 'data/match/motor14-seed-extension.json');
 export const EXTENSION15_PATH = join(ROOT, 'data/match/motor15-seed-extension.json');
+export const EXTENSION15B_PATH = join(ROOT, 'data/match/motor15b-seed-extension.json');
 export const PLAYERS_PATH = join(ROOT, 'data/fixtures/reference-players-MOTOR01.csv');
 
-// `profile` es el perfil EFECTIVO (SEM de MOTOR-01 + extensiones SEM de MOTOR-02 a MOTOR-15); `baseProfile` es el original sin tocar.
+// `profile` es el perfil EFECTIVO (SEM de MOTOR-01 + extensiones SEM de MOTOR-02 a MOTOR-15B); `baseProfile` es el original sin tocar.
 export function loadData() {
   const baseProfile = JSON.parse(readFileSync(PROFILE_PATH, 'utf8'));
   const extension = JSON.parse(readFileSync(EXTENSION_PATH, 'utf8'));
@@ -39,6 +40,7 @@ export function loadData() {
   const extension13 = JSON.parse(readFileSync(EXTENSION13_PATH, 'utf8'));
   const extension14 = JSON.parse(readFileSync(EXTENSION14_PATH, 'utf8'));
   const extension15 = JSON.parse(readFileSync(EXTENSION15_PATH, 'utf8'));
+  const extension15b = JSON.parse(readFileSync(EXTENSION15B_PATH, 'utf8'));
   const players = parsePlayersCsv(readFileSync(PLAYERS_PATH, 'utf8'), baseProfile);
-  return { profile: applyExtension(baseProfile, extension, extension3, extension4, extension5, extension6, extension7, extension8, extension9, extension10, extension11, extension12, extension13, extension14, extension15), baseProfile, extension, extension3, extension4, extension5, extension6, extension7, extension8, extension9, extension10, extension11, extension12, extension13, extension14, extension15, players };
+  return { profile: applyExtension(baseProfile, extension, extension3, extension4, extension5, extension6, extension7, extension8, extension9, extension10, extension11, extension12, extension13, extension14, extension15, extension15b), baseProfile, extension, extension3, extension4, extension5, extension6, extension7, extension8, extension9, extension10, extension11, extension12, extension13, extension14, extension15, extension15b, players };
 }

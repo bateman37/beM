@@ -1,0 +1,67 @@
+{
+ "20261016": {
+  "score": [
+   83,
+   98
+  ],
+  "periodScores": [
+   [
+    28,
+    24
+   ],
+   [
+    12,
+    25
+   ],
+   [
+    17,
+    28
+   ],
+   [
+    26,
+    21
+   ]
+  ],
+  "draws": 6684,
+  "sha256": "f7de4cbbc5155bf5907b72f19c1df49e9b390167ee3d9cfb050ee0a8d321adf7",
+  "trajectorySha256": "c7a90892abbcb3e27dc654681db8278fde4a841209789499c0598835739c869d",
+  "note": "Referencia de MOTOR-15B (motor beM-motor-0.15.1-MOTOR15B, perfil +SEM-MOTOR15B-20261017). El deporte NO cambia respecto a baseline-motor15.json (mismo marcador, parciales y sorteos): cambia el CRÉDITO estadístico (robo por balón suelto ganado en disputa real, política ACTA-MOTOR15B-R1), por eso cambian la proyección con acta y la huella de trayectoria (que incluye las estadísticas de cada hecho). sha256 = proyección deportiva con la identidad del perfil; trajectorySha256 = huella de trayectoria.",
+  "previousMotor15": {
+   "file": "baseline-motor15.json",
+   "score": [
+    83,
+    98
+   ],
+   "periodScores": [
+    [
+     28,
+     24
+    ],
+    [
+     12,
+     25
+    ],
+    [
+     17,
+     28
+    ],
+    [
+     26,
+     21
+    ]
+   ],
+   "draws": 6684,
+   "sha256": "4b1a9286c1ad19544981cb02e0acf50af9aed42dbaa50db4a3ae36ac25f20ae7",
+   "trajectorySha256": "12919e2aea84cb5bf05e0a00860826a38d009b0fcc833d7f83097d474b223259"
+  },
+  "previous": {
+   "file": "baseline-motor14.json",
+   "score": [
+    83,
+    103
+   ],
+   "draws": 6505,
+   "trajectorySha256": "ed353769858813fe7ae3bedd271946c6f7c0aef7885ce00e2bbe27d0acc13bc5"
+  }
+ }
+}

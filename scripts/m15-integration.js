@@ -18,7 +18,7 @@ const OUT = join(arg('out', 'out/motor15'), 'integracion'); mkdirSync(OUT, { rec
 const { profile, players } = loadData();
 const team = (id) => P.referenceTeam(profile, players, id);
 const inputOf = (a, b, seed) => ({ schema: 'beM-match-input/6', seed, importance: 'ordinary', teams: [P.instantiate(team(a), []), P.instantiate(team(b), [])] });
-const save = (name, obj) => { const t = JSON.stringify(obj); writeFileSync(join(OUT, name), t); return { file: name, bytes: t.length, sha256: sha256(t) }; };
+const save = (name, obj) => { const t = JSON.stringify(obj); writeFileSync(join(OUT, name), t); return { file: name, bytes: Buffer.byteLength(t, 'utf8'), sha256: sha256(t) }; };
 const drive = (m) => { while (m.step()); return buildResult(m); };
 const minEnergy = (res) => Math.min(...Object.values(res.diagnostics.stateSamples.flatMap((s) => Object.values(s.players).map((p) => p.e))));
 const summary = { engine: ENGINE_VERSION, exportSchema: EXPORT_SCHEMA, profile: profile.effectiveId, cases: [], prepared: [], saves: [] };
@@ -38,7 +38,7 @@ const CASES = [
 const results = {};
 for (const c of CASES) {
   const input = c.input(); const t0 = performance.now();
-  const res = c.script ? runScripted(input, profile, c.script).result ?? null : null;
+  const res = c.script ? runScripted(input, profile, c.script).res ?? null : null;
   let full = res; if (!full) { const m = createMatch(input, profile, { detail: 'full', check: true }); full = drive(m); }
   const red = runMatch(input, profile, { detail: 'minimal' });
   const fpFull = trajectoryFingerprint(full); const fpRed = c.script ? null : trajectoryFingerprint(red);
@@ -90,6 +90,18 @@ comb('PREP-ANTIDEPORTIVA', 'N15-03: alias sin categoría propia', [mkS('S1', 1, 
   const X = JSON.parse(JSON.stringify(profile)); for (const k of ['fieldGoal', 'lastFreeThrow']) { X.interference[k].defensiveP = 0.35; X.interference[k].offensiveP = 0.35; }
   const res = runMatch(inputOf('EQ01', 'EQ02', 21), X, { detail: 'minimal', check: true });
   prepared.push({ id: 'PREP-INTERFERENCIA-EXTREMA', ref: 'RG-I01…I04 (lectura de Claude, provisional)', kind: 'copia SEM extrema de laboratorio (NO es una frecuencia de referencia)', input: { masas: 0.35 }, output: { libro: res.diagnostics.interference, hechos: res.events.filter((e) => e.effects?.interferencia).slice(0, 8).map((e) => ({ id: e.id, ...e.effects.interferencia })), reconciliation: res.reconciliation.valid } });
+}
+{ // MOTOR-15B §4.2: caso preparado de RG-I03 (interferencia defensiva en el último libre → punto + técnica de categoría 2 + libre adicional + una reanudación). Copia SEM de laboratorio que solo expone la
+  // oportunidad existente (SEM15-INT-03 a 0,35; el resto de la interferencia a 0): NO mide frecuencia. Incluye guardado entre consecuencias y continuación sin duplicados.
+  const X = JSON.parse(JSON.stringify(profile)); X.interference.lastFreeThrow.defensiveP = 0.35; X.interference.lastFreeThrow.offensiveP = 0; X.interference.fieldGoal.defensiveP = 0; X.interference.fieldGoal.offensiveP = 0;
+  const mk = () => createMatch(inputOf('EQ01', 'EQ02', 1), X, { detail: 'minimal', check: true });
+  const a = mk(); let n = 0; while (a.step() && n++ < 400) { const e = a.events.at(-1); if (e.type === 'foul' && e.effects?.origenInterferencia) break; }
+  const pending = { adminPlanOrigin: a.adminPlan?.origin ?? null, index: a.adminPlan?.index ?? null, steps: a.adminPlan?.steps.map((x) => x.id) ?? null, score: [...a.score], ftEvents: a.events.filter((e) => e.type === 'free_throw').length };
+  const snap = JSON.parse(JSON.stringify(snapshotMatch(a, { label: 'guardado entre la técnica y su libre adicional (RG-I03)' })));
+  const ra = drive(a); const rb = drive(restoreMatch(snap));
+  const chain = (r) => r.events.map((e, i) => [e, i]).filter(([e]) => e.effects?.interferencia?.lado === 'defensive' && e.effects.interferencia.situacion === 'lastFreeThrow').map(([e, i]) => { const f = r.events.slice(i + 1).find((x) => x.type === 'foul'); const t = r.events.slice(i + 1).find((x) => x.type === 'free_throw'); const next = r.events.slice(i + 1).find((x) => ['throw_in', 'rebound'].includes(x.type)); return { libreOriginal: { id: e.id, lanzador: e.stats[0].p, punto: e.score, infractor: e.effects.interferencia.infractor }, tecnica: { id: f.id, categoria: f.effects.categoria, infractor: f.participants.infractor, contadores: f.effects.contadores, faltasColectivasPeriodo: f.effects.faltasColectivasPeriodo, excluido: f.effects.excluido, regla: f.effects.regla }, libreAdicional: { id: t.id, lanzador: t.stats[0].p, entra: t.stats[0].made, serie: t.stats[0].series, marcador: t.score }, reanudacion: { id: next.id, tipo: next.type, equipo: next.team } }; });
+  prepared.push({ id: 'PREP-RG-I03', ref: 'RG-I03 · B15-N1 31.3.3 y 36.2/36.3 (síntesis de ChatGPT; sin lectura directa)', kind: 'copia SEM de laboratorio que solo expone la oportunidad existente (NO es una frecuencia de referencia)', input: { 'interference.lastFreeThrow.defensiveP': 0.35, seed: 1 },
+    output: { fronteraGuardada: pending, cadenas: chain(ra), continuacionIgual: trajectoryFingerprint(ra) === trajectoryFingerprint(rb), marcador: [ra.score, rb.score], libresLibres: [ra.events.filter((e) => e.type === 'free_throw').length, rb.events.filter((e) => e.type === 'free_throw').length], actaIgual: JSON.stringify(ra.acta) === JSON.stringify(rb.acta), reconciliacion: ra.reconciliation.valid, tecnicasEnActa: Object.values(ra.acta.players).reduce((s, p) => s + (p.fouls?.tecnica2 ?? 0), 0) } });
 }
 summary.prepared = prepared.map((p) => ({ id: p.id, ref: p.ref, kind: p.kind, file: save(`${p.id}.json`, p).file }));
 summary.generated_by = 'node scripts/m15-integration.js'; writeFileSync(join(OUT, 'resumen.json'), JSON.stringify(summary, null, 1));

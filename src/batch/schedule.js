@@ -28,6 +28,7 @@ export function normalizeSpec(spec, profile) {
     source: spec.source ?? { kind: 'teams' }, objective: (spec.objective ?? '').trim() || d.objective, objectiveDefaulted: !(spec.objective ?? '').trim(), question: spec.question ?? null, conserved: spec.conserved ?? null,
     recordLevel: spec.recordLevel ?? d.level, prose: spec.prose ?? d.prose, partTargetMiB: spec.partTargetMiB ?? d.partTargetMiB, concurrency: spec.concurrency ?? d.concurrency,
     teams: spec.teams ?? {}, label: spec.label ?? null, allowBaseOps: !!spec.allowBaseOps,
+    caseSeeds: spec.caseSeeds ?? null, // MOTOR-15B: semillas deportivas EXPLÍCITAS y congeladas por caso (reproducción de casos ya conocidos); sin ellas se derivan de la semilla de lote
   };
 }
 
@@ -66,11 +67,13 @@ export function buildAgenda(spec, profile) {
       });
     }
   }
-  const sd = deriveCaseSeeds({ batchSeed: spec.batchSeed, count: cases.length, rngConfig: profile.rng, lotVersion: LOT_VERSION });
+  const sd = spec.caseSeeds
+    ? { seeds: [...spec.caseSeeds], collisions: [], mix: null, zeroSeedReplaced: false, procedure: 'semillas deportivas explícitas por caso, congeladas en la agenda (reproducción de casos conocidos; no se derivan de la semilla de lote)' }
+    : deriveCaseSeeds({ batchSeed: spec.batchSeed, count: cases.length, rngConfig: profile.rng, lotVersion: LOT_VERSION });
   cases.forEach((c, i) => { c.seed = sd.seeds[i]; });
   let ord = 0;
   for (const c of cases) for (const v of spec.variants) { ord += 1; executions.push({ match_id: `M${pad(ord)}`, ordinal: ord, case_id: c.case_id, variant_id: v.id, pair_id: c.pair_id, repetition: c.repetition, side: c.side, home_ref: c.home_ref, away_ref: c.away_ref, seed: c.seed }); }
-  return { pairs, cases, executions, seeds: { batchSeed: spec.batchSeed, derivation: SEED_DERIVATION, procedure: sd.procedure, mix: sd.mix, collisions: sd.collisions, zeroSeedReplaced: sd.zeroSeedReplaced, count: sd.seeds.length } };
+  return { pairs, cases, executions, seeds: { batchSeed: spec.batchSeed, derivation: spec.caseSeeds ? 'explicit' : SEED_DERIVATION, procedure: sd.procedure, mix: sd.mix, collisions: sd.collisions, zeroSeedReplaced: sd.zeroSeedReplaced, count: sd.seeds.length } };
 }
 
 // ---------------------------------------------------------------------------------------------------------- materialización de entradas
@@ -118,6 +121,9 @@ export function prepareBatch(specIn, profile, { players = null } = {}) {
   }
   if (problems.length) return { ok: false, spec, problems, warnings };
   const counts = planCounts(spec);
+  if (spec.caseSeeds) {
+    if (!Array.isArray(spec.caseSeeds) || spec.caseSeeds.length !== counts.cases || !spec.caseSeeds.every((x) => Number.isInteger(x) && x >= 0 && x <= 4294967295)) return { ok: false, spec, problems: [`las semillas explícitas deben ser ${counts.cases} enteros entre 0 y 4294967295 (una por caso deportivo)`], warnings, counts };
+  }
   if (counts.executions > d.maxExecutions) return { ok: false, spec, problems: [`${counts.executions} ejecuciones superan el límite técnico por trabajo (${d.maxExecutions}): ${d.maxReason}. Se rechaza antes de empezar; no se recorta a los primeros N.`], warnings, counts };
   if (spec.venue !== 'fixed') warnings.push(LOCALIA_NOTE);
   if (spec.source?.kind !== 'lab') for (const ref of new Set([...spec.teamIds, ...spec.pairs.flat()])) if (!spec.teams[ref]) problems.push(`falta el equipo «${ref}» (registro completo) en la definición`);

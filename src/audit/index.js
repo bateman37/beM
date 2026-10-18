@@ -5,7 +5,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { openSource } from './source.js';
 import { projectAttempt, PROJECTION_VERSION } from './project.js';
-import { reliability, concentration, selectContexts, sensitivity, capabilityMatrix, energyCurve, CAPABILITY_IDS } from './analysis.js';
+import { reliability, concentration, selectContexts, sensitivity, capabilityMatrix, energyCurve, energyByTask, CAPABILITY_IDS } from './analysis.js';
 import { AUDIT_CATALOG, AUDIT_BY_ID } from './catalog.js';
 import { EVALUATORS } from './evaluators.js';
 import { referencesFile } from './references.js';
@@ -45,11 +45,11 @@ export function runAudit(specs, opts = {}) {
   // 3. agregaciones
   const exps = experimentCatalog(opts.profile ?? { audit: params, attributeOrder: CAPABILITY_IDS }, opts.players ?? null, { lite: true });
   const diagProjs = projs.filter((p) => p.level === 'diagnostic'); const selected = selectContexts(diagProjs, params.contextsPerCapability); const sens = sensitivity(selected, prof, params.sensitivityIncrements);
-  const rel = reliability(diagProjs, params); const conc = concentration(projs, params); const matrix = capabilityMatrix(diagProjs, prof, sens, exps); const energy = energyCurve(diagProjs);
+  const rel = reliability(diagProjs, params); const conc = concentration(projs, params); const matrix = capabilityMatrix(diagProjs, prof, sens, exps); const energy = energyCurve(diagProjs); const energyTask = energyByTask(diagProjs);
   const teamProfiles = []; const seenT = new Set(); for (const s of sources) for (const f of s.listFrozen?.('entradas/equipos') ?? []) { const t = s.frozenFile(f); if (!t || seenT.has(t.id)) continue; seenT.add(t.id); const vals = t.players.flatMap((p) => CAPABILITY_IDS.map((c) => p.abilities[c])); teamProfiles.push({ team: t.id, mean: Math.round(mean(vals) * 100) / 100 }); }
   const cost = { projections_ms: Math.round(proj.ms), projection_bytes_read: proj.bytes, cache_hits: proj.hits, attempts: attempts.length, per_attempt_ms: attempts.length - proj.hits ? Math.round(proj.ms / (attempts.length - proj.hits)) : null, note: 'medido en este entorno, no extrapolable; la proyección se reutiliza por huella (caché)' };
   const equivalence = opts.equivalence ?? loadEquivalenceReports(opts.equivalenceDir ?? join(auditRoot, '..', 'equivalence'));
-  const ctx = { projs, matrix, sens, rel, conc, energy, integrity, cost, equivalence, audiences: sources.flatMap((s) => s.audiences?.() ?? []), teamProfiles, params };
+  const ctx = { projs, matrix, sens, rel, conc, energy, energyTask, integrity, cost, equivalence, audiences: sources.flatMap((s) => s.audiences?.() ?? []), teamProfiles, params };
   // 4. evaluadores
   const ids = opts.ids ?? AUDIT_CATALOG.map((a) => a.id); const runs = []; const findings = [];
   for (const id of ids) {
@@ -58,7 +58,7 @@ export function runAudit(specs, opts = {}) {
     runs.push({ id, name: def.name, area: def.area, type: def.type, impl: r.impl, registro: r.registro, exposicion: r.exposicion, resultado: r.resultado, revision: r.revision, metrics: r.metrics, missing: r.missing, note: r.note, findings: own.map((f) => f.id), evidence: { projections: projs.length, level: [...new Set(projs.map((p) => p.level))] } });
   }
   const matches = projs.map((p) => ({ match_id: p.match_id, attempt_id: p.attempt_id, case_id: p.case_id, variant_id: p.variant_id, source: p.source_id, level: p.level, valid: p.valid, score: `${p.facts.score_home}–${p.facts.score_away}`, draws: p.facts.draws, trajectory_fp: p.facts.trajectory_fp }));
-  return { ok: true, ...base, id: `AUDR-${sha({ s: sources.map((x) => x.describe()), p: policyFp, a: attempts.map((a) => a.attempt_id), t: Math.floor(now / 1000) }).slice(0, 8)}`, matches, runs, findings, matrix, sensitivity: sens, sensitivity_contexts: Object.fromEntries(Object.entries(selected).map(([k, v]) => [k, v.length])), reliability: rel.map(({ perMatch, ...x }) => ({ ...x, perMatch })), concentration: conc, energy, references: referencesFile(), sample: { matches: projs.length, diagnostic: diagProjs.length, reduced: projs.length - diagProjs.length, contextsPerCapability: params.contextsPerCapability, selection: 'determinista y ciega al resultado: hash FNV-1a del identificador de decisión; 3 menores por (capacidad, tarea.rol) + 2 de estrato LIMITE; reparto rotatorio hasta el máximo' }, cost, elapsed_ms: Math.round(performance.now() - t0) };
+  return { ok: true, ...base, id: `AUDR-${sha({ s: sources.map((x) => x.describe()), p: policyFp, a: attempts.map((a) => a.attempt_id), t: Math.floor(now / 1000) }).slice(0, 8)}`, matches, runs, findings, matrix, sensitivity: sens, sensitivity_contexts: Object.fromEntries(Object.entries(selected).map(([k, v]) => [k, v.length])), reliability: rel.map(({ perMatch, ...x }) => ({ ...x, perMatch })), concentration: conc, energy, energyTask, references: referencesFile(), sample: { matches: projs.length, diagnostic: diagProjs.length, reduced: projs.length - diagProjs.length, contextsPerCapability: params.contextsPerCapability, selection: 'determinista y ciega al resultado: hash FNV-1a del identificador de decisión; 3 menores por (capacidad, tarea.rol) + 2 de estrato LIMITE; reparto rotatorio hasta el máximo' }, cost, elapsed_ms: Math.round(performance.now() - t0) };
 }
 
 export function saveResult(result, auditRoot = DEFAULT_AUDIT_ROOT) { const dir = join(auditRoot, 'resultados'); mkdirSync(dir, { recursive: true }); const p = join(dir, `${result.id}.json`); writeFileSync(p, JSON.stringify(result)); return p; }

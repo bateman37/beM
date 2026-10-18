@@ -83,6 +83,13 @@
       "origin": "Encargo MOTOR-15 (§5–§8): datos normativos (técnicas, compensación art. 43, correcciones art. 45, interferencia) con procedencia de cada lectura y semillas SEM15-TIR-01 y SEM15-INT-01…04",
       "state": "SEM provisional, no calibrado"
     },
+    "data/match/motor15b-seed-extension.json": {
+      "id": "SEM-MOTOR15B-20261017",
+      "status": "SEM: provisional, no calibrado. Solo datos NORMATIVOS y de CRÉDITO estadístico (consecuencia de RG-I03, numeración del art. 45 y criterio de robo) con procedencia ChatGPT; ningún coeficiente deportivo cambia. Una consecuencia reglamentaria o un crédito no son una probabilidad ajustable.",
+      "sha256": "6114cc6c35596caeb20202417dab18a29cd0b7359b1747f9e0560747c4bc7bc7",
+      "origin": "Encargo MOTOR-15B (§4): consecuencia de RG-I03 (técnica de categoría 2) y numeración 45.4.1–45.4.8 / 45.6; procedencia ChatGPT, sin lectura directa",
+      "state": "normativa contrastada con síntesis de ChatGPT; ningún coeficiente cambia"
+    },
     "data/match/motor14-seed-extension.json": {
       "id": "SEM-MOTOR14-20261017",
       "status": "SEM: provisional, no calibrado. Solo contenido NORMATIVO de terminación por falta de jugadores (art. 21, lectura del encargo MOTOR-14 §7.3) y su trazabilidad; ningún coeficiente deportivo nuevo ni cambio de probabilidades.",

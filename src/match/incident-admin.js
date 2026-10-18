@@ -117,6 +117,49 @@ P.intakeIncidents = function intakeIncidents() {
   return { cont: 'incident' };
 };
 
+// ---------------------------------------------------------------- consecuencia de RG-I03 (MOTOR-15B §4.2)
+// Interferencia defensiva en el último libre: el punto ya está concedido (acreditado una sola vez por la serie original). Aquí se carga al defensor infractor la técnica de categoría 2 con las MISMAS
+// reglas que cualquier técnica de jugador (fila RG-F07 por `resolveFoul`, contadores individuales, falta colectiva, retirada por faltas) y se programa su libre adicional en la cola común: lanzador
+// por la política existente (`designatedShooter`), tiro real con crédito y posibilidad de fallo, y una única reanudación (`afterLastFreeThrow`: saque de fondo del rival, como tras un último libre válido).
+// No hay descalificación de categoría 1 ni nueva posesión por la técnica; no se sortea la sanción, el ejecutor ni la reanudación. El plan vive en `adminPlan`: se guarda y se continúa entre consecuencias.
+P.interferenceTechnical = function interferenceTechnical(itf, f, ftEv, seriesId) {
+  const spec = itf.res.additionalSanction; const rules = this.profile.rules; const pid = itf.infractor;
+  if (!pid || !this.pl[pid]) throw new Error('interferencia defensiva sin infractor individual: no se inventa un sujeto');
+  const team = this.pl[pid].teamIdx; const key = foulPeriodKey(this.period, rules); const before = this.teamFouls[team][key] ?? 0;
+  const penalty = inPenalty(before, rules);
+  const cons = resolveFoul(this.profile, { category: spec.category, shotAction: false, shotPoints: null, shotMade: false, penalty });
+  if (!cons.ok) throw new Error(`técnica de la interferencia sin consecuencia válida: ${cons.diagnostic}`);
+  if (cons.playerFoul) this.ps[pid].fouls += 1;
+  if (cons.teamFoul) this.teamFouls[team][key] = before + 1;
+  const sc = this.sanctions(pid); if (COUNTER_KEY[spec.category]) sc[COUNTER_KEY[spec.category]] += 1;
+  const counters = { ...sc };
+  const disqualified = this.disqualifies(pid); const excluded = disqualified || this.ps[pid].fouls >= rules.foulOut;
+  if (excluded) this.exclude(pid);
+  const id = `INT${pad(++this.incidentSeq)}`; const order = ++this.sanctionOrder;
+  const plan = combineSanctions(this.profile, [{ id, order, team, category: spec.category, shotAction: false, shotPoints: null, shotMade: false, penalty, committer: pid, fouled: null, startedLive: false }], { priorContext: { kind: 'priorContext', shotClock: 'retained' } });
+  if (!plan.ok) throw new Error(`cola de sanciones no válida: ${plan.diagnostic}`);
+  if (plan.steps.length !== 1 || plan.steps[0].beneficiary !== f.shotTeam) throw new Error('la técnica de la interferencia debe beneficiar al equipo del lanzador del libre');
+  const resume = { kind: 'afterLastFreeThrow', from: id, shooterTeam: f.shotTeam, convention: 'RG-I03: reanudación del último libre válido (saque de fondo del rival); la técnica no concede posesión (B15-N1 31.3.3, 36.2/36.3)' };
+  this.adminPlan = { id: `ADM${pad(this.stepSeq)}`, steps: plan.steps.map((s) => ({ ...s })), index: 0, resume, compensated: [], ex: null, sanctions: [id], origin: { kind: 'interferencia', situation: itf.situation, event: ftEv.id, series: seriesId, infractor: pid } };
+  this.emit('foul', {
+    team: f.shotTeam,
+    intent: { origen: 'interferencia defensiva en el último libre', tipo: spec.category, vinculo: ftEv.id },
+    participants: { infractor: pid, sobre: null },
+    stats: [{ k: 'foul', p: pid, team, kind: spec.category, teamFoul: !!cons.teamFoul, sobre: null }],
+    effects: {
+      categoria: spec.category, regla: cons.row, contraste: cons.contrast, tirosLibres: cons.ft, lanzador: cons.shooter, faltasPersonales: this.ps[pid].fouls, faltasColectivasPeriodo: this.teamFouls[team][key] ?? 0,
+      contadores: counters, descalificado: disqualified, excluido: excluded, id,
+      administracion: { plan: this.adminPlan.id, orden: order, compensadaCon: null, pasos: plan.steps.map((s) => s.id), reanudacion: resume.kind, reanudacionDe: id },
+      origenInterferencia: { regla: itf.res.row, situacion: itf.situation, libreOriginal: ftEv.id, serie: seriesId, puntoConcedido: 1 },
+    },
+  });
+  this.incidentLog.push({ id, state: 'administrada', category: spec.category, step: this.stepSeq, origin: 'interferencia' });
+  this.cover(`incidencia ${spec.category} (interferencia)`);
+  if (excluded) this.queueWindow({ reason: 'incidencia', timeoutTeams: [0, 1], subs: true }); // retirada obligatoria: se resuelve en la ventana reglamentaria antes del libre adicional
+  this.clockRunning = false;
+  return { cont: 'incident' };
+};
+
 // Un lanzador designado por el entrenador rival: política declarada (regulation.technical.shooterPolicy): el mejor lanzador de libres en pista; desempate por identificador. Sin sorteo.
 P.designatedShooter = function designatedShooter(team) {
   const sh = this.profile.shots.freeThrow;
@@ -159,6 +202,10 @@ P.applyResume = function applyResume(resume, plan, f, ex) {
       if (poss && poss.team === team) { poss.advanced = true; poss.pendingThrowIn = spec; return { cont: 'inboundAfterFoul' }; }
       this.endPossession('sanctionRight', { team, throwIn: spec });
       return { end: 'sanctionRight' };
+    }
+    case 'afterLastFreeThrow': { // MOTOR-15B: tras la técnica de RG-I03 el último libre original ya fue válido: saque del rival, sin otra posesión por la técnica ni rebote
+      this.cover('reanudación tras último libre válido (técnica por interferencia)');
+      this.endPossession('ftMade', { team: resume.shooterTeam }); return { end: 'ftMade' };
     }
     case 'afterSeries': { // balón vivo tras el último libre: canasta → saque del rival; fallo → rebote (lo resuelve la serie, no esta rama)
       return { cont: 'incident' };

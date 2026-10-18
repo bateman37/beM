@@ -163,4 +163,15 @@ export function energyCurve(projs) {
   const agg = {}; for (const p of projs) for (const [k, v] of Object.entries(p.recipes.energyBands)) { const a = (agg[k] ??= { n: 0, gap: 0 }); a.n += v.n; a.gap += v.gap; }
   return Object.entries(agg).map(([k, v]) => { const [kind, band] = k.split('|'); return { tipo: kind, banda: band, n: v.n, brechaMedia: r4(v.gap / v.n) }; }).sort((a, b) => (a.tipo + a.banda < b.tipo + b.banda ? -1 : 1));
 }
+// MOTOR-15B §5.2: la brecha de energía por (ámbito, tarea, banda). Tareas con distinto tope de deterioro no se suman como una misma magnitud: cada celda conserva numerador (brecha acumulada),
+// denominador (términos de receta), energía mínima observada y casos de ejemplo. La energía es la REGISTRADA en el término de receta al calcularlo (nunca el estado final del jugador).
+export function energyByTask(projs) {
+  const agg = {};
+  for (const p of projs) for (const [k, v] of Object.entries(p.recipes.energyByTask ?? {})) {
+    const a = (agg[k] ??= { n: 0, gap: 0, baseSum: 0, minEnergy: v.minEnergy, examples: [] }); a.n += v.n; a.gap += v.gap; a.baseSum += v.baseSum; if (v.minEnergy < a.minEnergy) a.minEnergy = v.minEnergy;
+    for (const ex of v.examples) if (a.examples.length < 2) a.examples.push({ match_id: p.match_id, attempt_id: p.attempt_id, source: p.source_id ?? null, ...ex });
+  }
+  return Object.entries(agg).map(([k, v]) => { const [ambito, tarea, banda] = k.split('|'); return { ambito, tarea, banda, n: v.n, brecha: r4(v.gap), brechaMedia: r4(v.gap / v.n), relativa: v.baseSum ? r4(v.gap / v.baseSum) : null, minEnergia: v.minEnergy, ejemplos: v.examples }; })
+    .sort((a, b) => (a.ambito + a.tarea + a.banda < b.ambito + b.tarea + b.banda ? -1 : 1));
+}
 export { fnv };

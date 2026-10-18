@@ -656,13 +656,16 @@ P.shootFreeThrows = function shootFreeThrows(shooter, n, f, ex) {
     }
     const made = ftStat.made;
     if (made) this.addPoints(f.shotTeam, sh.points);
-    this.emit('free_throw', {
+    const ftEv = this.emit('free_throw', {
       team: f.shotTeam,
       intent: { origen: f.kind, serie: `${i}/${n}` },
       participants: { lanzador: shooter },
       stats: ftStats,
       effects: { pLibre: round(p, 5), entra: made, ultimo: last, ...(interferencia ? { interferencia } : {}) },
     });
+    // MOTOR-15B §4.2 (RG-I03): la interferencia defensiva en el último libre concede el punto (ya acreditado arriba, una sola vez) y administra una técnica de categoría 2 con un libre adicional
+    // por la cola común. La decisión de interferencia ya se sorteó: aquí no hay otro sorteo de procedencia.
+    if (itf?.side === 'defensive' && itf.res.additionalSanction?.status === 'administrada') { this.cover('interferencia defensiva en el último libre'); return this.interferenceTechnical(itf, f, ftEv, seriesId); }
     if (itf?.side === 'offensive') { this.cover('interferencia ofensiva en el último libre'); this.endPossession('deadTurnover', { team: f.shotTeam }); return { end: 'deadTurnover' }; }
     if (last && f.stepOnly) return { cont: 'incident' }; // MOTOR-15: serie intermedia de la cola de sanciones; la reanudación única la aplica la última
     if (last && f.plan) {
@@ -699,7 +702,10 @@ P.resolveLooseBall = function resolveLooseBall(ex, base) {
     this.poss.disorganized = true; this.poss.recovery = { kind: 'loose', holder: ex.actor };
     return { cont: 'looseKept' };
   }
-  this.emit('loose_ball', { t, team: ex.team, participants: { disputa: [ex.actor, opposer] }, stats: [{ k: 'tov', p: ex.actor, team: ex.team, cause: 'balón suelto perdido' }], effects: { pControlAtaque: round(p, 4), control: 'defensa', recupera: opposer } });
+  // MOTOR-15B §7.2 (B15-N2, cap. 7): el defensor que gana la disputa REAL de un balón suelto tras el error atacante lo recupera con balón vivo: robo, sin exigir un intento previo de arrebato (el crédito es solo
+  // estadístico: no hay otro sorteo, ni cambia la transición ni el origen de la posesión siguiente). La pérdida individual rival sigue en el mismo hecho (conciliación ROB01).
+  const stl = opposer != null ? [{ k: 'stl', p: opposer, team: 1 - ex.team, fuente: 'balón suelto ganado en disputa' }] : [];
+  this.emit('loose_ball', { t, team: ex.team, participants: { disputa: [ex.actor, opposer] }, stats: [{ k: 'tov', p: ex.actor, team: ex.team, cause: 'balón suelto perdido' }, ...stl], effects: { pControlAtaque: round(p, 4), control: 'defensa', recupera: opposer, ...(stl.length ? { robo: opposer } : {}) } });
   this.endPossession('live', { team: ex.team, origin: 'balón suelto', carrier: opposer });
   return { end: 'looseLost' };
 };

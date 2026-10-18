@@ -1,4 +1,4 @@
-// Vista «Cierre» (MOTOR-15 §21): estado funcional, cobertura, auditorías, perfiles/versiones, coste y enlaces a informes y descargas. No es un panel de gestión de proyectos ni un porcentaje universal de realismo:
+// Vista «Cierre» (MOTOR-15 §21, MOTOR-15B §12): estado funcional, cobertura, auditorías, perfiles/versiones, coste y enlaces a informes y descargas. No es un panel de gestión de proyectos ni un porcentaje universal de realismo:
 // cada eje se declara por separado (funcional, rendimiento, evaluación deportiva, aceptación).
 import { h, table } from './dom.js';
 import { APP_VERSION, ENGINE_VERSION, EXPORT_SCHEMA } from '../version.js';
@@ -14,7 +14,7 @@ export function renderClosure(root) {
 function paint(root) {
   root.replaceChildren();
   const s = st.data?.summary; const files = st.data?.files ?? [];
-  root.append(h('h2', {}, 'Cierre de MOTOR-15'), h('p', { class: 'small muted' }, 'Cuatro ejes que no se mezclan: funcional, rendimiento, evaluación deportiva y aceptación. Un objetivo de coste no alcanzado no se maquilla y la calibración sigue pendiente de MOTOR-16/17.'));
+  root.append(h('h2', {}, 'Cierre de MOTOR-15B'), h('p', { class: 'small muted' }, 'Cuatro ejes que no se mezclan: funcional, rendimiento, evaluación deportiva y aceptación. Un objetivo de coste no alcanzado no se maquilla y la calibración sigue pendiente de MOTOR-16/17.'));
   if (st.err) root.append(h('div', { class: 'errbox' }, st.err));
   if (!s) { if (!st.err) root.append(h('p', { class: 'muted' }, 'Cargando el resumen de cierre…')); return; }
   root.append(h('div', { class: 'card', id: 'closure-axes' }, h('h3', { style: 'margin-top:0' }, 'Estado por eje'), table(['Eje', 'Estado', 'Detalle'], s.axes.map((a) => [a.axis, h('strong', {}, a.state), a.detail]))));
@@ -24,6 +24,6 @@ function paint(root) {
   root.append(h('div', { class: 'card' }, h('h3', { style: 'margin-top:0' }, 'Coste medido'), table(['Medida', 'Valor', 'Alcance'], s.cost.map((c) => [c[0], c[1], c[2]])), h('p', { class: 'small muted' }, s.costNote)));
   root.append(h('div', { class: 'card' }, h('h3', { style: 'margin-top:0' }, 'Informes y documentación'), h('ul', {}, s.reports.map((r) => h('li', {}, h('code', {}, r.path), ` — ${r.what}`)))));
   root.append(h('div', { class: 'card', id: 'closure-downloads' }, h('h3', { style: 'margin-top:0' }, 'Descargas de devolución'), h('p', { class: 'small' }, 'Envía primero el paquete rápido. El detalle se pide solo si hace falta.'),
-    table(['Archivo', 'Tamaño', 'Descarga'], files.map((f) => [f.name, KB(f.bytes), f.available ? h('a', { href: f.url, download: f.name, class: 'btn secondary' }, 'Descargar') : h('span', { class: 'muted' }, `no generado: ${f.command}`)])),
+    table(['Archivo', 'Origen', 'Tamaño', 'Descarga'], files.map((f) => [f.name, f.historic ? 'MOTOR-15 (histórico, conservado)' : 'MOTOR-15B (nuevo)', KB(f.bytes), f.available ? h('a', { href: f.url, download: f.name, class: 'btn secondary' }, 'Descargar') : h('span', { class: 'muted' }, `no generado: ${f.command}`)])),
     h('p', { class: 'small muted' }, `Comprobador: ${s.checker}`)));
 }

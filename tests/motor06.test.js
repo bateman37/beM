@@ -339,7 +339,7 @@ test('7b. cadena de saque: empieza con su ejecución, termina por resultado o nu
   assert.ok(chains.length > 60);
   const closes = {}; let ptsChains = 0; let ptsAll = 0;
   for (const { c, res } of chains) {
-    assert.ok(c.status === 'cerrada' || c.status === 'abierta');
+    assert.ok(['cerrada', 'abierta', 'interrumpida'].includes(c.status)) /* MOTOR-15B: «interrumpida» = el final de periodo impide el desarrollo (antes quedaba «abierta») */;
     if (c.cierre) { const k = c.cierre.split(':')[0]; closes[k] = (closes[k] ?? 0) + 1; }
     const evs = res.events.filter((e) => e.possessionId === c.possession);
     const own = evs.filter((e) => e.intent?.cadenaSaque === c.id); let pts = 0;

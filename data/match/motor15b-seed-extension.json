@@ -1,0 +1,211 @@
+{
+  "seedExtensionId": "SEM-MOTOR15B-20261017",
+  "status": "SEM: provisional, no calibrado. Solo datos NORMATIVOS y de CRÉDITO estadístico (consecuencia de RG-I03, numeración del art. 45 y criterio de robo) con procedencia ChatGPT; ningún coeficiente deportivo cambia. Una consecuencia reglamentaria o un crédito no son una probabilidad ajustable.",
+  "basedOn": "SEM-MOTOR01-20261016",
+  "origin": "Encargo MOTOR-15B (§4 y §7.2): consecuencia suministrada de la interferencia defensiva en el último libre, correspondencia 45.4.1–45.4.8 / 45.6 y criterio de crédito del robo. Síntesis de ChatGPT sobre B15-N1 y B15-N2; sin lectura directa de Claude (HTTP 403).",
+  "additions": {
+    "regulation.sources.11": {
+      "id": "M15B-01",
+      "title": "Encargo MOTOR-15B §4 (síntesis de B15-N1)",
+      "url": "docs/prompts/MOTOR-15B-cierre-y-diagnostico-de-robos.md",
+      "use": "Consecuencia de RG-I03 (31.3.3, 36.2/36.3) y numeración 45.4.x / 45.6.",
+      "access": "Texto suministrado por ChatGPT el 17/10/2026 (síntesis selectiva de B15-N1 y B15-N2). Claude: sin lectura directa de los PDF (HTTP 403 desde el entorno)."
+    }
+  },
+  "replacements": {
+    "regulation.version": "REG-MOTOR15B-R1",
+    "regulation.matrix.22": {
+      "id": "RG-I03",
+      "family": "Interferencia",
+      "group": "REG02",
+      "edition": "OBR 2026 v1.1",
+      "source": {
+        "doc": "N15-01",
+        "article": "31.3.3 y 36.2/36.3 (B15-N1: interferencia defensiva en el último libre; técnica de categoría 2)",
+        "case": null,
+        "reading": "contrastada con el encargo MOTOR-15B §4.2 (síntesis selectiva de ChatGPT, 17/10/2026; no lectura directa del PDF por Claude)",
+        "note": "Interferencia defensiva en el último libre: concede un punto y carga al defensor una técnica de categoría 2 con un libre adicional. Cuenta como falta individual y colectiva; no suma para la descalificación por técnicas de categoría 1. Tras administrar, se conserva la reanudación aplicable: con último libre válido, saque de fondo para el rival."
+      },
+      "contrast": "contrastada",
+      "priority": 15,
+      "when": {
+        "interference": "lastFreeThrow.defensive"
+      },
+      "consequence": {
+        "validity": "concedida",
+        "pointsAwarded": 1,
+        "credit": "libre convertido del lanzador",
+        "possession": "asLastFreeThrowMade",
+        "additionalSanction": {
+          "status": "administrada",
+          "category": "tecnica2",
+          "infractor": "defender",
+          "extraFreeThrows": 1,
+          "countsAsPersonal": true,
+          "countsAsTeam": true,
+          "countsForCat1Disqualification": false,
+          "resume": "afterLastFreeThrowMade",
+          "article": "31.3.3 y 36.2/36.3 (B15-N1)",
+          "rowOfTechnical": "RG-F07"
+        }
+      },
+      "explanation": "Defensiva en el último libre: punto concedido y técnica de categoría 2 al defensor con un libre adicional; reanudación como tras último libre válido.",
+      "coverage": {
+        "admin": "ejecutable",
+        "exposure": "natural condicionada (oportunidad elegible, SEM15-INT-03) y caso preparado",
+        "natural": "implementada con semillas SEM15 sin calibrar; la decisión de interferencia no se vuelve a sortear: la técnica es consecuencia normativa",
+        "consume": "actions.js shootFreeThrows · incident-admin.js interferenceTechnicalStep",
+        "verify": "tests/motor15b.test.js «RG-I03»"
+      }
+    },
+    "regulation.matrix.18": {
+      "id": "RG-R01",
+      "family": "Correcciones",
+      "group": "REG04",
+      "edition": "OBR 2026 v1.1",
+      "source": {
+        "doc": "N15-01",
+        "article": "45.1–45.6 (errores corregibles; 45.4.1–45.4.8 y 45.6, numeración suministrada por B15-N1)",
+        "case": "45.1–45.6; casos 45 de las interpretaciones",
+        "reading": "contrastada con el encargo MOTOR-15B §4.3 (síntesis selectiva de ChatGPT; no lectura directa del PDF por Claude)",
+        "note": "Categoría 1: libres, lanzador, puntos, infractor, mesa y reloj de juego (ventana por umbral de los últimos 2:00 del cuarto periodo). Categoría 2: reloj de posesión (inmediata o primera parada, manteniendo control/derecho; caduca con cambio de control de balón vivo, canasta válida o final). Numeración: 45.4.1 libres indebidos, 45.4.2 libres debidos omitidos, 45.4.3 lanzador incorrecto permitido, 45.4.4 lanzador incorrecto dirigido, 45.4.5 puntos concedidos/anulados erróneamente, 45.4.6 infractor incorrecto, 45.4.7 errores de mesa (puntos, faltas, tiempos muertos), 45.4.8 reloj de juego, 45.6 reloj de posesión."
+      },
+      "contrast": "contrastada",
+      "priority": 10,
+      "when": {
+        "revision": "regulatory"
+      },
+      "consequence": {
+        "uses": "regulation.corrections"
+      },
+      "explanation": "Corrección tipada con ventana: no es un retroceso a voluntad ni una inferencia del marcador final.",
+      "coverage": {
+        "admin": "ejecutable",
+        "exposure": "orden tipada reproducible y casos preparados",
+        "natural": "sin generación natural: no se simulan errores arbitrales",
+        "consume": "corrections.js evaluateWindow · core.requestCorrection",
+        "verify": "tests/motor15 grupo «Art. 45»"
+      }
+    },
+    "regulation.corrections": {
+      "version": "COR-MOTOR15B-R1",
+      "article": "45.1–45.6 (B15-N1); numeración 45.4.1–45.4.8 y 45.6 suministrada por MOTOR-15B §4.3; casos 45 de N15-02",
+      "reading": "contrastada con los encargos MOTOR-15 y MOTOR-15B (síntesis selectiva de ChatGPT; no lectura directa del PDF por Claude)",
+      "thresholdPeriod": 4,
+      "thresholdSecondsRemaining": 120,
+      "authorizedRequesters": [
+        "crew_chief",
+        "referee",
+        "commissioner"
+      ],
+      "stoppageKinds": [
+        "foul",
+        "timeout",
+        "periodEnd",
+        "deadBall",
+        "lastFreeThrow"
+      ],
+      "classes": [
+        {
+          "id": "C1-FT-IMPROPER",
+          "category": 1,
+          "article": "45.4.1",
+          "error": "freeThrowsAwardedImproperly",
+          "operation": "annulSeries",
+          "note": "Libres indebidos: se anulan; la actividad posterior legítima permanece.",
+          "articleClass": "Libres indebidos"
+        },
+        {
+          "id": "C1-FT-OMITTED",
+          "category": 1,
+          "article": "45.4.2",
+          "error": "freeThrowsOmitted",
+          "operation": "administerSeries",
+          "exception": "canasta posterior del mismo equipo tras un saque erróneo: no se administra",
+          "note": "Los libres omitidos se administran con intentos reales en el momento corregido.",
+          "articleClass": "Libres debidos omitidos"
+        },
+        {
+          "id": "C1-SHOOTER-PERMITTED",
+          "category": 1,
+          "article": "45.4.3",
+          "error": "shooterPermittedWrongly",
+          "operation": "cancelSeriesAndRight",
+          "note": "Se cancela la serie y la posesión sancionadora.",
+          "articleClass": "Permitir lanzador incorrecto"
+        },
+        {
+          "id": "C1-SHOOTER-DIRECTED",
+          "category": 1,
+          "article": "45.4.4",
+          "error": "shooterDirectedWrongly",
+          "operation": "replaceSeriesByCorrectShooter",
+          "note": "La serie del lanzador equivocado se sustituye por la del correcto.",
+          "articleClass": "Dirigir lanzador incorrecto"
+        },
+        {
+          "id": "C1-POINTS",
+          "category": 1,
+          "article": "45.4.5",
+          "error": "pointsWrong",
+          "operation": "rectifyPoints",
+          "note": "Rectifica puntos con sus efectos.",
+          "articleClass": "Puntos concedidos o anulados erróneamente"
+        },
+        {
+          "id": "C1-SUBJECT",
+          "category": 1,
+          "article": "45.4.6",
+          "error": "offenderWrong",
+          "operation": "rectifyOffender",
+          "note": "Rectifica el sujeto y sus contadores.",
+          "articleClass": "Infractor incorrecto"
+        },
+        {
+          "id": "C1-TABLE",
+          "category": 1,
+          "article": "45.4.7",
+          "error": "tableResourcesWrong",
+          "operation": "rectifyResources",
+          "note": "Faltas, tiempos muertos y recursos de mesa.",
+          "articleClass": "Errores de mesa: puntos, faltas y tiempos muertos"
+        },
+        {
+          "id": "C1-CLOCK",
+          "category": 1,
+          "article": "45.4.8",
+          "error": "gameClockWrong",
+          "operation": "rectifyClock",
+          "note": "El detector de monotonía reconoce la administración identificada.",
+          "articleClass": "Reloj de juego"
+        },
+        {
+          "id": "C2-SHOTCLOCK",
+          "category": 2,
+          "article": "45.6",
+          "error": "shotClockWrong",
+          "operation": "restoreShotClock",
+          "expiresWith": [
+            "liveBallControlChange",
+            "validBasket",
+            "end"
+          ],
+          "note": "Corregible inmediatamente o en la primera parada, manteniendo control y derecho.",
+          "articleClass": "Reloj de posesión"
+        }
+      ]
+    },
+    "statsPolicy.id": "EST-MOTOR15B-R1",
+    "statsPolicy.families.2.reading": "convención beM; MOTOR-15B precisa el robo con la síntesis de B15-N2 (cap. 7), lectura de ChatGPT sin lectura directa de Claude",
+    "statsPolicy.families.2.rule": "La pérdida se atribuye al sujeto responsable resuelto (pasador, manejador, infractor o equipo). El robo exige un toque o recuperación DEFENSIVA resuelta en el mismo hecho: interceptación o arrebato resueltos, o la disputa real de un balón suelto tras error atacante ganada por el defensor, sin exigir un intento previo. Todo robo comparte hecho con una pérdida individual rival. Con balón muerto no se acredita; la recuperación posterior sin intervención resuelta no basta."
+  },
+  "replacementNotes": {
+    "regulation.version": "MOTOR-15B: versión de la matriz",
+    "regulation.matrix.22": "MOTOR-15B §4.2: RG-I03 administra la técnica de categoría 2 y el libre adicional (antes «sanción adicional pendiente»)",
+    "regulation.matrix.18": "MOTOR-15B §4.3: RG-R01 enlaza la numeración suministrada",
+    "regulation.corrections": "MOTOR-15B §4.3: las nueve operaciones enlazadas a 45.4.1–45.4.8 y 45.6 (ventanas y ramas sin cambios)",
+    "statsPolicy.id": "MOTOR-15B: política de crédito con versión propia (robo por balón suelto ganado en disputa real); los partidos anteriores no se reinterpretan",
+    "statsPolicy.families.2.reading": "MOTOR-15B §7.2",
+    "statsPolicy.families.2.rule": "MOTOR-15B §7.2: criterio de robo de B15-N2; sin cambiar ninguna probabilidad"
+  }
+}

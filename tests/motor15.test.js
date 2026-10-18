@@ -168,12 +168,12 @@ const OFF = { 'shotFlight.pendingLagSeconds': 0, 'interference.fieldGoal.defensi
 const run15 = (p, seed = 20261016, detail = 'minimal') => runMatch(buildMatchInput(p, players, { seed }), p, { detail, check: true });
 
 test('M15·5 neutralidad: con las semillas SEM15 a cero el deporte de MOTOR-14 se reproduce exactamente (83–103, 6.505 sorteos); activarlas cambia el deporte con causa y primer punto de divergencia', () => {
-  const m14 = fixture('baseline-motor14.json'); const m15 = fixture('baseline-motor15.json');
+  const m14 = fixture('baseline-motor14.json'); const m15 = fixture('baseline-motor15b.json'); const m15prev = fixture('baseline-motor15.json'); // MOTOR-15B: mismo deporte (marcador, parciales, sorteos); cambia solo el crédito y por tanto la huella
   const off = run15(withSeeds(OFF)); assert.deepEqual(off.score, m14.score); assert.equal(off.diagnostics.sportingDraws, m14.draws);
   assert.deepEqual(off.periodScores.map((x) => x.points), m14.periodScores);
   const on = run15(profile); assert.deepEqual(on.score, m15.score); assert.equal(on.diagnostics.sportingDraws, m15.draws); assert.notEqual(on.diagnostics.sportingDraws, m14.draws);
   const min = run15(profile, 20261016, 'minimal'); const full = run15(profile, 20261016, 'full'); assert.equal(trajectoryFingerprint(min), trajectoryFingerprint(full), 'registro completo y reducido: misma trayectoria');
-  assert.equal(trajectoryFingerprint(on), m15.trajectorySha256);
+  assert.equal(trajectoryFingerprint(on), m15.trajectorySha256); assert.deepEqual([on.score, on.diagnostics.sportingDraws], [m15prev.score, m15prev.draws], 'MOTOR-15B no cambia el deporte de la referencia de MOTOR-15');
 });
 
 test('M15·5 tiro con liberación y resolución: el margen divide la duración existente, la señal entre hitos conserva el tiro, sin reloj negativo ni minutos posteriores a la bocina', () => {
@@ -201,8 +201,9 @@ test('M15·6 interferencia condicionada: masas excluyentes por oportunidad elegi
   assert.equal(interferenceOutcome(ms, 0.0005), 'defensive'); assert.equal(interferenceOutcome(ms, 0.0012), 'offensive'); assert.equal(interferenceOutcome(ms, 0.5), null);
   assert.equal(interferenceMasses(profile, 'lastFreeThrow', { defensive: false, offensive: true }).offensive, 0.00025);
   assert.throws(() => interferenceMasses(withSeeds({ 'interference.fieldGoal.defensiveP': 0.7, 'interference.fieldGoal.offensiveP': 0.6 }), 'fieldGoal', { defensive: true, offensive: true }));
-  for (const [sit, side] of [['fieldGoal', 'defensive'], ['fieldGoal', 'offensive'], ['lastFreeThrow', 'defensive'], ['lastFreeThrow', 'offensive']]) { const r = resolveInterference(profile, sit, side); assert.equal(r.ok, true); assert.equal(r.contrast, 'provisional'); }
-  assert.equal(resolveInterference(profile, 'lastFreeThrow', 'defensive').additionalSanction.status, 'pendiente', 'la sanción adicional queda registrada como pendiente con el dato que falta, no se inventa');
+  // MOTOR-15B §4.2: RG-I03 ya no deja la sanción adicional pendiente (técnica de categoría 2 administrada, ver tests/motor15b.test.js); las otras tres filas siguen provisionales
+  for (const [sit, side] of [['fieldGoal', 'defensive'], ['fieldGoal', 'offensive'], ['lastFreeThrow', 'defensive'], ['lastFreeThrow', 'offensive']]) { const r = resolveInterference(profile, sit, side); assert.equal(r.ok, true); assert.equal(r.contrast, sit === 'lastFreeThrow' && side === 'defensive' ? 'contrastada' : 'provisional'); }
+  assert.equal(resolveInterference(profile, 'lastFreeThrow', 'defensive').additionalSanction.status, 'administrada');
   // masa 0 → ningún sorteo de interferencia (el azar es el de MOTOR-14 salvo el margen)
   assert.equal(run15(withSeeds({ ...OFF, 'shotFlight.pendingLagSeconds': 0.35 }), 20261016).diagnostics.interference?.fieldGoal?.drawn ?? 0, 0);
   // copia extrema de laboratorio (NO es una frecuencia de referencia): fuerza ambas ramas para comprobar validez, crédito y reanudación
@@ -240,7 +241,7 @@ test('M15·7 asistencias con productor causal: último pase, receptor previsto/e
   const ev = JSON.parse(JSON.stringify(res.events)); const target = ev.find((e) => e.stats.some((f) => f.k === 'shot' && f.made && f.feed?.close?.eligible)); const f = target.stats.find((x) => x.k === 'shot'); f.feed.intendedReceiver = 'EQ99-J99'; f.feed.close = { eligible: false, reason: 'desvío claro hacia otro destinatario' };
   const a2 = buildActa({ events: ev, lineups: res.lineups, input: res.input, possessions: res.possessions, status: res.status }, profile.statsPolicy);
   assert.equal(a2.credits.filter((c) => c.k === 'ast' && c.event === target.id).length, 0); assert.equal(a2.credits.filter((c) => c.k === 'ast').length, acta.credits.filter((c) => c.k === 'ast').length - 1);
-  assert.equal(acta.policy, 'ACTA-MOTOR15-R1');
+  assert.equal(acta.policy, 'ACTA-MOTOR15B-R1');
 });
 
 // ---------------------------------------------------------------------------------------------------------------- 8
@@ -253,7 +254,7 @@ test('M15·8 estado propio por tramo y REC10: muestras reales en fronteras, audi
   assert.ok('committed' in analyze(res, { audience: 'diagnostic' }).ownStates(0).rows[0].samples[0].moments.M_TIR);
   assert.equal(analyze(res, { audience: 'public', team: 0 }).ownStates(0).available, false); assert.equal(analyze(res, { audience: 'own', team: 1 }).ownStates(0).available, false, 'el rival no obtiene estados privados');
   // la muestra no consume azar ni cambia el deporte: mismos sorteos con y sin lectura
-  assert.equal(res.diagnostics.sportingDraws, fixture('baseline-motor15.json').draws);
+  assert.equal(res.diagnostics.sportingDraws, fixture('baseline-motor15b.json').draws);
   // REC10: insuficiencia diferenciada con lo observado y lo exigido; sin permiso → no disponible
   const a = analyze(res, { audience: 'own', team: 0 }); const items = a.recommendations(0).items; const ids = items.map((i) => i.id);
   assert.ok(ids.includes('REC10-01') && ids.includes('REC10-02'), 'cada regla informa su estado');

@@ -4,7 +4,7 @@
 import { jsonlRecords, ensure, inc, fnv, r4, sum } from './util.js';
 import { effectiveAbility } from '../match/core.js';
 
-export const PROJECTION_VERSION = 'PRJ-MOTOR14-R1';
+export const PROJECTION_VERSION = 'PRJ-MOTOR15B-R1'; // MOTOR-15B: cadenas de saque con clasificación y casos; energía por ámbito y tarea con ejemplos
 export const BIN_EDGES = [0, 0.2, 0.4, 0.6, 0.8, 1];
 export const binOf = (p) => { for (let i = 0; i < BIN_EDGES.length - 2; i++) if (p < BIN_EDGES[i + 1]) return i; return BIN_EDGES.length - 2; };
 const PLAYER = /^EQ\d+(_B)?-J\d+$/;
@@ -21,13 +21,31 @@ const taskOf = (label) => { const m = /^receta:(TAR\d+)\.(attack|defense)$/.exec
 // estrato «LIMITE» recoge 2 por capacidad con base ≥ 28 o energía < 10 (donde la capacidad no debe o no puede influir). Se decide antes de mirar acierto alguno.
 function keepSmall(list, item, k) { list.push(item); list.sort((a, b) => a.h - b.h); if (list.length > k) list.pop(); }
 
+// MOTOR-15B §5.3: clasificación de cada cadena de saque con la última transición de su posesión (leída de los hechos del mismo intento; no se inventa ningún receptor ni pérdida).
+//  · ejecutada: cerrada con receptor · sin entrega válida: cerrada SIN receptor con causa legible de pérdida de entrega (infracción del plazo, falta, pérdida o desvío en el saque: comportamiento válido)
+//  · interrumpida por final de periodo (estado del productor desde 0.15.1, o derivada del último hecho de la posesión en evidencia anterior) · sin cierre tras desenlace (defecto de registro del productor)
+const NO_DELIVERY_CAUSE = /infracción del plazo|falta en el saque|pérdida en el saque|desvío/;
+export function classifyChains(P, lastOf) {
+  const S = P.saques; S.clases = {}; S.casos = [];
+  for (const c of S.cadenas) {
+    const last = lastOf[c.possession] ?? null; let clase; let valida = true; let origen = 'productor'; let causa = c.cierre;
+    if (c.status === 'interrumpida') { clase = 'interrumpida_fin_periodo'; }
+    else if (c.status === 'cerrada' && c.receptor) clase = 'ejecutada';
+    else if (c.status === 'cerrada') { if (NO_DELIVERY_CAUSE.test(c.cierre ?? '')) clase = 'sin_entrega_valida'; else { clase = 'cerrada_sin_receptor_sin_causa'; valida = false; } }
+    else if (last && (last.type === 'period_end' || (last.type === 'expiry' && last.fin === 'periodo'))) { clase = 'interrumpida_fin_periodo'; origen = 'lector (derivada del último hecho de la posesión)'; causa = 'interrumpida: final de periodo'; }
+    else { clase = 'sin_cierre_tras_desenlace'; valida = false; causa = last ? `la posesión terminó en «${last.type}»${last.perdida ? ' con pérdida' : ''} y la cadena seguía abierta` : 'sin hechos de la posesión'; }
+    S.clases[clase] = (S.clases[clase] ?? 0) + 1;
+    if (clase !== 'ejecutada') S.casos.push({ chain: c.id, possession: c.possession, period: c.period, kind: c.kind, origen: c.origen, status: c.status, cierre: c.cierre, receptor: c.receptor, negadas: c.negadas, intentos: c.intentos, ultimaTransicion: last, clase, valida, causa, evidenciaDe: origen });
+  }
+}
+
 export function projectAttempt(src, a, profile, cfg) {
   const t0 = performance.now(); const taskMax = Object.fromEntries(Object.entries(profile.tasks ?? {}).map(([k, v]) => [k, v.maxEnergyPenalty]));
   const caps = new Set(profile.attributeOrder); const foulOut = profile.rules?.foulOut ?? 5;
   const P = { match_id: a.match_id, attempt_id: a.attempt_id, case_id: a.case_id, variant_id: a.variant_id, level: a.level, valid: a.valid, facts: a.facts, projection: PROJECTION_VERSION,
-    binary: {}, dist: {}, cat: {}, recipes: { terms: 0, bad: [], weightBad: 0, valueBad: 0, effMismatch: 0, effChecked: 0, boundsBad: 0, capsUnknown: {}, byCap: {}, energyBands: {}, contexts: {}, byTask: {}, labelsSeen: {} },
+    binary: {}, dist: {}, cat: {}, recipes: { terms: 0, bad: [], weightBad: 0, valueBad: 0, effMismatch: 0, effChecked: 0, boundsBad: 0, capsUnknown: {}, byCap: {}, energyBands: {}, energyByTask: {}, contexts: {}, byTask: {}, labelsSeen: {} },
     opp: { n: 0, procedencia: {}, tags: {}, eleccion: {} }, libro: { n: 0, prios: {}, ties: 0, noElegible: 0, badPrio: 0 }, coach: { n: 0, area: {}, estado: {}, regla: {} }, memoria: { n: 0, tipo: {}, claves: {}, maxOcupadas: 0 },
-    saques: { n: 0, kind: {}, sinReceptor: 0, status: {} }, states: { changes: 0, ambito: {}, nuevoSum: {}, nuevoN: {}, episodes: {}, T: { n: 0, nonzero: 0 } }, orders: { n: 0, tipos: {} },
+    saques: { n: 0, kind: {}, sinReceptor: 0, status: {}, cadenas: [] }, states: { changes: 0, ambito: {}, nuevoSum: {}, nuevoN: {}, episodes: {}, T: { n: 0, nonzero: 0 } }, orders: { n: 0, tipos: {} },
     rebote: { n: 0, label: {} }, durations: {}, calcKinds: {}, events: { n: 0, types: {}, durationBad: 0, clockBad: 0, scoreBad: 0, loop: { maxStreak: 0, streaks: 0, example: null }, byPeriodTenths: {} },
     tables: {}, bytes: {}, ms: {} };
   const rel = (m, k) => ensure(m, k, newRel);
@@ -52,12 +70,13 @@ export function projectAttempt(src, a, profile, cfg) {
     } else if (r.record_type === 'oportunidad') { P.opp.n += 1; inc(P.opp.procedencia, r.procedencia ?? 'null'); inc(P.opp.eleccion, r.eleccion ?? 'null'); for (const t of r.etiquetas ?? []) inc(P.opp.tags, t); }
     else if (r.record_type === 'entrenador') { P.coach.n += 1; inc(P.coach.area, r.area); inc(P.coach.estado, r.estado); inc(P.coach.regla, r.regla ?? 'null'); }
     else if (r.record_type === 'memoria') { P.memoria.n += 1; inc(P.memoria.tipo, r.tipo); inc(P.memoria.claves, r.clave ?? 'null'); P.memoria.maxOcupadas = Math.max(P.memoria.maxOcupadas, r.ocupadas ?? 0); }
-    else if (r.record_type === 'cadena_saque') { P.saques.n += 1; inc(P.saques.kind, r.kind); inc(P.saques.status, r.status); if (r.status === 'cerrada' && !r.receptor) P.saques.sinReceptor += 1; if (r.status === 'abierta') P.saques.abiertas = (P.saques.abiertas ?? 0) + 1; }
+    else if (r.record_type === 'cadena_saque') { P.saques.n += 1; inc(P.saques.kind, r.kind); inc(P.saques.status, r.status); if (r.status === 'cerrada' && !r.receptor) P.saques.sinReceptor += 1; if (r.status === 'abierta') P.saques.abiertas = (P.saques.abiertas ?? 0) + 1;
+      P.saques.cadenas.push({ id: r.id, possession: r.possession, period: r.period, kind: r.kind, origen: r.origen, status: r.status, cierre: r.cierre ?? null, receptor: r.receptor ?? null, opcionUsada: r.opcionUsada ?? null, negadas: (r.intentos ?? []).filter((x) => x.negada).length, intentos: (r.intentos ?? []).length }); }
   }
   P.ms.decisiones = performance.now() - t0;
 
   // ---------------------------------------------------------------- hechos (relojes, bucles, tipos)
-  const ev = src.stream(a, 'eventos'); P.bytes.eventos = ev?.length ?? 0;
+  const ev = src.stream(a, 'eventos'); P.bytes.eventos = ev?.length ?? 0; const lastOf = {};
   if (ev) {
     let prev = null; let streak = 0; let prevSig = null; let prevScore = [0, 0]; const SKIP = new Set(['free_throw', 'foul', 'substitution', 'timeout', 'period_start', 'period_end', 'interval', 'tipoff', 'correction']);
     for (const e of jsonlRecords(ev)) {
@@ -69,8 +88,10 @@ export function projectAttempt(src, a, profile, cfg) {
       const sig = `${e.type}|${e.team}|${e.possession_id}|${e.intent?.motivo ?? ''}|${e.clock?.after}`;
       if (!SKIP.has(e.type) && (e.durationTenths ?? 0) === 0 && sig === prevSig) { streak += 1; if (streak === 1) P.events.loop.streaks += 1; if (streak > P.events.loop.maxStreak) { P.events.loop.maxStreak = streak; P.events.loop.example = { event_id: e.event_id, signature: sig }; } } else streak = 0;
       prevSig = sig; prev = e;
+      if (e.possession_id) lastOf[e.possession_id] = { id: e.event_id, type: e.type, fin: e.effects?.fin ?? null, perdida: !!e.effects?.perdida };
     }
   }
+  classifyChains(P, lastOf);
   const st = src.stream(a, 'estados'); P.bytes.estados = st?.length ?? 0;
   if (st) for (const r of jsonlRecords(st)) {
     if (r.record_type === 'cambio_estado') { P.states.changes += 1; inc(P.states.ambito, r.ambito); inc(P.states.nuevoSum, r.ambito, r.nuevo ?? 0); inc(P.states.nuevoN, r.ambito); if (r.ambito === 'T') { P.states.T.n += 1; if (r.nuevo) P.states.T.nonzero += 1; } }
@@ -128,6 +149,8 @@ function projectRecipe(P, r, taskMax, caps, profile) {
     inc(c.players, x.jugador);
     // brecha de energía por banda (AUD17): base − efectiva
     const e = x.energia; const band = e >= 70 ? '70–100' : e >= 40 ? '40–70' : e >= 10 ? '10–40' : '<10'; const kind = x.cap.startsWith('FIS') ? 'FIS' : 'TEC/MEN'; const eb = ensure(R.energyBands, `${kind}|${band}`, () => ({ n: 0, gap: 0 })); eb.n += 1; eb.gap += x.base - x.efectiva;
+    // MOTOR-15B: la brecha de tareas con distinto tope de deterioro NO es la misma magnitud: se conserva por (ámbito, tarea, banda) con su numerador, denominador y dos casos de ejemplo
+    { const tk = `${kind}|${t ? `${t.task}.${t.side}` : 'otras'}|${band}`; const et = ensure(R.energyByTask, tk, () => ({ n: 0, gap: 0, baseSum: 0, minEnergy: e, examples: [] })); et.n += 1; et.gap += x.base - x.efectiva; et.baseSum += x.base; if (e < et.minEnergy) et.minEnergy = e; if (et.examples.length < 2) et.examples.push({ decision_id: r.decision_id, event_id: r.event_id, player: x.jugador, cap: x.cap, base: x.base, efectiva: x.efectiva, energia: e }); }
     // coherencia de la operación pura con el valor registrado (solo con tope de tarea conocido)
     if (t && taskMax[t.task] != null && e != null) { R.effChecked += 1; const v = effectiveAbility(profile, x.base, e, x.cap, taskMax[t.task]); if (Math.abs(v - x.efectiva) > 0.06) { R.effMismatch += 1; if (R.bad.length < 5) R.bad.push({ decision_id: r.decision_id, cap: x.cap, base: x.base, energia: e, registrada: x.efectiva, pura: r4(v) }); } }
     // contextos del contraste B (selección ciega, determinista)
