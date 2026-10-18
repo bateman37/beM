@@ -9,6 +9,11 @@ Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANG
 - **Copia original congelada** del funcional unificado y **exportado completo vigente** generado: ver [`historico/`](historico/README.md) y [`exportados/`](exportados/README.md).
 - **Utilidades documentales** en `scripts/docs/` (Python 3, librería estándar).
 
+## MOTOR-16 (campaña ejecutada; análisis pendiente en ChatGPT)
+
+- **Qué es**: ejecución y extracción de datos, sin cambio de código ni de deporte. Estudio `MOTOR16-EVIDENCIA-20261018` sobre el commit de código `109b9f8` (solo documental sobre `6a6814c`), motor `0.15.1-MOTOR15B`: 3.732 ejecuciones físicas (A 2.640, B 384, C 384, D 80, 224 diagnósticos, 20 técnicas), todas terminadas y válidas. Paquetes `MOTOR-16-*` fuera de Git (`out/motor16/entrega-final/`). Ficha: [`prompts/README.md`](prompts/README.md#motor-16).
+- **No hecho**: análisis, calibración, candidata ni MOTOR-17; el motor sigue siendo MOTOR-15B.
+
 ## MOTOR-15B (ejecutado; cierre de MOTOR-15 y diagnóstico de robos; pendiente de Dennis)
 
 - **Existe**: RG-I03 con punto concedido, **técnica de categoría 2** al defensor y libre adicional real con una única reanudación (por la cola común; guardado entre consecuencias sin duplicados); art. 45 numerado (45.4.1–45.4.8, 45.6); lotes de **reproducción** de C15-01…05 con semillas explícitas para auditar; AUD17 por ámbito y tarea (C15-05 leído, extremo aparte) y AUD26 clasificado por cadena; informe de auditoría con universo efectivo; caso preparado RG-I03 en *Partido*; vista **Cierre** de MOTOR-15B con los paquetes `MOTOR-15B-revision-rapida.zip` y `MOTOR-15B-evidencia-detallada.zip` (los de MOTOR-15 se conservan como histórico) y comprobador `scripts/m15b-package-check.js`.
