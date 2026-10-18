@@ -4,7 +4,6 @@
 import { h, table } from './dom.js';
 import { store } from './store.js';
 import { AUDIT_CATALOG, AREAS } from '../audit/catalog.js';
-import { proposeCandidate } from '../audit/calibration.js';
 
 const API = '/api/audit';
 const pill = (t, c = '') => h('span', { class: `pill ${c}` }, t);
@@ -136,7 +135,7 @@ function candidates17Card() {
     ...c.candidates.map((cd) => h('div', { class: 'card', id: `cand-${cd.id}` }, h('strong', {}, `${cd.id} · ${cd.name}`), h('p', { class: 'small' }, cd.hypothesis),
       table(['Fila (Panel)', 'Unidad', 'Base → candidata', 'Consumidor', 'Causa', 'Efecto previsto', 'Observado en desarrollo (24 encuentros)'], cd.controls.map((k) => [k.row, k.unit, `${k.before} → ${k.after}`, k.consumer, k.cause, k.expected, k.observedDev ? `energía final ${k.observedDev.energia_final_media}; <30: ${(k.observedDev.energia_final_bajo_30 * 100).toFixed(1)} %; con un jugador de 40:00: ${(k.observedDev.con_jugador_de_40 * 100).toFixed(1)} %; minutos máx. ${k.observedDev.minutos_maximos_medios}` : '—'])),
       h('p', { class: 'small muted' }, `Control contra doble conteo: ${cd.doubleCountGuard}.`),
-      h('button', { class: 'btn secondary', type: 'button', id: `cand-draft-${cd.id}`, onclick: () => { const lib = store.library; if (!lib) { ui.msg = 'El Panel aún no está cargado.'; return repaint(); } const r = proposeCandidate(lib, lib.activeVersion().id, { hypothesis: `${cd.id}: ${cd.hypothesis}`, edits: cd.controls.map((k) => ({ row: k.row, value: k.after, justification: `${k.cause}: ${k.expected}` })), evidence: [`data/match/motor17-candidates.json#${cd.id}`] }, store.profile?.audit ?? store.baseNew?.audit ?? { calibrationStep: { maxChangedRows: 3 } }); ui.msg = r.ok ? `${cd.id}: borrador ${r.draftId} creado en el Panel (NO activado; la versión activa sigue siendo ${r.activeVersionUnchanged}).` : `${cd.id}: ${r.reason}`; repaint(); } }, 'Crear borrador en el Panel (no activa)'))),
+      h('button', { class: 'btn secondary', type: 'button', id: `cand-draft-${cd.id}`, onclick: () => { const lib = store.library; if (!lib) { ui.msg = 'El Panel aún no está cargado.'; return repaint(); } const baseId = lib.activeVersion().id; const made = lib.createDraft(baseId, { name: `Candidata MOTOR-17 ${cd.id}`, reason: `${cd.id}: ${cd.hypothesis}` }); if (!made.ok) { ui.msg = `${cd.id}: ${made.reason ?? 'no se pudo crear el borrador'}`; return repaint(); } const ed = lib.editDraft(made.draft.id, Object.fromEntries(cd.controls.map((k) => [k.row, k.after])), `${cd.id}: ${cd.hypothesis}`); ui.msg = ed.ok ? `${cd.id}: borrador ${made.draft.id} creado en el Panel (NO activado; la versión activa sigue siendo ${lib.activeVersion().id}).` : `${cd.id}: ${ed.reason ?? 'no se pudo editar el borrador'}`; repaint(); } }, 'Crear borrador en el Panel (no activa)'))),
     h('p', { class: 'small muted' }, 'Las candidatas no forman parte del perfil efectivo MOTOR-17. Elegir la que se propone para el cierre y su justificación: docs/tecnico/motor17.md §8.'));
 }
 function calibCard() {

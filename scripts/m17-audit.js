@@ -6,13 +6,13 @@ import { join, dirname } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 const arg = (k, d) => { const a = process.argv.find((x) => x.startsWith(`--${k}=`)); return a ? a.slice(k.length + 3) : d; };
-const TREE = arg('tree', null); const PLAN = arg('plan', null); const LOTS = arg('lots-root', null); const LABEL = arg('label', null); const OUT = arg('out', 'out/motor17/auditoria'); const ZIP = process.argv.includes('--zip');
+const TREE = arg('tree', null); const PLAN = arg('plan', null); const LOTS = arg('lots-root', null); const LABEL = arg('label', null); const OUT = arg('out', 'out/motor17/auditoria'); const ZIP = process.argv.includes('--zip'); const EQV = arg('equivalence-dir', null);
 if (!TREE || !PLAN || !LOTS || !LABEL) { console.error('uso: --tree --plan --lots-root --label'); process.exit(2); }
 const imp = (p) => import(pathToFileURL(`${TREE}/${p}`).href);
 const { loadData } = await imp('scripts/node-data.js'); const { runAudit } = await imp('src/audit/index.js'); const R = await imp('src/audit/report.js'); const { PROJECTION_VERSION } = await imp('src/audit/project.js');
 const { profile, players } = loadData(); const plan = JSON.parse(readFileSync(PLAN, 'utf8')); const dir = join(OUT, LABEL); mkdirSync(dir, { recursive: true });
 const lots = plan.lots.filter((l) => l.kind === 'diagnostico'); const specs = lots.map((l) => ({ kind: 'lote', id: l.batch_id, root: LOTS }));
-const t0 = performance.now(); const res = runAudit(specs, { profile, players, auditRoot: join(dir, 'raiz-auditoria') });
+const t0 = performance.now(); const res = runAudit(specs, { profile, players, auditRoot: join(dir, 'raiz-auditoria'), ...(EQV ? { equivalenceDir: EQV } : {}) });
 if (!res.ok) { console.error('AUDITORÍA NO EJECUTADA:', res.reason); process.exit(1); }
 const report = R.auditReport(res, { title: `Informe de auditoría · ${LABEL} (${lots.length} diagnósticos de ${plan.version})` });
 writeFileSync(join(dir, 'informe-auditoria.md'), report);
