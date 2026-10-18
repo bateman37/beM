@@ -527,6 +527,17 @@ P.pickRecoverer = function pickRecoverer(team, prefer) {
 };
 
 // ---------------------------------------------------------------- pérdida, faltas, infracción, balón suelto
+// MOTOR-17 §5 (criterio estadístico FIBA 2024, síntesis verificada por ChatGPT): criterio ÚNICO de crédito de robo para toda pérdida con balón VIVO que la defensa recupera con control (pase/bote con interceptor,
+// avance presionado, saque forzado y balón suelto ganado en disputa). Solo es estadístico: no sortea, no cambia la transición, el origen de la posesión ni el estado del partido.
+//  · intento de intervención resuelto (`attempt === true`): inicia el desvío el interceptor, aunque otro compañero recoja después;
+//  · sin intento (error ofensivo sin intervención) con defensor resuelto en la jugada: recogida controlada → el recuperador;
+//  · sin defensor resuelto (la recuperación sale del sorteo de recuperador) o balón muerto/infracción/falta: sin crédito (hecho ambiguo: no se fabrica autor).
+P.liveStealCredit = function liveStealCredit({ team, icpt, attempt, recoverer, fuente }) {
+  if (icpt == null || recoverer == null) return null;
+  const p = attempt === true ? icpt : recoverer;
+  return { k: 'stl', p, team, fuente, contacto: attempt === true ? 'intento de intervención' : 'recogida controlada' };
+};
+
 P.resolveTurnover = function resolveTurnover(ex, base) {
   const o = this.profile.outcomes;
   const stats = [{ k: 'tov', p: ex.exec === 'pass' ? ex.passer : ex.actor, team: ex.team, cause: ex.exec === 'pass' ? 'pase' : 'balón' }];
@@ -550,7 +561,9 @@ P.resolveTurnover = function resolveTurnover(ex, base) {
     return { end: 'deadTurnover' };
   }
   const carrier = this.pickRecoverer(1 - ex.team, ex.icpt);
-  this.emit('attempt', { ...base, stats, effects: { perdida: true, robo: null, balonVivo: true, recupera: carrier, cadenaRobo: cadena } });
+  const credit = this.liveStealCredit({ team: 1 - ex.team, icpt: ex.icpt, attempt: ex.stealAttempt, recoverer: carrier, fuente: 'pérdida viva recuperada con control' });
+  if (credit) stats.push(credit);
+  this.emit('attempt', { ...base, stats, effects: { perdida: true, robo: credit?.p ?? null, balonVivo: true, recupera: carrier, cadenaRobo: cadena } });
   this.cover('pérdida viva sin robo');
   this.endPossession('live', { team: ex.team, origin: 'pérdida', carrier });
   return { end: 'liveTurnover' };
@@ -704,7 +717,8 @@ P.resolveLooseBall = function resolveLooseBall(ex, base) {
   }
   // MOTOR-15B §7.2 (B15-N2, cap. 7): el defensor que gana la disputa REAL de un balón suelto tras el error atacante lo recupera con balón vivo: robo, sin exigir un intento previo de arrebato (el crédito es solo
   // estadístico: no hay otro sorteo, ni cambia la transición ni el origen de la posesión siguiente). La pérdida individual rival sigue en el mismo hecho (conciliación ROB01).
-  const stl = opposer != null ? [{ k: 'stl', p: opposer, team: 1 - ex.team, fuente: 'balón suelto ganado en disputa' }] : [];
+  const credit = this.liveStealCredit({ team: 1 - ex.team, icpt: opposer, attempt: null, recoverer: opposer, fuente: 'balón suelto ganado en disputa' });
+  const stl = credit ? [credit] : [];
   this.emit('loose_ball', { t, team: ex.team, participants: { disputa: [ex.actor, opposer] }, stats: [{ k: 'tov', p: ex.actor, team: ex.team, cause: 'balón suelto perdido' }, ...stl], effects: { pControlAtaque: round(p, 4), control: 'defensa', recupera: opposer, ...(stl.length ? { robo: opposer } : {}) } });
   this.endPossession('live', { team: ex.team, origin: 'balón suelto', carrier: opposer });
   return { end: 'looseLost' };
@@ -838,6 +852,7 @@ P.deadBall = function deadBall(reason) {
 };
 
 P.endPossession = function endPossession(kind, info) {
+  this.closeOpenChain(this.poss); // MOTOR-17 §6.1: solo registro
   const team = info.team; const opp = 1 - team;
   const rules = this.profile.rules;
   switch (kind) {

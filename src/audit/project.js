@@ -4,7 +4,7 @@
 import { jsonlRecords, ensure, inc, fnv, r4, sum } from './util.js';
 import { effectiveAbility } from '../match/core.js';
 
-export const PROJECTION_VERSION = 'PRJ-MOTOR15B-R1'; // MOTOR-15B: cadenas de saque con clasificación y casos; energía por ámbito y tarea con ejemplos
+export const PROJECTION_VERSION = 'PRJ-MOTOR17-R1'; // MOTOR-15B: cadenas de saque con clasificación y casos; energía por ámbito y tarea con ejemplos
 export const BIN_EDGES = [0, 0.2, 0.4, 0.6, 0.8, 1];
 export const binOf = (p) => { for (let i = 0; i < BIN_EDGES.length - 2; i++) if (p < BIN_EDGES[i + 1]) return i; return BIN_EDGES.length - 2; };
 const PLAYER = /^EQ\d+(_B)?-J\d+$/;
@@ -42,7 +42,8 @@ export function classifyChains(P, lastOf) {
 export function projectAttempt(src, a, profile, cfg) {
   const t0 = performance.now(); const taskMax = Object.fromEntries(Object.entries(profile.tasks ?? {}).map(([k, v]) => [k, v.maxEnergyPenalty]));
   const caps = new Set(profile.attributeOrder); const foulOut = profile.rules?.foulOut ?? 5;
-  const P = { match_id: a.match_id, attempt_id: a.attempt_id, case_id: a.case_id, variant_id: a.variant_id, level: a.level, valid: a.valid, facts: a.facts, projection: PROJECTION_VERSION,
+  const sourceId = cfg?.sourceId ?? null; // MOTOR-17 §6.2: un `M000001`/`E0052` local no identifica nada entre lotes; la identidad global es fuente|intento
+  const P = { source_id: sourceId, global_attempt: `${a.batch_id ?? sourceId ?? ''}|${a.attempt_id}`, batch_id: a.batch_id ?? null, match_id: a.match_id, attempt_id: a.attempt_id, case_id: a.case_id, variant_id: a.variant_id, level: a.level, valid: a.valid, facts: a.facts, projection: PROJECTION_VERSION,
     binary: {}, dist: {}, cat: {}, recipes: { terms: 0, bad: [], weightBad: 0, valueBad: 0, effMismatch: 0, effChecked: 0, boundsBad: 0, capsUnknown: {}, byCap: {}, energyBands: {}, energyByTask: {}, contexts: {}, byTask: {}, labelsSeen: {} },
     opp: { n: 0, procedencia: {}, tags: {}, eleccion: {} }, libro: { n: 0, prios: {}, ties: 0, noElegible: 0, badPrio: 0 }, coach: { n: 0, area: {}, estado: {}, regla: {} }, memoria: { n: 0, tipo: {}, claves: {}, maxOcupadas: 0 },
     saques: { n: 0, kind: {}, sinReceptor: 0, status: {}, cadenas: [] }, states: { changes: 0, ambito: {}, nuevoSum: {}, nuevoN: {}, episodes: {}, T: { n: 0, nonzero: 0 } }, orders: { n: 0, tipos: {} },
@@ -152,10 +153,10 @@ function projectRecipe(P, r, taskMax, caps, profile) {
     // MOTOR-15B: la brecha de tareas con distinto tope de deterioro NO es la misma magnitud: se conserva por (ámbito, tarea, banda) con su numerador, denominador y dos casos de ejemplo
     { const tk = `${kind}|${t ? `${t.task}.${t.side}` : 'otras'}|${band}`; const et = ensure(R.energyByTask, tk, () => ({ n: 0, gap: 0, baseSum: 0, minEnergy: e, examples: [] })); et.n += 1; et.gap += x.base - x.efectiva; et.baseSum += x.base; if (e < et.minEnergy) et.minEnergy = e; if (et.examples.length < 2) et.examples.push({ decision_id: r.decision_id, event_id: r.event_id, player: x.jugador, cap: x.cap, base: x.base, efectiva: x.efectiva, energia: e }); }
     // coherencia de la operación pura con el valor registrado (solo con tope de tarea conocido)
-    if (t && taskMax[t.task] != null && e != null) { R.effChecked += 1; const v = effectiveAbility(profile, x.base, e, x.cap, taskMax[t.task]); if (Math.abs(v - x.efectiva) > 0.06) { R.effMismatch += 1; if (R.bad.length < 5) R.bad.push({ decision_id: r.decision_id, cap: x.cap, base: x.base, energia: e, registrada: x.efectiva, pura: r4(v) }); } }
+    const tmx = x.tope ?? (t ? taskMax[t.task] : null); if (t && tmx != null && e != null) { R.effChecked += 1; const v = effectiveAbility(profile, x.base, e, x.cap, tmx); if (Math.abs(v - x.efectiva) > 0.06) { R.effMismatch += 1; if (R.bad.length < 5) R.bad.push({ decision_id: r.decision_id, cap: x.cap, base: x.base, energia: e, registrada: x.efectiva, pura: r4(v) }); } }
     // contextos del contraste B (selección ciega, determinista)
-    const h = fnv(`${r.decision_id}|${x.cap}|${x.jugador}|${x.rol}`); const ctxList = ensure(R.contexts, x.cap, () => ({}));
-    const item = { h, decision_id: r.decision_id, event_id: r.event_id, label: r.label, task: t ? `${t.task}.${t.side}` : null, taskMax: (t ? taskMax[t.task] : null) ?? x.tope ?? null, stratum, player: x.jugador, rol: x.rol, cap: x.cap, base: x.base, eff: x.efectiva, energia: e, peso: x.peso, valor: d.valor, terminos: terms };
+    const gdec = `${P.global_attempt}|${r.decision_id}`; const h = fnv(`${gdec}|${x.cap}|${x.jugador}|${x.rol}`); const ctxList = ensure(R.contexts, x.cap, () => ({}));
+    const item = { h, gdec, decision_id: r.decision_id, event_id: r.event_id, label: r.label, task: t ? `${t.task}.${t.side}` : null, taskMax: x.tope ?? (t ? taskMax[t.task] : null) ?? null, topeRegistrado: x.tope != null, stratum, player: x.jugador, rol: x.rol, cap: x.cap, base: x.base, eff: x.efectiva, energia: e, peso: x.peso, valor: d.valor, terminos: terms };
     if (ex) item.ex = ex; // MOTOR-14: entradas del cálculo derivado de las siete capacidades recién registradas
     keepSmall(ensure(ctxList, stratum, () => []), item, 3); if (x.base >= hi - 2 || (e != null && e < 10)) keepSmall(ensure(ctxList, 'LIMITE', () => []), item, 2);
   }

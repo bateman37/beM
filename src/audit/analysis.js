@@ -119,9 +119,9 @@ export function selectContexts(projs, perCap) {
   const sel = {};
   for (const cap of CAPABILITY_IDS) {
     const strata = {}; for (const p of projs) for (const [st, list] of Object.entries(p.recipes.contexts[cap] ?? {})) (strata[st] ??= []).push(...list);
-    for (const l of Object.values(strata)) l.sort((a, b) => a.h - b.h || (a.decision_id < b.decision_id ? -1 : 1));
+    for (const l of Object.values(strata)) l.sort((a, b) => a.h - b.h || (a.gdec < b.gdec ? -1 : 1));
     const names = Object.keys(strata).filter((s) => s !== 'LIMITE').sort(); const picked = []; const seen = new Set();
-    const take = (item) => { const k = `${item.decision_id}|${item.player}|${item.rol}`; if (seen.has(k)) return false; seen.add(k); picked.push(item); return true; };
+    const take = (item) => { const k = `${item.gdec}|${item.player}|${item.rol}`; if (seen.has(k)) return false; seen.add(k); picked.push(item); return true; };
     const lim = (strata.LIMITE ?? []).slice(0, 2); for (const it of lim) take({ ...it, stratum: `LIMITE (${it.stratum})`, limite: true });
     for (let i = 0; picked.length < perCap; i++) { let any = false; for (const s of names) { const it = strata[s][i]; if (it) { any = true; if (picked.length < perCap) take(it); } } if (!any) break; }
     sel[cap] = picked;
@@ -132,11 +132,25 @@ export function selectContexts(projs, perCap) {
 export function sensitivity(contexts, profile, increments) {
   const [lo, hi] = profile.abilityBounds; const rows = [];
   for (const [cap, list] of Object.entries(contexts)) for (const c of list) for (const inc of increments) {
-    const newBase = Math.min(hi, c.base + inc); const effectiveInc = newBase - c.base; let effAfter; let method;
-    if (c.taskMax != null && c.energia != null) { effAfter = effectiveAbility(profile, newBase, c.energia, cap, c.taskMax); method = 'operación pura effectiveAbility(base, energía, tope de tarea)'; }
-    else { effAfter = clamp(newBase - (c.base - c.eff), lo, hi); method = 'brecha base−efectiva registrada (tope de tarea no registrado)'; }
-    const W = sum(c.terminos.map((x) => x.peso)); let num = 0; for (const x of c.terminos) num += x.peso * ((x.cap === cap && x.jugador === c.player && x.rol === c.rol) ? effAfter : x.efectiva);
-    const after = num / W; const special = specialOutput(c, cap, newBase, effAfter, profile); rows.push({ ...(special ?? {}), cap, stratum: c.stratum, decision_id: c.decision_id, event_id: c.event_id, label: c.label, player: c.player, role: c.rol, base: c.base, incrementoSolicitado: inc, incrementoEfectivo: effectiveInc, energia: c.energia, efectivaAntes: c.eff, efectivaDespues: r4(effAfter), valorAntes: c.valor, valorDespues: r4(after), delta: r4(after - c.valor), unidad: 'puntos de receta (escala 1–30); NO es probabilidad ni puntos', saturacion: effectiveInc < inc ? (effectiveInc === 0 ? 'base en el máximo: incremento efectivo 0' : 'recortada al máximo') : (effAfter >= hi ? 'efectiva en el máximo' : ''), limite: !!c.limite, metodo: method });
+    const newBase = Math.min(hi, c.base + inc); const effectiveInc = newBase - c.base; let effAfter; let effBefore; let method;
+    // MOTOR-17 §7.1: con tope registrado la operación pura se evalúa ANTES y DESPUÉS con las mismas entradas (sin redondeos de la receta registrada): incremento efectivo 0 ⇒ cambio exactamente 0.
+    const exact = c.taskMax != null && c.energia != null;
+    if (exact) {
+      const pure0 = effectiveAbility(profile, c.base, c.energia, cap, c.taskMax); const gap = pure0 - c.eff; // gap ≠ 0 más allá del redondeo = penalización de decisión ya aplicada (p. ej. presión sobre MEN03): se mantiene fija
+      const fixedPenalty = Math.abs(gap) > 3e-3 ? gap : 0 // el redondeo registrado (energía a 2 decimales, efectiva a 3) no supera ≈0,0015;
+      effBefore = fixedPenalty ? c.eff : pure0; effAfter = Math.min(hi, Math.max(lo, effectiveAbility(profile, newBase, c.energia, cap, c.taskMax) - fixedPenalty));
+      method = `${c.topeRegistrado ? 'operación pura effectiveAbility(base, energía, tope registrado en el término)' : 'operación pura effectiveAbility(base, energía, tope de la tarea del perfil)'}${fixedPenalty ? ' con la penalización de decisión registrada mantenida fija' : ''}`;
+    }
+    else { effBefore = c.eff; effAfter = clamp(newBase - (c.base - c.eff), lo, hi); method = 'APROXIMADA: brecha base−efectiva registrada (tope de tarea no registrado)'; }
+    const W = sum(c.terminos.map((x) => x.peso)); const mine = (x) => x.cap === cap && x.jugador === c.player && x.rol === c.rol;
+    let num0 = 0; let num = 0; for (const x of c.terminos) { num0 += x.peso * (mine(x) ? effBefore : x.efectiva); num += x.peso * (mine(x) ? effAfter : x.efectiva); }
+    const before = num0 / W; const after = num / W; const special = specialOutput(c, cap, newBase, effAfter, profile);
+    const salida = special?.salidaUnidad ?? null;
+    rows.push({ ...(special ?? {}), cap, stratum: c.stratum, gdec: c.gdec, decision_id: c.decision_id, event_id: c.event_id, label: c.label, player: c.player, role: c.rol, base: c.base, incrementoSolicitado: inc, incrementoEfectivo: effectiveInc, energia: c.energia, efectivaAntes: c.eff, efectivaDespues: r4(effAfter), valorAntes: c.valor, valorAntesReconstruido: r4(before), valorDespues: r4(after), delta: r4(after - before),
+      // `delta` es SIEMPRE el cambio del valor de receta (entrada de la operación final). La magnitud consumida, cuando se calcula, va en `salida*` con su propia unidad.
+      magnitud: special ? 'salida de la operación pura (ver salida*) y valor de receta (delta)' : 'valor de receta (entrada de la operación final; la salida consumida no se calcula para esta capacidad)', unidad: salida ? `${salida} · receta: puntos (escala 1–30)` : 'puntos de receta (escala 1–30): entrada de la operación final; NO es probabilidad ni puntos del partido',
+      exactitud: exact ? 'exacta' : 'aproximada', topeRegistrado: !!c.topeRegistrado,
+      saturacion: effectiveInc < inc ? (effectiveInc === 0 ? 'base en el máximo: incremento efectivo 0' : 'recortada al máximo') : (effAfter >= hi ? 'efectiva en el máximo' : ''), limite: !!c.limite, metodo: method });
   }
   return rows;
 }
@@ -147,13 +161,13 @@ export function capabilityMatrix(projs, profile, sens, experiments) {
   const rows = []; const expCaps = {}; for (const e of experiments ?? []) for (const c of e.capabilities ?? []) (expCaps[c] ??= []).push(e.id);
   for (const cap of CAPABILITY_IDS) {
     const obs = {}; let totalUses = 0; let qUses = 0; const players = new Set();
-    for (const p of projs) { const c = p.recipes.byCap[cap]; if (c) for (const [st, s] of Object.entries(c.strata)) { const o = (obs[st] ??= { uses: 0, sumEff: 0, sumBase: 0, sumShare: 0, matches: new Set() }); o.uses += s.uses; o.sumEff += s.sumEff; o.sumBase += s.sumBase; o.sumShare += s.sumShare; o.matches.add(p.match_id); totalUses += s.uses; } for (const pl of Object.keys(p.recipes.byCap[cap]?.players ?? {})) players.add(pl); qUses += p.recipes.qualityTerms?.[cap]?.uses ?? 0; }
+    for (const p of projs) { const c = p.recipes.byCap[cap]; if (c) for (const [st, s] of Object.entries(c.strata)) { const o = (obs[st] ??= { uses: 0, sumEff: 0, sumBase: 0, sumShare: 0, matches: new Set() }); o.uses += s.uses; o.sumEff += s.sumEff; o.sumBase += s.sumBase; o.sumShare += s.sumShare; o.matches.add(p.global_attempt); totalUses += s.uses; } for (const pl of Object.keys(p.recipes.byCap[cap]?.players ?? {})) players.add(pl); qUses += p.recipes.qualityTerms?.[cap]?.uses ?? 0; }
     const sat = sum(projs.map((p) => p.recipes.byCap[cap]?.saturated ?? 0)); const s = sens.filter((r) => r.cap === cap);
-    const sensBy = (inc) => { const xs = s.filter((r) => r.incrementoSolicitado === inc && !r.limite && r.incrementoEfectivo > 0); return xs.length ? { n: xs.length, mediaDelta: r4(mean(xs.map((r) => r.delta))), minDelta: r4(Math.min(...xs.map((r) => r.delta))), maxDelta: r4(Math.max(...xs.map((r) => r.delta))) } : null; };
+    const sensBy = (inc, ex = 'exacta') => { const xs = s.filter((r) => r.incrementoSolicitado === inc && !r.limite && r.incrementoEfectivo > 0 && (r.exactitud ?? 'aproximada') === ex); return xs.length ? { n: xs.length, mediaDelta: r4(mean(xs.map((r) => r.delta))), minDelta: r4(Math.min(...xs.map((r) => r.delta))), maxDelta: r4(Math.max(...xs.map((r) => r.delta))) } : null; };
     const decl = declared[cap]; const strata = Object.keys(obs);
     const estado = totalUses > 0 ? (s.length ? 'declarado, observado, aplicado y contrastado (cálculo fijo)' : 'declarado, observado y aplicado; sin contraste') : (UNRECORDED[cap] ? `consumida en operaciones sin receta registrada con entradas (${UNRECORDED[cap].mech}); contraste B no aislable: ${UNRECORDED[cap].dep}` : qUses > 0 ? 'declarado y observado solo en calidad de ataque (sin base/energía registradas: contraste no aislable)' : (decl.length ? 'declarado y NO expuesto en esta evidencia (no es un atributo muerto)' : 'sin declaración localizada'));
     if (!strata.length) rows.push({ cap, nombre: dict[cap] ?? cap, stratum: '—', declaradoEn: decl.map((d) => d.path).slice(0, 8), declaradoN: decl.length, usos: 0, usosCalidadAtaque: qUses, matches: 0, actores: 0, mediaBase: null, mediaEfectiva: null, mediaPeso: null, saturadas: sat, contrasteCalculo: null, contrastePartidos: expCaps[cap] ?? [], estado });
-    else for (const st of strata.sort()) { const o = obs[st]; rows.push({ cap, nombre: dict[cap] ?? cap, stratum: st, declaradoEn: decl.map((d) => d.path).slice(0, 8), declaradoN: decl.length, usos: o.uses, usosCalidadAtaque: qUses, matches: o.matches.size, actores: players.size, mediaBase: r4(o.sumBase / o.uses), mediaEfectiva: r4(o.sumEff / o.uses), mediaPeso: r4(o.sumShare / o.uses), saturadas: sat, contrasteCalculo: { '+1': sensBy(1), '+3': sensBy(3), '+5': sensBy(5), contextos: s.filter((r) => r.stratum === st && r.incrementoSolicitado === 1).length }, contrastePartidos: expCaps[cap] ?? [], estado }); }
+    else for (const st of strata.sort()) { const o = obs[st]; rows.push({ cap, nombre: dict[cap] ?? cap, stratum: st, declaradoEn: decl.map((d) => d.path).slice(0, 8), declaradoN: decl.length, usos: o.uses, usosCalidadAtaque: qUses, matches: o.matches.size, actores: players.size, mediaBase: r4(o.sumBase / o.uses), mediaEfectiva: r4(o.sumEff / o.uses), mediaPeso: r4(o.sumShare / o.uses), saturadas: sat, contrasteCalculo: { '+1': sensBy(1), '+3': sensBy(3), '+5': sensBy(5), contextos: s.filter((r) => r.stratum === st && r.incrementoSolicitado === 1).length, contextosExactos: s.filter((r) => r.stratum === st && r.incrementoSolicitado === 1 && r.exactitud === 'exacta').length }, contrasteAproximado: { '+1': sensBy(1, 'aproximada'), '+3': sensBy(3, 'aproximada'), '+5': sensBy(5, 'aproximada') }, contrastePartidos: expCaps[cap] ?? [], estado }); }
   }
   return rows;
 }

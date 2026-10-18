@@ -1,0 +1,59 @@
+{
+ "schema": "beM-candidates/1",
+ "study": "MOTOR-17",
+ "status": "PROPUESTAS cuantificadas para revisión de Dennis y ChatGPT; ninguna es una calibración aceptada ni forma parte del perfil efectivo. Activar una candidata es siempre una acción explícita desde el Panel (copia/borrador sobre la base MOTOR-17); este archivo no activa nada.",
+ "basedOn": "SEM-MOTOR17-20261018 (cadena efectiva completa)",
+ "source": "Diagnóstico MOTOR-17 §9.1/§10: con el gasto de MOTOR-15B la energía final media es ≈82 y ninguna actuación baja de 30; el entrenador solo revisa por fatiga bajo 45, de modo que ≈88 % de las actuaciones de equipo tiene un jugador de 40:00 (muestra de desarrollo) sin que haya un defecto de aplicación del plan, de elegibilidad ni de ventanas.",
+ "candidates": [
+  {
+   "id": "C17-01",
+   "name": "Gasto de energía moderado",
+   "family": "Gasto / recuperación / relevo",
+   "hypothesis": "La concentración de minutos procede de un gasto de energía demasiado bajo (la señal de fatiga casi nunca se activa), no de la regla de relevo.",
+   "controls": [
+    {
+     "row": "energy.costPerLiveMinute",
+     "before": 2,
+     "after": 3,
+     "unit": "energía por minuto de juego en pista",
+     "consumer": "MatchCore.consume (src/match/core.js): energía de los jugadores en pista; gasto de resistencia por intervalo (receta:gasto_resistencia)",
+     "cause": "gasto",
+     "expected": "energía final media ≈72; ≈9 % de actuaciones de jugador por debajo de 30; los 40:00 exactos bajan de ≈88 % a ≈18 % de las actuaciones de equipo; el entrenador sigue pudiendo mantener a una estrella fatigada si su relevo es peor",
+     "observedDev": null
+    }
+   ],
+   "controlsCount": 1,
+   "doubleCountGuard": "un único control: no se toca a la vez el umbral de revisión, la recuperación ni el sacrificio de utilidad del relevo"
+  },
+  {
+   "id": "C17-02",
+   "name": "Gasto de energía alto",
+   "family": "Gasto / recuperación / relevo",
+   "hypothesis": "Igual que C17-01 con un gasto suficiente para que los titulares lleguen a la zona de deterioro con el reparto del plan natural (≈28/12).",
+   "controls": [
+    {
+     "row": "energy.costPerLiveMinute",
+     "before": 2,
+     "after": 3.5,
+     "unit": "energía por minuto de juego en pista",
+     "consumer": "MatchCore.consume (src/match/core.js): energía de los jugadores en pista; gasto de resistencia por intervalo (receta:gasto_resistencia)",
+     "cause": "gasto",
+     "expected": "energía final media ≈66; ≈14 % de actuaciones de jugador por debajo de 30; ninguna actuación de 40:00 exactos en la muestra de desarrollo; minutos máximos del equipo ≈34",
+     "observedDev": null
+    }
+   ],
+   "controlsCount": 1,
+   "doubleCountGuard": "un único control (misma causa que C17-01)"
+  }
+ ],
+ "notAdopted": [
+  {
+   "family": "Oportunidad / conversión / tiempo",
+   "reason": "Sin un defecto demostrado: las probabilidades base p0 de tiro (0,35 triple, 0,39 media distancia, 0,56 interior, 0,64 aro) y la media de capacidades de tiro de la población (TEC01 15,9 frente a neutral 16) no explican por sí solas el eFG observado; la diferencia procede de la selección de oportunidades y de una población de laboratorio con capacidades mentales y físicas altas. No se ajusta el motor ni se rebajan fichas (ver docs/tecnico/motor17.md §8)."
+  },
+  {
+   "family": "Faltas y acceso/intervención defensiva",
+   "reason": "Tras completar el crédito de robo (≈2,6 → ≈7,5 robos por equipo en la muestra) el déficit que motivó la hipótesis es de crédito, no de acceso/intento/control; `stealAttemptGivenAccessP0` y `stealGivenTurnover` no se tocan."
+  }
+ ]
+}

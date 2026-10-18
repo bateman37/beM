@@ -163,7 +163,7 @@ export class MatchCore {
       if (!pid) throw new Error(`receta: falta el actor del rol ${role}`);
       const e = this.eff(pid, attr, taskMax);
       num += w * e; den += w;
-      if (this.opts.detail === 'full') trace.push({ rol: role, jugador: pid, cap: attr, base: this.pl[pid].abilities[attr], efectiva: round(e, 3), peso: w, energia: round(this.ps[pid].energy, 2) });
+      if (this.opts.detail === 'full') trace.push({ rol: role, jugador: pid, cap: attr, base: this.pl[pid].abilities[attr], efectiva: round(e, 3), peso: w, energia: round(this.ps[pid].energy, 2), tope: this.penFor(attr, taskMax) }); // MOTOR-17 §7.1: el tope aplicado hace exacta la reconstrucción de la sensibilidad
     }
     const value = num / den;
     if (label) this.note(`receta:${label}`, { valor: round(value, 4), terminos: trace });

@@ -353,7 +353,9 @@ P.pressedAdvance = function pressedAdvance(poss, height) {
       this.endPossession('deadTurnover', { team }); return { end: 'deadTurnover' };
     }
     const carrier = this.pickRecoverer(defT, presser);
-    this.emit('advance', { ...base, intent: { origen: 'avance presionado', ...trace }, stats, effects: { perdida: true, robo: null, balonVivo: true, recupera: carrier } });
+    const credit = this.liveStealCredit({ team: defT, icpt: presser, attempt, recoverer: carrier, fuente: 'pérdida viva recuperada con control' });
+    if (credit) stats.push(credit);
+    this.emit('advance', { ...base, intent: { origen: 'avance presionado', ...trace }, stats, effects: { perdida: true, robo: credit?.p ?? null, balonVivo: true, recupera: carrier } });
     this.endPossession('live', { team, origin: 'pérdida', carrier }); return { end: 'liveTurnover' };
   }
   if (outcome === 'contact') {

@@ -184,6 +184,7 @@ P.throwInPhase = function throwInPhase(poss, spec) {
   // la respuesta defensiva se fija una vez para todo el saque
   const def = this.throwDefense(poss, kind, server);
   // cadena analítica de saque: empieza con su ejecución efectiva y termina por resultado o nueva organización (no por segundos fijos)
+  this.closeOpenChain(poss); // la cadena anterior de esta misma posesión (si quedó abierta) termina aquí
   this.chainSeq += 1;
   const chain = { id: `S${String(this.chainSeq).padStart(3, '0')}`, possession: poss.id, period: this.period, team, kind, origen: spec.origin, ficha: playId, sacador: server, via: sv.via, respuesta: def.id, respuestaOriginal: def.suspended ?? null, llamada: fromCall, criterioDeCierre: this.tcfg().directSequenceEnd, status: 'abierta', cierre: null, receptor: null, opcionUsada: null, intentos: [], puntosDirectos: 0, accepting: true, tail: false, plazo: { limiteDecimas: rules.throwInReleaseSeconds * 10, usadoDecimas: 0 } };
   this.throwChains.push(chain); poss.chain = chain; poss.throwInOrigin = { id: chain.id, play: playId };
@@ -306,6 +307,15 @@ P.completeThrowIn = function completeThrowIn(poss, spec, traceBase, t, d, option
 P.closeChain = function closeChain(poss, how) {
   const c = poss?.chain; if (!c || c.status !== 'abierta') return;
   c.status = 'cerrada'; c.cierre = how;
+};
+// MOTOR-17 §6.1 (H-AUD26-002): una cadena que ya entregó y cuya posesión termina (o se reanuda con otro saque) por un desenlace distinto del primer tiro —falta tras un avance con contacto, tiros libres, balón
+// suelto— quedaba `abierta` porque solo la cerraba un tiro. Cierre solo de REGISTRO, con la causa del último hecho de la posesión: no cambia hechos, sorteos ni la producción directa (que sigue el hook).
+const CHAIN_END_CAUSE = { foul: 'falta', free_throw: 'tiros libres tras falta', loose_ball: 'balón suelto', attempt: 'tiro o pérdida', advance: 'avance presionado', expiry: 'violación de reloj', rebound: 'rebote', reorganization: 'reorganización', timeout: 'tiempo muerto', substitution: 'cambio' };
+P.closeOpenChain = function closeOpenChain(poss) {
+  const c = poss?.chain; if (!c || c.status !== 'abierta') return;
+  const last = this.events[this.events.length - 1];
+  const how = last && last.possessionId === poss.id ? (CHAIN_END_CAUSE[last.type] ?? last.type) : 'cambio de posesión';
+  this.closeChain(poss, `resultado: ${how}`);
 };
 // Llamado desde emit: asocia el hecho a la cadena abierta y acumula la producción DIRECTA (no los puntos de una posesión ya reorganizada).
 P.chainHook = function chainHook(ev) {

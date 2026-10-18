@@ -218,11 +218,11 @@ test('7. la presión alta consume tiempo, exposición y carga reales; puede ser 
   let n = 0; c.sampleDuration = (dist) => (++n === 1 ? 60 : 30); // 6 s + 3 s de demora = 9 s
   const v = c.pressedAdvance(c.poss, 'full'); assert.deepEqual(v, { end: 'deadTurnover' });
   const vev = c.events[c.events.length - 1]; assert.equal(vev.type, 'expiry'); assert.match(vev.intent.motivo, /8 segundos/); assert.equal(vev.stats[0].cause, 'violacion_8'); assert.equal(vev.durationTenths, 80);
-  // pérdida: una sola causa y un solo robo atribuido; sin intento de robo no se acredita robo aunque haya pérdida
+  // pérdida: una sola causa y un solo robo atribuido. MOTOR-17 §5: sin intento de robo, la pérdida VIVA recuperada con control sí acredita robo (recogida controlada), sin cambiar la transición
   const t = mk(); t.poss.entry = 'inbound'; t.pick = (items) => items.find((x) => x.key === 'turnover'); force(t, [true, false]); // presión cercana, sin intento de robo
   t.bernoulli = (() => { const q = [true, false, false, false]; return () => q.shift() ?? false; })();
   const tr = t.pressedAdvance(t.poss, 'full'); const tev = t.events[t.events.length - 1];
-  assert.equal(tev.stats.filter((s) => s.k === 'tov').length, 1); assert.equal(tev.stats.filter((s) => s.k === 'stl').length, 0); assert.notEqual(tr.end, 'steal');
+  assert.equal(tev.stats.filter((s) => s.k === 'tov').length, 1); const tstl = tev.stats.filter((s) => s.k === 'stl'); assert.equal(tstl.length, 1); assert.equal(tstl[0].contacto, 'recogida controlada'); assert.equal(tev.effects.recupera, tstl[0].p); assert.notEqual(tr.end, 'steal', 'la transición (origen «pérdida») no cambia: el crédito es solo estadístico');
   // el avance de altura normal conserva el mecanismo existente (sin interacción de presión)
   const nrm = scene({ over: { pressureHeight: 'normal' } }); nrm.poss.entry = 'inbound'; nrm.poss.advanced = false; nrm.advancePhase(nrm.poss);
   assert.equal(nrm.events[nrm.events.length - 1].intent.altura, undefined);
@@ -272,7 +272,12 @@ test('9. robo / desvío / tapón / control diferenciados; sin intento de robo no
   const m = scene(); const base = { team: 0, origin: 'PRUEBA', kind: 'organized', actor: 'EQ01-J03', zone: 'three', exec: 'dribble', passer: null, icpt: 'EQ02-J04', defend: 'EQ02-J04', moved: false, offContact: null, holder: 'EQ01-J03', quality: { cls: 'normal', K: 0 } };
   const run = (stealAttempt, answers) => { const t = scene({ seed: 41 }); const q = [...answers]; t.bernoulli = () => q.shift() ?? false; const ex = { ...base, stealAttempt }; const b = { t: t.snap(), team: 0, intent: {}, participants: {} }; return { t, r: t.resolveTurnover(ex, b) }; };
   const attempt = run(true, [true]); assert.equal(attempt.r.end, 'steal'); assert.ok(attempt.t.events.at(-1).stats.some((s) => s.k === 'stl'));
-  const contain = run(false, [false, false]); assert.notEqual(contain.r.end, 'steal'); assert.ok(!contain.t.events.at(-1).stats.some((s) => s.k === 'stl'), 'contener: la pérdida no se atribuye a un robo');
+  // MOTOR-17 §5: sin intento (error ofensivo), pérdida viva recogida con control por el defensor resuelto → robo por recogida; balón fuera → sin robo; sin defensor resuelto → sin autor inventado
+  const contain = run(false, [false, false]); assert.notEqual(contain.r.end, 'steal'); const cs = contain.t.events.at(-1).stats.filter((s) => s.k === 'stl'); assert.equal(cs.length, 1, 'recogida controlada de balón vivo'); assert.equal(cs[0].p, 'EQ02-J04'); assert.equal(cs[0].contacto, 'recogida controlada');
+  const dead = run(false, [true]); assert.equal(dead.r.end, 'deadTurnover'); assert.ok(!dead.t.events.at(-1).stats.some((s) => s.k === 'stl'), 'balón fuera: sin robo');
+  const noDef = (() => { const t = scene({ seed: 41 }); const q = [false]; t.bernoulli = () => q.shift() ?? false; const ex = { ...base, stealAttempt: null, icpt: null, defend: null }; return t.resolveTurnover(ex, { t: t.snap(), team: 0, intent: {}, participants: {} }) && t.events.at(-1); })(); assert.ok(!noDef.stats.some((s) => s.k === 'stl'), 'sin defensor resuelto el autor es ambiguo: no se fabrica');
+  // intento sin control propio (0,4): el desvío lo inició el interceptor aunque recoja otro; se le acredita a él (primer desvío)
+  const initiated = (() => { const t = scene({ seed: 41 }); const q = [false, false]; t.bernoulli = () => q.shift() ?? false; t.pickRecoverer = () => 'EQ02-J05'; const ex = { ...base, stealAttempt: true }; t.resolveTurnover(ex, { t: t.snap(), team: 0, intent: {}, participants: {} }); return t.events.at(-1); })(); assert.equal(initiated.stats.find((s) => s.k === 'stl').p, 'EQ02-J04'); assert.equal(initiated.effects.recupera, 'EQ02-J05'); assert.equal(initiated.stats.filter((s) => s.k === 'stl').length, 1, 'sin doble crédito');
   // un tapón por sí solo no cambia el control: sin recuperación defensiva el ataque conserva el balón desorganizado
   const t = scene({ seed: 42 }); const q = [false, false]; t.bernoulli = () => q.shift() ?? false; const ex = { ...base, zone: 'rim', actor: 'EQ01-J10', holder: 'EQ01-J10' };
   const rb = t.resolveBlocked(ex, { t: t.snap(), team: 0, intent: {}, participants: {} }, 'EQ02-J11'); assert.deepEqual(rb, { cont: 'blockedLive' }); assert.equal(t.poss.disorganized, true);
