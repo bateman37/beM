@@ -94,3 +94,18 @@ test('M17·5 sensibilidad: el tope de cada término se registra, la reconstrucci
   const approx = sensitivity({ TEC08: [mk({ base: 20, eff: 19.9, taskMax: null, topeRegistrado: false })] }, profile, [3])[0]; assert.equal(approx.exactitud, 'aproximada'); assert.match(approx.metodo, /APROXIMADA/);
   const exact = sensitivity({ TEC08: [mk({ base: 20, eff: 20, valor: 20 })] }, profile, [3])[0]; assert.equal(exact.exactitud, 'exacta'); assert.ok(Math.abs(exact.delta - 0.8 * 3) < 1e-3); assert.match(exact.unidad, /NO es probabilidad/);
 });
+
+// ------------------------------------------------------------------------------------------------------------------------ 6 · responsabilidad obsoleta tras un relevo en la posesión
+test('M17·6 ayuda tras relevo en la posesión: una responsabilidad de un atacante que ya salió no aborta el partido (hallado con la candidata C17-02, EQ09–EQ10, semilla 310000057)', async () => {
+  const { readFileSync } = await import('node:fs'); const { candidateProfile } = await import('../src/profiles/candidates.js');
+  const cand = JSON.parse(readFileSync(new URL('../data/match/motor17-candidates.json', import.meta.url), 'utf8')).candidates.find((c) => c.id === 'C17-02'); const pr = candidateProfile(profile, cand);
+  const input = { schema: INPUT_SCHEMA, seed: 310000057, importance: 'ordinary', teams: [referenceTeam(pr, players, 'EQ09'), referenceTeam(pr, players, 'EQ10')] };
+  // situación del defecto: `poss.cur` conserva un atacante fuera de pista y la defensa es individual
+  const m = createMatch(input, pr, { detail: 'minimal' }); let hit = null;
+  while (!hit && m.step()) { const cur = m.poss && !m.poss.done ? m.poss.cur : null; if (cur && Object.keys(cur).some((att) => !m.ps[att].onCourt) && m.defRef(1 - m.poss.team).kind === 'individual') hit = { team: m.poss.team }; }
+  assert.ok(hit, 'el partido pasa por la situación de responsabilidad obsoleta');
+  const actor = m.onCourt(hit.team)[0]; const ex = { team: hit.team, actor, zone: 'inside', defend: null, icpt: null, denier: null };
+  assert.doesNotThrow(() => m.helpCandidates(ex), 'sin atacante obsoleto en `fnMap` ya no se lee `functions[undefined].access`');
+  const full = createMatch(input, pr, { detail: 'minimal', check: true }); while (full.step());
+  assert.equal(full.status, 'finished'); assert.deepEqual(full.errors, []);
+});

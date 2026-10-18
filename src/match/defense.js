@@ -240,6 +240,12 @@ P.responsibilityOf = function responsibilityOf(defPid) {
   return Object.keys(ref.assign).sort().find((att) => (cur[att] ?? ref.assign[att]) === defPid) ?? null;
 };
 
+// MOTOR-17: responsabilidad vigente de un defensor ignorando los cambios (`cur`) de atacantes que ya no están en pista tras un relevo dentro de la posesión: solo atacantes de la referencia actual.
+P.liveResponsibilityOf = function liveResponsibilityOf(defPid, ref = this.defRef(this.pl[defPid].teamIdx)) {
+  const cur = this.poss?.cur ?? {};
+  return Object.keys(ref.assign).sort().find((att) => (cur[att] ?? ref.assign[att]) === defPid) ?? null;
+};
+
 // Funciones de relevo compatibles de un atacante: defensores que pueden recuperar si su referencia se compromete.
 P.reliefFor = function reliefFor(attPid) {
   const t = 1 - this.pl[attPid].teamIdx; const ref = this.defRef(t);

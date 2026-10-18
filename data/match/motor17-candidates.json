@@ -19,7 +19,19 @@
      "consumer": "MatchCore.consume (src/match/core.js): energía de los jugadores en pista; gasto de resistencia por intervalo (receta:gasto_resistencia)",
      "cause": "gasto",
      "expected": "energía final media ≈72; ≈9 % de actuaciones de jugador por debajo de 30; los 40:00 exactos bajan de ≈88 % a ≈18 % de las actuaciones de equipo; el entrenador sigue pudiendo mantener a una estrella fatigada si su relevo es peor",
-     "observedDev": null
+     "observedDev": {
+      "muestra": "24 encuentros de desarrollo (semillas 210000000 + 1000·d + r)",
+      "puntos_por_equipo": 85.6875,
+      "eFG": 0.6002,
+      "robos": 7.4792,
+      "faltas": 12.3125,
+      "con_jugador_de_40": 0.175,
+      "minutos_maximos_medios": 37.1976,
+      "energia_final_media": 72.1732,
+      "energia_final_bajo_30": 0.0868,
+      "energia_final_bajo_10": 0.0017,
+      "nota": "muestra pequeña: no demuestra efectos pequeños"
+     }
     }
    ],
    "controlsCount": 1,
@@ -39,7 +51,19 @@
      "consumer": "MatchCore.consume (src/match/core.js): energía de los jugadores en pista; gasto de resistencia por intervalo (receta:gasto_resistencia)",
      "cause": "gasto",
      "expected": "energía final media ≈66; ≈14 % de actuaciones de jugador por debajo de 30; ninguna actuación de 40:00 exactos en la muestra de desarrollo; minutos máximos del equipo ≈34",
-     "observedDev": null
+     "observedDev": {
+      "muestra": "24 encuentros de desarrollo (semillas 210000000 + 1000·d + r)",
+      "puntos_por_equipo": 84,
+      "eFG": 0.6048,
+      "robos": 7.3542,
+      "faltas": 12.9792,
+      "con_jugador_de_40": 0,
+      "minutos_maximos_medios": 34.5382,
+      "energia_final_media": 67.5163,
+      "energia_final_bajo_30": 0.1406,
+      "energia_final_bajo_10": 0.0122,
+      "nota": "muestra pequeña: no demuestra efectos pequeños"
+     }
     }
    ],
    "controlsCount": 1,

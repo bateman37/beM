@@ -93,7 +93,7 @@
     "data/match/motor17-candidates.json": {
       "id": "MOTOR-17-candidatas",
       "status": "propuestas cuantificadas sin aceptación deportiva",
-      "sha256": "55c207ff6e9e2623272ad017fb662a5b457256ccca047366c58056f536c63d34",
+      "sha256": "8679645cc8bbe7bc5133a710bad4fc9b2df096b8e904fab9b9e1700d74b1c09f",
       "origin": "Encargo MOTOR-17 (§10): hasta dos candidatas numéricas explícitas sobre los controles existentes; no forman parte del perfil efectivo",
       "state": "propuesta; activación explícita"
     },
