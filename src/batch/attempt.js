@@ -83,7 +83,7 @@ export function executeAttempt(task) {
     engine_version: ENGINE_VERSION, records_version: RECORDS_VERSION, error, last_event_id: lastEvent?.id ?? null, last_sequence: lastEvent?.seq ?? null, facts, counts, files, scheduled_orders: scheduledLog.length, timings: { simulate_ms: tSim, record_ms: Math.max(0, tRec - tWrite), write_ms: tWrite },
     dir_files: files.map((f) => f.path),
   };
-  const body = JSON.stringify({ schema: 'beM-batch-attempt/1', ...outcome, tables: Object.keys(TABLES) });
+  const body = JSON.stringify({ schema: 'beM-batch-attempt/1', ...outcome, tables: Object.keys(TABLES), ...(res?.diagnostics?.familiarity ? { familiarity: res.diagnostics.familiarity } : {}) }); // MOTOR-18: política, resumen de aplicación y exposición final del diagnóstico (solo en `resultado.json`, no en el índice)
   mkdirSync(outDir, { recursive: true }); writeFileSync(join(outDir, 'resultado.json'), body);
   return outcome;
 }
