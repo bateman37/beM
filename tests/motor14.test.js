@@ -32,7 +32,7 @@ import { terminate } from '../src/match/regs.js';
 import { reconcileAnalysis } from '../src/analysis/reconcile.js';
 
 const { profile, players } = data; const REF = 20261016;
-const baseline = JSON.parse(readFileSync(new URL('./fixtures/baseline-motor17.json', import.meta.url), 'utf8'))[String(REF)];
+const baseline = JSON.parse(readFileSync(new URL('./fixtures/baseline-motor17b.json', import.meta.url), 'utf8'))[String(REF)];
 const root = mkdtempSync(join(tmpdir(), 'bem-m14-'));
 const SCRIPT = [
   { period: 1, label: 'guion P1', specs: [{ team: 0, type: 'styles', styles: { freedom: 5, organizedPace: 4 } }] },
@@ -62,7 +62,7 @@ test('1 · las siete capacidades se registran sin cambiar el deporte y su contra
   const labels = new Set(); for (const e of FULL.res.events) for (const c of e.calc ?? []) if (c.label.startsWith('receta:')) labels.add(c.label.replace(/^(receta:[a-z_.]+).*$/, '$1'));
   for (const l of ['receta:rebote.fuerza', 'receta:rebote.captura', 'receta:seleccion.lectura', 'receta:lectura_defensiva', 'receta:presion.perdida', 'receta:momento.consistencia', 'receta:gasto_resistencia']) assert.ok(labels.has(l), `falta ${l}`);
   // matriz: ninguna de las siete queda «consumida sin receta registrada» y la auditoría lo reconoce
-  const aud05 = AUD.runs.find((r) => r.id === 'AUD05'); assert.deepEqual(aud05.metrics.consumidasSinRecetaRegistrada, []);
+  const aud05 = AUD.runs.find((r) => r.id === 'AUD05'); assert.deepEqual(aud05.metrics.observadasSinEntradasDeReceta, []); // MOTOR-17B: la falta de registro se separa de la falta de exposición
   for (const cap of ['TEC17', 'TEC18', 'MEN02', 'MEN03', 'MEN06', 'MEN07', 'FIS06']) assert.ok(AUD.matrix.filter((r) => r.cap === cap).some((r) => r.usos > 0), `${cap} sin usos registrados`);
   // contraste B: salida derivada coherente (más Resistencia → menos gasto; más Consistencia → menos amplitud; más MEN07 → menos pérdida; más MEN02 → no baja q) con límites respetados
   const rows = AUD.sensitivity.filter((r) => r.salida && !r.limite && r.incrementoEfectivo > 0);
@@ -70,9 +70,9 @@ test('1 · las siete capacidades se registran sin cambiar el deporte y su contra
   assert.ok(delta('FIS06', 'receta:gasto_resistencia').length && delta('FIS06', 'receta:gasto_resistencia').every((d) => d <= 0));
   assert.ok(delta('MEN06', 'receta:momento.consistencia').every((d) => d < 0));
   assert.ok(delta('MEN07', 'receta:presion.perdida').every((d) => d <= 0));
-  assert.ok(delta('MEN02', 'receta:seleccion.lectura').length && delta('MEN02', 'receta:seleccion.lectura').every((d) => d >= 0));
+  const q02 = rows.filter((r) => r.cap === 'MEN02' && r.label === 'receta:seleccion.lectura' && r.incrementoSolicitado === 5); assert.ok(q02.length && q02.every((r) => (r.lecturaQDespues ?? r.salidaDespues) >= (r.lecturaQAntes ?? r.salidaAntes) - 1e-12), 'más MEN02 no baja la lectura q (la salida pertinente es la distribución de opciones o la aceptación)');
   assert.ok(rows.every((r) => r.salidaUnidad), 'cada salida declara su unidad (no se confunde con una probabilidad de acierto)');
-  const withChoice = rows.find((r) => r.label === 'receta:seleccion.lectura' && r.opcionesAntes); assert.ok(withChoice && typeof withChoice.cambiaOpcionMasProbable === 'boolean', 'Visión/Decisiones informan del cambio de opciones y elección');
+  const withChoice = rows.find((r) => r.label === 'receta:seleccion.lectura' && Array.isArray(r.opciones)); assert.ok(withChoice && typeof withChoice.cambiaOpcionMasProbable === 'boolean', 'Visión/Decisiones informan del cambio de opciones y elección');
 });
 
 // ------------------------------------------------------------------------------------------------------------------------------ 2

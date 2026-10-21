@@ -9,10 +9,20 @@ import { makeCtx, validityOf, matchFacts, RECORDS_VERSION } from './records.js';
 import { trajectoryFingerprint } from './fingerprint.js';
 import { TrajectoryObserver, INCREMENTAL_FP_VERSION } from './observer.js';
 import { sha256 } from './hashing.js';
+import { orgAt } from '../analysis/orgat.js';
 
 export const ESSENTIAL_LEVEL = 'world-essential';
 export const ESSENTIAL_SCHEMA = 'beM-essential-record/1';
-export const ESSENTIAL_VERSION = 'ESE-MOTOR17-R1'; // MOTOR-17: `team_index` explícito por jugador (pertenencia real a la entrada congelada). ESE-MOTOR15-R1 no lo incluía
+export const ESSENTIAL_VERSION = 'ESE-MOTOR17B-R1'; // MOTOR-17B (B17-01): `defense_org` es el CÓDIGO de la organización efectiva (antes: objeto de intención de intervención); ESE-MOTOR17-R1 añadió `team_index` por jugador; ESE-MOTOR15-R1 no lo incluía
+// Semántica explícita de los campos de organización defensiva (MOTOR-17B §4). Un archivo con otra versión NO equivale: ver `legacyDefenseOrg`.
+export const DEFENSE_ORG_SEMANTICS = {
+  version: 'ESE-MOTOR17B-R1',
+  shots: { defense_org: 'string|null · código de la organización defensiva EFECTIVA vigente antes del hecho (plan + órdenes aplicadas + organización efectiva del motor), leído con `analysis/orgat.orgAt`', defense_org_intended: 'string|null · organización pretendida (plan u orden aplicada) antes del hecho',
+    defense_org_alternate: 'boolean|null · la efectiva es la alternativa reglada de un box and one', defense_org_objective: 'string|null · jugador objetivo del box and one vigente', defense_org_plan_version: 'integer · órdenes de organización aplicadas antes del hecho',
+    defense_org_source: "'plan'|'orden aplicada'|'alternativa'|'no reconstruible' · origen de la lectura (nunca se inventa una organización)", defense_intervention: 'object|null · decisiones de intervención (contener, negar, ayudar, intentar robo) de la intención del hecho; NO es la organización' },
+  tactics: { org: 'string|null · organización efectiva si no cambia en la posesión; null con `org_mixed` si hay varias', orgs: 'string[] · organizaciones efectivas distintas por orden de aparición', org_mixed: 'boolean', org_intended: 'string|null', org_source: 'ver shots.defense_org_source', intervention: 'object|null · última intención de intervención de la posesión' },
+};
+export const legacyDefenseOrg = (rec) => (rec?.essential_version === ESSENTIAL_VERSION ? null : { status: 'histórico', reason: `${rec?.essential_version ?? 'sin versión'}: \`defense_org\` guardaba la intención de intervención (objeto), no el código de organización efectiva; no se reinterpreta como observación original` });
 // Huella de trayectoria: `incremental` (observador durante la simulación, por defecto), `full` (TRAY-MOTOR12-R1 sobre el resultado) o `none` (no se calcula y se declara así).
 export const FINGERPRINT_MODES = ['incremental', 'full', 'none'];
 // Validación: `full` (conciliación del acta + conciliación analítica, las mismas operaciones comunes que el resto de niveles) o `acta` (solo la conciliación del acta; declarado).
@@ -22,30 +32,36 @@ const put = (dir, rel, text, files, meta) => { const p = join(dir, rel); mkdirSy
 
 // ---------------------------------------------------------------------------------------------------------------- proyección compacta
 const SEQ_COLS = ['seq', 'id', 'type', 'period', 'team', 'possession', 'clock_before', 'clock_after', 'shot_clock_after', 'duration_tenths', 'lineup_home', 'lineup_away', 'score_home', 'score_away', 'actor', 'stats'];
-const SHOT_COLS = ['event_id', 'seq', 'period', 'team', 'possession', 'shooter', 'zone', 'points', 'made', 'from_foul', 'annulled', 'blocked_by', 'defender', 'passer', 'moved', 'window', 'quality', 'family', 'sector', 'origin', 'context', 'execution', 'coverage', 'defense_org'];
+const SHOT_COLS = ['event_id', 'seq', 'period', 'team', 'possession', 'shooter', 'zone', 'points', 'made', 'from_foul', 'annulled', 'blocked_by', 'defender', 'passer', 'moved', 'window', 'quality', 'family', 'sector', 'origin', 'context', 'execution', 'coverage', 'defense_org', 'defense_org_intended', 'defense_org_alternate', 'defense_org_objective', 'defense_org_plan_version', 'defense_org_source', 'defense_intervention'];
+
+// Lector compartido de la organización efectiva en la frontera de cada hecho (el MISMO `orgAt` que usa el análisis del partido; sin segunda interpretación).
+const orgReader = (res) => { const byId = {}; for (const e of res.events) byId[e.id] = e; const ix = { res, events: res.events, byId, input: res.input }; return (defTeam, seq) => { const o = orgAt(ix, defTeam, seq); return { code: o.reconstructable ? o.effective : null, intended: o.reconstructable ? o.intended : null, alternate: o.reconstructable ? o.alternate : null, objective: o.objective, version: o.planVersion, source: !o.reconstructable ? 'no reconstruible' : o.alternate ? 'alternativa' : o.planVersion > 0 ? 'orden aplicada' : 'plan' }; }; };
 
 export function compactSequence(res) {
   const rows = res.events.map((e) => [e.seq, e.id, e.type, e.period, e.team ?? null, e.possessionId ?? null, e.clock?.before ?? null, e.clock?.after ?? null, e.shotClock?.after ?? null, e.durationTenths ?? 0, e.lineups?.[0] ?? null, e.lineups?.[1] ?? null, e.score?.[0] ?? null, e.score?.[1] ?? null, e.participants?.actor ?? e.participants?.lanzador ?? e.participants?.infractor ?? null, e.stats?.length ? e.stats : null]);
   return { columns: SEQ_COLS, rows };
 }
 export function compactShots(res) {
-  const rows = [];
+  const rows = []; const orgOf = orgReader(res);
   for (const e of res.events) for (const f of e.stats ?? []) {
     if (f.k !== 'shot') continue; const i = e.intent ?? {};
+    const o = orgOf(1 - f.team, e.seq);
     rows.push([e.id, e.seq, e.period, f.team, e.possessionId ?? null, f.p, f.zone, f.points, !!f.made, !!f.fromFoul, !!f.annulled, f.blockedBy ?? null, e.participants?.defensor ?? null, f.feed?.passer ?? null, f.feed ? !!f.feed.moved : null, f.feed ? !!f.feed.window : null,
-      i.calidad ?? null, i.familia ?? null, i.sector ?? null, i.origen ?? null, i.contexto ?? null, i.ejecucion ?? null, i.cobertura?.id ?? null, i.defensa ?? null]);
+      i.calidad ?? null, i.familia ?? null, i.sector ?? null, i.origen ?? null, i.contexto ?? null, i.ejecucion ?? null, i.cobertura?.id ?? null, o.code, o.intended, o.alternate, o.objective, o.version, o.source, i.defensa ?? null]);
   }
   return { columns: SHOT_COLS, rows };
 }
 // Organización/cobertura efectivas y familias ejecutadas por posesión (lo que sustenta los análisis tácticos ofrecidos), leídas de la intención ya registrada.
 export function compactTactics(res) {
-  const byPoss = new Map();
+  const byPoss = new Map(); const orgOf = orgReader(res);
   for (const e of res.events) {
     if (e.type !== 'attempt' || !e.possessionId) continue; const i = e.intent ?? {};
-    const r = byPoss.get(e.possessionId) ?? { possession: e.possessionId, team: e.team, families: [], coverage: null, disposition: i.disposicion ?? null, org: null };
+    const r = byPoss.get(e.possessionId) ?? { possession: e.possessionId, team: e.team, families: [], coverage: null, disposition: i.disposicion ?? null, org: null, orgs: [], org_mixed: false, org_intended: null, org_source: null, intervention: null };
     if (i.familia && !r.families.includes(i.familia)) r.families.push(i.familia);
-    if (i.cobertura?.id) r.coverage = i.cobertura.id; if (i.defensa) r.org = i.defensa; byPoss.set(e.possessionId, r);
+    const o = orgOf(1 - e.team, e.seq); if (o.code != null && !r.orgs.includes(o.code)) r.orgs.push(o.code); r.org_intended = o.intended; r.org_source = o.source;
+    if (i.cobertura?.id) r.coverage = i.cobertura.id; if (i.defensa) r.intervention = i.defensa; byPoss.set(e.possessionId, r);
   }
+  for (const r of byPoss.values()) { r.org_mixed = r.orgs.length > 1; r.org = r.orgs.length === 1 ? r.orgs[0] : null; }
   return [...byPoss.values()];
 }
 const lineByPlayer = (a) => Object.values(a.players).map((p) => ({ id: p.id, team: p.team, team_index: p.team, participation: p.participation, min_tenths: p.minTenths, pts: p.pts, fg2m: p.fg2m, fg2a: p.fg2a, fg3m: p.fg3m, fg3a: p.fg3a, ftm: p.ftm, fta: p.fta, oreb: p.oreb, dreb: p.dreb, ast: p.ast, ast_fg: p.astFg, ast_ft: p.astFt, tov: p.tov, stl: p.stl, blk: p.blk, blk_rec: p.blkRec, pf: p.pf, fr: p.fr, pm: p.pm, val: p.val, fouls: p.fouls }));
@@ -53,7 +69,7 @@ const lineByPlayer = (a) => Object.values(a.players).map((p) => ({ id: p.id, tea
 export function buildEssential(res, { keys, validity, fp, fpMode, sim }) {
   const a = res.acta; const dg = res.diagnostics ?? {};
   return {
-    schema: ESSENTIAL_SCHEMA, essential_version: ESSENTIAL_VERSION, level: ESSENTIAL_LEVEL, keys,
+    schema: ESSENTIAL_SCHEMA, essential_version: ESSENTIAL_VERSION, level: ESSENTIAL_LEVEL, keys, field_semantics: DEFENSE_ORG_SEMANTICS,
     identity: { engine: ENGINE_VERSION, records: RECORDS_VERSION, format: res.identity.formatVersion, rules_profile: res.identity.rulesProfile, content_profile: res.identity.contentProfile, effective_profile: res.identity.effectiveProfileId, extensions: (res.identity.extensions ?? []).map((x) => x.id ?? x),
       seed: res.input.seed, importance: res.input.importance, teams: res.input.teams.map((t) => ({ id: t.id, name: t.name, source: t.source?.instance ?? null })) },
     result: { status: res.status, court_score: res.score, period_scores: res.periodScores, game_tenths: res.events.reduce((s, e) => s + (e.durationTenths ?? 0), 0), administrative: res.administrative ?? null, error: res.status === 'error' ? (res.errors ?? []).map((e) => e.message) : null,

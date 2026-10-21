@@ -90,6 +90,13 @@
       "origin": "Encargo MOTOR-17 (§5): criterio estadístico compartido de robo (síntesis verificada por ChatGPT de FIBA Statisticians' Manual 2024 §7); ningún coeficiente cambia",
       "state": "SEM provisional; solo crédito estadístico"
     },
+    "data/match/motor17b-seed-extension.json": {
+      "id": "SEM-MOTOR17B-20261021",
+      "status": "SEM: provisional, no calibrado. Solo CRÉDITO estadístico y su procedencia (criterio compartido de robo; se completa el caso de recogida controlada tras un error ofensivo SIN interceptor previo, FIBA Statisticians' Manual 2024 §7); ningún coeficiente deportivo cambia. Las candidatas numéricas C17-01/C17-02 siguen fuera del perfil efectivo (data/match/motor17-candidates.json): su activación es siempre una acción explícita de Dennis.",
+      "sha256": "2b2504e4750e874b5f25c7fc052d9097266c2b39fdfe0c8a0b717789037b2b0c",
+      "origin": "Encargo MOTOR-17B (§7): recogida controlada sin interceptor previo y procedencia común del crédito de robo (síntesis verificada por ChatGPT de FIBA Statisticians' Manual 2024 cap. 7); ningún coeficiente cambia",
+      "state": "SEM provisional; solo crédito estadístico"
+    },
     "data/match/motor17-candidates.json": {
       "id": "MOTOR-17-candidatas",
       "status": "propuestas cuantificadas sin aceptación deportiva",

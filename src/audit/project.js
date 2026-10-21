@@ -4,7 +4,7 @@
 import { jsonlRecords, ensure, inc, fnv, r4, sum } from './util.js';
 import { effectiveAbility } from '../match/core.js';
 
-export const PROJECTION_VERSION = 'PRJ-MOTOR17-R1'; // MOTOR-15B: cadenas de saque con clasificación y casos; energía por ámbito y tarea con ejemplos
+export const PROJECTION_VERSION = 'PRJ-MOTOR17B-R1'; // MOTOR-17B: contextos enlazados a la operación real que consume la receta (`salida:*`); MOTOR-15B: cadenas de saque con clasificación y casos; energía por ámbito y tarea con ejemplos
 export const BIN_EDGES = [0, 0.2, 0.4, 0.6, 0.8, 1];
 export const binOf = (p) => { for (let i = 0; i < BIN_EDGES.length - 2; i++) if (p < BIN_EDGES[i + 1]) return i; return BIN_EDGES.length - 2; };
 const PLAYER = /^EQ\d+(_B)?-J\d+$/;
@@ -55,6 +55,7 @@ export function projectAttempt(src, a, profile, cfg) {
   const dec = src.stream(a, 'decisiones'); P.bytes.decisiones = dec?.length ?? 0;
   if (dec) for (const r of jsonlRecords(dec)) {
     if (r.record_type === 'calculo') {
+      if (P._ev && P._ev.id !== r.event_id) flushEvent(P);
       inc(P.calcKinds, r.kind); const d = r.data ?? {};
       if (r.kind === 'binaria') { const lab = r.label.slice(8); addRel(rel(P.binary, lab), d.p, d.resultado ? 1 : 0, r.decision_id); }
       else if (r.kind === 'distribucion') {
@@ -63,7 +64,11 @@ export function projectAttempt(src, a, profile, cfg) {
         R.decisions = (R.decisions ?? 0) + 1; for (const o of opts) addRel(R, o.p, o.clave === d.elegido ? 1 : 0, r.decision_id);
         if (!PLAYER.test(opts[0].clave)) for (const o of opts) { const c = ensure(ensure(P.cat, lab, () => ({})), o.clave, () => ({ n: 0, expected: 0, observed: 0 })); c.n += 1; c.expected += o.p; if (o.clave === d.elegido) c.observed += 1; }
       } else if (r.kind === 'receta') projectRecipe(P, r, taskMax, caps, profile);
-      else if (P._lastSel && r.event_id === P._lastSel.event && r.label?.startsWith('mezcla:')) { P._lastSel.ex.mix = { label: r.label, L: d.L, q: d.q, opciones: d.opciones }; P._lastSel = null; }
+      else if (P._lastSel && r.event_id === P._lastSel.event && r.label?.startsWith('mezcla:')) { P._lastSel.ex.mix = { label: r.label, L: d.L, q: d.q, opciones: d.opciones, entradas: d.entradas ?? null }; P._lastSel = null; linkMix(P, r); }
+      else if (P._lastSel && r.event_id === P._lastSel.event && r.label === 'aceptación' && d.entradas) { P._lastSel.ex.accept = { entradas: d.entradas, salida: d.salida }; P._lastSel = null; }
+      else if (r.kind === 'salida') linkOp(P, r);
+      else if (r.kind === 'calidad') linkQuality(P, r);
+      else if (r.label === 'mezcla:salida:transición') linkMix(P, r);
       else if (r.kind === 'calidad_ataque') { for (const x of d.receta ?? []) { const c = ensure(P.recipes.qualityTerms ??= {}, x.cap, () => ({ uses: 0, sumEff: 0, sumShare: 0 })); c.uses += 1; c.sumEff += x.efectiva; } }
       else if (r.kind === 'libro') { const f = d.fichas ?? []; P.libro.n += 1; const el = f.filter((x) => x.elegible); if (!el.length) P.libro.noElegible += 1; /* prioridad null = ficha LLAMADA aunque no esté en el libro (la llamada puntual no la activa; prioridad efectiva 1): es legítima, no un error de rango (AUD07, corregida en MOTOR-13) */ for (const x of f) { if (x.prioridad == null) { P.libro.called = (P.libro.called ?? 0) + 1; continue; } inc(P.libro.prios, x.prioridad); if (!(x.prioridad >= 1 && x.prioridad <= 5)) P.libro.badPrio += 1; } const pr = el.map((x) => x.prioridad ?? 1); if (pr.length) { const m = Math.min(...pr); if (pr.filter((x) => x === m).length > 1) P.libro.ties += 1; } }
       else if (r.kind === 'rebote') { P.rebote.n += 1; inc(P.rebote.label, r.label); }
@@ -74,6 +79,7 @@ export function projectAttempt(src, a, profile, cfg) {
     else if (r.record_type === 'cadena_saque') { P.saques.n += 1; inc(P.saques.kind, r.kind); inc(P.saques.status, r.status); if (r.status === 'cerrada' && !r.receptor) P.saques.sinReceptor += 1; if (r.status === 'abierta') P.saques.abiertas = (P.saques.abiertas ?? 0) + 1;
       P.saques.cadenas.push({ id: r.id, possession: r.possession, period: r.period, kind: r.kind, origen: r.origen, status: r.status, cierre: r.cierre ?? null, receptor: r.receptor ?? null, opcionUsada: r.opcionUsada ?? null, negadas: (r.intentos ?? []).filter((x) => x.negada).length, intentos: (r.intentos ?? []).length }); }
   }
+  flushEvent(P);
   P.ms.decisiones = performance.now() - t0;
 
   // ---------------------------------------------------------------- hechos (relojes, bucles, tipos)
@@ -137,7 +143,7 @@ function specialExtra(P, r, d) {
 function projectRecipe(P, r, taskMax, caps, profile) {
   const R = P.recipes; const d = r.data ?? {}; const terms = d.terminos; const t = taskOf(r.label); inc(R.labelsSeen, t ? `${t.task}.${t.side}` : 'otras');
   if (!Array.isArray(terms)) return;
-  let w = 0; let num = 0; const [lo, hi] = profile.abilityBounds; const ex = SPECIAL_LABEL.test(r.label) ? specialExtra(P, r, d) : null;
+  const evItems = []; let w = 0; let num = 0; const [lo, hi] = profile.abilityBounds; R._bounds = [lo, hi]; const ex = SPECIAL_LABEL.test(r.label) ? specialExtra(P, r, d) : null;
   for (const x of terms) { w += x.peso; num += x.peso * x.efectiva; }
   if (Math.abs(w - 1) > 1e-6 && t) R.weightBad += 1; if (w > 0 && Math.abs(num / w - d.valor) > 0.01) { R.valueBad += 1; if (R.bad.length < 5) R.bad.push({ decision_id: r.decision_id, label: r.label, valor: d.valor, recomputado: r4(num / w) }); }
   for (const x of terms) {
@@ -158,6 +164,43 @@ function projectRecipe(P, r, taskMax, caps, profile) {
     const gdec = `${P.global_attempt}|${r.decision_id}`; const h = fnv(`${gdec}|${x.cap}|${x.jugador}|${x.rol}`); const ctxList = ensure(R.contexts, x.cap, () => ({}));
     const item = { h, gdec, decision_id: r.decision_id, event_id: r.event_id, label: r.label, task: t ? `${t.task}.${t.side}` : null, taskMax: x.tope ?? (t ? taskMax[t.task] : null) ?? null, topeRegistrado: x.tope != null, stratum, player: x.jugador, rol: x.rol, cap: x.cap, base: x.base, eff: x.efectiva, energia: e, peso: x.peso, valor: d.valor, terminos: terms };
     if (ex) item.ex = ex; // MOTOR-14: entradas del cálculo derivado de las siete capacidades recién registradas
-    keepSmall(ensure(ctxList, stratum, () => []), item, 3); if (x.base >= hi - 2 || (e != null && e < 10)) keepSmall(ensure(ctxList, 'LIMITE', () => []), item, 2);
+    evItems.push(item);
+  }
+  if (evItems.length) { const ev = (P._ev ??= { id: r.event_id, recs: [], items: [] }); ev.recs.push({ label: r.label, jugador: terms[0]?.jugador ?? null, valor: d.valor, items: evItems }); ev.items.push(...evItems); }
+}
+
+// MOTOR-17B (B17-02): una receta es un valor INTERMEDIO; lo que el motor consume es la salida de la operación que la utiliza. Cada operación registra sus entradas y su salida en una nota `salida:*` (o `calidad`, o la mezcla de
+// la transición) del MISMO hecho. Aquí se enlaza esa nota con los términos de las recetas que la alimentan (la última receta del mismo rótulo y jugador antes de la nota). Los contextos se retienen al cerrar el hecho,
+// cuando ya se sabe si tienen operación enlazada; un término sin operación enlazada solo conserva su contexto intermedio (marcado) y nunca se presenta como salida.
+const REFKEYS = { 'salida:tiro': ['A', 'D', 'prep'], 'salida:tapon': ['blk'], 'salida:rebote': ['fuerza', 'captura'], 'salida:suelto': ['ra', 'rd'], 'salida:control': ['off', 'def', 'legalDef', 'legalOff'] };
+function attachOp(P, ref, op) {
+  const ev = P._ev; if (!ev || !ref) return;
+  for (let i = ev.recs.length - 1; i >= 0; i--) { const rc = ev.recs[i]; if (rc.label === ref.label && rc.jugador === ref.jugador) { for (const it of rc.items) (it.ops ??= []).push({ ...op, peso: ref.peso ?? 1, lado: ref.lado ?? null }); return; } }
+}
+function linkOp(P, r) {
+  const d = r.data ?? {}; const keys = REFKEYS[r.label]; if (!keys || !P._ev || P._ev.id !== r.event_id) return;
+  for (const key of keys) { const refs = d.refs?.[key]; if (!refs) continue; for (const ref of Array.isArray(refs) ? refs : [refs]) attachOp(P, ref, { op: r.label, refKey: key, note: d }); }
+}
+// La calidad previa consume CA y CD: se enlazan por valor (la nota conserva `ca`/`cd` sin etiqueta de receta) con la última receta compatible del mismo hecho.
+const CA_LABELS = /^receta:TAR0[235]\.attack$/; const CD_LABELS = /^receta:(TAR0[235]\.defense|calidad_defensa:.+)$/;
+function linkQuality(P, r) {
+  const d = r.data ?? {}; if (!d.entradas || !P._ev || P._ev.id !== r.event_id) return;
+  const find = (re, v) => { if (v == null) return null; for (let i = P._ev.recs.length - 1; i >= 0; i--) { const rc = P._ev.recs[i]; if (re.test(rc.label) && Math.abs(rc.valor - v) < 6e-4) return rc; } return null; };
+  for (const [key, re, v] of [['ca', CA_LABELS, d.entradas.ca], ['cd', CD_LABELS, d.entradas.cd]]) { const rc = find(re, v); if (rc) for (const it of rc.items) (it.ops ??= []).push({ op: 'calidad', refKey: key, peso: 1, lado: null, note: d }); }
+}
+// La elección de la finalización en transición pondera cada opción del actor con la receta de recorrido largo (FIS01/FIS02): se enlaza por actor.
+function linkMix(P, r) {
+  const d = r.data ?? {}; if (!d.entradas || !P._ev || P._ev.id !== r.event_id) return;
+  const actors = new Set(d.entradas.items.map((i) => String(i.clave).split(':')[0]));
+  for (const a of actors) attachOp(P, { label: 'receta:acceso_recorrido_largo', jugador: a, peso: 1 }, { op: 'mezcla:transicion', refKey: 'acceso', note: { ...d, actor: a } });
+}
+// Cierra el hecho: retiene (selección ciega y determinista por hash) los contextos con operación enlazada o con entradas derivadas (siete capacidades de MOTOR-14); el resto queda como contexto intermedio de reserva.
+const PERTINENT_SPECIAL = /^receta:(seleccion\.lectura|presion\.perdida|momento\.consistencia|gasto_resistencia)/; // magnitudes que ya eran la salida consumida (MOTOR-14); rebote y lectura defensiva son intermedios
+function flushEvent(P) {
+  const ev = P._ev; if (!ev) return; P._ev = null; const R = P.recipes; const [, hi] = R._bounds;
+  for (const item of ev.items) {
+    const out = item.ops?.length || (item.ex && PERTINENT_SPECIAL.test(item.label)); const ctxList = ensure(R.contexts, item.cap, () => ({}));
+    const stratum = out ? item.stratum : `INTERMEDIO|${item.stratum}`;
+    keepSmall(ensure(ctxList, stratum, () => []), item, out ? 8 : 2); if (item.base >= hi - 2 || (item.energia != null && item.energia < 10)) keepSmall(ensure(ctxList, out ? 'LIMITE' : 'LIMITE_INTERMEDIO', () => []), item, 2);
   }
 }

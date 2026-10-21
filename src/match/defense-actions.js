@@ -345,7 +345,7 @@ P.pressedAdvance = function pressedAdvance(poss, height) {
     const stats = [{ k: 'tov', p: handler, team, cause: 'presión' }];
     const stole = attempt && this.bernoulli(o.stealGivenTurnover, 'avance:robo');
     if (stole) {
-      stats.push({ k: 'stl', p: presser, team: defT });
+      { const cr = this.liveStealCredit({ team: defT, icpt: presser, attempt: true, recoverer: presser, fuente: 'robo directo: control del presionador' }); if (cr) stats.push(cr); }
       this.emit('advance', { ...base, intent: { origen: 'avance presionado', ...trace }, stats, effects: { perdida: true, robo: presser, balonVivo: true } });
       this.cover('robo en la presión'); this.endPossession('live', { team, origin: 'robo', carrier: presser });
       return { end: 'steal' };

@@ -2,7 +2,7 @@
 // Una resolución agrupa preparación, lectura, elección y ejecución; el tiempo se descuenta una vez por hecho.
 import { flightSplit, lagConfiguredTenths, interferenceMasses, interferenceOutcome, resolveInterference } from './incidents.js';
 import { clamp, sigmoid, logit, round } from './mathx.js';
-import { shotLogit, vocationFactor } from './formulas.js';
+import { shotLogit, vocationFactor, shotResolution, shotPrepCostLogit, blockResolution, reboundTeamResolution, looseControlP, qualityDistributionPure, qualityResolution, categoryResolution, mixResolution } from './formulas.js';
 import { SLOTS } from './data.js';
 import { MatchCore } from './core.js';
 import { fit } from './plays.js';
@@ -55,20 +55,9 @@ P.mixIntention = function mixIntention(items, { L, q, team }, label) {
   const ef = sel.elaborationContinuationWeightFactor[st.elaboration - 1];
   const tilt = sel.offensiveRiskPreferenceTilt[st.offensiveRisk - 1];
   const uf = this.urgencyFactor(); const cf = ef * uf; // elaboración y urgencia (SEM) actúan sobre las continuaciones viables, una vez cada una
-  const scaled = items.map((i) => (i.cont && cf !== 1 ? { ...i, coach: i.coach == null ? i.coach : i.coach * cf, pref: (i.pref ?? 0) * cf, adapt: (i.adapt ?? 0) * cf } : i));
-  const hasCoach = scaled.some((i) => i.coach != null && i.coach > 0);
-  const pc = hasCoach ? normalize(scaled, (i) => i.coach ?? 0) : null;
-  const pp = normalize(scaled, (i) => i.pref ?? 0);
-  const pa = normalize(scaled, (i) => i.adapt ?? 0);
-  const out = scaled.map((it, k) => {
-    const pj = q * pa[k] + (1 - q) * pp[k];
-    let p = pc ? (1 - L) * pc[k] + L * pj : pj;
-    const rf = it.risk != null && tilt !== 0 ? Math.exp(tilt * it.risk) : 1;
-    const mf = it.mid ?? 1;
-    p *= rf * mf;
-    return { ...it, w: p, parts: { entrenador: pc ? round(pc[k]) : null, adaptacion: round(pa[k]), preferencias: round(pp[k]), riesgo: rf === 1 ? null : round(rf, 4), media: mf === 1 ? null : round(mf, 4), mezcla: round(p) } };
-  });
-  this.note(`mezcla:${label}`, { L: round(L, 4), q: round(q, 4), elaboracion: ef === 1 ? null : ef, urgencia: uf === 1 ? null : uf, opciones: out.map((o) => ({ clave: o.key, ...o.parts })) });
+  const out = mixResolution(items, { L, q, tilt, cf }, round); // MOTOR-17B: función pura compartida con el contraste de sensibilidad
+  this.note(`mezcla:${label}`, { L: round(L, 4), q: round(q, 4), elaboracion: ef === 1 ? null : ef, urgencia: uf === 1 ? null : uf, opciones: out.map((o) => ({ clave: o.key, ...o.parts })),
+    ...(this.opts.detail === 'full' ? { entradas: { L, q, tilt, cf, items: items.map((i) => ({ clave: i.key, coach: i.coach ?? null, pref: i.pref ?? null, adapt: i.adapt ?? null, risk: i.risk ?? null, mid: i.mid ?? null, cont: !!i.cont })) } } : {}) }); // MOTOR-17B: entradas crudas de cada mezcla de intención (MEN02/MEN03 en la selección; FIS01/FIS02 en la transición)
   return out;
 };
 
@@ -159,17 +148,7 @@ P.coachPlayDistribution = function coachPlayDistribution(el) {
 // Distribución de la calidad previa (cómoda / normal / forzada). Una sola implementación para qualityOf y para la estimación de
 // «calidad previa cómoda» de la media distancia (selección), de modo que no pueden divergir.
 P.qualityDistribution = function qualityDistribution(caRaw, cdRaw, kctx, hasOpposition, noForced = false, extraZ = 0) {
-  const opp = this.profile.opportunity;
-  const kc = clamp(kctx, -opp.maximumQualityContextLogit, opp.maximumQualityContextLogit);
-  const z = (hasOpposition ? opp.advantageSensitivity * (caRaw - cdRaw) + kc : opp.maximumQualityContextLogit) + extraZ; // ventana libre: extremo favorable declarado; extraZ = Forma/presión de la coordinación (MOTOR-07)
-  const base = opp.qualityBase;
-  const items = [
-    { key: 'comfortable', w: base.comfortable * Math.exp(z) },
-    { key: 'normal', w: base.normal },
-    { key: 'forced', w: noForced ? 0 : base.forced * Math.exp(-z) }, // sin negación defendida (facilita la ayuda): no hay clase forzada por negación
-  ];
-  const tot = items.reduce((a, b) => a + b.w, 0);
-  return { z, kc, items, tot, p: Object.fromEntries(items.map((i) => [i.key, i.w / tot])) };
+  return qualityDistributionPure(this.profile, caRaw, cdRaw, kctx, hasOpposition, noForced, extraZ); // MOTOR-17B: función pura compartida con el contraste
 };
 P.qualityOf = function qualityOf(ex, caRaw, cdRaw, kctx, hasOpposition) {
   const opp = this.profile.opportunity;
@@ -183,15 +162,16 @@ P.qualityOf = function qualityOf(ex, caRaw, cdRaw, kctx, hasOpposition) {
     mz = this.momentZ('opportunityQuality', own, counter, { team: ex.team });
     ex.mdefUsed = mz.usedCounter; // M-DEF del defensor ya explicó la dificultad de esta oportunidad: la conversión no lo vuelve a usar
   }
-  const d = this.qualityDistribution(caRaw, cdRaw, kctx, hasOpposition, !!ex?.noDenial, fp ? fp.delta : 0);
-  let items = d.items; let pFinal = d.p;
+  const extraZ = fp ? fp.delta : 0; const noForced = !!ex?.noDenial;
+  const d = qualityResolution(this.profile, { ca: caRaw, cd: cdRaw, kctx, hasOpposition, noForced, extraZ, Z: mz ? mz.Z : null, alpha: mz ? mz.alpha : null }); // MOTOR-17B: función pura compartida con el contraste
+  let items = d.items;
   if (mz) {
-    const task = this.profile.stateTasks.tasks.opportunityQuality;
-    pFinal = perturbCategories(d.p, task.favorableClasses, mz.Z, mz.alpha);
+    const task = this.profile.stateTasks.tasks.opportunityQuality; const pFinal = d.final;
     items = d.items.map((i) => ({ ...i, w: pFinal[i.key] }));
     this.perturbNote('opportunityQuality', mz, { grupoFavorable: task.favorableClasses, probabilidadesBase: Object.fromEntries(Object.entries(d.p).map(([k, v]) => [k, round(v, 5)])), probabilidadesFinales: Object.fromEntries(Object.entries(pFinal).map(([k, v]) => [k, round(v, 5)])) });
   }
-  this.note('calidad', { z: round(d.z, 4), kContexto: round(d.kc, 4), CA: round(caRaw, 3), CD: hasOpposition ? round(cdRaw, 3) : null, pesos: items.map((i) => ({ clase: i.key, p: round(i.w / (mz ? 1 : d.tot)) })) });
+  this.note('calidad', { z: round(d.z, 4), kContexto: round(d.kc, 4), CA: round(caRaw, 3), CD: hasOpposition ? round(cdRaw, 3) : null, pesos: items.map((i) => ({ clase: i.key, p: round(i.w / (mz ? 1 : d.tot)) })),
+    ...(this.opts.detail === 'full' ? { entradas: { ca: caRaw, cd: hasOpposition ? cdRaw : null, kctx, hasOpposition: !!hasOpposition, noForced, extraZ, Z: mz ? mz.Z : null, alpha: mz ? mz.alpha : null } } : {}) }); // MOTOR-17B: entradas completas de la operación
   const chosen = this.pick(items, 'calidad');
   return { cls: chosen.key, K: opp.qualityShotLogit[chosen.key], z: d.z };
 };
@@ -212,22 +192,23 @@ P.midrangeFactor = function midrangeFactor(team, ex, pComfortable) {
 // ---------------------------------------------------------------- resolución de un intento (categoría + consecuencias)
 // ex: { team, origin, label, kind, actor, zone, exec, passer, icpt, defend, moved, offContact, holder, window, quality }
 P.categoryWeights = function categoryWeights(ex) {
-  const o = this.profile.outcomes; const base = o.base;
-  const w = {}; const z = {};
-  const isShotExit = true;
-  // pérdida
+  // MOTOR-17B (B17-02): las recetas se resuelven como siempre y la operación (pesos, presión cercana, Forma, momento) es la función pura `categoryResolution`, la misma que usa el contraste de sensibilidad.
+  const o = this.profile.outcomes; const full = this.opts.detail === 'full';
+  const refs = full ? {} : null; let off = null; let def = null; let legalDef = null; let legalOff = null; let pressureFactor = null;
   if (ex.exec !== 'none') {
-    let off; let def = null;
     const attempts = ex.stealAttempt !== false; // contener (sin intento de intervención) no aplica la receta de interferencia activa
     if (ex.exec === 'dribble') {
       off = this.taskValue('TAR06', 'attack', { handler: ex.actor });
-      if (ex.icpt && attempts) def = ex.defMix ? this.mixedValue(ex, (id) => this.taskValue('TAR06', 'defense', { primary: id })) : this.taskValue('TAR06', 'defense', { primary: ex.icpt });
+      if (full) refs.off = { label: 'receta:TAR06.attack', jugador: ex.actor, peso: 1 };
+      if (ex.icpt && attempts) {
+        def = ex.defMix ? this.mixedValue(ex, (id) => this.taskValue('TAR06', 'defense', { primary: id })) : this.taskValue('TAR06', 'defense', { primary: ex.icpt });
+        if (full) { const m = this.dcfg().coverage.sameTaskTwoDefenderMixture; refs.def = ex.defMix ? [{ label: 'receta:TAR06.defense', jugador: ex.defMix.primary, peso: m.primary }, { label: 'receta:TAR06.defense', jugador: ex.defMix.second, peso: m.second }] : [{ label: 'receta:TAR06.defense', jugador: ex.icpt, peso: 1 }]; }
+      }
     } else {
       off = this.taskValue('TAR07', 'attack', { passer: ex.passer });
-      if (ex.icpt && attempts) def = this.taskValue('TAR07', 'defense', { interceptor: ex.icpt });
+      if (full) refs.off = { label: 'receta:TAR07.attack', jugador: ex.passer, peso: 1 };
+      if (ex.icpt && attempts) { def = this.taskValue('TAR07', 'defense', { interceptor: ex.icpt }); if (full) refs.def = [{ label: 'receta:TAR07.defense', jugador: ex.icpt, peso: 1 }]; }
     }
-    z.turnover = def != null ? o.controlSensitivity * (def - off) : -o.controlSensitivity * (off - this.profile.neutralAbility);
-    w.turnover = base.turnover * Math.exp(z.turnover);
     ex.ctl = { off: round(off, 3), def: def == null ? null : round(def, 3) };
   }
   const opposer = ex.defend ?? ex.icpt;
@@ -235,45 +216,34 @@ P.categoryWeights = function categoryWeights(ex) {
   if (opposer) {
     const c = this.profile.contact;
     const dt = innerZone ? 'TEC13' : 'TEC12';
-    const legal = this.recipe([['d', dt, c.defensiveLegality.defenseTechnique], ['d', 'MEN04', c.defensiveLegality.MEN04], ['d', 'MEN05', c.defensiveLegality.MEN05]], { d: opposer }, c.maximumEnergyPenalty, 'legalidad_defensiva');
-    z.defFoul = o.defensiveFoulSensitivity * (this.profile.neutralAbility - legal);
-    w.defensiveNonShootingFoul = base.defensiveNonShootingFoul * Math.exp(z.defFoul);
-    if (ex.defend) w.shootingFoul = base.shootingFoul * Math.exp(z.defFoul);
-    w.looseBall = base.looseBall * 1; z.loose = 0;
+    legalDef = this.recipe([['d', dt, c.defensiveLegality.defenseTechnique], ['d', 'MEN04', c.defensiveLegality.MEN04], ['d', 'MEN05', c.defensiveLegality.MEN05]], { d: opposer }, c.maximumEnergyPenalty, 'legalidad_defensiva');
+    if (full) refs.legalDef = { label: 'receta:legalidad_defensiva', jugador: opposer, peso: 1 };
   }
   if (ex.offContact) {
     const c = this.profile.contact;
-    const legal = this.recipe([['o', ex.offContact.tech, c.offensiveLegality.actionTechnique], ['o', 'FIS04', c.offensiveLegality.FIS04], ['o', 'FIS07', c.offensiveLegality.FIS07]], { o: ex.offContact.pid }, c.maximumEnergyPenalty, 'legalidad_ofensiva');
-    z.offFoul = o.offensiveFoulSensitivity * (this.profile.neutralAbility - legal);
-    w.offensiveFoul = base.offensiveFoul * Math.exp(z.offFoul);
+    legalOff = this.recipe([['o', ex.offContact.tech, c.offensiveLegality.actionTechnique], ['o', 'FIS04', c.offensiveLegality.FIS04], ['o', 'FIS07', c.offensiveLegality.FIS07]], { o: ex.offContact.pid }, c.maximumEnergyPenalty, 'legalidad_ofensiva');
+    if (full) refs.legalOff = { label: 'receta:legalidad_ofensiva', jugador: ex.offContact.pid, peso: 1 };
   }
-  if (ex.exec === 'dribble') w.ballViolation = base.ballViolation;
-  w.fieldShot = base.fieldShot;
   // presión cercana: pondera una vez la exposición a pérdida y a contacto de esta interacción (no la conversión)
-  if (ex.pressureClose) {
-    const f = this.profile.defense.pressure.closePressureExposureWeightFactor;
-    for (const k of ['turnover', 'defensiveNonShootingFoul', 'shootingFoul']) if (w[k] != null) w[k] *= f;
-  }
+  if (ex.pressureClose) pressureFactor = this.profile.defense.pressure.closePressureExposureWeightFactor;
   // MOTOR-07 (control): Forma y presión ajustan, UNA vez, la exposición a pérdida o infracción del ejecutante (poseedor o pasador); el momento M-OFE frente a
   // M-DEF del defensor reparte masa entre «el ataque conserva el balón» (grupo G) y el resto con vector de suma cero. T queda excluido (pase/bote individual ya elegido).
-  let states = null;
+  let fpDelta = null; let mz = null;
   if (ex.exec !== 'none') {
     const own = [ex.exec === 'pass' ? ex.passer : ex.actor]; const counter = ex.defMix ? [ex.defMix.primary, ex.defMix.second] : [opposer];
-    const fp = this.formPressure('control', own, counter, { executants: own });
-    for (const k of ['turnover', 'ballViolation']) if (w[k] != null) w[k] *= Math.exp(-fp.delta);
-    states = { own, counter };
+    fpDelta = this.formPressure('control', own, counter, { executants: own }).delta;
+    mz = this.momentZ('control', own, counter);
   }
-  const tot = Object.values(w).reduce((a, b) => a + b, 0);
-  let probs = {}; for (const k of Object.keys(w)) probs[k] = w[k] / tot;
-  if (states) {
-    const task = this.profile.stateTasks.tasks.control;
-    const mz = this.momentZ('control', states.own, states.counter);
-    const base = probs;
-    probs = perturbCategories(base, task.favorableOutcomes, mz.Z, mz.alpha);
-    this.perturbNote('control', mz, { grupoFavorable: task.favorableOutcomes, probabilidadesBase: Object.fromEntries(Object.entries(base).map(([k, v]) => [k, round(v, 5)])), probabilidadesFinales: Object.fromEntries(Object.entries(probs).map(([k, v]) => [k, round(v, 5)])) });
+  const spec = { exec: ex.exec, off, def, hasOpposer: !!opposer, legalDef, hasDefend: !!ex.defend, legalOff, pressureFactor, fpDelta, Z: mz ? mz.Z : null, alpha: mz ? mz.alpha : null };
+  const r = categoryResolution(this.profile, spec);
+  if (mz) {
+    const task = this.profile.stateTasks.tasks.control; const probs = r.final;
+    this.perturbNote('control', mz, { grupoFavorable: task.favorableOutcomes, probabilidadesBase: Object.fromEntries(Object.entries(r.probs).map(([k, v]) => [k, round(v, 5)])), probabilidadesFinales: Object.fromEntries(Object.entries(probs).map(([k, v]) => [k, round(v, 5)])) });
   }
-  this.note('categorías', { z: Object.fromEntries(Object.entries(z).map(([k, v]) => [k, round(v, 4)])), p: Object.fromEntries(Object.entries(probs).map(([k, v]) => [k, round(v, 5)])) });
-  return states ? probs : w;
+  const out = mz ? r.final : r.probs;
+  this.note('categorías', { z: Object.fromEntries(Object.entries(r.z).map(([k, v]) => [k, round(v, 4)])), p: Object.fromEntries(Object.entries(out).map(([k, v]) => [k, round(v, 5)])) });
+  if (full) this.note('salida:control', { entradas: spec, refs, salida: Object.fromEntries(Object.entries(out).map(([k, v]) => [k, round(v, 8)])) }); // MOTOR-17B: entradas y salida de la operación real (TEC07/TEC08/TEC09/TEC11/TEC14/MEN04/MEN05)
+  return mz ? r.final : r.w;
 };
 
 P.durationKindFor = function durationKindFor(ex, cat) {
@@ -372,11 +342,12 @@ P.resolveShot = function resolveShot(ex, base, contact) {
   const defender = ex.defend;
   let K = ex.quality ? ex.quality.K : 0;
   K += this.profile.sharedResolution.newShotConversionBonus; // MOTOR-06: 0 por definición (ninguna situación ESP ni saque suma una prima de acierto)
+  let prepNote = null;
   if (ex.moved && (ex.zone === 'three' || ex.zone === 'midrange')) {
     const sp = this.profile.shotPreparation;
     const prep = this.taskValue('TAR11', 'attack', { shooter: ex.actor });
-    const cost = sp.movementMaximumLogitCost * (1 - (prep - 1) / 29);
-    K -= cost; this.note('preparación_movimiento', { TEC06mezcla: round(prep, 3), costeLogit: round(cost, 4) });
+    const cost = shotPrepCostLogit(this.profile, prep); // MOTOR-17B: función pura compartida con el contraste (TEC06)
+    K -= cost; prepNote = { valor: prep, costeLogit: cost }; this.note('preparación_movimiento', { TEC06mezcla: round(prep, 3), costeLogit: round(cost, 4) });
   }
   if (contact) K += this.profile.outcomes.shootingContactLogit;
   // tapón (solo con opositor y sin la rama de contacto)
@@ -387,10 +358,11 @@ P.resolveShot = function resolveShot(ex, base, contact) {
     const N = this.profile.neutralAbility;
     // MOTOR-07: el tapón es una disputa del defensor (Forma y presión del bloqueador; M-DEF frente a M-TIR del tirador), una sola vez.
     const bfp = this.formPressure('block', [defender], [ex.actor], { executants: [defender] });
-    const pB0 = sigmoid(logit(sh.blockP0) + b.sA * (blk - N) - b.sD * (resist - N) + bfp.delta);
     const bz = this.momentZ('block', [defender], [ex.actor]);
-    const pB = perturbBinary(pB0, bz.Z, bz.alpha);
+    const br = blockResolution(this.profile, sh, { blk, resist, delta: bfp.delta, Z: bz.Z, alpha: bz.alpha }); // MOTOR-17B: función pura compartida con el contraste (TEC15, FIS05)
+    const pB0 = br.pBase; const pB = br.p;
     this.perturbNote('block', bz, { pBase: round(pB0, 5), pFinal: round(pB, 5) });
+    if (this.opts.detail === 'full') this.note('salida:tapon', { zona: ex.zone, entradas: { blk, resist, delta: bfp.delta, Z: bz.Z, alpha: bz.alpha }, refs: { blk: { label: 'receta:tapón:bloqueador', jugador: defender, peso: 1 } }, salida: { pBase: round(pB0, 8), p: round(pB, 8) } });
     if (this.bernoulli(pB, 'tapón')) return this.resolveBlocked(ex, base, defender);
   }
   // un intento de intervención que no produjo pérdida deja la posición comprometida (mismo espacio que el drop, valor ya aceptado)
@@ -400,10 +372,16 @@ P.resolveShot = function resolveShot(ex, base, contact) {
   // perturba la probabilidad ya contextual. M-DEF solo interviene si no explicó ya la oportunidad (ex.mdefUsed). T no entra en la conversión de un tiro definido.
   const counterIds = defender ? (ex.defMix ? [ex.defMix.primary, ex.defMix.second] : [defender]) : [];
   const fp = this.formPressure('shotConversion', [ex.actor], counterIds, { executants: [ex.actor] });
-  const pBase = sigmoid(shotLogit(this.profile, sh, A, D, K + fp.delta));
   const mz = this.momentZ('shotConversion', [ex.actor], counterIds, { skipCounter: !!ex.mdefUsed });
-  const p = perturbBinary(pBase, mz.Z, mz.alpha);
+  const sr = shotResolution(this.profile, sh, { A, D, K: K + fp.delta, Z: mz.Z, alpha: mz.alpha }); // MOTOR-17B: función pura compartida con el contraste (TEC01–TEC04, TEC06, TEC12, TEC13, FIS04, FIS05, FIS07)
+  const pBase = sr.pBase; const p = sr.p;
   this.perturbNote('shotConversion', mz, { pBase: round(pBase, 5), pFinal: round(p, 5), contraparteOmitidaPorOportunidad: !!ex.mdefUsed && counterIds.length > 0 });
+  if (this.opts.detail === 'full') {
+    const m = defender && ex.defMix ? this.dcfg().coverage.sameTaskTwoDefenderMixture : null;
+    this.note('salida:tiro', { zona: ex.zone, entradas: { A, D, K: K + fp.delta, Z: mz.Z, alpha: mz.alpha, ...(prepNote ? { prep: prepNote.valor, costePrepLogit: prepNote.costeLogit } : {}) },
+      refs: { A: { label: `receta:ataque_tiro:${ex.zone}`, jugador: ex.actor, peso: 1 }, ...(defender ? { D: m ? [{ label: `receta:defensa_tiro:${ex.zone}`, jugador: ex.defMix.primary, peso: m.primary }, { label: `receta:defensa_tiro:${ex.zone}`, jugador: ex.defMix.second, peso: m.second }] : [{ label: `receta:defensa_tiro:${ex.zone}`, jugador: defender, peso: 1 }] } : {}), ...(prepNote ? { prep: { label: 'receta:TAR11.attack', jugador: ex.actor, peso: 1 } } : {}) },
+      salida: { pBase: round(pBase, 8), p: round(p, 8) } });
+  }
   const made = this.bernoulli(p, `conversión:${ex.zone}`);
   // MOTOR-09: el pase final que alimenta el tiro (candidato único de asistencia) viaja con el hecho; `moved` indica creación propia con movimiento.
   const feed = this.assistCandidate(ex);
@@ -527,15 +505,18 @@ P.pickRecoverer = function pickRecoverer(team, prefer) {
 };
 
 // ---------------------------------------------------------------- pérdida, faltas, infracción, balón suelto
-// MOTOR-17 §5 (criterio estadístico FIBA 2024, síntesis verificada por ChatGPT): criterio ÚNICO de crédito de robo para toda pérdida con balón VIVO que la defensa recupera con control (pase/bote con interceptor,
-// avance presionado, saque forzado y balón suelto ganado en disputa). Solo es estadístico: no sortea, no cambia la transición, el origen de la posesión ni el estado del partido.
-//  · intento de intervención resuelto (`attempt === true`): inicia el desvío el interceptor, aunque otro compañero recoja después;
-//  · sin intento (error ofensivo sin intervención) con defensor resuelto en la jugada: recogida controlada → el recuperador;
-//  · sin defensor resuelto (la recuperación sale del sorteo de recuperador) o balón muerto/infracción/falta: sin crédito (hecho ambiguo: no se fabrica autor).
+// MOTOR-17B §7 (B17-04; FIBA Statisticians' Manual 2024 v1.0, cap. 7, p. 24 del PDF; síntesis verificada por ChatGPT, sin lectura directa de Claude): criterio y procedencia ÚNICOS del crédito de robo
+// para toda pérdida con balón VIVO que la defensa recupera con control (pase/bote, avance presionado, saque forzado, balón suelto y control directo del interceptor). Solo es estadístico: no sortea, no cambia la
+// transición, el origen de la posesión ni el estado del partido, y los consumidores no cambian la selección de participantes para satisfacerlo.
+//  · intento de intervención resuelto (`attempt === true`) con interceptor: inicia el desvío el interceptor, aunque otro compañero recoja después (`contacto: intento de intervención`);
+//  · error ofensivo con recogida viva, SIN desviador anterior (también sin interceptor ni intento): el recuperador que ya produce el desenlace (`contacto: recogida controlada`);
+//  · sin recuperador individual identificado, balón fuera, violación o falta ofensiva: sin crédito (no se fabrica un autor; los llamadores no invocan la función en balón muerto);
+//  · un único crédito por pérdida causal (la función devuelve un solo autor). Un intento voluntario por sí solo no prueba un toque causal: no se añade ningún sorteo de contacto.
 P.liveStealCredit = function liveStealCredit({ team, icpt, attempt, recoverer, fuente }) {
-  if (icpt == null || recoverer == null) return null;
-  const p = attempt === true ? icpt : recoverer;
-  return { k: 'stl', p, team, fuente, contacto: attempt === true ? 'intento de intervención' : 'recogida controlada' };
+  const deflects = attempt === true && icpt != null;
+  const p = deflects ? icpt : recoverer;
+  if (p == null) return null;
+  return { k: 'stl', p, team, fuente, contacto: deflects ? 'intento de intervención' : 'recogida controlada' };
 };
 
 P.resolveTurnover = function resolveTurnover(ex, base) {
@@ -543,7 +524,7 @@ P.resolveTurnover = function resolveTurnover(ex, base) {
   const stats = [{ k: 'tov', p: ex.exec === 'pass' ? ex.passer : ex.actor, team: ex.team, cause: ex.exec === 'pass' ? 'pase' : 'balón' }];
   if (ex.stealAttempt !== true) this.episodeError(ex, 'pérdida sin intento de intervención del defensor'); // MOTOR-07 (EPI02): error de atención/ejecución, no un duelo perdido
   let stealer = null;
-  if (ex.icpt && ex.stealAttempt !== false && this.bernoulli(o.stealGivenTurnover, 'robo')) { stealer = ex.icpt; stats.push({ k: 'stl', p: stealer, team: 1 - ex.team }); }
+  if (ex.icpt && ex.stealAttempt !== false && this.bernoulli(o.stealGivenTurnover, 'robo')) { stealer = ex.icpt; const cr = this.liveStealCredit({ team: 1 - ex.team, icpt: stealer, attempt: true, recoverer: stealer, fuente: 'robo directo: control del interceptor' }); if (cr) stats.push(cr); }
   // Cadena del robo (trazable): acceso (hay interceptor) → decisión de intervenir (una vez, referencia 0,25 de nivel 3) → ejecución (la pérdida de esta
   // categoría ya incorpora la interferencia solo si hubo intento) → control (el interceptor recupera el balón vivo). El crédito del robo es el control: no hay otro sorteo.
   const cadena = { acceso: !!ex.icpt, intento: ex.stealAttempt ?? null, pIntento: ex.stealDecisionP == null ? null : round(ex.stealDecisionP, 4), control: !!stealer };
@@ -652,10 +633,11 @@ P.shootFreeThrows = function shootFreeThrows(shooter, n, f, ex) {
     const A = this.recipeObj(sh.attack, shooter, this.profile.energy.freeThrowTaskMax, 'ataque_libre');
     // MOTOR-07: Forma y presión del lanzador y su momento M-TIR; sin defensor ni contraparte ficticios (el libre no usa la oposición de campo).
     const fp = this.formPressure('freeThrow', [shooter], [], { executants: [shooter] });
-    const pBase = sigmoid(shotLogit(this.profile, sh, A, null, fp.delta));
     const mz = this.momentZ('freeThrow', [shooter], []);
-    const p = perturbBinary(pBase, mz.Z, mz.alpha);
+    const sr = shotResolution(this.profile, sh, { A, D: null, K: fp.delta, Z: mz.Z, alpha: mz.alpha }); // MOTOR-17B: la misma función pura que el tiro de campo (TEC05, MEN05)
+    const pBase = sr.pBase; const p = sr.p;
     this.perturbNote('freeThrow', mz, { pBase: round(pBase, 5), pFinal: round(p, 5) });
+    if (this.opts.detail === 'full') this.note('salida:tiro', { zona: 'freeThrow', entradas: { A, D: null, K: fp.delta, Z: mz.Z, alpha: mz.alpha }, refs: { A: { label: 'receta:ataque_libre', jugador: shooter, peso: 1 } }, salida: { pBase: round(pBase, 8), p: round(p, 8) } });
     const madeShot = this.bernoulli(p, 'libre');
     const last = i === n;
     // MOTOR-15 §7.2: interferencia en el último libre con disputa posible (participantes y condiciones de esa serie); un libre intermedio o con balón muerto posterior no es elegible
@@ -703,7 +685,8 @@ P.resolveLooseBall = function resolveLooseBall(ex, base) {
   this.emit('attempt', { ...base, stats, effects: { balonSuelto: true } });
   const ra = this.taskValue('TAR17', 'attack', { contender: ex.actor }, 'suelto:ataque');
   const rd = this.taskValue('TAR17', 'attack', { contender: opposer }, 'suelto:defensa');
-  const p = sigmoid(this.profile.outcomes.looseControlSensitivity * (ra - rd));
+  const p = looseControlP(this.profile, ra, rd); // MOTOR-17B: función pura compartida con el contraste (FIS02, FIS03, TEC07 y demás términos de TAR17)
+  if (this.opts.detail === 'full') this.note('salida:suelto', { entradas: { ra, rd }, refs: { ra: { label: 'receta:suelto:ataque', jugador: ex.actor, peso: 1 }, rd: { label: 'receta:suelto:defensa', jugador: opposer, peso: 1 } }, salida: { p: round(p, 8) } });
   const off = this.bernoulli(p, 'suelto:control');
   const spec = { dist: this.profile.durationSeconds.looseBall, factor: 1, tag: 'balón suelto', load: 'rebound' };
   const plan = this.planDuration(spec, 'looseBall', 'disputa');
@@ -802,16 +785,16 @@ P.afterMiss = function afterMiss(ex, zone) {
   const commit = this.reboundCommitments(offT, ex, zone);
   const offP = commit.crash;
   const defP = ft ? this.playersAtSlots(defT, defSlots) : this.defenseReboundParticipants(defT, defSlots.length); // el cierre usa la referencia y los compromisos ACTUALES
-  const strength = (pid) => this.reboundStrength(pid);
-  const mean = (ids) => ids.reduce((s, id) => s + strength(id), 0) / ids.length;
+  const fuerza = {}; for (const id of [...offP, ...defP]) fuerza[id] = this.reboundStrength(id); // MOTOR-17B: la fuerza de cierre de cada participante se conserva exacta (TEC17, TEC18, FIS05)
+  const mean = (ids) => ids.reduce((s, id) => s + fuerza[id], 0) / ids.length;
   const RA = offP.length ? mean(offP) : 0; const RD = defP.length ? mean(defP) : 0; // MOTOR-14: sin cargadores presentes (inferioridad) no hay disputa ofensiva: pRO = 0, sin NaN
   const K = rb.loadLogitByLevel[this.styleOf(offT).afterShot - 1];
   const p0 = ft ? rb.lastFreeThrowOffensiveP0 : rb.fieldOffensiveP0;
   // MOTOR-07: disputa simétrica (Forma de defensa/disputa de ambos grupos, M-DEF de ambos); sin presión ni T. La elección del captor no usa estados.
   const rfp = this.formPressure('rebound', offP, defP, { executants: [] });
-  const pRO0 = offP.length ? sigmoid(logit(p0) + rb.sensitivity * (RA - RD) + K + rfp.delta) : 0;
   const rz = this.momentZ('rebound', offP, defP);
-  const pRO = offP.length ? perturbBinary(pRO0, rz.Z, rz.alpha) : 0;
+  const rr = reboundTeamResolution(this.profile, { p0, RA, RD, K, fpDelta: rfp.delta, Z: rz.Z, alpha: rz.alpha, hasOffense: offP.length > 0 }); // MOTOR-17B: función pura compartida con el contraste
+  const pRO0 = rr.pBase; const pRO = rr.p;
   this.perturbNote('rebound', rz, { pBase: round(pRO0, 5), pFinal: round(pRO, 5) });
   this.note('rebote', { participantesAtaque: offP, participantesDefensa: defP, RA: round(RA, 3), RD: round(RD, 3), kCarga: K, pRebOfensivo: round(pRO, 5), encargos: this.commitTrace(commit) });
   if (this.opts.detail === 'full') { // MOTOR-14 (TEC17/TEC18/FIS05): fuerza de cierre por participante, con el mismo cálculo y las mismas entradas (sin sorteos ni cálculos nuevos)
@@ -832,7 +815,10 @@ P.afterMiss = function afterMiss(ex, zone) {
   const team = offReb ? offT : defT;
   const cands = offReb ? offP : defP;
   if (this.opts.detail === 'full') for (const id of cands) this.reboundRecipeNote('rebote.captura', offReb ? 'ataque' : 'defensa', id, rb.captor); // MOTOR-14 (TEC18): candidatos elegibles y peso de captura
-  const captor = this.pick(cands.map((id) => ({ key: id, w: this.recipeObj(rb.captor, id, rb.maxEnergyPenalty) })), 'rebote:captor').key;
+  const capW = cands.map((id) => ({ key: id, w: this.recipeObj(rb.captor, id, rb.maxEnergyPenalty) }));
+  const captor = this.pick(capW, 'rebote:captor').key;
+  if (this.opts.detail === 'full') this.note('salida:rebote', { entradas: { p0, K, fpDelta: rfp.delta, Z: rz.Z, alpha: rz.alpha, hasOffense: offP.length > 0, RA, RD, fuerza: { ataque: Object.fromEntries(offP.map((id) => [id, fuerza[id]])), defensa: Object.fromEntries(defP.map((id) => [id, fuerza[id]])) }, captura: { lado: offReb ? 'ataque' : 'defensa', pesos: Object.fromEntries(capW.map((x) => [x.key, x.w])) } },
+    refs: { fuerza: [...offP.map((id) => ({ label: 'receta:rebote.fuerza', jugador: id, lado: 'ataque' })), ...defP.map((id) => ({ label: 'receta:rebote.fuerza', jugador: id, lado: 'defensa' }))], captura: capW.map((x) => ({ label: 'receta:rebote.captura', jugador: x.key, lado: offReb ? 'ataque' : 'defensa' })) }, salida: { pBase: round(pRO0, 8), p: round(pRO, 8) } });
   this.cover(offReb ? 'rebote ofensivo' : 'rebote defensivo');
   this.emit('rebound', { t, team: offT, intent: { origen: ft ? 'último libre fallado' : `tiro fallado ${zone}` }, participants: { captor, candidatos: cands }, stats: [{ k: 'reb', p: captor, team, off: offReb, of: missEvent }], effects: { ofensivo: offReb, pRebOfensivo: round(pRO, 5), contactoAro: true, encargos: this.commitTrace(commit) } });
   if (!offReb) { this.endPossession('live', { team: offT, origin: 'rebote', carrier: captor, deficit: commit.deficit }); return { end: 'dreb' }; }
