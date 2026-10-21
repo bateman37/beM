@@ -17,7 +17,7 @@ P.initFamiliarity = function initFamiliarity() {
   const on = !!(f && f.activation && f.activation.enabled === true);
   this.fam = { on, anyExplicit: false, apps: {}, exp: { players: {}, operations: { quality: 0, pressedAdvance: 0, noApplicable: 0 } } };
   if (!on) return;
-  this.fam.cfg = f;
+  this.famCfg = f;
   for (const t of this.input.teams) for (const p of t.players) if (explicit(p.knowledge)) this.fam.anyExplicit = true;
   this.profile.familiarity.activation.enabled; // consulta anotada de la fila de activación (diagnóstico)
 };
@@ -49,7 +49,7 @@ const normalizeW = (list) => { const t = list.reduce((s, x) => s + x.w, 0); retu
 
 // Construye los participantes y los módulos de una operación de calidad. `ex` es la salida/ejecución en curso (`qualityOf`) o una salida candidata (estimación): no se seleccionan jugadores nuevos.
 P.famQualityContext = function famQualityContext(ex, hasOpposition) {
-  const cfg = this.fam.cfg; const team = ex.team ?? this.pl[ex.actor]?.teamIdx; const defT = 1 - team; const poss = this.poss;
+  const cfg = this.famCfg; const team = ex.team ?? this.pl[ex.actor]?.teamIdx; const defT = 1 - team; const poss = this.poss;
   const inbound = ex.procedencia === 'saque' || ex.contexto === 'saque';
   const attackP = uniq([ex.holder, ex.actor, ex.passer, ex.offContact && (ex.offContact.kind === 'pantalla' || ex.offContact.kind === 'poste') ? ex.offContact.pid : null])
     .filter((id) => this.pl[id] && ((this.ps[id].onCourt && this.ps[id].available) || (inbound && id === ex.passer)));
@@ -74,14 +74,14 @@ P.famQualityContext = function famQualityContext(ex, hasOpposition) {
   return { ctx, team, defT, attackP, defP, atk: normalizeW(atk), dfn: normalizeW(dfn), cov };
 };
 P.famPressedContext = function famPressedContext(handler, presser, support, height) {
-  const cfg = this.fam.cfg; const team = this.pl[handler].teamIdx; const defT = 1 - team; const w = cfg.tacticContextWeights.pressBreak;
+  const cfg = this.famCfg; const team = this.pl[handler].teamIdx; const defT = 1 - team; const w = cfg.tacticContextWeights.pressBreak;
   const dfn = [{ id: 'PRESS', w: w.defense.press }]; const org = this.famEffectiveOrg(defT); if (org) dfn.push({ id: org, w: w.defense.organization });
   return { ctx: 'pressBreak', team, defT, attackP: uniq([handler]).filter((id) => this.ps[id].onCourt), defP: uniq([presser, support]).filter((id) => this.ps[id].onCourt), atk: normalizeW([{ id: 'FAM:press_break', w: w.attack.press_break }]), dfn: normalizeW(dfn), cov: null, height };
 };
 
 // Dominio de un lado: posición realmente asignada, rol vigente (ofensivo o defensivo según el lado) y módulos, con los niveles de la instantánea de cada participante.
 P.famSide = function famSide(pids, mods, side) {
-  const cfg = this.fam.cfg; const out = []; const doms = []; const full = this.opts.detail === 'full';
+  const cfg = this.famCfg; const out = []; const doms = []; const full = this.opts.detail === 'full';
   for (const id of pids) {
     const k = this.pl[id].knowledge; const slot = this.ps[id].slot;
     if (!explicit(k)) { if (full) out.push({ pid: id, neutral: true, D: null }); continue; }
@@ -101,7 +101,7 @@ P.famSide = function famSide(pids, mods, side) {
 // Ajuste de una operación (puro: sin registro de exposición ni azar). Con la capa apagada o sin conocimiento explícito devuelve 0 sin recorrer nada.
 P.famAdjust = function famAdjust(c, scope) {
   if (!this.fam.anyExplicit) return { delta: 0, neutral: true, ctx: c.ctx };
-  const A = this.famSide(c.attackP, c.atk, 'attack'); const D = this.famSide(c.defP, c.dfn, 'defense'); const r = familiarityDelta(this.fam.cfg, scope, A.D, D.D);
+  const A = this.famSide(c.attackP, c.atk, 'attack'); const D = this.famSide(c.defP, c.dfn, 'defense'); const r = familiarityDelta(this.famCfg, scope, A.D, D.D);
   return { delta: r.delta, ctx: c.ctx, DA: A.D, DD: D.D, UA: r.UA, UD: r.UD, max: r.max, ataque: A.actors, defensa: D.actors, neutral: A.D == null && D.D == null };
 };
 // Exposición de módulos: una sola vez por jugador–módulo–operación, repartiendo el crédito de la operación por los pesos normalizados (§6.3). No se acredita nada por estimaciones.

@@ -90,10 +90,11 @@ test('posición y rol aplicados desde su frontera real: un cambio de rol divide 
   assert.equal(Object.values(e.offensiveRoles).reduce((a, b) => a + b, 0), e.liveTenths);
   // posición nominal no filtra: un pívot titular de base es válido y juega; su familiaridad con la posición asignada es la que cuenta
   const swap = inputFor(382000013); const s = swap.teams[0].plan.starters; [s.PG, s.C] = [s.C, s.PG];
+  for (const pr of swap.teams[0].plan.participation.pairs) if (pr.slot === 'PG' || pr.slot === 'C') pr.starter = s[pr.slot]; // la rotación manual acompaña el intercambio (escenario B04): el plan de participación debe seguir siendo coherente
   assert.equal(validateInput(swap, profile).length, 0); assert.equal(runMatch(swap, profile, { detail: 'minimal' }).status, 'finished');
 });
 
-test('guardar y continuar no duplica la exposición; la propuesta de aprendizaje sale del resultado final y es idempotente', () => {
+test('guardar y continuar no duplica la exposición ni cambia el marcador y un guardado de otro motor se rechaza con motivo', () => {
   const input = withKnowledge(inputFor(382000014), () => allMastered(F, 0));
   const full = createMatch(deepCopy(input), profile, { detail: 'minimal' }); full.init(); while (full.step()) { /* completo */ }
   const m = createMatch(deepCopy(input), profile, { detail: 'minimal' }); m.init(); let n = 0; while (m.periodBreak == null && n < 5000 && m.step()) n += 1;
