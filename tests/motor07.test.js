@@ -234,7 +234,7 @@ test('8. entrada: estados explícitos y acotados, migración identificada, visib
   const paths = validateInput(bad, profile).map((e) => e.path); assert.ok(paths.some((x) => /state\.form/.test(x)) && paths.includes('importance') && paths.some((x) => /initialTeamMoment/.test(x)));
   const old = deepCopy(input); delete old.importance; for (const t of old.teams) { delete t.plan.initialTeamMoment; for (const p of t.players) { delete p.state.form; delete p.state.M_TIR; } } old.teams[1].players[0].state.M_OFE = 0.3;
   const { input: up, added } = upgradeInput(old, profile); assert.deepEqual(validateInput(up, profile), []); assert.ok(added.some((a) => /importancia/.test(a)) && added.some((a) => /T inicial/.test(a)));
-  assert.equal(up.teams[1].players[0].state.M_OFE, 0.3, 'un estado ya configurado no se sobrescribe'); assert.equal(up.schema, 'beM-match-input/6');
+  assert.equal(up.teams[1].players[0].state.M_OFE, 0.3, 'un estado ya configurado no se sobrescribe'); assert.equal(up.schema, 'beM-match-input/7');
   // visibilidad
   const m = ctrl({ over: (i) => { player(i, A).state.form = 0.5; } }); m.sportT = 3000; const n0 = m.rng.count;
   const own = ownStateView(m, 0); const rival = rivalPublicView(m, 1); const diag = diagnosticView(m);
@@ -245,7 +245,7 @@ test('8. entrada: estados explícitos y acotados, migración identificada, visib
   const q0 = m.libertyAndReading(0, B); for (const id of m.teams[1].ids) { m.ps[id].form = -1; for (const k of MOMENT_SCOPES) m.ps[id].mom[k].v = -1; } m.tm[1].v = -1;
   assert.deepEqual(m.libertyAndReading(0, B), q0);
   // formato de exportación: MOTOR-08 sube a export/7; sigue el rechazo explícito de export/5 (y export/6) sin tocarlos
-  assert.match(EXPORT_SCHEMA, /export\/[789]$/); assert.match(ENGINE_VERSION, /MOTOR(0[89]|15|17)/);
+  assert.match(EXPORT_SCHEMA, /export\/(7|8|9|10)$/); assert.match(ENGINE_VERSION, /MOTOR(0[89]|15|17|18)/);
   const v5 = validateReplayFile({ schema: 'beM-match-export/5', meta: { engineVersion: 'beM-motor-0.6.0-MOTOR06' } }); assert.equal(v5.legacy, true); assert.equal(v5.reproducible, false); assert.match(v5.problems[0], /MOTOR-06/);
 });
 
