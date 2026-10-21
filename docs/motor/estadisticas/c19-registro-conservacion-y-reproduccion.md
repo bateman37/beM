@@ -326,5 +326,9 @@ La semilla sola no basta si cambian algoritmo, parámetros o entradas. Para repe
 
 Consultar un partido histórico usa sus hechos conservados. No vuelve a simular bajo parámetros nuevos para reconstruir su resumen.
 
+### Nota de implementación MOTOR-18 (Exposición y audiencias de la familiaridad (MOTOR-18))
+
+El resultado exportado y el registro esencial conservan la instantánea de conocimiento, un resumen de aplicación y la exposición final por jugador y conocimiento (con unidad). El público y el rival no reciben conocimiento, Polivalencia ni enseñanza; la audiencia propia solo su equipo; el diagnóstico va identificado. Detalle: `docs/tecnico/motor18.md`.
+
 <!-- beM:pie-inicio -->
 > [Índice del tema](README.md) · Anterior: [c18-reglamento-y-administracion-deportiva](../reglamento/c18-reglamento-y-administracion-deportiva.md) · Siguiente: [c20-p01-unidad-de-finalizacion-de-tiro](c20-p01-unidad-de-finalizacion-de-tiro.md)

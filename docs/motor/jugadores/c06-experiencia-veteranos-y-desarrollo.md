@@ -170,5 +170,9 @@ El informe puede mostrar a un veterano con menos llegada física y buena lectura
 
 Una comparación por edad/etapa puede ser útil para historia y ojeo. El grupo de edad es un filtro descriptivo; la ejecución usa las capacidades y estados actuales ya definidos.
 
+### Nota de implementación MOTOR-18 (Familiaridad, Polivalencia y aprendizaje)
+
+Se amplía el funcional con conocimiento persistente de posiciones, roles y sistemas (62 niveles con `level`, `peak` y `lastPracticeDay`) y con el rasgo de desarrollo **«Polivalencia · aprendizaje táctico»** (1–30, semilla 16), separado de las 32 capacidades. La Polivalencia y la enseñanza del entrenador actúan **entre partidos**; no hay bono automático de veterano ni penalización por juventud, y el desuso y el reaprendizaje son reglas de producto SEM18 (posición 30 sin práctica durante 3650 días → 26,4), no medición científica. Detalle: `docs/tecnico/motor18.md`.
+
 <!-- beM:pie-inicio -->
 > [Índice del tema](README.md) · Anterior: [c05-tendencias-individuales-y-decisiones](c05-tendencias-individuales-y-decisiones.md) · Siguiente: [c07-p01-estructura-de-la-configuracion-tactica](../tacticas/c07-p01-estructura-de-la-configuracion-tactica.md)

@@ -2,6 +2,13 @@
 
 Registro breve de entregas. Una entrada por entrega; las más recientes primero.
 
+## MOTOR-18 — Familiaridad táctica, roles, posiciones y aprendizaje — 2026-10-21
+
+- **Conocimiento:** 62 niveles por jugador (posiciones, roles, 30 módulos) y ajuste logit único por operación en la calidad de la oportunidad y el avance presionado (máx. 0,30 por lado, SEM18); exposición acumulada sin aprender durante el partido; camino neutral exacto frente a CONTROL17B.
+- **Aprendizaje:** Polivalencia y enseñanza, reaprendizaje, retención (posición 30 → 26,4 a 3650 días) y aplicación idempotente con deshacer; laboratorio de sesión, copias de aprendizaje y vista por audiencia.
+- **Auditor:** R17B-SENS-01 (todas las entradas dependientes de la operación), AUD11 clasificado y sensibilidad de conocimiento aparte.
+- **Campaña** `MOTOR18-CIERRE-20261021` (36 ejecuciones) y paquetes fuera de Git. Motor `0.18.0-MOTOR18`, `beM-match-input/7`, `beM-match-export/10`. **Pendiente de Dennis.** Ver [`docs/tecnico/motor18.md`](docs/tecnico/motor18.md).
+
 ## MOTOR-17B — Cierre técnico y auditoría acotada — 2026-10-21
 
 - **Organización efectiva (B17-01):** `defense_org` del registro esencial es el código de la organización vigente antes de cada hecho (plan, orden aplicada, alternativa), leído con el mismo `orgAt` del análisis; la intención de intervención va en `defense_intervention`; `ESE-MOTOR17B-R1` y semántica explícita; un esencial anterior se declara histórico.

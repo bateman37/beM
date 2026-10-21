@@ -27,3 +27,7 @@ Relaciones funcionales principales con otros temas. Consulta solo las que afecte
 - [Cap. 25 — Población de referencia y generación](../validacion/c25-p01-contenido-y-poblacion-con-y-pob.md) (tema `validacion`): población de referencia y generación de equipos
 - [Cap. 26 — Panel, parámetros, perfiles y versiones](../configuracion/c26-p01-panel-de-administracion-finalidad-y-organizacion.md) (tema `configuracion`): panel, perfiles y versiones de configuración
 - [Cap. 29 — Perfil inicial y semillas numéricas](../configuracion/c29-p01-perfil-inicial-semillas-y-trabajo-numerico.md) (tema `configuracion`): perfil inicial y semillas usados al preparar partidos
+
+### Nota de implementación MOTOR-18 (Laboratorio de conocimiento (MOTOR-18))
+
+El laboratorio incorpora copias de aprendizaje, edición de conocimiento, panel de sesión (previsualizar, aplicar con recibo y deshacer, «solo desuso») y la propuesta de aprendizaje tras un partido terminado; reabrir, analizar, descargar o ejecutar en lote no aplica aprendizaje. Detalle: `docs/tecnico/motor18.md`.

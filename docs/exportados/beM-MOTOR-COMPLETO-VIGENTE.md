@@ -12,7 +12,7 @@ Este documento reúne el diseño por materias. Para utilizarlo no es necesario r
 
 La experiencia buscada es un partido completo de baloncesto, con jugadores diferentes y decisiones tácticas reconocibles. El cálculo avanza por acontecimientos pertinentes dentro de posesiones, conserva un contexto activo pequeño y reutiliza operaciones compartidas. El primer resultado deportivo que debe demostrarse es el partido completo con motor, tácticas, capacidades, dirección, administración y estadísticas conectados.
 
-> **Exportado generado: no editar a mano.** Reconstruido con `python3 scripts/docs/build_engine_docs.py` a partir de las secciones de [`docs/motor/`](../motor/README.md), en el orden de [`manifest.json`](../motor/manifest.json). La referencia congelada de la importación es [`unificado-original.md`](../historico/motor/unificado-original.md) (SHA-256 `df05edda480c7da556ba6a24009bedcd0a7f96c25e54f57c983951e63fc01fdd`). Revisión de composición: `DOC-001-r1`. Huella SHA-256 del contenido compuesto (sin esta nota): `c13be41bd6f52738e5e03aee7d2e41ebbb11e44fc4741f27eebc5c12dcac0887`. Los índices de este archivo se generan a partir de los encabezados; el índice original se conserva solo en la copia histórica. Diseño definido no equivale a implementado, validado ni calibrado.
+> **Exportado generado: no editar a mano.** Reconstruido con `python3 scripts/docs/build_engine_docs.py` a partir de las secciones de [`docs/motor/`](../motor/README.md), en el orden de [`manifest.json`](../motor/manifest.json). La referencia congelada de la importación es [`unificado-original.md`](../historico/motor/unificado-original.md) (SHA-256 `df05edda480c7da556ba6a24009bedcd0a7f96c25e54f57c983951e63fc01fdd`). Revisión de composición: `DOC-001-r1`. Huella SHA-256 del contenido compuesto (sin esta nota): `95eed3ade98eb6c21193db862141e4004e7f2a6e3dc122f52d972492ef4ca14c`. Los índices de este archivo se generan a partir de los encabezados; el índice original se conserva solo en la copia histórica. Diseño definido no equivale a implementado, validado ni calibrado.
 
 ## Índice general
 
@@ -177,6 +177,7 @@ La unificación solicitada queda realizada mediante este documento; deja de ser 
 - [6.1. Experiencia: historial que contribuye al aprendizaje](#grupo-06-01)
 - [6.2. Veteranos y envejecimiento](#grupo-06-02)
 - [6.3. Energía, forma, momento y las 32 capacidades](#grupo-06-03)
+- Nota de implementación MOTOR-18 (Familiaridad, Polivalencia y aprendizaje)
 
 **[7. Táctica ofensiva: estilos, disposiciones, libro y roles](#cap-07)**
 
@@ -187,6 +188,7 @@ La unificación solicitada queda realizada mediante este documento; deja de ser 
 - [7.5. Prioridades del libro y libertad del jugador](#grupo-07-05)
 - [7.6. Roles ofensivos](#grupo-07-06)
 - [7.7. Director de juego: interpretación del plan](#grupo-07-07)
+- Nota de implementación MOTOR-18 (Familiaridad táctica)
 - [7.8. Estilos y disposiciones de precarga](#grupo-07-08)
 - [7.9. Ataque: disposiciones, familias y alternativas](#grupo-07-09)
 - [7.10. Roles, dirección, experiencia y veteranos](#grupo-07-10)
@@ -230,6 +232,7 @@ La unificación solicitada queda realizada mediante este documento; deja de ser 
 - [11.2. Resolución por acontecimientos: decisión confirmada](#grupo-11-02)
 - [11.3. Unidad deportiva, continuidad y contexto](#grupo-11-03)
 - [11.4. Tres tablas configurables](#grupo-11-04)
+- Nota de implementación MOTOR-18 (Familiaridad en el flujo (MOTOR-18))
 
 **[12. Selección, oportunidad, ejecución y desenlace](#cap-12)**
 
@@ -302,6 +305,7 @@ La unificación solicitada queda realizada mediante este documento; deja de ser 
 - [19.3. Conservación, historial y partidos del mundo](#grupo-19-03)
 - [19.4. Información funcional que necesita el registro](#grupo-19-04)
 - [19.5. Población, modalidades y conservación](#grupo-19-05)
+- Nota de implementación MOTOR-18 (Exposición y audiencias de la familiaridad (MOTOR-18))
 
 **[20. Estadísticas: acta, atribución y magnitudes](#cap-20)**
 
@@ -414,6 +418,7 @@ La unificación solicitada queda realizada mediante este documento; deja de ser 
 - [27.15. Diccionario y ejemplos de lectura](#grupo-27-15)
 - [27.16. Diccionario de tablas y parámetros](#grupo-27-16)
 - [27.17. Catálogo administrable del motor](#grupo-27-17)
+- Nota de implementación MOTOR-18 (Filas de familiaridad y aprendizaje (MOTOR-18))
 
 **[28. Auditorías y criterios de aceptación](#cap-28)**
 
@@ -1908,6 +1913,10 @@ El informe puede mostrar a un veterano con menos llegada física y buena lectura
 
 Una comparación por edad/etapa puede ser útil para historia y ojeo. El grupo de edad es un filtro descriptivo; la ejecución usa las capacidades y estados actuales ya definidos.
 
+### Nota de implementación MOTOR-18 (Familiaridad, Polivalencia y aprendizaje)
+
+Se amplía el funcional con conocimiento persistente de posiciones, roles y sistemas (62 niveles con `level`, `peak` y `lastPracticeDay`) y con el rasgo de desarrollo **«Polivalencia · aprendizaje táctico»** (1–30, semilla 16), separado de las 32 capacidades. La Polivalencia y la enseñanza del entrenador actúan **entre partidos**; no hay bono automático de veterano ni penalización por juventud, y el desuso y el reaprendizaje son reglas de producto SEM18 (posición 30 sin práctica durante 3650 días → 26,4), no medición científica. Detalle: `docs/tecnico/motor18.md`.
+
 <a id="cap-07"></a>
 
 ## 7. Táctica ofensiva: estilos, disposiciones, libro y roles
@@ -2332,6 +2341,10 @@ La presión rival puede dificultar la organización. Sustituir o cambiar al dire
 Cuando el balón pasa a otro jugador, ese jugador realiza su siguiente lectura con sus propias capacidades.
 
 Los receptores, bloqueadores y compañeros necesitan ejecutar sus tareas. La dirección no sustituye la capacidad colectiva ni garantiza el acierto final.
+
+### Nota de implementación MOTOR-18 (Familiaridad táctica)
+
+La ejecución de roles y tácticas incorpora preparación aprendida (30 módulos: ORG, COB, DIS, familias, transición, continuidad, salida de presión, PRESS y saques) mediante un único ajuste logit limitado por operación en la calidad de la oportunidad y en el avance ante presión adelantada. Las prioridades, estilos y reglas actuales no cambian; la posición nominal sigue sin filtrar elegibilidad, pero la posición realmente asignada puede tener otra familiaridad. Detalle: `docs/tecnico/motor18.md`.
 
 <a id="grupo-07-08"></a>
 
@@ -4267,6 +4280,10 @@ Las tres tablas son grupos de datos y reglas legibles. No obligan a una base de 
 | 3. Tiempo, esfuerzo y estados | ¿Cuánto transcurre y cómo queda el partido? | Acontecimiento, duración, tareas, reglas y estado previo | Relojes, energía, estados, reanudación y contexto siguiente |
 
 Una opción táctica debe tener una conexión reconocible con una o varias tablas. Su nombre no concede una mejora universal de acierto ni de capacidades.
+
+### Nota de implementación MOTOR-18 (Familiaridad en el flujo (MOTOR-18))
+
+Durante el partido solo se consulta la instantánea congelada de conocimiento y se acumula exposición; no se aprende ni se olvida. El ajuste se cobra una vez por operación y no se repite en una calidad heredada ni en la conversión del tiro. Detalle: `docs/tecnico/motor18.md`.
 
 <a id="cap-12"></a>
 
@@ -7092,6 +7109,10 @@ Una continuación conserva estado deportivo, contexto activo, estados individual
 La semilla sola no basta si cambian algoritmo, parámetros o entradas. Para repetir se necesita identificar el conjunto completo pertinente. Las órdenes manuales deben incluir su oportunidad efectiva de aplicación.
 
 Consultar un partido histórico usa sus hechos conservados. No vuelve a simular bajo parámetros nuevos para reconstruir su resumen.
+
+### Nota de implementación MOTOR-18 (Exposición y audiencias de la familiaridad (MOTOR-18))
+
+El resultado exportado y el registro esencial conservan la instantánea de conocimiento, un resumen de aplicación y la exposición final por jugador y conocimiento (con unidad). El público y el rival no reciben conocimiento, Polivalencia ni enseñanza; la audiencia propia solo su equipo; el diagnóstico va identificado. Detalle: `docs/tecnico/motor18.md`.
 
 <a id="cap-20"></a>
 
@@ -12199,6 +12220,10 @@ El panel debe permitir modificar el detalle relevante sin multiplicarlo innecesa
 Un cambio de sistema defensivo puede afectar responsabilidades, acceso y oposición. No necesita un factor independiente de «eficacia de zona» además de todas esas consecuencias, salvo que represente una causa adicional definida y evaluada.
 
 Los parámetros globales se reservan a conceptos globales reales. Si varios mecanismos usan una sensibilidad común, la relación se ve. Si deben diferir por tarea, se puede sobreescribir explícitamente.
+
+### Nota de implementación MOTOR-18 (Filas de familiaridad y aprendizaje (MOTOR-18))
+
+Las magnitudes de la capa de familiaridad viven en el panel existente (grupo «Familiaridad y aprendizaje», filas `familiarity.*`, procedencia SEM18) y en `data:check`; el catálogo de 30 módulos, las correspondencias y las relaciones de transferencia son contenido declarativo validado. Detalle: `docs/tecnico/motor18.md`.
 
 <a id="cap-28"></a>
 

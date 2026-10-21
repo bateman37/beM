@@ -264,5 +264,9 @@ Un cambio de sistema defensivo puede afectar responsabilidades, acceso y oposici
 
 Los parámetros globales se reservan a conceptos globales reales. Si varios mecanismos usan una sensibilidad común, la relación se ve. Si deben diferir por tarea, se puede sobreescribir explícitamente.
 
+### Nota de implementación MOTOR-18 (Filas de familiaridad y aprendizaje (MOTOR-18))
+
+Las magnitudes de la capa de familiaridad viven en el panel existente (grupo «Familiaridad y aprendizaje», filas `familiarity.*`, procedencia SEM18) y en `data:check`; el catálogo de 30 módulos, las correspondencias y las relaciones de transferencia son contenido declarativo validado. Detalle: `docs/tecnico/motor18.md`.
+
 <!-- beM:pie-inicio -->
 > [Índice del tema](README.md) · Anterior: [c27-p02-estadistica-y-resumen-est01est08](c27-p02-estadistica-y-resumen-est01est08.md) · Siguiente: [c28-p01-poblacion-modalidades-y-conservacion](../validacion/c28-p01-poblacion-modalidades-y-conservacion.md)
