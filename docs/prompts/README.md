@@ -30,6 +30,7 @@ Directorio de los encargos a Claude Code. **El texto original de un prompt ejecu
 | MOTOR-15B | Cierre de MOTOR-15 (RG-I03, art. 45, procedencia de auditorías y equivalencia, paquetes) y diagnóstico técnico de robos | **Ejecutado** (pendiente de Dennis) | [MOTOR-15B-cierre-y-diagnostico-de-robos.md](MOTOR-15B-cierre-y-diagnostico-de-robos.md) · [recorrido manual](MOTOR-15B-recorrido-manual.md) |
 | MOTOR-16 | Campaña masiva y extracción de evidencia para ChatGPT (3.732 ejecuciones con las herramientas existentes; sin corregir ni calibrar) | [MOTOR-16-campana-y-extraccion-para-chatgpt.md](MOTOR-16-campana-y-extraccion-para-chatgpt.md) | **Ejecutado** (campaña completa; análisis pendiente en ChatGPT) | 2026-10-18 · [ficha](#motor-16) | — |
 | MOTOR-17 | Ajustes, rendimiento y auditoría de cierre: crédito de robo y registro, rendimiento exacto, candidatas numéricas acotadas y campaña comparativa R0/R17 con paquetes para ChatGPT | [MOTOR-17-ajustes-rendimiento-y-auditoria-de-cierre.md](MOTOR-17-ajustes-rendimiento-y-auditoria-de-cierre.md) · [recorrido manual](MOTOR-17-recorrido-manual.md) | **Ejecutado** (propuesta numérica sin aceptar; pendiente de Dennis; objetivo de coste NO alcanzado) | 2026-10-18 · [ficha](#motor-17) | — |
+| MOTOR-17B | Cierre técnico y auditoría acotada: organización efectiva en el esencial, contraste de las 32 capacidades hasta la salida de su operación real, AUD05 derivado de la evidencia, crédito de robo con procedencia común y evidencia final verificable | [MOTOR-17B-cierre-y-auditoria-acotada.md](MOTOR-17B-cierre-y-auditoria-acotada.md) · [recorrido manual](MOTOR-17B-recorrido-manual.md) | **Ejecutado** (calibración general, rendimiento masivo, aceptación manual y FIBA integral pendientes; pendiente de Dennis) | 2026-10-21 · [ficha](#motor-17b) | — |
 
 ## Fichas de ejecución
 
@@ -296,3 +297,17 @@ Comprobación local de enlaces: hecha por Claude. Presentación en GitHub: no co
 | Comprobaciones realizadas | Ver [`../tecnico/evidencia-motor17/RESUMEN-OPERATIVO.md`](../tecnico/evidencia-motor17/RESUMEN-OPERATIVO.md) §9. No ejecutado: otros navegadores, Node 24, lectura directa de FIBA, recorrido humano. |
 | Limitaciones | Objetivo de 5 s no alcanzado; crédito de recogida sin intervención revisable; H11/H12 sin resolver; dos semillas por mecanismo no certifican efectos universales. |
 | Pendientes | Validación de Dennis ([recorrido manual](MOTOR-17-recorrido-manual.md)); análisis externo y aceptación de la propuesta numérica. |
+
+### MOTOR-17B
+
+| Campo | Valor |
+|---|---|
+| Objetivo | Cerrar B17-01…05 de la revisión independiente de MOTOR-17 (organización defensiva efectiva en `world-essential`, sensibilidad de las 32 capacidades hasta la salida de su operación real, AUD05 derivado de la evidencia, crédito de robo con procedencia común y evidencia final verificable) y entregar a ChatGPT una auditoría acotada de 30 casos lógicos (72 ejecuciones planificadas) con CONTROL17 frente a M17B. |
+| Medio de entrada del texto | Archivo `.md` adjunto (`beM-PROMPT-MOTOR-17B-CIERRE-Y-AUDITORIA-ACOTADA.md`; prefijo añadido por la subida). Copia archivada: [`MOTOR-17B-cierre-y-auditoria-acotada.md`](MOTOR-17B-cierre-y-auditoria-acotada.md). |
+| Fecha real de ejecución | 2026-10-21 · intento 1 |
+| Rama | `claude/busy-edison-b1fmnc`, reiniciada desde `main` (la PR de MOTOR-17, `bateman37/beM#17`, estaba fusionada); PR propia, sin fusionar. |
+| Código que produjo la evidencia | CONTROL17 `01c8ade`; M17B = commit de implementación congelado antes de simular (ver `evidencia-motor17b/RESUMEN-OPERATIVO.md` §1); motor `beM-motor-0.17.1-MOTOR17B`. |
+| Resultado breve | Ver [`../tecnico/evidencia-motor17b/RESUMEN-OPERATIVO.md`](../tecnico/evidencia-motor17b/RESUMEN-OPERATIVO.md) (generado desde los archivos finales). Paquetes `MOTOR-17B-*` y recibo de verificación fuera de Git (`out/motor17b/entrega-final/`). |
+| Comprobaciones realizadas | Suite, datos, documentación en copia limpia, recorrido de Chromium, descarga real y comprobador: estado de cada una en el resumen operativo §7. No ejecutado: otros navegadores, Node 24, lectura directa de FIBA, recorrido humano. |
+| Limitaciones | Muestra de 30 casos lógicos (no 72 observaciones independientes); contraste de cálculo fijo representativo; criterio de robo por síntesis de ChatGPT; no es el benchmark frío de rendimiento. |
+| Pendientes | Validación de Dennis ([recorrido manual](MOTOR-17B-recorrido-manual.md)); análisis deportivo de ChatGPT; calibración general, rendimiento masivo y FIBA integral. |

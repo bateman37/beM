@@ -1,6 +1,6 @@
 # Estado del proyecto
 
-Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANGELOG.md)). Última actualización: 2026-10-18, entrega MOTOR-17.
+Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANGELOG.md)). Última actualización: 2026-10-21, entrega MOTOR-17B.
 
 ## Qué hay realmente en el repositorio
 
@@ -8,6 +8,15 @@ Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANG
 - **Diseño funcional del motor y del primer laboratorio**, organizado por temas en [`motor/`](motor/README.md) (34 capítulos). Es **especificación**: está *definida*, no implementada.
 - **Copia original congelada** del funcional unificado y **exportado completo vigente** generado: ver [`historico/`](historico/README.md) y [`exportados/`](exportados/README.md).
 - **Utilidades documentales** en `scripts/docs/` (Python 3, librería estándar).
+
+## MOTOR-17B (ejecutado; cierre técnico y auditoría acotada; pendiente de Dennis)
+
+- **Qué es**: cierra los pendientes concretos de la revisión independiente de MOTOR-17 (B17-01…05) sobre la misma base del partido, sin cambiar ningún coeficiente deportivo. Parte de `main` (la PR de MOTOR-17 estaba fusionada) en la rama `claude/busy-edison-b1fmnc`; PR propia, sin fusionar. Detalle: [`tecnico/motor17b.md`](tecnico/motor17b.md) · [evidencia](tecnico/evidencia-motor17b/00-LEEME.md) · [recorrido manual](prompts/MOTOR-17B-recorrido-manual.md).
+- **Existe**: `defense_org` del registro esencial = código de la organización efectiva vigente antes de cada hecho (`ESE-MOTOR17B-R1`; un esencial anterior se declara histórico); contraste +1/+3/+5 de las 32 capacidades hasta la salida de la operación real con funciones puras **compartidas con el productor** (`src/match/formulas.js`, `src/audit/consumers.js`); AUD05 con estado y motivos derivados de la evidencia (exposición, registro y contraste separados); criterio y procedencia únicos del crédito de robo, también para la recogida controlada sin interceptor previo (`EST/ACTA-MOTOR17B-R1`, `SEM-MOTOR17B-20261021`; solo estadístico); campaña congelada `MOTOR17B-CIERRE-20261021` (30 casos lógicos, 72 ejecuciones planificadas; CONTROL17 = `01c8ade`), paquetes y recibo de verificación **fuera de los ZIP**, comprobador `scripts/m17b-verify-delivery.py` y descarga real desde la vista **Cierre** (seis ejes).
+- **Versiones**: aplicación `MOTOR-17B`, motor `0.17.1-MOTOR17B`, export `beM-match-export/9` sin cambio de esquema. Referencia `20261016` con P0: 83–98 y 6.684 sorteos, sin cambio.
+- **Perfiles**: P0 (gasto por minuto vivo 2) y P1 = P0 + C17-02 (3,5): **referencia provisional, no calibración ni aceptación manual**. Los perfiles de Dennis no se migran ni activan en silencio.
+- **Cifras reales y estado de cada comprobación** (comprobado por Claude · pendiente de Dennis · no ejecutado): [`tecnico/evidencia-motor17b/RESUMEN-OPERATIVO.md`](tecnico/evidencia-motor17b/RESUMEN-OPERATIVO.md) (generado desde los archivos finales).
+- **No cerrado por esta entrega**: calibración deportiva general, rendimiento masivo del manager (objetivo de cien en cinco segundos sin alcanzar y sin medir aquí), aceptación manual de Dennis y conformidad FIBA integral. **Siguiente**: análisis deportivo de ChatGPT sobre la evidencia, aceptación de Dennis y el trabajo posterior de resolución rápida del mundo (requisitos en `tecnico/motor17b.md` §6; no implementado).
 
 ## MOTOR-17 (ejecutado; campaña de cierre y paquetes entregados; propuesta numérica SIN aceptar; pendiente de Dennis)
 
