@@ -157,3 +157,9 @@ export function mixResolution(items, { L, q, tilt, cf }, rnd = (x) => x) {
 
 // Aceptación de una opción directa (ESP/CONT): (suelo + libertad) · lectura q · ajuste técnico, acotada a [0, 1] (MEN02/MEN03 vía q).
 export const acceptanceResolution = (profile, { L, q, adj }) => Math.min(1, Math.max(0, (profile.selection.direct.acceptanceFloor + L) * q * adj));
+
+// Probabilidad de cada opción de un sorteo ponderado (`MatchCore.pick`): solo w > 0, orden estable por clave, w / total. La usan el productor (que la registra) y el contraste de sensibilidad.
+export function pickProbabilities(items) {
+  const els = items.filter((i) => i.w > 0).sort((a, b) => (a.key < b.key ? -1 : a.key > b.key ? 1 : 0)); const total = els.reduce((s, i) => s + i.w, 0);
+  return Object.fromEntries(els.map((e) => [e.key, e.w / total]));
+}

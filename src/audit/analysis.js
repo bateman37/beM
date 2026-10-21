@@ -103,18 +103,19 @@ export function specialOutput(c, cap, newBase, effAfter, profile) {
   if (lab.startsWith('receta:presion.perdida')) {
     const losses = T.map((x) => pressureLossLogit(profile, ex.ambito, ex.presion, (x.jugador === c.player && x.cap === cap ? effAfter : x.efectiva)));
     const before = T.map((x) => pressureLossLogit(profile, ex.ambito, ex.presion, x.efectiva));
-    return row('pérdida por presión (logit; media de ejecutantes)', 'logit', mean(before), mean(losses), { ambito: ex.ambito, presion: ex.presion });
+    return row('pérdida por presión (logit; media de ejecutantes)', 'logit', mean(before), mean(losses), { ambito: ex.ambito, presion: ex.presion, funcion: 'pressureLossLogit (src/match/formulas.js)', salidaRegistrada: ex.perdidaLogit, diferenciaBase: Number(Math.abs(mean(before) - ex.perdidaLogit).toExponential(3)), tolerancia: 1e-4 });
   }
   if (lab === 'receta:momento.consistencia') {
     const s0 = consistencySigmaAt(profile, c.eff); const s1 = consistencySigmaAt(profile, effAfter); const steps = ex.pasos ?? [];
     const e0 = sum(steps.map((x) => x.e)); const e1 = s0 > 0 ? e0 * s1 / s0 : e0;
-    return row('amplitud de la variación del momento (σ)', 'σ del momento (−1…1)', s0, s1, { innovacionFija: steps.map((x) => x.U), variacionAcumuladaAntes: r4(e0), variacionAcumuladaDespues: r4(e1), nota: 'misma innovación sorteada: solo cambia la amplitud; el valor final depende además de la atenuación y de los límites' });
+    return row('amplitud de la variación del momento (σ)', 'σ del momento (−1…1)', s0, s1, { funcion: 'consistencySigmaAt (src/match/formulas.js)', salidaRegistrada: ex.amplitud, diferenciaBase: Number(Math.abs(s0 - ex.amplitud).toExponential(3)), tolerancia: 1e-5, innovacionFija: steps.map((x) => x.U), variacionAcumuladaAntes: r4(e0), variacionAcumuladaDespues: r4(e1), nota: 'misma innovación sorteada: solo cambia la amplitud; el valor final depende además de la atenuación y de los límites' });
   }
   if (lab === 'receta:gasto_resistencia') {
     const t = T.find((x) => x.jugador === c.player); if (!t) return null; const e = profile.energy;
     const f0 = enduranceFactorAt(profile, c.base); const f1 = enduranceFactorAt(profile, newBase); const mins = ex.intervaloDecimas / 600;
-    const g = (f) => Math.min(t.energia - e.range[0], e.costPerLiveMinute * mins * t.carga * f);
-    return row('gasto de energía del intervalo', 'puntos de energía (0–100)', g(f0), g(f1), { factorAntes: r4(f0), factorDespues: r4(f1), intervaloDecimas: ex.intervaloDecimas, carga: t.carga, nota: 'efecto sobre el desgaste del intervalo; el talento base no cambia' });
+    const cost = ex.costePorMinutoVivo ?? e.costPerLiveMinute; // el coste registrado por el productor (un lote puede venir de otro perfil de la misma campaña: P0 = 2, P1 = 3,5)
+    const g = (f) => Math.min(t.energia - e.range[0], cost * mins * t.carga * f);
+    return row('gasto de energía del intervalo', 'puntos de energía (0–100)', g(f0), g(f1), { funcion: 'enduranceFactorAt (src/match/formulas.js) y gasto de MatchCore.consume', salidaRegistrada: t.gasto ?? null, diferenciaBase: t.gasto == null ? null : Number(Math.abs(g(f0) - t.gasto).toExponential(3)), tolerancia: 1e-4, factorAntes: r4(f0), factorDespues: r4(f1), intervaloDecimas: ex.intervaloDecimas, carga: t.carga, nota: 'efecto sobre el desgaste del intervalo; el talento base no cambia' });
   }
   return null;
 }

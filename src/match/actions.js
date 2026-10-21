@@ -2,7 +2,7 @@
 // Una resolución agrupa preparación, lectura, elección y ejecución; el tiempo se descuenta una vez por hecho.
 import { flightSplit, lagConfiguredTenths, interferenceMasses, interferenceOutcome, resolveInterference } from './incidents.js';
 import { clamp, sigmoid, logit, round } from './mathx.js';
-import { shotLogit, vocationFactor, shotResolution, shotPrepCostLogit, blockResolution, reboundTeamResolution, looseControlP, qualityDistributionPure, qualityResolution, categoryResolution, mixResolution } from './formulas.js';
+import { shotLogit, vocationFactor, shotResolution, shotPrepCostLogit, blockResolution, reboundTeamResolution, looseControlP, qualityDistributionPure, qualityResolution, categoryResolution, mixResolution, pickProbabilities } from './formulas.js';
 import { SLOTS } from './data.js';
 import { MatchCore } from './core.js';
 import { fit } from './plays.js';
@@ -817,7 +817,7 @@ P.afterMiss = function afterMiss(ex, zone) {
   if (this.opts.detail === 'full') for (const id of cands) this.reboundRecipeNote('rebote.captura', offReb ? 'ataque' : 'defensa', id, rb.captor); // MOTOR-14 (TEC18): candidatos elegibles y peso de captura
   const capW = cands.map((id) => ({ key: id, w: this.recipeObj(rb.captor, id, rb.maxEnergyPenalty) }));
   const captor = this.pick(capW, 'rebote:captor').key;
-  if (this.opts.detail === 'full') this.note('salida:rebote', { entradas: { p0, K, fpDelta: rfp.delta, Z: rz.Z, alpha: rz.alpha, hasOffense: offP.length > 0, RA, RD, fuerza: { ataque: Object.fromEntries(offP.map((id) => [id, fuerza[id]])), defensa: Object.fromEntries(defP.map((id) => [id, fuerza[id]])) }, captura: { lado: offReb ? 'ataque' : 'defensa', pesos: Object.fromEntries(capW.map((x) => [x.key, x.w])) } },
+  if (this.opts.detail === 'full') this.note('salida:rebote', { entradas: { p0, K, fpDelta: rfp.delta, Z: rz.Z, alpha: rz.alpha, hasOffense: offP.length > 0, RA, RD, fuerza: { ataque: Object.fromEntries(offP.map((id) => [id, fuerza[id]])), defensa: Object.fromEntries(defP.map((id) => [id, fuerza[id]])) }, captura: { lado: offReb ? 'ataque' : 'defensa', pesos: Object.fromEntries(capW.map((x) => [x.key, x.w])), probabilidades: pickProbabilities(capW) } },
     refs: { fuerza: [...offP.map((id) => ({ label: 'receta:rebote.fuerza', jugador: id, lado: 'ataque' })), ...defP.map((id) => ({ label: 'receta:rebote.fuerza', jugador: id, lado: 'defensa' }))], captura: capW.map((x) => ({ label: 'receta:rebote.captura', jugador: x.key, lado: offReb ? 'ataque' : 'defensa' })) }, salida: { pBase: round(pRO0, 8), p: round(pRO, 8) } });
   this.cover(offReb ? 'rebote ofensivo' : 'rebote defensivo');
   this.emit('rebound', { t, team: offT, intent: { origen: ft ? 'último libre fallado' : `tiro fallado ${zone}` }, participants: { captor, candidatos: cands }, stats: [{ k: 'reb', p: captor, team, off: offReb, of: missEvent }], effects: { ofensivo: offReb, pRebOfensivo: round(pRO, 5), contactoAro: true, encargos: this.commitTrace(commit) } });

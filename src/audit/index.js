@@ -44,6 +44,7 @@ export function runAudit(specs, opts = {}) {
   const projs = proj.projs;
   // 3. agregaciones
   const exps = experimentCatalog(opts.profile ?? { audit: params, attributeOrder: CAPABILITY_IDS }, opts.players ?? null, { lite: true });
+  const sportFps = [...new Set(sources.map((s) => (s.kind === 'lote' ? s.lote?.profile?.profile_sport_fp : null)).filter(Boolean))]; base.profile_sport_fps = sportFps; base.profile_note = sportFps.length > 1 ? `las fuentes usan ${sportFps.length} perfiles deportivos distintos: las constantes del perfil se leen de la primera fuente salvo las que el productor registró (coste de gasto por minuto vivo); la base reconstruida se compara siempre con la salida conservada` : null;
   const identity = opts.identity ?? null; // MOTOR-17B §6: estudio y versión de código del lector; con el lote y el intento forman la identidad global (un mismo lote puede existir en CONTROL17 y en M17B)
   const diagProjs = projs.filter((p) => p.level === 'diagnostic'); const selected = selectContexts(diagProjs, params.contextsPerCapability); const sens = sensitivity(selected, prof, params.sensitivityIncrements);
   if (identity) for (const r of sens) { r.study = identity.study; r.code_version = identity.code_version; }

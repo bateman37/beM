@@ -18,7 +18,7 @@ import { projectAttempt } from '../src/audit/project.js';
 import { selectContexts, sensitivity, capabilityMatrix, CAPABILITY_IDS } from '../src/audit/analysis.js';
 import { EVALUATORS } from '../src/audit/evaluators.js';
 import { consumerOutput } from '../src/audit/consumers.js';
-import { shotResolution, categoryResolution, qualityResolution, mixResolution } from '../src/match/formulas.js';
+import { shotResolution, categoryResolution, qualityResolution, mixResolution, pickProbabilities } from '../src/match/formulas.js';
 
 const { profile, players } = data;
 const natural = (a, b, seed) => ({ schema: INPUT_SCHEMA, seed, importance: 'ordinary', teams: [referenceTeam(profile, players, a), referenceTeam(profile, players, b)] });
@@ -128,4 +128,26 @@ test('M17B·5 neutralidad: el deporte de referencia es el de MOTOR-17 (83–98, 
   assert.equal(none.m.rng.count, min.m.rng.count); assert.deepEqual(none.res.events.map(strip), min.res.events.map(strip)); assert.deepEqual(none.res.score, min.res.score);
   const a = referenceTeam(profile, players, 'EQ01'); const b = retargetTeam(referenceTeam(profile, players, 'EQ01'), 'EQ01B'); const { res } = play({ schema: INPUT_SCHEMA, seed: 5, importance: 'ordinary', teams: [a, b] }, 'minimal');
   const e = buildEssential(res, { keys: {}, validity: { valid: true, reasons: [], reconciliation_ok: true, analysis_ok: true, mode: 'full' }, fp: null, fpMode: 'none', sim: null }); assert.equal(new Set(e.acta.players.map((p) => p.id)).size, 24); assert.ok(e.acta.players.every((p) => p.team_index === 0 || p.team_index === 1));
+});
+
+test('M17B·4c pickProbabilities: la probabilidad que registra el productor es la del sorteo ponderado (solo w > 0, orden estable por clave)', () => {
+  const m = createMatch(natural('EQ01', 'EQ02', 3), profile, { detail: 'full' }); m.init();
+  const items = [{ key: 'B', w: 3 }, { key: 'A', w: 1 }, { key: 'C', w: 0 }, { key: 'D', w: 6 }]; m.calcBuf.length = 0; m.pick(items, 'prueba');
+  const note = m.calcBuf.find((c) => c.label === 'sorteo:prueba'); const p = pickProbabilities(items);
+  assert.deepEqual(Object.keys(p), ['A', 'B', 'D'], 'sin la opción de peso 0 y por clave'); assert.ok(Math.abs(Object.values(p).reduce((a, b) => a + b, 0) - 1) < 1e-12);
+  for (const o of note.opciones) assert.equal(o.p, Math.round(p[o.clave] * 1e4) / 1e4, `${o.clave}: lo registrado por el sorteo es la misma probabilidad`);
+});
+
+// ------------------------------------------------------------------------------------------------------------------------ 6 · contrato de cierre y descargas (B17-05)
+test('M17B·6 Cierre: las descargas vigentes son las de MOTOR-17B y no se fabrica ninguna; lo no generado se declara con su comando; el recibo de verificación va fuera de los ZIP y los nombres no permiten salir de la carpeta', async () => {
+  const { ClosureService } = await import('../src/batch/closure-api.js'); const { createHash } = await import('node:crypto'); const root = mkdtempSync(join(tmpdir(), 'bem-m17b-cierre-')); const m17 = mkdtempSync(join(tmpdir(), 'bem-m17-old-'));
+  const svc = new ClosureService({ root, m17, m16: join(root, 'x16'), m15b: join(root, 'x15b'), historic: join(root, 'x15'), summary: join(root, 'cierre.json') });
+  const names = (f) => f.map((x) => x.name);
+  const empty = svc.files(); assert.deepEqual(names(empty).slice(0, 3).sort(), ['MOTOR-17B-indice-partes.json', 'MOTOR-17B-revision-rapida.zip', 'MOTOR-17B-verificacion-final.json']); assert.ok(empty.every((f) => f.available === false && f.command && f.url === null), 'con la carpeta vacía nada está disponible: se dice qué comando lo genera');
+  writeFileSync(join(root, 'MOTOR-17B-revision-rapida.zip'), 'zip-falso'); writeFileSync(join(root, 'MOTOR-17B-indice-partes.json'), '{}'); writeFileSync(join(root, 'MOTOR-17B-evidencia-detallada-parte-01-de-02.zip'), 'p1'); writeFileSync(join(m17, 'MOTOR-17-revision-rapida.zip'), 'viejo');
+  const ready = svc.files(); const rapido = ready.find((f) => f.name === 'MOTOR-17B-revision-rapida.zip'); assert.equal(rapido.available, true); assert.equal(rapido.sha256, createHash('sha256').update('zip-falso').digest('hex')); assert.equal(rapido.url, '/api/closure/download/MOTOR-17B-revision-rapida.zip'); assert.equal(rapido.historic, false);
+  assert.equal(ready.find((f) => f.name === 'MOTOR-17B-verificacion-final.json').available, false, 'el recibo no existe hasta que el comprobador lo escribe');
+  const old = ready.find((f) => f.name === 'MOTOR-17-revision-rapida.zip'); assert.ok(old && old.historic === true, 'los paquetes de MOTOR-17 pasan a histórico');
+  const call = (path) => { let out = { code: null, body: '' }; svc.handle({ method: 'GET' }, { writeHead: (c) => { out.code = c; }, end: (b) => { out.body = b; }, on() {}, once() {}, emit() {} }, path); return new Promise((r) => setTimeout(() => r(out), 30)); };
+  assert.equal((await call('/api/closure/download/MOTOR-17B-verificacion-final.json')).code, 404); assert.equal((await call('/api/closure/download/..%2F..%2Fpackage.json')).code, 404); assert.equal((await call('/api/closure/download/otro-archivo.zip')).code, 404);
 });

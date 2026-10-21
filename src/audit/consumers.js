@@ -2,7 +2,7 @@
 // con ese cambio, vuelve a evaluar LA MISMA función pura que usa el productor (src/match/formulas.js) con las entradas registradas en el punto de consumo (`salida:*`, `calidad`, mezcla de la transición).
 // No hay segundo simulador: contexto, oposición, estados, opciones competidoras, parámetros e innovaciones sorteadas permanecen fijos; solo cambia la entrada que alimenta la capacidad.
 import { r4 } from './util.js';
-import { shotResolution, shotPrepCostLogit, blockResolution, reboundTeamResolution, looseControlP, qualityResolution, categoryResolution, mixResolution, abilityFit } from '../match/formulas.js';
+import { shotResolution, shotPrepCostLogit, blockResolution, reboundTeamResolution, looseControlP, qualityResolution, categoryResolution, mixResolution, abilityFit, pickProbabilities } from '../match/formulas.js';
 
 // Precisión declarada con la que la salida base reconstruida debe coincidir con la que conservó el productor. Los números de las entradas se conservan sin redondeo y las salidas a 8 decimales (±5e-9); la mezcla
 // de la transición solo conserva sus pesos a 4 decimales (±5e-5 por peso). No se amplía para ocultar una discrepancia: si se supera, la fila es `aproximada`.
@@ -42,9 +42,9 @@ export function consumerOutput(op, profile, { delta, player, valor }) {
       return { ...base, funcion: 'reboundTeamResolution (src/match/formulas.js)', salida: 'probabilidad de rebote ofensivo del equipo', salidaUnidad: PROB, antes: b.p, despues: a.p, registrada: n.salida.p, diferenciaBase: Math.abs(b.p - n.salida.p), tolerancia: TOLERANCE.rebote, detalle: { lado: side, participantes: Object.keys(f[side]).length } };
     }
     if (key === 'captura') {
-      const w = { ...e.captura.pesos }; if (w[player] == null) return null; const pick = (ww) => { const pos = Object.entries(ww).filter(([, v]) => v > 0); const tot = pos.reduce((s, [, v]) => s + v, 0); return Object.fromEntries(pos.map(([k, v]) => [k, v / tot])); };
-      const b = pick(w); w[player] += delta; const a = pick(w);
-      return { ...base, funcion: 'peso de captura normalizado de `pick` (src/match/actions.js · rebote:captor)', salida: 'probabilidad de que el jugador capture el rebote del equipo que lo gana', salidaUnidad: PROB, antes: b[player] ?? 0, despues: a[player] ?? 0, registrada: null, diferenciaBase: null, tolerancia: null,
+      const w = { ...e.captura.pesos }; if (w[player] == null) return null; const pick = (ww) => pickProbabilities(Object.entries(ww).map(([key, v]) => ({ key, w: v })));
+      const b = pick(w); w[player] += delta; const a = pick(w); const rec = e.captura.probabilidades?.[player] ?? null;
+      return { ...base, funcion: 'pickProbabilities (src/match/formulas.js; el sorteo `rebote:captor` de MatchCore.pick)', salida: 'probabilidad de que el jugador capture el rebote del equipo que lo gana', salidaUnidad: PROB, antes: b[player] ?? 0, despues: a[player] ?? 0, registrada: rec, diferenciaBase: rec == null ? null : Math.abs((pick(e.captura.pesos)[player] ?? 0) - rec), tolerancia: TOLERANCE.rebote,
         opciones: dist(b, a), detalle: { lado: e.captura.lado, nota: 'la probabilidad de captura condiciona a que el equipo gane el rebote; el sorteo del equipo es otra operación' } };
     }
     return null;
