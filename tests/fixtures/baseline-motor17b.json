@@ -1,0 +1,123 @@
+{
+ "20261016": {
+  "score": [
+   83,
+   98
+  ],
+  "periodScores": [
+   [
+    28,
+    24
+   ],
+   [
+    12,
+    25
+   ],
+   [
+    17,
+    28
+   ],
+   [
+    26,
+    21
+   ]
+  ],
+  "draws": 6684,
+  "sha256": "d7081105fda72a44782d74a09072efe039f821a8cc483acbab4cc881c52eeee2",
+  "trajectorySha256": "ea9a1ef5ba909d00d6217ca2196df7da235479ffded519786bbf2827f8f049d4",
+  "note": "Referencia de MOTOR-17B (motor beM-motor-0.17.1-MOTOR17B, perfil +SEM-MOTOR17B-20261021). El deporte NO cambia respecto a baseline-motor17.json (mismo marcador, parciales y sorteos; comprobado con la equivalencia de hechos sin `calc`, `params`, `instr` ni créditos de robo): cambia solo el CRÉDITO estadístico (recogida controlada sin interceptor previo y procedencia común, política ACTA-MOTOR17B-R1), por eso cambian la proyección con acta y la huella de trayectoria (que incluye las estadísticas). No se regenera para ocultar una diferencia sin causa.",
+  "previousMotor17": {
+   "file": "baseline-motor17.json",
+   "score": [
+    83,
+    98
+   ],
+   "periodScores": [
+    [
+     28,
+     24
+    ],
+    [
+     12,
+     25
+    ],
+    [
+     17,
+     28
+    ],
+    [
+     26,
+     21
+    ]
+   ],
+   "draws": 6684,
+   "sha256": "94b4d05dd40c34c409a71ef0c4a3cfafdbe29ec4ecceb431d5fa74547a1542c4",
+   "trajectorySha256": "576e440a6e441118b83cbfbdd3b28d5a4ff9d90081c2a24e6b4a6badec1b2e68"
+  },
+  "previousMotor15b": {
+   "file": "baseline-motor15b.json",
+   "score": [
+    83,
+    98
+   ],
+   "periodScores": [
+    [
+     28,
+     24
+    ],
+    [
+     12,
+     25
+    ],
+    [
+     17,
+     28
+    ],
+    [
+     26,
+     21
+    ]
+   ],
+   "draws": 6684,
+   "sha256": "f7de4cbbc5155bf5907b72f19c1df49e9b390167ee3d9cfb050ee0a8d321adf7",
+   "trajectorySha256": "c7a90892abbcb3e27dc654681db8278fde4a841209789499c0598835739c869d"
+  },
+  "previousMotor15": {
+   "file": "baseline-motor15.json",
+   "score": [
+    83,
+    98
+   ],
+   "periodScores": [
+    [
+     28,
+     24
+    ],
+    [
+     12,
+     25
+    ],
+    [
+     17,
+     28
+    ],
+    [
+     26,
+     21
+    ]
+   ],
+   "draws": 6684,
+   "sha256": "4b1a9286c1ad19544981cb02e0acf50af9aed42dbaa50db4a3ae36ac25f20ae7",
+   "trajectorySha256": "12919e2aea84cb5bf05e0a00860826a38d009b0fcc833d7f83097d474b223259"
+  },
+  "previous": {
+   "file": "baseline-motor14.json",
+   "score": [
+    83,
+    103
+   ],
+   "draws": 6505,
+   "trajectorySha256": "ed353769858813fe7ae3bedd271946c6f7c0aef7885ce00e2bbe27d0acc13bc5"
+  }
+ }
+}

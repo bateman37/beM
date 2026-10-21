@@ -1,8 +1,11 @@
 // Agregaciones de la auditoría sobre las proyecciones de intento (MOTOR-13): fiabilidad por mecanismo, concentración, matriz de 32 capacidades, sensibilidad de contexto fijo,
 // curva de energía. Todo lee hechos ya conservados; nada sortea, simula ni modifica un partido observado (§4.2).
 import { r4, sum, mean, clamp, fnv } from './util.js';
+const r6 = (x) => Math.round(x * 1e6) / 1e6;
 import { BIN_EDGES } from './project.js';
 import { effectiveAbility } from '../match/core.js';
+import { consumerOutput, consumerOf } from './consumers.js';
+import { mixResolution, acceptanceResolution } from '../match/formulas.js';
 import { enduranceFactorAt, readingQRaw, pressureLossLogit, consistencySigmaAt } from '../match/formulas.js';
 
 export const CAPABILITY_IDS = ['TEC01', 'TEC02', 'TEC03', 'TEC04', 'TEC05', 'TEC06', 'TEC07', 'TEC08', 'TEC09', 'TEC10', 'TEC11', 'TEC12', 'TEC13', 'TEC14', 'TEC15', 'TEC16', 'TEC17', 'TEC18', 'FIS01', 'FIS02', 'FIS03', 'FIS04', 'FIS05', 'FIS06', 'FIS07', 'MEN01', 'MEN02', 'MEN03', 'MEN04', 'MEN05', 'MEN06', 'MEN07'];
@@ -44,19 +47,6 @@ export function concentration(projs, params) {
   return out;
 }
 
-// Capacidades que el motor CONSUME en operaciones cuyas entradas no se registran como receta con base, efectiva y energía (lectura de código de MOTOR-13, con función y archivo). No son
-// «atributos muertos» (se consumen), pero su contraste B no es aislable con el contrato de registro actual: la dependencia exacta se declara aquí y en el inventario de MOTOR-14.
-export const UNRECORDED = {
-  TEC17: { mech: 'fuerza de rebote (profile.rebound.strength) vía reboundStrength → recipeObj sin etiqueta (actions.js)', dep: 'registrar la receta de fuerza de rebote o extraer una función pura con energía y alcance del contexto' },
-  TEC18: { mech: 'fuerza de rebote (strength) y captor (profile.rebound.captor) vía recipeObj/weightedSum sin etiqueta (actions.js)', dep: 'registrar las recetas de fuerza y de captor o extraer una función pura con energía y alcance del contexto' },
-  FIS05: { mech: 'fuerza de rebote y captor (rebote) y alcance (alcance) sin receta etiquetada', dep: 'ídem TEC17/TEC18; el registro `alcance` conserva el ajuste pero no las entradas' },
-  FIS06: { mech: 'factor de resistencia del gasto de energía (core.js · enduranceFactor): afecta al desgaste futuro, no a un valor del siguiente tiro', dep: 'contraste de gasto por intervalo con la operación pura de consumo (no existe extraída); EXP13-08 observa el efecto en partidos' },
-  MEN02: { mech: 'q de la selección (actions.js · libertyAndReading) y lectura defensiva: eff(decisor, MEN02) sin receta etiquetada', dep: 'registrar las entradas de q (MEN02, MEN03 y penalización de presión) o extraer libertyAndReading como función pura' },
-  MEN03: { mech: 'q de la selección (actions.js · libertyAndReading, con penalización de presión MEN07) y lectura defensiva', dep: 'ídem MEN02' },
-  MEN06: { mech: 'amplitud de la variación del momento (states.js · formulas.js consistencySigmaAt)', dep: 'protocolo neutral de MOTOR-07 (contexto fijo, estados neutrales); no se evalúa como «más valor → más puntos»' },
-  MEN07: { mech: 'pérdida por presión (states.js, formulas.js) y penalización de MEN03 en la elección', dep: 'registrar la pérdida por presión con sus entradas o extraer la fórmula pura; `estados:forma_presion` conserva el resultado' },
-};
-
 // ---------------------------------------------------------------------------------------------------------------- escaneo de las filas que declaran cada capacidad (§7.1)
 export function declaredUses(profile) {
   const out = Object.fromEntries(CAPABILITY_IDS.map((c) => [c, []])); const seen = new Set(CAPABILITY_IDS);
@@ -91,38 +81,57 @@ export function specialOutput(c, cap, newBase, effAfter, profile) {
     let n2 = e2.efectiva; let n3 = e3.efectiva;
     if (cap === 'MEN02') n2 = effAfter; else if (cap === 'MEN03') n3 = effAfter; // la brecha base−efectiva registrada ya incluye la penalización de presión (se mantiene fija)
     const qA = qOf(readingQRaw(profile, e2.efectiva, e3.efectiva)); const qD = qOf(readingQRaw(profile, n2, n3));
+    const ac = ex.accept?.entradas;
+    if (ac) { // MOTOR-17B: la lectura q también decide la aceptación de una opción directa: la misma función pura (`acceptanceResolution`) con las entradas crudas de esa aceptación
+      const a0 = acceptanceResolution(profile, { L: ac.L, q: qA, adj: ac.adj }); const a1 = acceptanceResolution(profile, { L: ac.L, q: qD, adj: ac.adj }); const regs = acceptanceResolution(profile, ac);
+      return row('probabilidad de aceptar la opción directa', 'probabilidad (0–1)', a0, a1, { lecturaQAntes: r4(qA), lecturaQDespues: r4(qD), funcion: 'acceptanceResolution (src/match/formulas.js)', diferenciaBase: Number(Math.abs(regs - ex.accept.salida.p).toExponential(3)), tolerancia: 2e-8, salidaRegistrada: ex.accept.salida.p, opciones: null,
+        nota: 'la presión de la decisión se mantiene fija; la lectura q es la entrada intermedia y la probabilidad de aceptación lo que consume el motor' });
+    }
+    const en = ex.mix?.entradas;
+    if (en) { // MOTOR-17B: la MISMA mezcla de intención del productor (`mixResolution`) con las entradas crudas de la elección; la salida es la distribución de opciones que consume el selector
+      const items = en.items.map((i) => ({ key: i.clave, coach: i.coach, pref: i.pref, adapt: i.adapt, risk: i.risk, mid: i.mid, cont: i.cont }));
+      const run = (q) => { const o = mixResolution(items, { L: en.L, q, tilt: en.tilt, cf: en.cf }); const t = o.reduce((a2, x) => a2 + x.w, 0); return o.map((x) => ({ clave: x.key, p: x.w / t })); };
+      const d0 = run(qA); const d1 = run(qD); const top = d0.reduce((a2, b2) => (b2.p > a2.p + 1e-12 ? b2 : a2)); const top1 = d1.reduce((a2, b2) => (b2.p > a2.p + 1e-12 ? b2 : a2));
+      const rec = ex.mix.opciones ?? []; const diff = rec.length ? Math.max(...rec.map((x, i) => Math.abs(items.length && mixResolution(items, { L: en.L, q: en.q, tilt: en.tilt, cf: en.cf })[i].w - x.mezcla))) : null;
+      return row(`probabilidad de la opción más probable de la selección (${top.clave})`, 'probabilidad (0–1)', top.p, d1.find((x) => x.clave === top.clave).p, { lecturaQAntes: r4(qA), lecturaQDespues: r4(qD), opciones: d0.map((x, i) => ({ clave: x.clave, antes: r4(x.p), despues: r4(d1[i].p) })), cambiaOpcionMasProbable: top.clave !== top1.clave, funcion: 'mixResolution (src/match/formulas.js)', diferenciaBase: diff == null ? null : Number(diff.toExponential(3)), tolerancia: 2e-4, salidaRegistrada: null,
+        nota: 'la presión de la decisión se mantiene fija; la lectura q es la entrada intermedia y la distribución de opciones lo que consume el selector' });
+    }
     const ch0 = mixChoice(ex.mix, qA); const ch1 = mixChoice(ex.mix, qD);
     const dP = ch0 && ch1 ? Math.max(...ch0.probs.map((o, i) => Math.abs(o.p - ch1.probs[i].p))) : null;
-    return row('lectura q de la selección (la presión se mantiene fija)', 'razón 0–1', qA, qD, { opcionesAntes: ch0?.top ?? null, opcionesDespues: ch1?.top ?? null, cambiaOpcionMasProbable: ch0 && ch1 ? ch0.top !== ch1.top : null, maxCambioProbabilidadOpcion: dP == null ? null : r4(dP), opciones: ch0?.probs.length ?? null, nota: ex.mix ? 'probabilidades de intención recompensadas con la mezcla registrada del mismo hecho' : 'sin la mezcla de opciones del hecho: solo q' });
+    return { ...row('lectura q de la selección (la presión se mantiene fija)', 'razón 0–1', qA, qD, { opcionesAntes: ch0?.top ?? null, opcionesDespues: ch1?.top ?? null, cambiaOpcionMasProbable: ch0 && ch1 ? ch0.top !== ch1.top : null, maxCambioProbabilidadOpcion: dP == null ? null : r4(dP), opciones: ch0?.probs.length ?? null, nota: 'evidencia anterior a MOTOR-17B: sin entradas crudas de la mezcla; solo la lectura q (intermedia)' }), noPertinente: true };
   }
   if (lab.startsWith('receta:presion.perdida')) {
     const losses = T.map((x) => pressureLossLogit(profile, ex.ambito, ex.presion, (x.jugador === c.player && x.cap === cap ? effAfter : x.efectiva)));
     const before = T.map((x) => pressureLossLogit(profile, ex.ambito, ex.presion, x.efectiva));
-    return row('pérdida por presión (logit; media de ejecutantes)', 'logit', mean(before), mean(losses), { ambito: ex.ambito, presion: ex.presion });
+    return row('pérdida por presión (logit; media de ejecutantes)', 'logit', mean(before), mean(losses), { ambito: ex.ambito, presion: ex.presion, funcion: 'pressureLossLogit (src/match/formulas.js)', salidaRegistrada: ex.perdidaLogit, diferenciaBase: Number(Math.abs(mean(before) - ex.perdidaLogit).toExponential(3)), tolerancia: 1e-4 });
   }
   if (lab === 'receta:momento.consistencia') {
     const s0 = consistencySigmaAt(profile, c.eff); const s1 = consistencySigmaAt(profile, effAfter); const steps = ex.pasos ?? [];
     const e0 = sum(steps.map((x) => x.e)); const e1 = s0 > 0 ? e0 * s1 / s0 : e0;
-    return row('amplitud de la variación del momento (σ)', 'σ del momento (−1…1)', s0, s1, { innovacionFija: steps.map((x) => x.U), variacionAcumuladaAntes: r4(e0), variacionAcumuladaDespues: r4(e1), nota: 'misma innovación sorteada: solo cambia la amplitud; el valor final depende además de la atenuación y de los límites' });
+    return row('amplitud de la variación del momento (σ)', 'σ del momento (−1…1)', s0, s1, { funcion: 'consistencySigmaAt (src/match/formulas.js)', salidaRegistrada: ex.amplitud, diferenciaBase: Number(Math.abs(s0 - ex.amplitud).toExponential(3)), tolerancia: 1e-5, innovacionFija: steps.map((x) => x.U), variacionAcumuladaAntes: r4(e0), variacionAcumuladaDespues: r4(e1), nota: 'misma innovación sorteada: solo cambia la amplitud; el valor final depende además de la atenuación y de los límites' });
   }
   if (lab === 'receta:gasto_resistencia') {
     const t = T.find((x) => x.jugador === c.player); if (!t) return null; const e = profile.energy;
     const f0 = enduranceFactorAt(profile, c.base); const f1 = enduranceFactorAt(profile, newBase); const mins = ex.intervaloDecimas / 600;
-    const g = (f) => Math.min(t.energia - e.range[0], e.costPerLiveMinute * mins * t.carga * f);
-    return row('gasto de energía del intervalo', 'puntos de energía (0–100)', g(f0), g(f1), { factorAntes: r4(f0), factorDespues: r4(f1), intervaloDecimas: ex.intervaloDecimas, carga: t.carga, nota: 'efecto sobre el desgaste del intervalo; el talento base no cambia' });
+    const cost = ex.costePorMinutoVivo ?? e.costPerLiveMinute; // el coste registrado por el productor (un lote puede venir de otro perfil de la misma campaña: P0 = 2, P1 = 3,5)
+    const g = (f) => Math.min(t.energia - e.range[0], cost * mins * t.carga * f);
+    return row('gasto de energía del intervalo', 'puntos de energía (0–100)', g(f0), g(f1), { funcion: 'enduranceFactorAt (src/match/formulas.js) y gasto de MatchCore.consume', salidaRegistrada: t.gasto ?? null, diferenciaBase: t.gasto == null ? null : Number(Math.abs(g(f0) - t.gasto).toExponential(3)), tolerancia: 1e-4, factorAntes: r4(f0), factorDespues: r4(f1), intervaloDecimas: ex.intervaloDecimas, carga: t.carga, nota: 'efecto sobre el desgaste del intervalo; el talento base no cambia' });
   }
   return null;
 }
 
 // ---------------------------------------------------------------------------------------------------------------- sensibilidad de contexto fijo (§7.3 B, §7.4)
+const isIntermediate = (st) => st.startsWith('INTERMEDIO|') || st === 'LIMITE_INTERMEDIO';
 export function selectContexts(projs, perCap) {
   const sel = {};
   for (const cap of CAPABILITY_IDS) {
     const strata = {}; for (const p of projs) for (const [st, list] of Object.entries(p.recipes.contexts[cap] ?? {})) (strata[st] ??= []).push(...list);
     for (const l of Object.values(strata)) l.sort((a, b) => a.h - b.h || (a.gdec < b.gdec ? -1 : 1));
-    const names = Object.keys(strata).filter((s) => s !== 'LIMITE').sort(); const picked = []; const seen = new Set();
-    const take = (item) => { const k = `${item.gdec}|${item.player}|${item.rol}`; if (seen.has(k)) return false; seen.add(k); picked.push(item); return true; };
-    const lim = (strata.LIMITE ?? []).slice(0, 2); for (const it of lim) take({ ...it, stratum: `LIMITE (${it.stratum})`, limite: true });
+    // MOTOR-17B: se prefieren los contextos con operación real enlazada (salida pertinente). Solo si una capacidad no tiene ninguno se recurre al contexto intermedio de reserva, marcado `sinSalida`.
+    const withOut = Object.keys(strata).some((k) => !isIntermediate(k));
+    const names = Object.keys(strata).filter((k) => (withOut ? !isIntermediate(k) : isIntermediate(k)) && k !== 'LIMITE' && k !== 'LIMITE_INTERMEDIO').sort(); const picked = []; const seen = new Set();
+    const take = (item, extra = {}) => { const k = `${item.gdec}|${item.player}|${item.rol}`; if (seen.has(k)) return false; seen.add(k); picked.push({ ...item, ...extra, sinSalida: !withOut }); return true; };
+    const limList = (withOut ? strata.LIMITE : strata.LIMITE_INTERMEDIO) ?? []; for (const it of limList.slice(0, 2)) take(it, { stratum: `LIMITE (${it.stratum})`, limite: true });
     for (let i = 0; picked.length < perCap; i++) { let any = false; for (const s of names) { const it = strata[s][i]; if (it) { any = true; if (picked.length < perCap) take(it); } } if (!any) break; }
     sel[cap] = picked;
   }
@@ -144,12 +153,26 @@ export function sensitivity(contexts, profile, increments) {
     else { effBefore = c.eff; effAfter = clamp(newBase - (c.base - c.eff), lo, hi); method = 'APROXIMADA: brecha base−efectiva registrada (tope de tarea no registrado)'; }
     const W = sum(c.terminos.map((x) => x.peso)); const mine = (x) => x.cap === cap && x.jugador === c.player && x.rol === c.rol;
     let num0 = 0; let num = 0; for (const x of c.terminos) { num0 += x.peso * (mine(x) ? effBefore : x.efectiva); num += x.peso * (mine(x) ? effAfter : x.efectiva); }
-    const before = num0 / W; const after = num / W; const special = specialOutput(c, cap, newBase, effAfter, profile);
-    const salida = special?.salidaUnidad ?? null;
-    rows.push({ ...(special ?? {}), cap, stratum: c.stratum, gdec: c.gdec, decision_id: c.decision_id, event_id: c.event_id, label: c.label, player: c.player, role: c.rol, base: c.base, incrementoSolicitado: inc, incrementoEfectivo: effectiveInc, energia: c.energia, efectivaAntes: c.eff, efectivaDespues: r4(effAfter), valorAntes: c.valor, valorAntesReconstruido: r4(before), valorDespues: r4(after), delta: r4(after - before),
-      // `delta` es SIEMPRE el cambio del valor de receta (entrada de la operación final). La magnitud consumida, cuando se calcula, va en `salida*` con su propia unidad.
-      magnitud: special ? 'salida de la operación pura (ver salida*) y valor de receta (delta)' : 'valor de receta (entrada de la operación final; la salida consumida no se calcula para esta capacidad)', unidad: salida ? `${salida} · receta: puntos (escala 1–30)` : 'puntos de receta (escala 1–30): entrada de la operación final; NO es probabilidad ni puntos del partido',
-      exactitud: exact ? 'exacta' : 'aproximada', topeRegistrado: !!c.topeRegistrado,
+    const before = num0 / W; const after = num / W; const special = specialOutput(c, cap, newBase, effAfter, profile); const delta = after - before;
+    // MOTOR-17B: la salida pertinente sale de la operación real enlazada (misma función pura que el productor). Las salidas derivadas de MOTOR-14 que ya eran la magnitud consumida (selección, pérdida por presión,
+    // consistencia y gasto de energía) siguen siéndolo; las recetas de rebote y la lectura defensiva son valores INTERMEDIOS y no sustituyen la salida de la operación.
+    let fin = null; for (const op of c.ops ?? []) { fin = consumerOutput(op, profile, { delta, player: c.player, valor: c.valor }); if (fin) break; }
+    const specialPert = special && !special.noPertinente && /^receta:(seleccion\.lectura|presion\.perdida|momento\.consistencia|gasto_resistencia)/.test(c.label);
+    let salidaCols = {}; let pertinente = false; let consumidor = null; let funcion = null; let cobertura = 'intermedio';
+    if (fin) {
+      pertinente = true; consumidor = fin.consumidor; funcion = fin.funcion; cobertura = 'reconstruido';
+      const toler = fin.tolerancia; const baseOk = fin.diferenciaBase == null ? null : fin.diferenciaBase <= toler;
+      salidaCols = { salida: fin.salida, salidaUnidad: fin.salidaUnidad, salidaAntes: r6(fin.antes), salidaDespues: r6(fin.despues), salidaDelta: r6(fin.despues - fin.antes), salidaRegistrada: fin.registrada == null ? null : r6(fin.registrada), diferenciaBase: fin.diferenciaBase == null ? null : Number(fin.diferenciaBase.toExponential(3)), tolerancia: toler, baseCoincide: baseOk, opciones: fin.opciones ?? null, detalleSalida: fin.detalle ?? null,
+        ...(special ? { intermedioMOTOR14: { salida: special.salida, antes: special.salidaAntes, despues: special.salidaDespues, unidad: special.salidaUnidad } } : {}) };
+    } else if (specialPert) { pertinente = true; consumidor = special.funcion?.startsWith('acceptance') ? 'aceptacion' : /seleccion/.test(c.label) ? 'seleccion' : /presion/.test(c.label) ? 'presion' : /consistencia/.test(c.label) ? 'consistencia' : 'gasto'; funcion = special.funcion ?? 'operación pura de MOTOR-14 (src/match/formulas.js · src/audit/analysis.js)'; cobertura = 'reconstruido'; salidaCols = { ...special, baseCoincide: special.diferenciaBase == null ? null : special.diferenciaBase <= (special.tolerancia ?? 0) }; }
+    else if (special) { salidaCols = { intermedioMOTOR14: { salida: special.salida, antes: special.salidaAntes, despues: special.salidaDespues, unidad: special.salidaUnidad } }; }
+    const exactaSalida = pertinente && exact && (fin ? fin.diferenciaBase == null || fin.diferenciaBase <= fin.tolerancia : true);
+    const unitCtx = pertinente ? `${salidaCols.salidaUnidad ?? special?.salidaUnidad} · receta intermedia: puntos (escala 1–30)` : 'puntos de receta (escala 1–30): ENTRADA INTERMEDIA de la operación; la salida pertinente no está registrada para este contexto: NO es probabilidad ni puntos del partido';
+    rows.push({ cap, stratum: c.stratum, gdec: c.gdec, decision_id: c.decision_id, event_id: c.event_id, label: c.label, player: c.player, role: c.rol, base: c.base, incrementoSolicitado: inc, incrementoEfectivo: effectiveInc, energia: c.energia, efectivaAntes: c.eff, efectivaDespues: r4(effAfter), valorAntes: c.valor, valorAntesReconstruido: r4(before), valorDespues: r4(after), delta: r4(delta),
+      // `delta` es SIEMPRE el cambio del valor de receta (entrada intermedia). La magnitud consumida va en `salida*` con su propia unidad (sección 5 del encargo MOTOR-17B).
+      pertinente, consumidor, funcion, cobertura, ...salidaCols,
+      magnitud: pertinente ? 'salida de la operación real (ver salida*) y valor de receta intermedio (delta)' : 'valor de receta intermedio: la salida pertinente no se pudo calcular para este contexto', unidad: unitCtx,
+      exactitud: exactaSalida || (!pertinente && exact) ? 'exacta' : 'aproximada', exactitudSalida: !pertinente ? 'sin salida pertinente' : exactaSalida ? 'exacta (entradas registradas + función de producción)' : 'aproximada', topeRegistrado: !!c.topeRegistrado, sinSalida: !!c.sinSalida,
       saturacion: effectiveInc < inc ? (effectiveInc === 0 ? 'base en el máximo: incremento efectivo 0' : 'recortada al máximo') : (effAfter >= hi ? 'efectiva en el máximo' : ''), limite: !!c.limite, metodo: method });
   }
   return rows;
@@ -165,9 +188,13 @@ export function capabilityMatrix(projs, profile, sens, experiments) {
     const sat = sum(projs.map((p) => p.recipes.byCap[cap]?.saturated ?? 0)); const s = sens.filter((r) => r.cap === cap);
     const sensBy = (inc, ex = 'exacta') => { const xs = s.filter((r) => r.incrementoSolicitado === inc && !r.limite && r.incrementoEfectivo > 0 && (r.exactitud ?? 'aproximada') === ex); return xs.length ? { n: xs.length, mediaDelta: r4(mean(xs.map((r) => r.delta))), minDelta: r4(Math.min(...xs.map((r) => r.delta))), maxDelta: r4(Math.max(...xs.map((r) => r.delta))) } : null; };
     const decl = declared[cap]; const strata = Object.keys(obs);
-    const estado = totalUses > 0 ? (s.length ? 'declarado, observado, aplicado y contrastado (cálculo fijo)' : 'declarado, observado y aplicado; sin contraste') : (UNRECORDED[cap] ? `consumida en operaciones sin receta registrada con entradas (${UNRECORDED[cap].mech}); contraste B no aislable: ${UNRECORDED[cap].dep}` : qUses > 0 ? 'declarado y observado solo en calidad de ataque (sin base/energía registradas: contraste no aislable)' : (decl.length ? 'declarado y NO expuesto en esta evidencia (no es un atributo muerto)' : 'sin declaración localizada'));
-    if (!strata.length) rows.push({ cap, nombre: dict[cap] ?? cap, stratum: '—', declaradoEn: decl.map((d) => d.path).slice(0, 8), declaradoN: decl.length, usos: 0, usosCalidadAtaque: qUses, matches: 0, actores: 0, mediaBase: null, mediaEfectiva: null, mediaPeso: null, saturadas: sat, contrasteCalculo: null, contrastePartidos: expCaps[cap] ?? [], estado });
-    else for (const st of strata.sort()) { const o = obs[st]; rows.push({ cap, nombre: dict[cap] ?? cap, stratum: st, declaradoEn: decl.map((d) => d.path).slice(0, 8), declaradoN: decl.length, usos: o.uses, usosCalidadAtaque: qUses, matches: o.matches.size, actores: players.size, mediaBase: r4(o.sumBase / o.uses), mediaEfectiva: r4(o.sumEff / o.uses), mediaPeso: r4(o.sumShare / o.uses), saturadas: sat, contrasteCalculo: { '+1': sensBy(1), '+3': sensBy(3), '+5': sensBy(5), contextos: s.filter((r) => r.stratum === st && r.incrementoSolicitado === 1).length, contextosExactos: s.filter((r) => r.stratum === st && r.incrementoSolicitado === 1 && r.exactitud === 'exacta').length }, contrasteAproximado: { '+1': sensBy(1, 'aproximada'), '+3': sensBy(3, 'aproximada'), '+5': sensBy(5, 'aproximada') }, contrastePartidos: expCaps[cap] ?? [], estado }); }
+    // MOTOR-17B: cobertura de la salida PERTINENTE de la capacidad (la que consume la operación real), separada del contraste solo hasta la receta intermedia.
+    const sp = s.filter((r) => r.pertinente); const ctxOut = new Set(sp.map((r) => `${r.gdec}|${r.player}|${r.role}`)); const ctxAll = new Set(s.map((r) => `${r.gdec}|${r.player}|${r.role}`));
+    const salida = { salidaPertinente: sp.length > 0, salidaContextos: ctxOut.size, salidaFilas: sp.length, salidaExactas: sp.filter((r) => r.exactitudSalida?.startsWith('exacta')).length, salidaConsumidores: [...new Set(sp.map((r) => r.consumidor))].join(' | '), contextosSoloIntermedios: [...ctxAll].filter((k) => !ctxOut.has(k)).length,
+      salidaMotivoPendiente: sp.length ? null : totalUses === 0 ? 'sin exposición en recetas registradas' : s.length ? 'el contraste termina en la receta intermedia: ningún contexto con la operación consumidora enlazada (entrada no registrada o consumidor no expuesto)' : 'sin contexto seleccionado' };
+    const estado = totalUses > 0 ? (sp.length ? 'declarado, observado, aplicado y contrastado hasta la salida pertinente (cálculo fijo)' : s.length ? 'declarado, observado y contrastado solo hasta la receta intermedia; salida pertinente pendiente' : 'declarado, observado y aplicado; sin contraste') : (qUses > 0 ? 'declarado y observado solo en calidad de ataque (sin base/energía registradas: contraste no aislable)' : (decl.length ? 'declarado y NO expuesto en esta evidencia (no es un atributo muerto)' : 'sin declaración localizada'));
+    if (!strata.length) rows.push({ cap, nombre: dict[cap] ?? cap, stratum: '—', declaradoEn: decl.map((d) => d.path).slice(0, 8), declaradoN: decl.length, usos: 0, usosCalidadAtaque: qUses, matches: 0, actores: 0, mediaBase: null, mediaEfectiva: null, mediaPeso: null, saturadas: sat, contrasteCalculo: null, contrastePartidos: expCaps[cap] ?? [], ...salida, estado });
+    else for (const st of strata.sort()) { const o = obs[st]; rows.push({ cap, nombre: dict[cap] ?? cap, stratum: st, declaradoEn: decl.map((d) => d.path).slice(0, 8), declaradoN: decl.length, usos: o.uses, usosCalidadAtaque: qUses, matches: o.matches.size, actores: players.size, mediaBase: r4(o.sumBase / o.uses), mediaEfectiva: r4(o.sumEff / o.uses), mediaPeso: r4(o.sumShare / o.uses), saturadas: sat, contrasteCalculo: { '+1': sensBy(1), '+3': sensBy(3), '+5': sensBy(5), contextos: s.filter((r) => r.stratum === st && r.incrementoSolicitado === 1).length, contextosExactos: s.filter((r) => r.stratum === st && r.incrementoSolicitado === 1 && r.exactitud === 'exacta').length }, contrasteAproximado: { '+1': sensBy(1, 'aproximada'), '+3': sensBy(3, 'aproximada'), '+5': sensBy(5, 'aproximada') }, contrastePartidos: expCaps[cap] ?? [], ...salida, estado }); }
   }
   return rows;
 }

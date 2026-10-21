@@ -2,6 +2,15 @@
 
 Registro breve de entregas. Una entrada por entrega; las más recientes primero.
 
+## MOTOR-17B — Cierre técnico y auditoría acotada — 2026-10-21
+
+- **Organización efectiva (B17-01):** `defense_org` del registro esencial es el código de la organización vigente antes de cada hecho (plan, orden aplicada, alternativa), leído con el mismo `orgAt` del análisis; la intención de intervención va en `defense_intervention`; `ESE-MOTOR17B-R1` y semántica explícita; un esencial anterior se declara histórico.
+- **Sensibilidad (B17-02):** las 32 capacidades llegan a la salida pertinente de su operación real; las operaciones se extraen a funciones puras de `formulas.js` que usan a la vez el productor y el auditor; base reconstruida frente a la conservada con tolerancia declarada; hasta ocho contextos reales por capacidad (≤ 768 filas).
+- **AUD05 (B17-03):** estado y motivos derivados de la evidencia (exposición, registro y contraste separados), una única ejecución como origen de resumen, CSV, informe e interfaz.
+- **Robos (B17-04):** la recogida controlada sin interceptor previo se acredita al recuperador y la rama de robo directo comparte procedencia (`EST/ACTA-MOTOR17B-R1`, `SEM-MOTOR17B-20261021`); solo estadístico, deporte idéntico a CONTROL17 salvo créditos y derivados.
+- **Evidencia (B17-05):** campaña `MOTOR17B-CIERRE-20261021` (30 casos lógicos, 72 ejecuciones planificadas: CONTROL17 `01c8ade` frente a M17B), paquete rápido, índice, evidencia detallada y recibo de verificación fuera de los ZIP, comprobador `m17b-verify-delivery.py`, descarga real desde Cierre y comprobación documental en copia limpia.
+- Motor `0.17.1-MOTOR17B`, export `beM-match-export/9` sin cambio de esquema; referencia 83–98 / 6.684 sorteos sin cambio con P0. Calibración general, rendimiento masivo, aceptación manual y FIBA integral **siguen pendientes**. **Pendiente de Dennis.** Ver [`docs/tecnico/motor17b.md`](docs/tecnico/motor17b.md).
+
 ## MOTOR-17 — Ajustes, rendimiento y auditoría de cierre — 2026-10-18
 
 - **Crédito y registro:** criterio único de robo por pérdida viva recuperada con control en las rutas organizada, avance, saque y balón suelto (solo estadístico; `EST/ACTA-MOTOR17-R1`); cierre de registro de las cadenas de saque (9 → 0 abiertas); identidad global en la auditoría (`matches`, contextos), `team_index` explícito, `tope` registrado en cada término de receta (sensibilidad exacta), `resumen.json` de auditoría.

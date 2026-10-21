@@ -12,7 +12,7 @@ export const SLOTS = ['PG', 'SG', 'SF', 'PF', 'C'];
 export const ZONES = ['rim', 'inside', 'midrange', 'three'];
 // MOTOR-15: el motor deportivo cambia de identidad porque cambian sorteos y finales (liberación/resolución del tiro, interferencia condicionada, administración de incidencias y correcciones). Antes era 0.9.0-MOTOR09 desde MOTOR-09.
 // MOTOR-15B: cambio normativo acotado (RG-I03 administra la técnica de categoría 2 del último libre; numeración del art. 45). Anterior: beM-motor-0.15.0-MOTOR15. Ningún coeficiente cambia.
-export const ENGINE_VERSION = 'beM-motor-0.17.0-MOTOR17';
+export const ENGINE_VERSION = 'beM-motor-0.17.1-MOTOR17B';
 export const INPUT_SCHEMA = 'beM-match-input/6';
 export const EXPORT_SCHEMA = 'beM-match-export/9';
 export const EXPORT_SCHEMA_MOTOR14 = 'beM-match-export/8';

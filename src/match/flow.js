@@ -4,7 +4,7 @@ import { clamp, sigmoid, logit, round } from './mathx.js';
 import { SLOTS, ZONES } from './data.js';
 import { MatchCore } from './core.js';
 import { fit } from './plays.js';
-import { vocationFactor } from './formulas.js';
+import { vocationFactor, acceptanceResolution } from './formulas.js';
 import { toTenths, periodLengthTenths, isOvertime, foulPeriodKey } from './rules.js';
 
 const P = MatchCore.prototype;
@@ -162,10 +162,9 @@ P.urgencyFactor = function urgencyFactor() {
 
 P.acceptance = function acceptance(team, decider, techValue) {
   const { L, q } = this.libertyAndReading(team, decider);
-  const f = this.profile.selection.direct.acceptanceFloor;
   const adj = fit(this.profile, techValue);
-  const p = clamp((f + L) * q * adj, 0, 1);
-  this.note('aceptación', { L: round(L, 4), q: round(q, 4), ajusteTecnico: round(adj, 4), p: round(p, 4) });
+  const p = acceptanceResolution(this.profile, { L, q, adj }); // MOTOR-17B: función pura compartida con el contraste (MEN02/MEN03 en la aceptación)
+  this.note('aceptación', { L: round(L, 4), q: round(q, 4), ajusteTecnico: round(adj, 4), p: round(p, 4), ...(this.opts.detail === 'full' ? { entradas: { L, q, adj }, salida: { p: round(p, 8) } } : {}) });
   return p;
 };
 

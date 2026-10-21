@@ -121,7 +121,7 @@
   {
    "id": "Q11",
    "query": "Tiro: preparación/oposición en categorías (calidad, defensor, cobertura, organización efectiva)",
-   "data": "shots.quality / defender / coverage / defense_org",
+   "data": "shots.quality / defender / coverage / defense_org (código de la organización EFECTIVA; ESE-MOTOR17B-R1) / defense_org_intended / defense_org_alternate / defense_org_objective / defense_org_plan_version / defense_org_source; la intención de intervención va aparte en defense_intervention",
    "availability": {
     "diagnostic": "sí",
     "reduced": "sí",
@@ -142,8 +142,8 @@
   },
   {
    "id": "Q13",
-   "query": "Táctica observada: familias ejecutadas, cobertura y organización efectivas por posesión",
-   "data": "tactics",
+   "query": "Táctica observada: familias ejecutadas, cobertura y organización efectivas por posesión (organizaciones distintas y posesión mixta declaradas; la intención de intervención en `intervention`)",
+   "data": "tactics (org / orgs / org_mixed / org_intended / org_source / intervention)",
    "availability": {
     "diagnostic": "sí",
     "reduced": "sí",

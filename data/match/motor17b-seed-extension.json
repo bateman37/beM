@@ -1,0 +1,25 @@
+{
+ "seedExtensionId": "SEM-MOTOR17B-20261021",
+ "status": "SEM: provisional, no calibrado. Solo CRÉDITO estadístico y su procedencia (criterio compartido de robo; se completa el caso de recogida controlada tras un error ofensivo SIN interceptor previo, FIBA Statisticians' Manual 2024 §7); ningún coeficiente deportivo cambia. Las candidatas numéricas C17-01/C17-02 siguen fuera del perfil efectivo (data/match/motor17-candidates.json): su activación es siempre una acción explícita de Dennis.",
+ "basedOn": "SEM-MOTOR01-20261016",
+ "origin": "Encargo MOTOR-17B §7 (B17-04): criterio verificado por ChatGPT sobre FIBA Statisticians' Manual 2024 v1.0, cap. 7, p. PDF 24 (síntesis; Claude sin lectura directa del documento).",
+ "additions": {
+  "regulation.sources.13": {
+   "id": "M17B-01",
+   "title": "Encargo MOTOR-17B §7 (síntesis de FIBA Statisticians' Manual 2024 v1.0, cap. 7, p. PDF 24)",
+   "url": "docs/prompts/MOTOR-17B-cierre-y-auditoria-acotada.md",
+   "use": "Criterio de crédito de robo: recogida tras error ofensivo sin intento previo, primer desviador, balón fuera, retención y procedencia común.",
+   "access": "Verificado por ChatGPT para el encargo MOTOR-17B (https://assets.fiba.basketball/image/upload/documents-corporate-fiba-statisticians-manual-2024.pdf). Claude: no hay lectura directa del documento."
+  }
+ },
+ "replacements": {
+  "statsPolicy.id": "EST-MOTOR17B-R1",
+  "statsPolicy.families.2.reading": "convención beM; MOTOR-17B completa el criterio de robo del Statisticians' Manual 2024 cap. 7 (síntesis verificada por ChatGPT; sin lectura directa de Claude)",
+  "statsPolicy.families.2.rule": "La pérdida se atribuye al sujeto responsable resuelto (pasador, manejador, infractor o equipo). El robo se acredita con UN criterio y UNA procedencia compartidos por todas las rutas (interacción organizada, avance presionado, saque forzado, control directo del interceptor y balón suelto): con balón VIVO que la defensa recupera con control individual identificado, al defensor que inició el desvío si hubo intento de intervención con interceptor resuelto (contacto «intento de intervención»), o al recuperador que ya produce el desenlace si el error ofensivo no tuvo desviador anterior —también sin interceptor ni intento previo— (contacto «recogida controlada»). Un intento voluntario por sí solo no prueba un toque causal y no se añade ningún sorteo de contacto. Todo robo comparte hecho con una pérdida individual rival, tiene autor, equipo y procedencia legibles y no se duplica. Balón fuera, violación, falta ofensiva o recuperación sin recuperador individual identificado no acreditan robo: no se fabrica un autor. El crédito es solo estadístico: no cambia la transición, el origen de la posesión siguiente ni el estado del partido."
+ },
+ "replacementNotes": {
+  "statsPolicy.id": "MOTOR-17B: política de crédito con versión propia; los partidos anteriores no se reinterpretan",
+  "statsPolicy.families.2.reading": "MOTOR-17B §7",
+  "statsPolicy.families.2.rule": "MOTOR-17B §7: recogida controlada sin interceptor previo y procedencia común; sin cambiar ninguna probabilidad ni transición"
+ }
+}

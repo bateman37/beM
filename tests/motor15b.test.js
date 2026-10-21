@@ -223,8 +223,8 @@ test('B6 robo: un único crédito por hecho con pérdida individual rival; baló
 
 test('B6 robo: el crédito de balón suelto es solo estadístico: el deporte de la referencia (marcador, parciales, sorteos) es el de MOTOR-15 y la política de acta lleva su propia versión', () => {
   const m15 = JSON.parse(readFileSync(new URL('./fixtures/baseline-motor15.json', import.meta.url), 'utf8'))['20261016'];
-  assert.equal(profile.statsPolicy.id, 'EST-MOTOR17-R1'); // MOTOR-17 amplía el criterio (la política de MOTOR-15B pasa a histórica)
-  const res = run(20261016, profile); assert.equal(res.acta.policy, 'ACTA-MOTOR17-R1');
+  assert.equal(profile.statsPolicy.id, 'EST-MOTOR17B-R1'); // MOTOR-17B completa el criterio de MOTOR-17 (las anteriores pasan a históricas)
+  const res = run(20261016, profile); assert.equal(res.acta.policy, 'ACTA-MOTOR17B-R1');
   assert.deepEqual([res.score, res.periodScores.map((p) => p.points), res.diagnostics.sportingDraws], [m15.score, m15.periodScores, m15.draws], 'mismo deporte que MOTOR-15; solo cambia el crédito (y con él la huella)');
   assert.ok(res.events.some((e) => e.type === 'loose_ball' && e.stats.some((s) => s.k === 'stl')), 'la referencia contiene al menos un robo por balón suelto ganado');
 });
