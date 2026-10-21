@@ -66,7 +66,7 @@ test('R17B-SENS-01: la proyección enlaza las recetas hermanas del mismo jugador
   const dec = Buffer.from(rec('receta:TAR03.attack', 12) + rec('receta:TAR11.attack', 12) + L({ record_type: 'calculo', kind: 'salida', label: 'salida:tiro', event_id: ev, decision_id: 'D-s', data: note }));
   const src = { stream: (a, n) => (n === 'decisiones' ? dec : null), table: () => null };
   const P = projectAttempt(src, { match_id: 'M1', attempt_id: 'M1-A1', level: 'diagnostic', valid: true, facts: {} }, profile, { sourceId: 'S' });
-  assert.equal(PROJECTION_VERSION, 'PRJ-MOTOR18-R1');
+  assert.equal(PROJECTION_VERSION, 'PRJ-MOTOR18-R2');
   const all = Object.values(P.recipes.contexts.FIS07).flat(); assert.ok(all.length >= 2);
   const withDeps = all.filter((c) => c.ops?.some((o) => o.deps?.length === 1));
   assert.equal(withDeps.length, all.length); // cada contexto retiene la receta hermana
@@ -96,4 +96,53 @@ test('AUD11: el evaluador cuenta todas las discrepancias y una discrepancia real
   const bad = run(proj({ alternativa_acreditada: 4, sin_explicacion: 1 }, 5)); assert.equal(bad.resultado, 'señal'); assert.equal(bad.metrics.desajustes, 5); assert.equal(bad.findings.length, 1);
   assert.equal(run(proj({ no_clasificable: 2 }, 2)).resultado, 'señal');
   assert.equal(run(proj({}, 3)).resultado, 'señal'); // proyección anterior sin clasificar: no se pierde la señal
+});
+
+// ---------------------------------------------------------------------------------------------------------------- §13.2 sensibilidad de conocimiento (lectura separada)
+import { createMatch, buildResult } from '../src/match/index.js';
+import { INPUT_SCHEMA } from '../src/match/data.js';
+import { referenceTeam } from '../src/population/index.js';
+import * as KN from '../src/knowledge/model.js';
+import { makeCtx, eventStreams } from '../src/batch/records.js';
+import { selectKnowledgeContexts, knowledgeSensitivity, knowledgeControls } from '../src/audit/knowledge.js';
+import { qualityResolution } from '../src/match/formulas.js';
+
+const { players } = data;
+// Evidencia diagnóstica pequeña con conocimiento explícito: todo dominado salvo la defensa de EQ02 (organizaciones, coberturas y presión a 8).
+function knowledgeEvidence() {
+  const input = { schema: INPUT_SCHEMA, seed: 383000001, importance: 'ordinary', teams: [referenceTeam(profile, players, 'EQ01'), referenceTeam(profile, players, 'EQ02')] };
+  for (const t of input.teams) for (const p of t.players) p.knowledge = KN.allMastered(profile.familiarity, 0);
+  for (const p of input.teams[1].players) for (const id of ['ORG01', 'ORG02', 'ORG03', 'ORG04', 'ORG05', 'ORG06', 'COB01', 'COB02', 'COB03', 'COB04', 'PRESS']) p.knowledge.tactics[id] = KN.makeEntry(8, 0);
+  input.teams[1].plan.pressureHeight = 'full'; // el avance presionado también se expone
+  const m = createMatch(input, profile, { detail: 'full', check: true }); while (m.step());
+  const res = buildResult(m); const keys = { batch_id: 'B', match_id: 'M1', attempt_id: 'M1-A1' };
+  const out = eventStreams(res, makeCtx(res, { keys, entry: null }), { level: 'diagnostic' }); const buf = Buffer.from(`${out.decisiones.join('\n')}\n`);
+  return projectAttempt({ stream: (x, n) => (n === 'decisiones' ? buf : null), table: () => null }, { batch_id: 'B', match_id: 'M1', attempt_id: 'M1-A1', level: 'diagnostic', valid: true, facts: {} }, profile, { sourceId: 'B' });
+}
+test('§13.2 sensibilidad de conocimiento: misma operación y actor, base reconstruida, signo, saturación exacta y exposición declarada', () => {
+  const P = knowledgeEvidence(); const max = profile.familiarity.range.max;
+  const ctx = selectKnowledgeContexts([P], 8, max); assert.ok(ctx.length > 10);
+  const rows = knowledgeSensitivity(ctx, profile, [1, 3, 5]); assert.equal(rows.length, ctx.length * 3);
+  assert.ok(rows.every((r) => r.baseCoincide && r.deltaBaseCoincide !== false), 'la salida base se reconstruye con las funciones de producción');
+  assert.ok(rows.every((r) => r.nivelDespues <= max && r.nivelUnidad.includes('1–30') && r.salidaUnidad.startsWith('probabilidad')));
+  for (const r of rows.filter((x) => x.incrementoEfectivo === 0)) assert.equal(r.salidaDelta, 0); // saturación ⇒ cambio exactamente 0
+  assert.ok(rows.some((r) => r.incrementoEfectivo === 0), 'hay contextos en el límite');
+  // signo (calidad: la salida es la probabilidad de calidad cómoda): más conocimiento defensivo la quita, más conocimiento ofensivo la da
+  const moved = rows.filter((r) => r.ambito === 'quality' && r.incrementoEfectivo > 0 && r.salidaDelta !== 0);
+  assert.ok(moved.length > 0); for (const r of moved) assert.ok(r.lado === 'defensa' ? r.salidaDelta < 0 : r.salidaDelta > 0, `${r.lado} ${r.dominio}:${r.conocimiento}`);
+  assert.ok(rows.every((r) => ['posicion', 'rol', 'modulo'].includes(r.dominio)));
+  const adv = rows.filter((r) => r.ambito === 'pressedAdvance' && r.incrementoEfectivo > 0); assert.ok(adv.some((r) => r.conocimiento === 'PRESS' && r.salidaDelta !== 0 && r.baseCoincide), 'avance presionado: el módulo PRESS de la defensa mueve la probabilidad de avance controlado');
+  const c = knowledgeControls([P], rows, profile); assert.equal(c.filasBaseNoCoincide, 0); assert.equal(c.saturadasConCambioCero, c.filasSaturadas);
+  assert.ok(c.modulosSinExposicion.length > 0 && c.exposicion === 'insuficiente'); // no todo el catálogo se expone en un partido: se declara, no se supone
+});
+
+test('§13.2 el contraste de capacidades mantiene el conocimiento fijo: el extraZ total (con la familiaridad) no cambia al subir una capacidad', () => {
+  const e = { ca: 14.2, cd: 13.1, extraFP: -0.0164, famZ: 0.21 };
+  const entradas = { ca: e.ca, cd: e.cd, kctx: 0, hasOpposition: true, noForced: false, extraZ: e.extraFP + e.famZ, extraZFormaPresion: e.extraFP, extraZFamiliaridad: e.famZ, Z: 0.1, alpha: 0.16 };
+  const q = (ca, extraZ) => qualityResolution(profile, { ...entradas, ca, extraZ }).final;
+  const op = { op: 'calidad', refKey: 'ca', peso: 1, note: { entradas, pesos: Object.entries(q(e.ca, entradas.extraZ)).map(([clase, p]) => ({ clase, p })) } };
+  const out = consumerOutput(op, profile, { delta: 0.8, player: 'J', valor: e.ca });
+  assert.ok(Math.abs(out.despues - q(e.ca + 0.8, entradas.extraZ).comfortable) < 1e-12); // familiaridad conservada
+  assert.notEqual(out.despues.toFixed(6), q(e.ca + 0.8, e.extraFP).comfortable.toFixed(6)); // quitarla sería otro resultado
+  assert.ok(Math.abs(out.antes - q(e.ca, entradas.extraZ).comfortable) < 1e-12);
 });

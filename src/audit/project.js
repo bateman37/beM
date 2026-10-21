@@ -4,8 +4,9 @@
 import { jsonlRecords, ensure, inc, fnv, r4, sum } from './util.js';
 import { effectiveAbility } from '../match/core.js';
 import { classifyDefOrg } from './aud11.js';
+import { newKnowledge, noteFamiliarity, linkKnowledgeQuality, linkKnowledgeAdvance } from './knowledge.js';
 
-export const PROJECTION_VERSION = 'PRJ-MOTOR18-R1'; // MOTOR-18 (R17B-SENS-01): cada operación enlazada conserva las recetas hermanas del mismo jugador y capacidad que la alimentan (`deps`); AUD11 clasificado;  MOTOR-17B: MOTOR-17B: contextos enlazados a la operación real que consume la receta (`salida:*`); MOTOR-15B: cadenas de saque con clasificación y casos; energía por ámbito y tarea con ejemplos
+export const PROJECTION_VERSION = 'PRJ-MOTOR18-R2'; // MOTOR-18 (R17B-SENS-01): cada operación enlazada conserva las recetas hermanas del mismo jugador y capacidad que la alimentan (`deps`); AUD11 clasificado; R2: contextos de sensibilidad de conocimiento (`familiaridad`, `salida:avance`);  MOTOR-17B: MOTOR-17B: contextos enlazados a la operación real que consume la receta (`salida:*`); MOTOR-15B: cadenas de saque con clasificación y casos; energía por ámbito y tarea con ejemplos
 export const BIN_EDGES = [0, 0.2, 0.4, 0.6, 0.8, 1];
 export const binOf = (p) => { for (let i = 0; i < BIN_EDGES.length - 2; i++) if (p < BIN_EDGES[i + 1]) return i; return BIN_EDGES.length - 2; };
 const PLAYER = /^EQ\d+(_B)?-J\d+$/;
@@ -48,7 +49,7 @@ export function projectAttempt(src, a, profile, cfg) {
     binary: {}, dist: {}, cat: {}, recipes: { terms: 0, bad: [], weightBad: 0, valueBad: 0, effMismatch: 0, effChecked: 0, boundsBad: 0, capsUnknown: {}, byCap: {}, energyBands: {}, energyByTask: {}, contexts: {}, byTask: {}, labelsSeen: {} },
     opp: { n: 0, procedencia: {}, tags: {}, eleccion: {} }, libro: { n: 0, prios: {}, ties: 0, noElegible: 0, badPrio: 0 }, coach: { n: 0, area: {}, estado: {}, regla: {} }, memoria: { n: 0, tipo: {}, claves: {}, maxOcupadas: 0 },
     saques: { n: 0, kind: {}, sinReceptor: 0, status: {}, cadenas: [] }, states: { changes: 0, ambito: {}, nuevoSum: {}, nuevoN: {}, episodes: {}, T: { n: 0, nonzero: 0 } }, orders: { n: 0, tipos: {} },
-    rebote: { n: 0, label: {} }, durations: {}, calcKinds: {}, events: { n: 0, types: {}, durationBad: 0, clockBad: 0, scoreBad: 0, loop: { maxStreak: 0, streaks: 0, example: null }, byPeriodTenths: {} },
+    rebote: { n: 0, label: {} }, knowledge: newKnowledge(profile.familiarity?.range?.max ?? 30), durations: {}, calcKinds: {}, events: { n: 0, types: {}, durationBad: 0, clockBad: 0, scoreBad: 0, loop: { maxStreak: 0, streaks: 0, example: null }, byPeriodTenths: {} },
     tables: {}, bytes: {}, ms: {} };
   const rel = (m, k) => ensure(m, k, newRel);
 
@@ -67,8 +68,10 @@ export function projectAttempt(src, a, profile, cfg) {
       } else if (r.kind === 'receta') projectRecipe(P, r, taskMax, caps, profile);
       else if (P._lastSel && r.event_id === P._lastSel.event && r.label?.startsWith('mezcla:')) { P._lastSel.ex.mix = { label: r.label, L: d.L, q: d.q, opciones: d.opciones, entradas: d.entradas ?? null }; P._lastSel = null; linkMix(P, r); }
       else if (P._lastSel && r.event_id === P._lastSel.event && r.label === 'aceptación' && d.entradas) { P._lastSel.ex.accept = { entradas: d.entradas, salida: d.salida }; P._lastSel = null; }
+      else if (r.kind === 'familiaridad') noteFamiliarity(P, r);
+      else if (r.kind === 'salida' && r.label === 'salida:avance') linkKnowledgeAdvance(P, r);
       else if (r.kind === 'salida') linkOp(P, r);
-      else if (r.kind === 'calidad') linkQuality(P, r);
+      else if (r.kind === 'calidad') { linkQuality(P, r); linkKnowledgeQuality(P, r); }
       else if (r.label === 'mezcla:salida:transición') linkMix(P, r);
       else if (r.kind === 'calidad_ataque') { for (const x of d.receta ?? []) { const c = ensure(P.recipes.qualityTerms ??= {}, x.cap, () => ({ uses: 0, sumEff: 0, sumShare: 0 })); c.uses += 1; c.sumEff += x.efectiva; } }
       else if (r.kind === 'libro') { const f = d.fichas ?? []; P.libro.n += 1; const el = f.filter((x) => x.elegible); if (!el.length) P.libro.noElegible += 1; /* prioridad null = ficha LLAMADA aunque no esté en el libro (la llamada puntual no la activa; prioridad efectiva 1): es legítima, no un error de rango (AUD07, corregida en MOTOR-13) */ for (const x of f) { if (x.prioridad == null) { P.libro.called = (P.libro.called ?? 0) + 1; continue; } inc(P.libro.prios, x.prioridad); if (!(x.prioridad >= 1 && x.prioridad <= 5)) P.libro.badPrio += 1; } const pr = el.map((x) => x.prioridad ?? 1); if (pr.length) { const m = Math.min(...pr); if (pr.filter((x) => x === m).length > 1) P.libro.ties += 1; } }
