@@ -3,6 +3,7 @@
 // Dos encuentros alternados en el mismo proceso son independientes (se comprueba en tests/motor14.test.js). Todas las consultas son lecturas sin efectos deportivos.
 import { createMatch, buildResult, validateInput, buildMatchInput, deepCopy, ENGINE_VERSION, EXPORT_SCHEMA, ownStateView, rivalPublicView, diagnosticView } from '../match/index.js';
 import { snapshotMatch, restoreMatch, validateSnapshot } from '../match/snapshot.js';
+import * as learning from '../learning/index.js';
 import { missingRequired } from '../profiles/rows.js';
 import { analyze } from '../analysis/index.js';
 import { trajectoryFingerprint, inputFingerprint, profileSportFingerprint } from '../batch/fingerprint.js';
@@ -13,6 +14,8 @@ import { validityOf } from '../batch/records.js';
 
 export const ENGINE_CONTRACT = 'beM-engine-contract/1';
 export { ENGINE_VERSION, EXPORT_SCHEMA, buildMatchInput, retargetTeam };
+// MOTOR-18 (aditivo): funciones puras de conocimiento y aprendizaje; el manager las invoca con su reloj de aprendizaje explícito. El motor no aprende durante el partido.
+export { learning };
 
 // Fronteras que `advance` sabe alcanzar. «step» = una operación/acontecimiento resuelto (la frontera atómica del núcleo).
 export const BOUNDARIES = ['step', 'possession', 'period', 'end'];
@@ -58,6 +61,11 @@ export class Encounter {
     return buildEssential(res, { keys: { batch_id: null, variant_id: null, case_id: null, match_id: this.id, attempt_id: null }, validity: v, fp, fpMode: fp ? 'incremental' : 'none', sim: null });
   }
   get done() { return this.match.status === 'finished' || this.match.status === 'error'; }
+  // MOTOR-18: exposición final por jugador y conocimiento (para `learning.proposeFromMatch`). Solo lectura; no modifica nada ni propone por sí sola. Un encuentro no terminado devuelve la exposición parcial declarada como tal.
+  exposure({ source = null, batch = null, attempt = null } = {}) {
+    const m = this.match; const x = m.famExposure(); if (!x) return null;
+    return { ...x, complete: m.status === 'finished', match: { source_id: learning.sourceIdOf({ source: source ?? this.id, batch, attempt, teamInstance: m.teams.map((t) => t.id).join('/') }), encounterId: this.id, teams: m.teams.map((t) => t.id) } };
+  }
 
   position() {
     const m = this.match;

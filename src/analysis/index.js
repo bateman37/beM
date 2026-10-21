@@ -18,6 +18,7 @@ import { beforeAfter, appliedOrders } from './orders.js';
 import { filterShots, filterPossessions, filterCompat, normalizeFilters } from './filters.js';
 import { coverageMatrix, BLOCKS, DEBT_MOTOR09, PENDING_MOTOR10, LATER_DELIVERIES } from './coverage.js';
 import { VISIBILITY } from './visibility.js';
+import { familiarityView } from './familiarity.js';
 import { ANALYSIS_VERSION } from './formulas.js';
 import { jsonExport, csvTables, markdownExport } from './export.js';
 import { FILTER_FIELDS } from './filters.js';
@@ -50,6 +51,8 @@ class Analysis {
   constructor(res, ctx) { this.res = res; this.ix = indexOf(res); this.ctx = { audience: ctx.audience, team: ctx.team }; this.params = analysisParams(res); this.memo = new Map(); }
   m(key, f) { if (!this.memo.has(key)) this.memo.set(key, f()); return this.memo.get(key); }
   name(t) { return this.res.teams[t].name; }
+  // MOTOR-18: familiaridad táctica según la audiencia de este análisis (el rival y el público nunca ven el conocimiento exacto, la Polivalencia ni la enseñanza)
+  familiarity() { return this.m('familiarity', () => familiarityView(this.res, this.ctx)); }
 
   // ---- hechos de tiro vistos por la audiencia y filtrados
   viewedShots(team) { return this.m(`vs:${team}`, () => this.ix.shots.filter((s) => s.team === team).map((s) => viewShot(s, this.ctx))); }

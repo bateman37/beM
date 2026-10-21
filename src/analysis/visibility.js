@@ -15,6 +15,8 @@ export const VISIBILITY = [
   { field: 'Probabilidades exactas (pConversion, pFinal, L, q)', public: 'no', own: 'no', diag: 'sí' },
   { field: 'Sacador preferido y ficha de saque', public: 'no (receptor y desenlace sí)', own: 'sí (propio)', diag: 'sí' },
   { field: 'Energía, Forma y momentos', public: 'no', own: 'solo por la vista de estado propio de MOTOR-07', diag: 'sí' },
+  { field: 'Conocimiento táctico (posiciones, roles y sistemas), Polivalencia y enseñanza del entrenador', public: 'no (no observable)', own: 'solo el equipo propio (niveles y categoría; sin teaching ni Polivalencia rival)', diag: 'sí, identificado como diagnóstico' },
+  { field: 'Exposición y propuesta de aprendizaje', public: 'no', own: 'solo propia', diag: 'sí' },
   { field: 'Recomendaciones condicionadas', public: 'no se generan con alternativas no autorizadas', own: 'sí', diag: 'sí' },
   { field: 'Rebote por oportunidad (candidatos)', public: 'no', own: 'no', diag: 'sí' },
   { field: 'Evidencia (IDs) y consultas', public: 'solo IDs de hechos públicos', own: 'propios y públicos', diag: 'todos' },

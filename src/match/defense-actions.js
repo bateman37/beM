@@ -318,7 +318,7 @@ P.pressedAdvance = function pressedAdvance(poss, height) {
   const attempt = this.bernoulli(oddsAdjust(refs.stealAttemptGivenAccessP0, d.styles.stealAttemptChoiceOddsRatio[lv.steal - 1]), 'avance:intento_de_robo');
   const exp = close ? cfg.closePressureExposureWeightFactor : 1; const N = this.profile.neutralAbility;
   const offC = this.taskValue('TAR02', 'attack', { handler }, 'avance:control_ataque'); const defC = this.taskValue('TAR02', 'defense', { primary: presser }, 'avance:control_defensa');
-  const z = opp.advantageSensitivity * (offC - defC) + this.famPressed(handler, presser, support, height); // MOTOR-18: familiaridad, una sola vez en z
+  const zBase = opp.advantageSensitivity * (offC - defC); const famZ = this.famPressed(handler, presser, support, height); const z = zBase + famZ; // MOTOR-18: familiaridad, una sola vez en z
   const offB = this.taskValue('TAR06', 'attack', { handler }); const defB = attempt ? this.taskValue('TAR06', 'defense', { primary: presser }) : N;
   const legal = this.defensiveLegality(presser, 'TEC12');
   const bw = cfg.newAdvancedInteractionBaseWeights;
@@ -329,6 +329,7 @@ P.pressedAdvance = function pressedAdvance(poss, height) {
     { key: 'turnover', w: bw.turnover * Math.exp(o.controlSensitivity * (defB - offB)) * exp },
     { key: 'contact', w: bw.contact * Math.exp(o.defensiveFoulSensitivity * (N - legal)) * exp },
   ];
+  if (this.opts.detail === 'full' && this.fam?.on) this.note('salida:avance', { entradas: { zBase, famZ, close: !!close, items: items.map((i) => ({ key: i.key, w: i.w })) }, salida: { p: Object.fromEntries(items.map((i) => [i.key, i.w / items.reduce((s, x) => s + x.w, 0)])) } }); // MOTOR-18: entradas de la distribución del avance presionado (para la lectura de sensibilidad de conocimiento)
   const outcome = this.pick(items, 'avance:resultado').key;
   const factor = cfg.advanceDurationFactorByHeight[height];
   let tenths = this.sampleDuration(dur.advance, 'avance', { factor, limit: lim0 });

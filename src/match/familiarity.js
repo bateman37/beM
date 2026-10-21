@@ -81,10 +81,10 @@ P.famPressedContext = function famPressedContext(handler, presser, support, heig
 
 // Dominio de un lado: posición realmente asignada, rol vigente (ofensivo o defensivo según el lado) y módulos, con los niveles de la instantánea de cada participante.
 P.famSide = function famSide(pids, mods, side) {
-  const cfg = this.fam.cfg; const out = []; const doms = [];
+  const cfg = this.fam.cfg; const out = []; const doms = []; const full = this.opts.detail === 'full';
   for (const id of pids) {
     const k = this.pl[id].knowledge; const slot = this.ps[id].slot;
-    if (!explicit(k)) { out.push({ pid: id, neutral: true, D: null }); continue; }
+    if (!explicit(k)) { if (full) out.push({ pid: id, neutral: true, D: null }); continue; }
     const code = side === 'attack' ? this.roleOf[id] : this.defRoleOf?.[id];
     const parts = {
       position: slot ? lvl(k.positions, slot) : null,
@@ -93,7 +93,7 @@ P.famSide = function famSide(pids, mods, side) {
     };
     const a = familiarityActor(cfg, parts);
     doms.push(a.D);
-    out.push({ pid: id, slot: slot ?? null, rol: code ?? null, pos: parts.position, rolNivel: parts.role, modulos: parts.modules.map((x, i) => ({ id: mods[i].id, w: round(x.w, 4), nivel: x.K })), D: a.D == null ? null : a.D, omitidos: a.comps.filter((c) => c.n == null).map((c) => c.key) });
+    if (full) out.push({ pid: id, slot: slot ?? null, rol: code ?? null, pos: parts.position, rolNivel: parts.role, modulos: parts.modules.map((x, i) => ({ id: mods[i].id, w: round(x.w, 4), nivel: x.K })), D: a.D == null ? null : a.D, omitidos: a.comps.filter((c) => c.n == null).map((c) => c.key) });
   }
   return { actors: out, D: familiaritySide(doms) };
 };

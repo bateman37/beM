@@ -2,6 +2,7 @@
 // Sin DOM, sin sistema de ficheros: recibe objetos/texto ya leídos.
 import { parseCsv } from './csv.js';
 import { validateParticipation, defaultParticipationPlan } from './coach-policy.js';
+import { validateKnowledgeBlock, isLegacyNeutral } from '../knowledge/model.js';
 
 export const ATTRS = [
   'TEC01','TEC02','TEC03','TEC04','TEC05','TEC06','TEC07','TEC08','TEC09','TEC10','TEC11','TEC12','TEC13','TEC14','TEC15','TEC16','TEC17','TEC18',
@@ -225,6 +226,24 @@ export function validateThrowPlan(plan, team, rival, profile, tp, add) {
   if (df.endline === 'DSaqF02' && df.target == null) add(`${tp}.plan.throwInDefense.target`, 'DSaqF02 necesita un objetivo rival designado (visible); sin él no se puede negar');
 }
 
+// MOTOR-18: conocimiento por jugador (KNOW-MOTOR18-R1), Polivalencia y datos de enseñanza del entrenador. Un bloque `legacy-neutral` o ausente es válido (efecto cero); un bloque `explicit` incompleto o inválido es un
+// error localizado y NUNCA se rellena con dominio 30 en silencio. Si hay conocimiento explícito y el perfil no incluye `familiarity`, se declara (no se ignora en silencio).
+function validateLearningData(t, tp, profile, add) {
+  const fam = profile.familiarity ?? null; const [lo, hi] = fam?.learning?.traits?.range ? [fam.learning.traits.range.min, fam.learning.traits.range.max] : [1, 30];
+  t.players.forEach((p, pi) => {
+    const pp = `${tp}.players[${pi}](${p.id})`;
+    if (p.development?.tacticalLearning !== undefined) { const v = p.development.tacticalLearning; if (typeof v !== 'number' || !Number.isFinite(v) || v < lo || v > hi) add(`${pp}.development.tacticalLearning`, `Polivalencia · aprendizaje táctico: número entre ${lo} y ${hi}`); }
+    if (p.knowledge === undefined || p.knowledge === null || isLegacyNeutral(p.knowledge)) return;
+    if (!fam) { add(`${pp}.knowledge`, 'el perfil activo no incluye la familiaridad táctica de MOTOR-18: el conocimiento explícito no se ignora en silencio (active la base de MOTOR-18 o quite el bloque)'); return; }
+    for (const e of validateKnowledgeBlock(p.knowledge, fam)) add(`${pp}.${e.path || 'knowledge'}`, e.message);
+  });
+  const cl = t.coachLearning;
+  if (cl !== undefined && cl !== null) {
+    if (typeof cl.teaching !== 'number' || cl.teaching < lo || cl.teaching > hi) add(`${tp}.coachLearning.teaching`, `capacidad de enseñanza: número entre ${lo} y ${hi}`);
+    if (fam) for (const m of fam.catalog.modules) { const v = cl.tacticalMastery?.[m.id]; if (typeof v !== 'number' || !Number.isFinite(v) || v < lo || v > hi) add(`${tp}.coachLearning.tacticalMastery.${m.id}`, `competencia del entrenador en ${m.id}: número entre ${lo} y ${hi}`); }
+  }
+}
+
 // Devuelve una lista de { path, message }. Vacía = válida. No corrige ni completa nada.
 export function validateInput(input, profile) {
   const errs = [];
@@ -315,6 +334,7 @@ export function validateInput(input, profile) {
     if (!MIDRANGE_POLICIES.includes(plan.midrange)) add(`${tp}.plan.midrange`, `la media distancia es una de: ${MIDRANGE_POLICIES.join(', ')}`);
     validateDefensePlan(plan, t, input.teams[1 - ti], profile, tp, add);
     validateThrowPlan(plan, t, input.teams[1 - ti], profile, tp, add);
+    validateLearningData(t, tp, profile, add);
     const roleDict = profile.fixtureContract.offensiveRoleDictionary;
     t.players.forEach((p, pi) => { if (!roleDict[p.offensiveRole?.code]) add(`${tp}.players[${pi}](${p.id}).offensiveRole`, `rol ofensivo ${p.offensiveRole?.code ?? 'ausente'} fuera del catálogo`); });
   });
