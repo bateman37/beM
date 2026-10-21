@@ -6,6 +6,8 @@ import { ATTRS, momentCategory, CATEGORY_LABELS } from '../match/index.js';
 import { bulkSummary } from '../population/index.js';
 import { slotsCard, catalogCard, inspectCard, generatorCard, playerSheet, defaultGen, srcText } from './population-ui.js';
 import { scenariosCard } from './scenarios-ui.js';
+import { learningCopyCard, knowledgeBulkCard, knowledgeSection } from './knowledge-ui.js';
+import { sessionCard } from './learning-ui.js';
 
 const ui = { diag: false, team: 0, openPlayer: null, selPlayers: new Set(), selAttrs: new Set(), delta: 3, preview: null, msg: '', inspect: null, inspectPlayer: null, diffSlot: null, gen: defaultGen(), scen: null, sc: null, root: null };
 
@@ -22,6 +24,7 @@ export function renderTeams(root) {
     root.append(statesCard(team, root));
     root.append(rosterCard(team, root));
     root.append(bulkCard(root));
+    root.append(learningCopyCard(ctx), knowledgeBulkCard(ctx), sessionCard(ctx)); // MOTOR-18: conocimiento táctico sobre una copia explícita
     if (ui.openPlayer) { const p = team.players.find((x) => x.id === ui.openPlayer); if (p) root.append(playerCard(p, team, root)); }
   } else root.append(inspectCard(ctx));
   root.append(catalogCard(ctx));
@@ -78,7 +81,8 @@ function bulkCard(root) {
 function playerCard(p, team, root) {
   return h('div', { class: 'card', id: 'player-card' },
     h('div', { class: 'row' }, h('h3', { style: 'margin:0' }, `Ficha ${p.id} — ${p.name}`), h('button', { class: 'btn secondary', onclick: () => { ui.openPlayer = null; renderTeams(root); } }, 'Cerrar ficha')),
-    h('div', { style: 'margin-top:10px' }, playerSheet(p, team, { diag: ui.diag, onRepaint: () => renderTeams(root) })));
+    h('div', { style: 'margin-top:10px' }, playerSheet(p, team, { diag: ui.diag, onRepaint: () => renderTeams(root) })),
+    h('div', { style: 'margin-top:10px' }, ...knowledgeSection(p, team, { diag: ui.diag, rerender: () => renderTeams(root) })));
 }
 
 // Estados de equipo y modo diagnóstico: T inicial (conexión del equipo) e importancia del encuentro.

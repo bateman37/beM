@@ -3,6 +3,7 @@
 import { parsePlayersCsv, deepCopy, validateInput, applyExtension, upgradeInput } from '../match/index.js';
 import { PopulationLibrary, referenceTeam, historicalPair, instantiate, dropStaleRivalRefs, generateTeam, resolveTeam, fingerprint, planBulk as planBulkCore, applyBulk, undoBulk } from '../population/index.js';
 import { storage } from './dom.js';
+import { INPUT_SCHEMA } from '../match/data.js';
 import { ProfileLibrary } from '../profiles/library.js';
 
 const KEY = 'beM.motor01.edit.v1'; // la entrada editable no cambia de formato en MOTOR-02: se conserva la clave
@@ -56,7 +57,7 @@ export async function loadAll() {
   store.players = players; store.baseNew = profile; // perfil efectivo de MOTOR-10: siempre disponible para construir la entrada, aunque el activo sea anterior
   for (const [id, p] of Object.entries(profile.repertoire.plays)) PLAY_NAMES[id] = p.name;
   store.pop = new PopulationLibrary({ storage: storage() }); // variantes, generados, escenarios y resultados (las referencias nunca se guardan: están protegidas)
-  store.base = { schema: 'beM-match-input/6', seed: profile.scenario.seed, importance: 'ordinary', teams: historicalPair(profile, players) }; // entrada inicial = referencia histórica de MOTOR-10 (EQ01/EQ02 con sus planes históricos)
+  store.base = { schema: INPUT_SCHEMA, seed: profile.scenario.seed, importance: 'ordinary', teams: historicalPair(profile, players) }; // entrada inicial = referencia histórica de MOTOR-10 (EQ01/EQ02 con sus planes históricos)
   for (const t of store.base.teams) t.source.loadedFingerprint = fpOf(t);
   store.edit = restore() ?? deepCopy(store.base);
   return store;

@@ -7,6 +7,7 @@ import { SLOTS, validateInput, createMatch, deepCopy, defaultParticipationPlan }
 import { defenseControls } from './defense-ui.js';
 import { throwInControls } from './throwin-ui.js';
 import { coachPrepControls } from './coach-ui.js';
+import { prepFamiliarity, familiarityHint } from './knowledge-ui.js';
 import { STYLE_DEFS, STYLE_GROUPS, STYLE_TITLES, MIDRANGE_OPTIONS, FAMILY_NAMES, FAMILY_ORDER, STATUS_TEXT, styleLevelLabels } from './styles.js';
 
 export { STYLE_TITLES };
@@ -55,7 +56,7 @@ function teamPrep(team, idx, profile, cm, root) {
       plan.starters[slot] = nid;
       if (plan.participation) plan.participation = defaultParticipationPlan(profile, team.players, plan); // MOTOR-08: cambian los titulares, se recarga la precarga SEM (revisable)
       again();
-    } }, team.players.map((p) => h('option', { value: p.id, selected: p.id === plan.starters[slot] }, optLabel(p)))));
+    } }, team.players.map((p) => h('option', { value: p.id, selected: p.id === plan.starters[slot] }, optLabel(p)))), familiarityHint(plan.starters[slot], 'position', slot)); // MOTOR-18: familiaridad con la posición asignada (nunca bloquea por la nominal)
   const dirList = h('ol', {}, plan.directorPriority.map((id, i) => h('li', {}, id, ' ',
     h('button', { class: 'link small', disabled: i === 0, onclick: () => { [plan.directorPriority[i - 1], plan.directorPriority[i]] = [plan.directorPriority[i], plan.directorPriority[i - 1]]; again(); } }, '↑'), ' ',
     h('button', { class: 'link small', disabled: i === plan.directorPriority.length - 1, onclick: () => { [plan.directorPriority[i + 1], plan.directorPriority[i]] = [plan.directorPriority[i], plan.directorPriority[i + 1]]; again(); } }, '↓'), ' ',
@@ -81,7 +82,7 @@ function teamPrep(team, idx, profile, cm, root) {
   const roles = h('div', {}, h('h3', {}, 'Roles ofensivos'),
     h('p', { class: 'small muted' }, 'Orientan quién ocupa cada función y el protagonismo (peso moderado, una sola vez al elegir participante). No cambian capacidades ni prohíben nada por la posición nominal.'),
     h('div', { style: 'display:grid; gap:4px' }, team.players.map((p) => h('label', { class: 'row' }, h('span', { style: 'width:150px' }, `${p.id}${starterSet.has(p.id) ? ' ★' : ''}`),
-      h('select', { onchange: (e) => { p.offensiveRole = { code: e.target.value, name: roleDict[e.target.value] }; again(); } }, Object.entries(roleDict).map(([c, n]) => h('option', { value: c, selected: p.offensiveRole.code === c }, `${c} ${n}`)))))));
+      h('select', { onchange: (e) => { p.offensiveRole = { code: e.target.value, name: roleDict[e.target.value] }; again(); } }, Object.entries(roleDict).map(([c, n]) => h('option', { value: c, selected: p.offensiveRole.code === c }, `${c} ${n}`))), familiarityHint(p.id, 'offensiveRole', p.offensiveRole.code)))));
 
   // ---- estilos agrupados + media distancia
   const labels = styleLevelLabels(profile);
@@ -148,6 +149,7 @@ function teamPrep(team, idx, profile, cm, root) {
     h('span', { class: 'small muted' }, planSummary(profile, plan)));
   return h('div', { class: 'card' }, h('h3', {}, `${team.id} — ${team.name}`), h('p', { class: 'small muted' }, srcText(team.source)), natural,
     coach,
+    prepFamiliarity(team, idx, profile),
     disposition,
     defense,
     throwIns,

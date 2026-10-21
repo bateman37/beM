@@ -15,6 +15,8 @@ import { coachLiveCard, coachDiagnosticCard } from './coach-ui.js';
 import { actaCards, casesCard } from './acta-ui.js';
 import { LAB_CASES } from '../match/cases.js';
 import { srcText } from './population-ui.js';
+import { matchFamiliarityCard } from './knowledge-ui.js';
+import { postMatchLearningCard } from './learning-ui.js';
 
 const ui = { saves: { list: null, msg: null, err: null, label: '', busy: false }, mode: 'total', managed: 0, speed: PRESENTATION.defaultSpeed, session: null, draft: null, msg: null, call: null, filter: 'all', limit: 150, showBox: false, storyLimit: 18, replay: null, compare: null, error: null, root: null };
 
@@ -265,8 +267,8 @@ function paramsSection(ev, src) {
 // ---------------------------------------------------------------- panel de dirección y resultado final
 function paintPanel() {
   const box = document.getElementById('panel'); if (!box) return; clear(box);
-  const s = ui.session; if (!s || ['finalizado', 'error', 'preparado'].includes(s.state)) { if (s?.state === 'preparado') box.append(h('p', { class: 'small muted' }, 'La dirección se habilita al iniciar el encuentro (la preparación inicial se edita en «Preparación»).')); return; }
-  box.append(plannedOrdersCard(s), directionPanel(s, ui, rerender));
+  const s = ui.session; if (!s || ['finalizado', 'error', 'preparado'].includes(s.state)) { if (s?.state === 'preparado') box.append(h('p', { class: 'small muted' }, 'La dirección se habilita al iniciar el encuentro (la preparación inicial se edita en «Preparación»).'), matchFamiliarityCard(s.match, s.managedTeam)); return; }
+  box.append(matchFamiliarityCard(s.match, s.managedTeam), plannedOrdersCard(s), directionPanel(s, ui, rerender)); // MOTOR-18: familiaridad propia con lo que se pide (el rival no revela la suya)
 }
 
 // Órdenes previstas del escenario (MOTOR-11 §12, LAB11-10): se guardan con su frontera y se ENVÍAN a mano en ella; el motor las aplica solo en su ventana real (no por magia).
@@ -303,7 +305,7 @@ function renderResult(root, res, { live = false, banner = null, refresh = paintR
       h('button', { class: 'btn', id: 'open-analysis', type: 'button', onclick: () => { store.last = res; window.dispatchEvent(new CustomEvent('beM:goto', { detail: 'analysis' })); } }, 'Abrir análisis y resumen'),
       live ? [h('button', { class: 'btn secondary', onclick: () => recompute(res) }, 'Reproducir este encuentro (recalcular)'),
         ui.compare ? h('span', { class: `pill ${ui.compare.identical ? 'ok' : 'bad'}` }, ui.compare.identical ? 'Recálculo idéntico: mismos hechos, sorteos, acta y órdenes' : 'El recálculo difiere') : null] : null)));
-  root.append(...actaCards(res), casesCard(LAB_CASES, { profile: store.baseNew, players: store.players }, res), lineupsCard(res), choicesCard(res), opportunitiesCard(res), statesDiagnosticCard(res), coachDiagnosticCard(res), finalStory(refresh, res, teamName));
+  root.append(...[live ? postMatchLearningCard(res, refresh) : null].filter(Boolean), ...actaCards(res), casesCard(LAB_CASES, { profile: store.baseNew, players: store.players }, res), lineupsCard(res), choicesCard(res), opportunitiesCard(res), statesDiagnosticCard(res), coachDiagnosticCard(res), finalStory(refresh, res, teamName));
 }
 
 // Diagnóstico ampliable de oportunidades y saques (MOTOR-06): ejes separados (procedencia, contexto, calidad previa, resultado) con numerador

@@ -9,6 +9,7 @@ import { renderPanel } from './panel/index.js';
 import { renderBatch } from './batch-ui.js';
 import { renderAudit } from './audit-ui.js';
 import { renderClosure } from './closure-ui.js';
+import { restoreLearning } from './knowledge-ui.js';
 import { APP_VERSION, APP_TITLE, ENGINE_VERSION, EXPORT_SCHEMA } from '../version.js';
 
 const TABS = [['teams', 'Plantillas', renderTeams], ['prep', 'Preparación', renderPrep], ['game', 'Partido', renderGame], ['analysis', 'Análisis', renderAnalysis], ['batch', 'Lotes', renderBatch], ['audit', 'Auditorías', renderAudit], ['panel', 'Panel de ajustes', renderPanel], ['cov', 'Cobertura', renderCoverage], ['closure', 'Cierre', renderClosure]];
@@ -26,6 +27,7 @@ document.getElementById('detail-close').addEventListener('click', () => document
 document.getElementById('rowdlg-close').addEventListener('click', () => document.getElementById('rowdlg').close());
 try {
   await loadAll();
+  restoreLearning(); // MOTOR-18: copia de aprendizaje y registro de aplicaciones guardados (si existen); nunca se crean en silencio
   // Versión de aplicación (fuente única src/version.js) separada del motor, del formato de exportación, del perfil numérico activo y del dataset seleccionado.
   document.title = `beM — Laboratorio ${APP_VERSION}`;
   document.getElementById('app-version').textContent = `${APP_VERSION} — ${APP_TITLE} · motor ${ENGINE_VERSION} · ${EXPORT_SCHEMA}`;

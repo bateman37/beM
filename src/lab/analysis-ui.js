@@ -11,7 +11,7 @@ import { FAMILY_LABEL } from '../analysis/offense.js';
 import { COVERAGE_CATEGORIES } from '../analysis/coverage.js';
 import { validateReplayFile } from '../match/replay.js';
 
-const VIEWS = [['resumen', 'Resumen'], ['acta', 'Acta y comparación'], ['evolucion', 'Evolución'], ['tiro', 'Tiro y calidad'], ['ataque', 'Ataque'], ['defensa', 'Defensa'], ['rotaciones', 'Rotaciones y quintetos'], ['informes', 'Informes'], ['diagnostico', 'Diagnóstico y cobertura'], ['exportar', 'Exportar']];
+const VIEWS = [['resumen', 'Resumen'], ['acta', 'Acta y comparación'], ['evolucion', 'Evolución'], ['tiro', 'Tiro y calidad'], ['ataque', 'Ataque'], ['defensa', 'Defensa'], ['rotaciones', 'Rotaciones y quintetos'], ['informes', 'Informes'], ['familiaridad', 'Familiaridad'], ['diagnostico', 'Diagnóstico y cobertura'], ['exportar', 'Exportar']];
 const st = { order: null, source: 'last', file: null, fileName: null, audience: 'public', team: 0, view: 'resumen', filters: {}, through: null, group: [], player: null, root: null, open: null };
 const pc = (r) => (r == null || r.value == null ? '—' : `${r.value.toFixed(1)} %`);
 const cnt = (r) => (r == null ? '' : `${r.num}/${r.den}`);
@@ -80,6 +80,14 @@ function describeId(a, id) {
 
 // ---------------------------------------------------------------- vistas
 const VIEW_FN = {
+  familiaridad(res, a) {
+    const v = a.familiarity(); const out = [h('div', { class: 'card', id: 'fam-view' }, h('h3', { style: 'margin-top:0' }, `Familiaridad táctica · ${AUDIENCE_LABEL[st.audience]}`), h('p', { class: 'small' }, v.explanation), v.identification ? pill(v.identification, 'warn') : null, v.note ? h('p', { class: 'small muted' }, v.note) : null)];
+    const teams = v.diagnostic ? v.teams : (v.players ? [{ team: v.team, players: v.players }] : []);
+    for (const t of teams) out.push(h('div', { class: 'card' }, h('h4', { style: 'margin-top:0' }, t.team), v.diagnostic && t.coachLearning ? h('p', { class: 'small' }, `Enseñanza ${t.coachLearning.teaching} · competencia del entrenador por módulo conservada en el archivo diagnóstico`) : null,
+      table(['Jugador', 'Modo', 'Minutos vivos', ...(v.diagnostic ? ['Polivalencia'] : []), 'Módulos con exposición'], t.players.map((p) => [p.id, p.mode === 'explicit' ? 'explícito' : p.note, p.exposure ? fmt(p.exposure.liveTenths / 600, 1) : '—', ...(v.diagnostic ? [String(p.tacticalLearning ?? '—')] : []), p.exposure ? String(Object.keys(p.exposure.modules).length) : '—']))));
+    if (v.applications) out.push(h('div', { class: 'card' }, h('h4', { style: 'margin-top:0' }, 'Resumen de aplicación (diagnóstico)'), h('pre', { class: 'small' }, JSON.stringify(v.applications, null, 1).slice(0, 4000))));
+    return out;
+  },
   resumen(res, a) {
     const S = a.summary(); const out = [];
     out.push(h('div', { class: 'card' }, h('div', { class: 'score' }, S.headline), h('p', { class: 'small' }, S.statusText),
