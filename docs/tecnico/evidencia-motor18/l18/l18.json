@@ -1,0 +1,798 @@
+{
+ "schema": "beM-l18/1",
+ "learningVersion": "LEARN-MOTOR18-R1",
+ "rows": [
+  {
+   "id": "L18-01",
+   "titulo": "Polivalencia 8 frente a 24 (misma dosis, conocimiento y entrenador)",
+   "entradas": {
+    "target": "tactic:ORG02",
+    "level": 12,
+    "doseHoras": 1,
+    "teaching": 16,
+    "coachMastery": 16,
+    "tacticalLearning": [
+     8,
+     24
+    ]
+   },
+   "salidas": {
+    "p8": {
+     "factors": {
+      "player": 0.87069,
+      "teaching": 1.008621,
+      "content": 1.008621,
+      "transfer": 1.189655,
+      "product": 1.053756
+     },
+     "before": {
+      "level": 12,
+      "peak": 12
+     },
+     "after": {
+      "level": 12.515712582881893,
+      "peak": 12.515712582881893
+     },
+     "gain": 0.5157125828818927,
+     "G": 0.8430051227871243,
+     "acceleratedDose": 0,
+     "normalDose": 1
+    },
+    "p24": {
+     "factors": {
+      "player": 1.146552,
+      "teaching": 1.008621,
+      "content": 1.008621,
+      "transfer": 1.189655,
+      "product": 1.38762
+     },
+     "before": {
+      "level": 12,
+      "peak": 12
+     },
+     "after": {
+      "level": 12.676004034095758,
+      "peak": 12.676004034095758
+     },
+     "gain": 0.676004034095758,
+     "G": 1.1100958547592823,
+     "acceleratedDose": 0,
+     "normalDose": 1
+    }
+   },
+   "checks": {
+    "mayorGananciaConPolivalenciaAlta": true,
+    "soloCambiaFJugador": true
+   },
+   "ok": true
+  },
+  {
+   "id": "L18-02",
+   "titulo": "Teaching 8 frente a 24",
+   "entradas": {
+    "target": "tactic:ORG02",
+    "level": 12,
+    "doseHoras": 1,
+    "tacticalLearning": 16,
+    "coachMastery": 16,
+    "teaching": [
+     8,
+     24
+    ]
+   },
+   "salidas": {
+    "t8": {
+     "factors": {
+      "player": 1.008621,
+      "teaching": 0.87069,
+      "content": 1.008621,
+      "transfer": 1.189655,
+      "product": 1.053756
+     },
+     "before": {
+      "level": 12,
+      "peak": 12
+     },
+     "after": {
+      "level": 12.515712582881893,
+      "peak": 12.515712582881893
+     },
+     "gain": 0.5157125828818927,
+     "G": 0.8430051227871243,
+     "acceleratedDose": 0,
+     "normalDose": 1
+    },
+    "t24": {
+     "factors": {
+      "player": 1.008621,
+      "teaching": 1.146552,
+      "content": 1.008621,
+      "transfer": 1.189655,
+      "product": 1.38762
+     },
+     "before": {
+      "level": 12,
+      "peak": 12
+     },
+     "after": {
+      "level": 12.676004034095758,
+      "peak": 12.676004034095758
+     },
+     "gain": 0.676004034095758,
+     "G": 1.1100958547592823,
+     "acceleratedDose": 0,
+     "normalDose": 1
+    }
+   },
+   "checks": {
+    "mayorGananciaConTeachingAlto": true,
+    "soloCambiaFEnsenanza": true
+   },
+   "ok": true
+  },
+  {
+   "id": "L18-03",
+   "titulo": "Competencia del entrenador en ORG02 8 frente a 28",
+   "entradas": {
+    "target": "tactic:ORG02",
+    "level": 12,
+    "doseHoras": 1,
+    "teaching": 16,
+    "tacticalLearning": 16,
+    "coachMastery": [
+     8,
+     28
+    ]
+   },
+   "salidas": {
+    "m8": {
+     "factors": {
+      "player": 1.008621,
+      "teaching": 1.008621,
+      "content": 0.87069,
+      "transfer": 1.189655,
+      "product": 1.053756
+     },
+     "before": {
+      "level": 12,
+      "peak": 12
+     },
+     "after": {
+      "level": 12.515712582881893,
+      "peak": 12.515712582881893
+     },
+     "gain": 0.5157125828818927,
+     "G": 0.8430051227871243,
+     "acceleratedDose": 0,
+     "normalDose": 1
+    },
+    "m28": {
+     "factors": {
+      "player": 1.008621,
+      "teaching": 1.008621,
+      "content": 1.215517,
+      "transfer": 1.189655,
+      "product": 1.471086
+     },
+     "before": {
+      "level": 12,
+      "peak": 12
+     },
+     "after": {
+      "level": 12.715846757460206,
+      "peak": 12.715846757460206
+     },
+     "gain": 0.7158467574602057,
+     "G": 1.176868537752322,
+     "acceleratedDose": 0,
+     "normalDose": 1
+    }
+   },
+   "checks": {
+    "mayorGananciaConCompetenciaAlta": true,
+    "soloCambiaFContenido": true
+   },
+   "ok": true
+  },
+  {
+   "id": "L18-04",
+   "titulo": "Nivel inicial 12 frente a 28: ganancia menor cerca del máximo (relacionados fijados al mínimo para igualar factores)",
+   "entradas": {
+    "target": "offensiveRole:O10",
+    "levels": [
+     12,
+     28
+    ],
+    "doseHoras": 1,
+    "factoresIguales": true
+   },
+   "salidas": {
+    "k12": {
+     "factors": {
+      "player": 1.008621,
+      "teaching": 1.008621,
+      "content": 1,
+      "transfer": 1,
+      "product": 1.017316
+     },
+     "before": {
+      "level": 12,
+      "peak": 12
+     },
+     "after": {
+      "level": 12.250811132578647,
+      "peak": 12.250811132578647
+     },
+     "gain": 0.2508111325786473,
+     "G": 0.4069262782401903,
+     "acceleratedDose": 0,
+     "normalDose": 1
+    },
+    "k28": {
+     "factors": {
+      "player": 1.008621,
+      "teaching": 1.008621,
+      "content": 1,
+      "transfer": 1,
+      "product": 1.017316
+     },
+     "before": {
+      "level": 28,
+      "peak": 28
+     },
+     "after": {
+      "level": 28.02786790361985,
+      "peak": 28.02786790361985
+     },
+     "gain": 0.0278679036198497,
+     "G": 0.4069262782401903,
+     "acceleratedDose": 0,
+     "normalDose": 1
+    }
+   },
+   "checks": {
+    "factoresIguales": true,
+    "gananciaMenorCercaDelMaximo": true
+   },
+   "ok": true
+  },
+  {
+   "id": "L18-05",
+   "titulo": "Nivel 26 con peak 30 frente a nivel/peak 26; y corte del tramo acelerado al cruzar el peak (27,8 → peak 28 con 6 h)",
+   "entradas": {
+    "target": "position:SG",
+    "casos": [
+     {
+      "level": 26,
+      "peak": 30,
+      "dose": 1
+     },
+     {
+      "level": 26,
+      "peak": 26,
+      "dose": 1
+     },
+     {
+      "level": 27.8,
+      "peak": 28,
+      "dose": 6
+     }
+    ]
+   },
+   "salidas": {
+    "reaprende": {
+     "factors": {
+      "player": 1.008621,
+      "teaching": 1.008621,
+      "content": 1,
+      "transfer": 1,
+      "product": 1.017316
+     },
+     "before": {
+      "level": 26,
+      "peak": 30
+     },
+     "after": {
+      "level": 26.110694994427234,
+      "peak": 30
+     },
+     "gain": 0.1106949944272344,
+     "G": 0.8138525564803806,
+     "acceleratedDose": 1,
+     "normalDose": 0
+    },
+    "nuevo": {
+     "factors": {
+      "player": 1.008621,
+      "teaching": 1.008621,
+      "content": 1,
+      "transfer": 1,
+      "product": 1.017316
+     },
+     "before": {
+      "level": 26,
+      "peak": 26
+     },
+     "after": {
+      "level": 26.0557358072397,
+      "peak": 26.0557358072397
+     },
+     "gain": 0.0557358072396994,
+     "G": 0.4069262782401903,
+     "acceleratedDose": 0,
+     "normalDose": 1
+    },
+    "corte": {
+     "factors": {
+      "player": 1.008621,
+      "teaching": 1.008621,
+      "content": 1,
+      "transfer": 1,
+      "product": 1.017316
+     },
+     "before": {
+      "level": 27.8,
+      "peak": 28
+     },
+     "after": {
+      "level": 28.071754298341542,
+      "peak": 28.071754298341542
+     },
+     "gain": 0.2717542983415413,
+     "G": 3.8235552766038476,
+     "acceleratedDose": 3.3961866830998186,
+     "normalDose": 2.6038133169001814,
+     "dosisHastaPeakEsperada": 3.396185666898745
+    }
+   },
+   "checks": {
+    "reaprendeMasRapidoQueAdquirir": true,
+    "tramoAceleradoTerminaEnElPeak": true,
+    "picoSuperadoTrasElCruce": true,
+    "sinAceleracionSiNuncaSeAprendio": true
+   },
+   "ok": true
+  },
+  {
+   "id": "L18-06",
+   "titulo": "Posición 30/peak 30, sin práctica 3650 días: 26,4",
+   "entradas": {
+    "domain": "position",
+    "level": 30,
+    "peak": 30,
+    "lastPracticeDay": 0,
+    "destDay": 3650
+   },
+   "salidas": {
+    "domain": "position",
+    "id": "PG",
+    "level": 30,
+    "peak": 30,
+    "lastPracticeDay": 0,
+    "destDay": 3650,
+    "after": 26.4,
+    "wearDays": 3285,
+    "floor": 25.5
+   },
+   "checks": {
+    "veintiseisCuatro": true
+   },
+   "ok": true
+  },
+  {
+   "id": "L18-07",
+   "titulo": "Desuso de roles y módulos con sus curvas y suelos; nunca por encima del nivel previo",
+   "entradas": {
+    "casos": "dominio × (30/30, sin práctica, 3650 días); módulo con nivel 10 y peak 30; rol a los 200 días"
+   },
+   "salidas": {
+    "cases": [
+     {
+      "domain": "position",
+      "id": "PG",
+      "level": 30,
+      "peak": 30,
+      "lastPracticeDay": 0,
+      "destDay": 3650,
+      "after": 26.4,
+      "wearDays": 3285,
+      "floor": 25.5
+     },
+     {
+      "domain": "offensiveRole",
+      "id": "O01",
+      "level": 30,
+      "peak": 30,
+      "lastPracticeDay": 0,
+      "destDay": 3650,
+      "after": 24.295890410958904,
+      "wearDays": 3470,
+      "floor": 24
+     },
+     {
+      "domain": "defensiveRole",
+      "id": "D01",
+      "level": 30,
+      "peak": 30,
+      "lastPracticeDay": 0,
+      "destDay": 3650,
+      "after": 24.295890410958904,
+      "wearDays": 3470,
+      "floor": 24
+     },
+     {
+      "domain": "tactic",
+      "id": "ORG01",
+      "level": 30,
+      "peak": 30,
+      "lastPracticeDay": 0,
+      "destDay": 3650,
+      "after": 18,
+      "wearDays": 3560,
+      "floor": 18
+     }
+    ],
+    "nivelPorDebajoDelSuelo": {
+     "domain": "tactic",
+     "id": "ORG01",
+     "level": 10,
+     "peak": 30,
+     "lastPracticeDay": 0,
+     "destDay": 3650,
+     "after": 10,
+     "wearDays": 3560,
+     "floor": 18
+    },
+    "justoTrasLaGracia": {
+     "domain": "offensiveRole",
+     "id": "O01",
+     "level": 30,
+     "peak": 30,
+     "lastPracticeDay": 0,
+     "destDay": 200,
+     "after": 29.96712328767123,
+     "wearDays": 20,
+     "floor": 24
+    }
+   },
+   "checks": {
+    "noSuben": true,
+    "moduloLlegaAlSuelo": true,
+    "nivelBajoElSueloSeMantiene": true,
+    "rolDespuesDeGraciaPierdeMuyPoco": true
+   },
+   "ok": true
+  },
+  {
+   "id": "L18-08",
+   "titulo": "Práctica relevante renueva la fecha; dosis fragmentadas del día se agregan (umbral táctico 0,02)",
+   "entradas": {
+    "day": 400,
+    "lastPracticeDayInicial": 0,
+    "fragmentos": "2 × 0,25 h con 5 % al módulo ORG02 = 2 × 0,0125 h de dosis",
+    "umbralTactica": 0.02
+   },
+   "salidas": {
+    "primerFragmento": {
+     "dosis": 0.0125,
+     "lastPracticeDay": 0,
+     "gananciaAportada": 0.007575090435043563
+    },
+    "segundoFragmento": {
+     "dosisAgregada": 0.025,
+     "lastPracticeDay": 400
+    },
+    "dosisGrande": {
+     "dosis": 0.6,
+     "lastPracticeDay": 400
+    }
+   },
+   "checks": {
+    "fragmentoPequenoAportaGananciaSinReiniciar": true,
+    "agregadoRenueva": true,
+    "dosisGrandeRenueva": true
+   },
+   "ok": true
+  },
+  {
+   "id": "L18-09",
+   "titulo": "Un intervalo largo frente a sus subdivisiones, sin práctica: mismo resultado",
+   "entradas": {
+    "destDay": 3650,
+    "subdivisiones": [
+     1000,
+     2500,
+     3650
+    ],
+    "bloque": "todo 30/30 salvo ORG01 25/28 con última práctica 100, evaluado el día 200"
+   },
+   "salidas": {
+    "unSolo": {
+     "ORG01": 16.8,
+     "PG": 26.61917808219178
+    },
+    "subdividido": {
+     "ORG01": 16.8,
+     "PG": 26.61917808219178
+    },
+    "maxDiferencia": 0
+   },
+   "checks": {
+    "igualesConTolerancia": true
+   },
+   "ok": true
+  },
+  {
+   "id": "L18-10",
+   "titulo": "Una dosis frente a dos mitades con factores constantes (incluye cruce del peak y reaprendizaje con peak 30)",
+   "entradas": {
+    "F": 1.1,
+    "rate": 0.4,
+    "casos": [
+     [
+      12,
+      12,
+      2
+     ],
+     [
+      26,
+      28,
+      6
+     ],
+     [
+      26,
+      30,
+      3
+     ],
+     [
+      10,
+      20,
+      40
+     ]
+    ]
+   },
+   "salidas": {
+    "cases": [
+     {
+      "level": 12,
+      "peak": 12,
+      "dose": 2,
+      "unaDosis": 12.538002812755302,
+      "dosMitades": 12.538002812755302,
+      "diferencia": 0,
+      "peakUna": 12.538002812755302,
+      "peakMitades": 12.538002812755302
+     },
+     {
+      "level": 26,
+      "peak": 28,
+      "dose": 6,
+      "unaDosis": 26.66582458939808,
+      "dosMitades": 26.66582458939808,
+      "diferencia": 0,
+      "peakUna": 28,
+      "peakMitades": 28
+     },
+     {
+      "level": 26,
+      "peak": 30,
+      "dose": 3,
+      "unaDosis": 26.34805508770906,
+      "dosMitades": 26.34805508770906,
+      "diferencia": 0,
+      "peakUna": 30,
+      "peakMitades": 30
+     },
+     {
+      "level": 10,
+      "peak": 20,
+      "dose": 40,
+      "unaDosis": 22.29197393922521,
+      "dosMitades": 22.29197393922521,
+      "diferencia": 0,
+      "peakUna": 22.29197393922521,
+      "peakMitades": 22.29197393922521
+     }
+    ]
+   },
+   "checks": {
+    "igualConTolerancia": true,
+    "mismoPeak": true
+   },
+   "ok": true
+  },
+  {
+   "id": "L18-11",
+   "titulo": "Fuente de partido aplicada dos veces: la segunda no modifica nada",
+   "entradas": {
+    "source": "lab|LOT-1|M000001-A1|T-L18",
+    "exposicion": {
+     "liveTenths": 24000,
+     "positions": {
+      "PG": 20000,
+      "SG": 4000
+     },
+     "offensiveRoles": {
+      "O01": 24000
+     },
+     "defensiveRoles": {
+      "D01": 24000
+     },
+     "modules": {
+      "ORG02": 10,
+      "FAM:pick_and_roll": 30
+     }
+    }
+   },
+   "salidas": {
+    "primera": {
+     "ok": true,
+     "huellaAntes": "00cc149dbd030b7e",
+     "huellaDespues": "6b2b7bd8bcd7153e"
+    },
+    "segunda": {
+     "ok": false,
+     "motivo": "la fuente lab|LOT-1|M000001-A1|T-L18 ya se aplicó a la instancia T-L18 (APL-1)"
+    }
+   },
+   "checks": {
+    "primeraAplica": true,
+    "segundaRechazada": true,
+    "estadoIntacto": true
+   },
+   "ok": true
+  },
+  {
+   "id": "L18-12",
+   "titulo": "Cambio de entrenador/equipo no borra conocimientos; otro quinteto cambia el resumen colectivo",
+   "entradas": {
+    "entrenadores": [
+     {
+      "teaching": 16
+     },
+     {
+      "teaching": 28
+     }
+    ],
+    "quintetos": [
+     "a+a",
+     "a+b"
+    ]
+   },
+   "salidas": {
+    "conocimientoTrasCambio": {
+     "a": 28,
+     "b": 12
+    },
+    "resumenPGQuintetoAA": 28,
+    "resumenPGQuintetoAB": 20
+   },
+   "checks": {
+    "conocimientoIntacto": true,
+    "resumenCambia": true,
+    "sinPropiedadColectiva": true
+   },
+   "ok": true
+  },
+  {
+   "id": "L18-13",
+   "titulo": "La transferencia acelera aprender un objetivo relacionado sin subirlo ni mejorarlo antes de entrenar",
+   "entradas": {
+    "objetivo": "position:C",
+    "relacionado": "position:PF (30 frente a 8)",
+    "doseHoras": 1
+   },
+   "salidas": {
+    "conRelacionadoAlto": {
+     "factors": {
+      "player": 1.008621,
+      "teaching": 1.008621,
+      "content": 1,
+      "transfer": 1.5,
+      "product": 1.525974
+     },
+     "before": {
+      "level": 8,
+      "peak": 8
+     },
+     "after": {
+      "level": 8.458214891444744,
+      "peak": 8.458214891444744
+     },
+     "gain": 0.4582148914447437,
+     "G": 0.6103894173602854,
+     "acceleratedDose": 0,
+     "normalDose": 1
+    },
+    "conRelacionadoBajo": {
+     "factors": {
+      "player": 1.008621,
+      "teaching": 1.008621,
+      "content": 1,
+      "transfer": 1.12069,
+      "product": 1.140095
+     },
+     "before": {
+      "level": 8,
+      "peak": 8
+     },
+     "after": {
+      "level": 8.343253930554823,
+      "peak": 8.343253930554823
+     },
+     "gain": 0.34325393055482323,
+     "G": 0.4560380704415925,
+     "acceleratedDose": 0,
+     "normalDose": 1
+    },
+    "nivelDeCSinEntrenarlo": 8
+   },
+   "checks": {
+    "aprendeMasRapido": true,
+    "noSubeAntesDeEntrenar": true,
+    "sinCascada": true
+   },
+   "ok": true
+  },
+  {
+   "id": "L18-14",
+   "titulo": "Sesiones sucesivas y partidos del mismo día respetan sus presupuestos acumulados",
+   "entradas": {
+    "sesiones": [
+     3,
+     3,
+     1
+    ],
+    "tope": 4,
+    "partidos": [
+     "M1 40 min",
+     "M2 40 min"
+    ]
+   },
+   "salidas": {
+    "segundaSesion": {
+     "requested": 3,
+     "used": 1,
+     "clampedByDailyBudget": true,
+     "budgetAfter": 4,
+     "unusedCollective": 0,
+     "unusedIndividual": 0.4
+    },
+    "terceraSesion": {
+     "requested": 1,
+     "used": 0,
+     "clampedByDailyBudget": true,
+     "budgetAfter": 4,
+     "unusedCollective": 0,
+     "unusedIndividual": 0
+    },
+    "partido1": {
+     "position": {
+      "usadoAntes": 1,
+      "permitidoM2": 0
+     },
+     "offensiveRole": {
+      "usadoAntes": 1,
+      "permitidoM2": 0
+     },
+     "defensiveRole": {
+      "usadoAntes": 1,
+      "permitidoM2": 0
+     },
+     "tactic": {
+      "usadoAntes": 1,
+      "permitidoM2": 0
+     }
+    }
+   },
+   "checks": {
+    "segundaRecortada": true,
+    "terceraSinPresupuesto": true,
+    "partidoNoMultiplica": true,
+    "entrenamientoYPartidoSeparados": true
+   },
+   "ok": true
+  }
+ ],
+ "ok": true
+}
