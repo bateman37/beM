@@ -41,7 +41,7 @@ El motor solo acumula exposición (`famExposure`, `Encounter.exposure()`): déci
 
 ## 7. Campaña MOTOR18-CIERRE-20261021 (36 ejecuciones)
 
-12 (seis pares CONTROL17B/M18) + 16 (B01–B08 × K8/K28) + 6 diagnósticos + 2 (D01, D02): no son 36 observaciones independientes. Datos reales y estado de cada comprobación: [`evidencia-motor18/RESUMEN-OPERATIVO.md`](evidencia-motor18/RESUMEN-OPERATIVO.md) (generado desde los archivos finales) y `out/motor18/` (fuera de Git).
+12 (seis pares CONTROL17B/M18) + 16 (B01–B08 × K8/K28) + 6 diagnósticos + 2 (D01, D02): no son 36 observaciones independientes. Datos reales y estado de cada comprobación: [`evidencia-motor18/RESUMEN-OPERATIVO.md`](evidencia-motor18/RESUMEN-OPERATIVO.md) (generado desde los archivos finales) y `out/motor18/` (fuera de Git). Comandos reales: [`evidencia-motor18/campana/COMANDOS.md`](evidencia-motor18/campana/COMANDOS.md) · agenda de ensayo: [`AGENDA-ensayo.md`](evidencia-motor18/campana/AGENDA-ensayo.md) · pasos de interfaz: [`ui/pasos-manuales.md`](evidencia-motor18/ui/pasos-manuales.md).
 
 ## 8. Decisiones técnicas y límites
 
