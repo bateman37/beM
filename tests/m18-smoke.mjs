@@ -1,0 +1,12 @@
+import { profile, players, P, playFamily, coachOf, uniformBlock } from './m18-helpers.js';
+import * as L from '../src/learning/index.js';
+const { block } = L.syntheticHistory(players[0], profile.scenario.plans[0], P, 0, playFamily);
+console.log(L.knowledgeKeys(P).length, L.validateTransfer(P), L.validateKnowledgeBlock(block, P).length, L.relatedOf('tactic', 'ORG06', P), L.categoryOf(6, P).label, L.categoryOf(6.1, P).label);
+console.log(block.positions.PG.level, block.positions.SG.level, block.positions.C.level, block.tactics.ORG01.level, block.tactics['FAM:pick_and_roll'].level);
+console.log(L.retainBlock(L.allMastered(P, 0), 3650, P).block.positions.PG.level);
+const t = L.createTeamState({ instanceId: 'T1', players: { a: { block, tacticalLearning: 16 } }, coach: coachOf(), day: 0 }, P);
+console.log(t.ok, t.errors?.slice(0, 3));
+const pr = L.proposeFromSession(t.state, { source_id: 'S1', collectiveFocus: 'ORG02', players: { a: { hours: 1, individualFocus: { domain: 'position', id: 'C' } } } }, P);
+console.log(JSON.stringify(pr.players.a.targets.map((x) => [x.key, x.before.level, x.after.level])));
+const ap = L.applyProposal(t.state, L.createLedger(), pr);
+console.log(ap.ok, L.applyProposal(ap.state, ap.ledger, pr).reason);
