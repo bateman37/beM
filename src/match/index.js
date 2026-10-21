@@ -10,6 +10,7 @@ import './defense-specials.js';
 import './spontaneous.js';
 import './throwin.js';
 import './states.js';
+import './familiarity.js';
 import './coach.js';
 import './memory.js';
 import './orders.js';

@@ -318,7 +318,7 @@ P.pressedAdvance = function pressedAdvance(poss, height) {
   const attempt = this.bernoulli(oddsAdjust(refs.stealAttemptGivenAccessP0, d.styles.stealAttemptChoiceOddsRatio[lv.steal - 1]), 'avance:intento_de_robo');
   const exp = close ? cfg.closePressureExposureWeightFactor : 1; const N = this.profile.neutralAbility;
   const offC = this.taskValue('TAR02', 'attack', { handler }, 'avance:control_ataque'); const defC = this.taskValue('TAR02', 'defense', { primary: presser }, 'avance:control_defensa');
-  const z = opp.advantageSensitivity * (offC - defC);
+  const z = opp.advantageSensitivity * (offC - defC) + this.famPressed(handler, presser, support, height); // MOTOR-18: familiaridad, una sola vez en z
   const offB = this.taskValue('TAR06', 'attack', { handler }); const defB = attempt ? this.taskValue('TAR06', 'defense', { primary: presser }) : N;
   const legal = this.defensiveLegality(presser, 'TEC12');
   const bw = cfg.newAdvancedInteractionBaseWeights;

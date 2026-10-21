@@ -162,7 +162,8 @@ P.qualityOf = function qualityOf(ex, caRaw, cdRaw, kctx, hasOpposition) {
     mz = this.momentZ('opportunityQuality', own, counter, { team: ex.team });
     ex.mdefUsed = mz.usedCounter; // M-DEF del defensor ya explicó la dificultad de esta oportunidad: la conversión no lo vuelve a usar
   }
-  const extraZ = fp ? fp.delta : 0; const noForced = !!ex?.noDenial;
+  const famZ = ex ? this.famQuality(ex, hasOpposition) : 0; // MOTOR-18: familiaridad táctica, un único ajuste logit por operación (separado de Forma/presión en el diagnóstico)
+  const extraZ = (fp ? fp.delta : 0) + famZ; const noForced = !!ex?.noDenial;
   const d = qualityResolution(this.profile, { ca: caRaw, cd: cdRaw, kctx, hasOpposition, noForced, extraZ, Z: mz ? mz.Z : null, alpha: mz ? mz.alpha : null }); // MOTOR-17B: función pura compartida con el contraste
   let items = d.items;
   if (mz) {
@@ -171,7 +172,7 @@ P.qualityOf = function qualityOf(ex, caRaw, cdRaw, kctx, hasOpposition) {
     this.perturbNote('opportunityQuality', mz, { grupoFavorable: task.favorableClasses, probabilidadesBase: Object.fromEntries(Object.entries(d.p).map(([k, v]) => [k, round(v, 5)])), probabilidadesFinales: Object.fromEntries(Object.entries(pFinal).map(([k, v]) => [k, round(v, 5)])) });
   }
   this.note('calidad', { z: round(d.z, 4), kContexto: round(d.kc, 4), CA: round(caRaw, 3), CD: hasOpposition ? round(cdRaw, 3) : null, pesos: items.map((i) => ({ clase: i.key, p: round(i.w / (mz ? 1 : d.tot)) })),
-    ...(this.opts.detail === 'full' ? { entradas: { ca: caRaw, cd: hasOpposition ? cdRaw : null, kctx, hasOpposition: !!hasOpposition, noForced, extraZ, Z: mz ? mz.Z : null, alpha: mz ? mz.alpha : null } } : {}) }); // MOTOR-17B: entradas completas de la operación
+    ...(this.opts.detail === 'full' ? { entradas: { ca: caRaw, cd: hasOpposition ? cdRaw : null, kctx, hasOpposition: !!hasOpposition, noForced, extraZ, extraZFormaPresion: fp ? fp.delta : 0, extraZFamiliaridad: famZ, Z: mz ? mz.Z : null, alpha: mz ? mz.alpha : null } } : {}) }); // MOTOR-17B: entradas completas de la operación
   const chosen = this.pick(items, 'calidad');
   return { cls: chosen.key, K: opp.qualityShotLogit[chosen.key], z: d.z };
 };

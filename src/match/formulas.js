@@ -163,3 +163,34 @@ export function pickProbabilities(items) {
   const els = items.filter((i) => i.w > 0).sort((a, b) => (a.key < b.key ? -1 : a.key > b.key ? 1 : 0)); const total = els.reduce((s, i) => s + i.w, 0);
   return Object.fromEntries(els.map((e) => [e.key, e.w / total]));
 }
+
+// ---------------------------------------------------------------------------------------------------------------- MOTOR-18: familiaridad táctica (FAM-MOTOR18-R1)
+// Funciones PURAS compartidas por el productor (calidad de la oportunidad y avance presionado), las estimaciones previas y la auditoría. No sortean, no leen estado y no registran exposición.
+// Normalización n(K) = (K − min)/(max − min) acotada a [0, 1]. Un componente que no aplica es `null` (no «dominio 1»): se omite y los pesos restantes se normalizan.
+export const familiarityNorm = (fam, K) => Math.min(1, Math.max(0, (K - fam.range.min) / (fam.range.max - fam.range.min)));
+// Dominio normalizado del conjunto de módulos de UN actor: Σ w·n(K) / Σ w sobre los módulos con nivel conocido. `mods`: [{ w, K }] (K null = el actor no tiene ese conocimiento explícito).
+export function familiarityTactic(fam, mods) {
+  let num = 0; let den = 0;
+  for (const m of mods) if (m.K != null && m.w > 0) { num += m.w * familiarityNorm(fam, m.K); den += m.w; }
+  return den > 0 ? num / den : null;
+}
+// Dominio efectivo de un actor: posición asignada (0,20), rol vigente del lado (0,30) y módulos tácticos (0,50) con los componentes que NO aplican omitidos y los pesos restantes normalizados.
+// `parts`: { position: K|null, role: K|null, modules: [{ w, K }] }. Devuelve { D, comps } (D null si no hay ningún componente: el actor es neutro y no aporta carencia).
+export function familiarityActor(fam, parts) {
+  const cw = fam.componentWeights; const tac = familiarityTactic(fam, parts.modules ?? []);
+  const comps = [
+    { key: 'position', w: cw.position, n: parts.position == null ? null : familiarityNorm(fam, parts.position) },
+    { key: 'role', w: cw.role, n: parts.role == null ? null : familiarityNorm(fam, parts.role) },
+    { key: 'tactic', w: cw.tactic, n: tac },
+  ];
+  let num = 0; let den = 0; for (const c of comps) if (c.n != null) { num += c.w * c.n; den += c.w; }
+  return { D: den > 0 ? num / den : null, comps };
+}
+// Agregado de un lado: media de los dominios de sus participantes con conocimiento explícito (iguales pesos). Sin ninguno ⇒ null (carencia 0).
+export function familiaritySide(domains) { const ok = domains.filter((d) => d != null); return ok.length ? ok.reduce((s, d) => s + d, 0) / ok.length : null; }
+// Ajuste logit ÚNICO por operación: maxDefensa·U_D − maxAtaque·U_A con U = 1 − D (0 si el lado no tiene conocimiento explícito). Con todos los dominios a 30 es exactamente 0.
+// `scope`: 'quality' (calidad de la oportunidad, se suma a extraZ) o 'pressedAdvance' (se suma a z de la distribución del avance presionado).
+export function familiarityDelta(fam, scope, DA, DD) {
+  const mx = fam.maxLogit[scope]; const UA = DA == null ? 0 : 1 - DA; const UD = DD == null ? 0 : 1 - DD;
+  return { delta: mx.defense * UD - mx.attack * UA, UA, UD, max: { attack: mx.attack, defense: mx.defense } };
+}

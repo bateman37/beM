@@ -49,7 +49,7 @@ P.perceivedFactor = function perceivedFactor(e) {
   if (e.exec === 'dribble') { ca = this.taskValue('TAR02', 'attack', { handler: e.actor }); if (hasOpp) cd = this.taskValue('TAR02', 'defense', { primary: e.defend }); }
   else if (e.qual === 'TAR05') { ca = this.taskValue('TAR05', 'attack', { post: e.actor }); if (hasOpp) cd = this.taskValue('TAR05', 'defense', { postMarker: e.defend }); }
   else { ca = this.taskValue('TAR03', 'attack', { receiver: e.actor }); if (hasOpp) cd = this.taskValue('TAR03', 'defense', { receiverMarker: e.defend }); }
-  const p = this.qualityDistribution(ca, cd, 0, hasOpp).p;
+  const p = this.qualityDistribution(ca, cd, 0, hasOpp, false, this.famQualityEstimate(e, hasOpp)).p; // MOTOR-18: misma función pura de familiaridad (estimación sin exposición)
   // peso base de una opción nueva (1: neutro) × calidad percibida esperada; una sola vez por opción, sin multiplicar por etiquetas
   return oc.newEligibleActionBaseWeight * (p.comfortable * w.comfortable + p.normal * w.normal + p.forced * w.forced);
 };

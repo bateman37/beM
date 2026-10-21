@@ -121,12 +121,12 @@ P.scoreExits = function scoreExits(team, exits, shotWeights, qctx = null) {
 };
 // Probabilidad de calidad previa cómoda de una salida de media distancia (esperanza: la calidad real se sortea después de elegir).
 P.pComfortableFor = function pComfortableFor(e, qctx) {
-  if (e.window || !e.defend) return this.qualityDistribution(0, 0, 0, false).p.comfortable;
-  if (qctx && typeof qctx === 'object') return this.qualityDistribution(qctx.ca, qctx.cd, qctx.k ?? 0, true).p.comfortable;
+  if (e.window || !e.defend) return this.qualityDistribution(0, 0, 0, false, false, this.famQualityEstimate(e, false, qctx && typeof qctx === 'object' ? qctx : null)).p.comfortable; // MOTOR-18: misma función pura de familiaridad que `qualityOf` (sin exposición ni azar)
+  if (qctx && typeof qctx === 'object') return this.qualityDistribution(qctx.ca, qctx.cd, qctx.k ?? 0, true, false, this.famQualityEstimate(e, true, qctx)).p.comfortable;
   const task = qctx === 'TAR02' || qctx === 'TAR05' ? qctx : 'TAR03';
   const ca = task === 'TAR02' ? this.taskValue('TAR02', 'attack', { handler: e.actor }) : task === 'TAR05' ? this.taskValue('TAR05', 'attack', { post: e.actor }) : this.taskValue('TAR03', 'attack', { receiver: e.actor });
   const cd = task === 'TAR02' ? this.taskValue('TAR02', 'defense', { primary: e.defend }) : task === 'TAR05' ? this.taskValue('TAR05', 'defense', { postMarker: e.defend }) : this.taskValue('TAR03', 'defense', { receiverMarker: e.defend });
-  return this.qualityDistribution(ca, cd, 0, true).p.comfortable;
+  return this.qualityDistribution(ca, cd, 0, true, false, this.famQualityEstimate(e, true)).p.comfortable;
 };
 // Elemento del mezclador a partir de una salida (peso de entrenador, preferencia, valor y los ajustes de estilo de una sola aplicación).
 P.exitItem = function exitItem(x, keySuffix = '') {
@@ -237,7 +237,7 @@ P.organizedAction = function organizedAction(poss) {
   for (const e of plays) {
     e.team = team;
     e.q = this.playQuality(e);
-    e.exits = this.scoreExits(team, this.exitsFor(e), e.play.shotWeights, { ca: e.q.CA, cd: e.q.CD, k: 0 });
+    e.exits = this.scoreExits(team, this.exitsFor(e), e.play.shotWeights, { ca: e.q.CA, cd: e.q.CD, k: 0, family: e.play.family });
     const ct = e.exits.reduce((s, x) => s + x.coach, 0) || 1;
     e.pref = e.exits.reduce((s, x) => s + (x.coach / ct) * x.pref, 0);
     e.adapt = e.exits.reduce((s, x) => s + (x.coach / ct) * x.adapt, 0);
@@ -512,7 +512,7 @@ P.simpleResource = function simpleResource(poss, { origin, denied, safety = null
   const ca = this.taskValue('TAR02', 'attack', { handler: holder });
   const cd = this.taskValue('TAR02', 'defense', { primary: marker });
   ex.quality = denied != null ? { cls: 'forced', K: this.profile.opportunity.qualityShotLogit.forced, z: null } : this.qualityOf(ex, ca, cd, 0, true);
-  if (ex.quality.z === null) this.note('calidad', { clase: 'forzada por sistema negado', ficha: denied });
+  if (ex.quality.z === null) { this.note('calidad', { clase: 'forzada por sistema negado', ficha: denied }); this.famNotApplicable('calidad forzada determinista (sistema negado)', ex); }
   this.cover(origin === 'ESP15' ? 'ESP15 sistema negado' : origin === 'ESP16' ? 'ESP16 final de posesión' : 'ESP17 última acción');
   return this.resolveAttempt(ex);
 };
