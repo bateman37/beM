@@ -39,7 +39,7 @@ Estado: aportado.
 
 ## Verificaciones
 
-Estado: pendiente. Esperadas: suite completa, data:check, comprobación documental, recorrido de navegador, descarga real por bytes. Cada una debe constar como aportada / pendiente / no ejecutada con su log en el paquete detallado.
+Estado: aportadas. Esperadas: suite completa, data:check, comprobación documental, recorrido de navegador, descarga real por bytes. Cada una debe constar como aportada / pendiente / no ejecutada con su log en el paquete detallado.
 
 ## No cerrado por esta campaña
 

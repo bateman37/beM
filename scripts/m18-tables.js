@@ -103,7 +103,8 @@ W('aprendizaje.json', { study: STUDY, unit: 'hora equivalente dedicada a un cono
 if (existsSync(join(TREE, 'docs/tecnico/evidencia-motor18/l18/l18.json'))) { for (const f of ['l18.json', 'l18.csv', 'l18.md']) copyFileSync(join(TREE, 'docs/tecnico/evidencia-motor18/l18', f), join(R, `L18-${f}`)); }
 
 // ---------------------------------------------------------------- 6 · continuidad y niveles de registro (C vs esencial, D01, D02)
-const sameSport = (a, b) => { const fa = facts(a); const fb = facts(b); return !!fa && !!fb && ['score_home', 'score_away', 'events', 'possessions', 'draws', 'trajectory_fp'].every((k) => fa[k] === fb[k]); };
+// La huella de un diagnóstico (TRAY completa) y la de un esencial (incremental) son de algoritmos distintos: solo se comparan si son del mismo modo.
+const sameSport = (a, b) => { const fa = facts(a); const fb = facts(b); return !!fa && !!fb && ['score_home', 'score_away', 'events', 'possessions', 'draws'].every((k) => fa[k] === fb[k]) && (fa.trajectory_fp_mode !== fb.trajectory_fp_mode || fa.trajectory_fp === fb.trajectory_fp); };
 const famSig = (r) => { const f = r.essential?.familiarity ?? r.result?.familiarity; return f ? { operations: f.exposure?.operations, players_fp: sha(f.exposure?.players ?? null) } : null; };
 const cont = agenda.runs.filter((r) => r.block === 'C').map((r) => { const c = byId[r.id]; const e = byId[r.essential_link]; const sp = c?.ok && e?.ok ? sameSport(c, e) : null; const fc = c?.ok ? famSig(c) : null; const fe = e?.ok ? famSig(e) : null; return { diagnostic: r.id, essential: r.essential_link, same_sport: sp, trajectory_fp_note: 'ambos con huella incremental sobre los hechos', exposure_diag: fc?.operations ?? null, exposure_essential: fe?.operations ?? null, exposure_players_equal: fc && fe ? fc.players_fp === fe.players_fp : null }; });
 const d01 = byId.D01; const b01 = byId['B01-K8'];
