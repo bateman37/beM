@@ -199,7 +199,7 @@ const PERTINENT_SPECIAL = /^receta:(seleccion\.lectura|presion\.perdida|momento\
 function flushEvent(P) {
   const ev = P._ev; if (!ev) return; P._ev = null; const R = P.recipes; const [, hi] = R._bounds;
   for (const item of ev.items) {
-    const out = item.ops?.length || (item.ex && PERTINENT_SPECIAL.test(item.label)); const ctxList = ensure(R.contexts, item.cap, () => ({}));
+    const out = item.ops?.length || (item.ex && PERTINENT_SPECIAL.test(item.label) && (!/seleccion/.test(item.label) || item.ex.mix?.entradas || item.ex.accept?.entradas)); const ctxList = ensure(R.contexts, item.cap, () => ({}));
     const stratum = out ? item.stratum : `INTERMEDIO|${item.stratum}`;
     keepSmall(ensure(ctxList, stratum, () => []), item, out ? 8 : 2); if (item.base >= hi - 2 || (item.energia != null && item.energia < 10)) keepSmall(ensure(ctxList, out ? 'LIMITE' : 'LIMITE_INTERMEDIO', () => []), item, 2);
   }

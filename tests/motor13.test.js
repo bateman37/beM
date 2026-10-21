@@ -62,7 +62,7 @@ test('1 · catálogo y referencias: 32 familias con evaluador, 32 capacidades, e
   for (const r of reduced.runs.filter((x) => x.id !== 'AUD29')) assert.equal(r.resultado, 'inconcluso', `${r.id} no puede ser verde sin registro`);
   assert.equal(reduced.runs.find((x) => x.id === 'AUD29').resultado, 'no_evaluado');
   // la ausencia de exposición no es un atributo muerto y los estados de requisito son ejes separados
-  const aud05 = DIAG.runs.find((r) => r.id === 'AUD05'); assert.equal(aud05.resultado, 'inconcluso'); assert.deepEqual(aud05.metrics.observadasSinEntradasDeReceta, [], 'MOTOR-14: con el registro nuevo, las siete capacidades tienen receta registrada (MOTOR-17B: falta de registro separada de falta de exposición)');
+  const aud05 = DIAG.runs.find((r) => r.id === 'AUD05'); assert.equal(aud05.resultado, aud05.metrics.capacidadesConSalidaExacta === 32 && aud05.metrics.capacidadesObservadasEnCalculos === 32 ? 'conforme' : 'inconcluso', 'MOTOR-17B: el estado se DERIVA de la evidencia (nunca fijo); conforme solo con las 32 observadas y su salida pertinente exacta'); assert.deepEqual(aud05.metrics.observadasSinEntradasDeReceta, [], 'MOTOR-14: con el registro nuevo, las siete capacidades tienen receta registrada (MOTOR-17B: falta de registro separada de falta de exposición)');
   for (const r of DIAG.runs) for (const k of ['impl', 'registro', 'exposicion', 'resultado', 'revision']) assert.ok(r[k], `${r.id}.${k}`);
   // evidencia resoluble: cada hallazgo con partido remite a un attempt existente
   const attempts = new Set(DIAG.matches.map((m) => m.attempt_id)); for (const f of DIAG.findings) for (const e of f.evidence) if (e.attempt_id) assert.ok(attempts.has(e.attempt_id));

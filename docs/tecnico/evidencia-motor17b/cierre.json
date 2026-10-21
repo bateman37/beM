@@ -1,0 +1,103 @@
+{
+ "versions": {
+  "extension": "SEM-MOTOR17B-20261021",
+  "statsPolicy": "ACTA-MOTOR17B-R1",
+  "reference": "campaña MOTOR17B-CIERRE-20261021 (CONTROL17 = 01c8ade frente a M17B = e35911f); referencia histórica 20261016 = 83–98 y 6.684 sorteos",
+  "snapshot": "ESE-MOTOR17B-R1 / PRJ-MOTOR17B-R1",
+  "package": "MOTOR-17B-revision-rapida.zip + MOTOR-17B-indice-partes.json + evidencia detallada + MOTOR-17B-verificacion-final.json (fuera de los ZIP)"
+ },
+ "axes": [
+  {
+   "axis": "Correcciones de esta entrega (B17-01…05)",
+   "state": "cerradas en su alcance (con límites declarados)",
+   "detail": "Organización efectiva por hecho, 32/32 capacidades con salida pertinente, AUD05 derivado de la evidencia, crédito de robo con procedencia común y evidencia final coherente; suite no ejecutada."
+  },
+  {
+   "axis": "Estabilidad técnica",
+   "state": "evidencia acotada",
+   "detail": "72 ejecuciones planificadas (30 casos lógicos; no 72 observaciones independientes), todas terminadas y válidas; CONTROL17 y M17B comparados: deporte idéntico salvo créditos de robo y su procedencia."
+  },
+  {
+   "axis": "Calibración deportiva general",
+   "state": "PENDIENTE",
+   "detail": "No se cierra con esta muestra ni por elegir C17-02 (referencia provisional P1)."
+  },
+  {
+   "axis": "Rendimiento masivo del manager",
+   "state": "PENDIENTE",
+   "detail": "Objetivo heredado de cinco segundos para cien partidos sin alcanzar; esta campaña no es el benchmark frío ni se extrapola."
+  },
+  {
+   "axis": "Aceptación manual",
+   "state": "pendiente de Dennis",
+   "detail": "Recorrido manual no realizado por Dennis; nada se marca como aceptado."
+  },
+  {
+   "axis": "Conformidad FIBA integral",
+   "state": "NO certificada",
+   "detail": "Solo el criterio estadístico de robo, por síntesis verificada por ChatGPT; sin lectura directa del manual por Claude."
+  }
+ ],
+ "coverage": [
+  [
+   "Ejecuciones de campaña",
+   "72 (terminadas y válidas: true)"
+  ],
+  [
+   "AUD01–32 (M17B)",
+   "{\"conforme\":16,\"inconcluso\":14,\"señal\":1,\"no_evaluado\":1}"
+  ],
+  [
+   "AUD05",
+   "observadas 32/32 · con salida pertinente 32 · exactas 32 · pendientes 0 · sin exposición 0"
+  ],
+  [
+   "Sensibilidad",
+   "768 filas (765 con salida pertinente) en 256 contextos"
+  ],
+  [
+   "CONTROL17 ↔ M17B",
+   "30 casos; deporte idéntico: true; robos 424 → 433"
+  ],
+  [
+   "Organización efectiva",
+   "3818 filas de tiro con código efectivo"
+  ],
+  [
+   "Cadenas de saque (diagnósticos)",
+   "{\"ejecutada\":1031,\"interrumpida_fin_periodo\":21}"
+  ],
+  [
+   "Comprobador de la entrega",
+   "no ejecutado"
+  ]
+ ],
+ "cost": [
+  [
+   "Campaña CONTROL17",
+   "23.6 s de pared (suma de lotes)",
+   "30 ejecuciones esenciales, 4 workers; no es el benchmark frío"
+  ],
+  [
+   "Campaña M17B",
+   "39 s de pared (suma de lotes)",
+   "42 ejecuciones (esenciales y diagnósticas), concurrencia 4 y 2; no es el benchmark frío"
+  ]
+ ],
+ "costNote": "Medido en esta campaña (72 ejecuciones planificadas, tamaños de lote de 1 a 24); NO sustituye al benchmark frío de cien/doscientos ni se extrapola a esos tamaños. El objetivo heredado de cinco segundos para cien partidos sigue abierto.",
+ "reports": [
+  {
+   "path": "docs/tecnico/motor17b.md",
+   "what": "documentación técnica de la entrega"
+  },
+  {
+   "path": "docs/tecnico/evidencia-motor17b/",
+   "what": "hallazgos B17-01…05, diccionario, resumen operativo y estado de cierre"
+  },
+  {
+   "path": "docs/prompts/MOTOR-17B-recorrido-manual.md",
+   "what": "recorrido manual para Dennis"
+  }
+ ],
+ "checker": "python3 scripts/m17b-verify-delivery.py (CRC, tamaños, SHA-256, recuentos, claves, pertenencia, comparación, semántica de organización, sensibilidad, AUD05 y descargas reales)"
+}
