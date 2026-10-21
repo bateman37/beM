@@ -106,7 +106,7 @@ test('6. lectores: cierres con fila colectiva conciliada, producción por 100 co
 });
 
 test('7. versiones: una fuente común y un export producido sin instrumentación sigue reproduciéndose', () => {
-  assert.equal(APP_VERSION, 'MOTOR-17B'); assert.match(appLine(), /MOTOR-17B.*beM-motor-0\.17\.1-MOTOR17B.*beM-match-export\/9/);
+  assert.equal(APP_VERSION, 'MOTOR-18'); assert.match(appLine(), /MOTOR-18.*beM-motor-0\.18\.0-MOTOR18.*beM-match-export\/10/);
   assert.match(profile.effectiveId, /\+SEM-MOTOR11-20261017\+SEM-MOTOR12-20261017(\+SEM-MOTOR13-20261017)?(\+SEM-MOTOR14-20261017)?(\+SEM-MOTOR15-20261017)?(\+SEM-MOTOR15B-20261017)?(\+SEM-MOTOR17-20261018)?(\+SEM-MOTOR17B-20261021)?(\+SEM-MOTOR18-20261021)?$/);
   const html = readFileSync(new URL('../src/lab/index.html', import.meta.url), 'utf8'); assert.ok(!/MOTOR-0\d|MOTOR-10/.test(html), 'la cabecera estática no fija una versión propia');
   const res = runMatch(P.buildLabVariant(profile, players, 'LAB11-00', 'base').input, profile, { detail: 'full' });
