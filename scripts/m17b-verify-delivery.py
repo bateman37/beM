@@ -216,7 +216,7 @@ def final_evidence():
     else:
         g = lambda k: int(re.search(rf'^# {k} (\d+)', t, re.M).group(1)); ok = g('fail') == 0 and g('pass') == g('tests'); rec('suite_completa', 'correcto' if ok else 'fallido', {'tests': g('tests'), 'pass': g('pass'), 'fail': g('fail')})
     d = log('data-check.log'); rec('datos', 'no_ejecutado' if d is None else ('correcto' if 'datos correctos' in d else 'fallido'), None if d is None else d.strip().splitlines()[-1])
-    c = log('docs-check.log'); rec('documentacion_copia_limpia', 'no_ejecutado' if c is None else ('correcto' if re.search(r'correcto|OK|sin problemas', c, re.I) and not re.search(r'FALLO|error', c.splitlines()[-1], re.I) else 'fallido'), None if c is None else c.strip().splitlines()[-1])
+    c = log('docs-check.log'); rec('documentacion_copia_limpia', 'no_ejecutado' if c is None else ('correcto' if c.strip().splitlines()[-1].strip() == 'RESULTADO: todas las comprobaciones pasan.' and not re.search(r'^FALLO', c, re.M) else 'fallido'), None if c is None else c.strip().splitlines()[-1])
     nav = f'{ROOT}/informes/navegador.json'
     if not os.path.exists(nav): rec('navegador_chromium', 'no_ejecutado', 'sin navegador.json')
     else:
