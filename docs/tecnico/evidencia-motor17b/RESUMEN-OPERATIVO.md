@@ -42,9 +42,9 @@ Cadenas (diagnósticos): {"ejecutada":1031,"interrumpida_fin_periodo":21}. Coste
 |---|---|
 | Suite `npm test` sobre el código final | correcto (218/218, fallos 0) |
 | `npm run data:check` | correcto |
-| Comprobador documental en copia limpia | correcto — RESULTADO: 1 comprobaciones fallidas. |
-| Recorrido de Chromium (interfaz) | FALLIDO (16/17 pasos; consola 0; red 0) |
-| Perfil anterior → tarjeta → copia explícita | no ejecutado |
+| Comprobador documental en copia limpia | correcto — RESULTADO: todas las comprobaciones pasan. |
+| Recorrido de Chromium (interfaz) | correcto (17/17 pasos; consola 0; red 0) |
+| Perfil anterior → tarjeta → copia explícita | correcto (16 pasos) |
 | Descarga real desde los enlaces de la aplicación | **ver el recibo externo** `MOTOR-17B-verificacion-final.json` (se genera DESPUÉS de empaquetar y no puede ir dentro de los ZIP) |
 | Comprobador de la entrega (`m17b-verify-delivery.py`) | **ver el recibo externo** `MOTOR-17B-verificacion-final.json` |
 | Recorrido manual de Dennis | **pendiente de Dennis** |
