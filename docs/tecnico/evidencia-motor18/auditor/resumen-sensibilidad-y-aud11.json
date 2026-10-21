@@ -1,0 +1,277 @@
+{
+ "schema": "beM-motor18-auditor-resumen/1",
+ "nota": "Reproducción histórica: los 12 diagnósticos conservados de M17B (sin partidos nuevos) leídos con la proyección PRJ-MOTOR18-R1 frente a la salida conservada con PRJ-MOTOR17B-R1 (out/motor17b/auditoria/M17B/sensibilidad.csv). Las filas antiguas no se reescriben: este es otro resultado con otra identidad.",
+ "resultado_id_nuevo": "AUDR-2b1eb9ba",
+ "filas_total": 768,
+ "filas_con_dependencias": 18,
+ "contextos_afectados": 6,
+ "filas_con_salida_distinta": 18,
+ "base_no_coincide": 0,
+ "aud05": {
+  "capacidadesObservadasEnCalculos": 32,
+  "capacidadesConSalidaPertinenteContrastada": 32,
+  "capacidadesConSalidaExacta": 32
+ },
+ "contextos": [
+  {
+   "cap": "TEC07",
+   "lote": "LOT-eb517d23-R2",
+   "decision": "M000001-A1:E0375:312",
+   "jugador": "EQ01_B-J06",
+   "rol": "o",
+   "dependencias": [
+    {
+     "refKey": "off",
+     "receta": "receta:TAR06.attack",
+     "deltaReceta": 0.7,
+     "peso": 1
+    }
+   ],
+   "incrementos": {
+    "+1": {
+     "salidaAntes": 0.013273,
+     "despues_proyeccion_anterior": 0.013001,
+     "despues_corregido": 0.013049,
+     "diferencia": 4.8e-05
+    },
+    "+3": {
+     "salidaAntes": 0.013273,
+     "despues_proyeccion_anterior": 0.012473,
+     "despues_corregido": 0.012608,
+     "diferencia": 0.000135
+    },
+    "+5": {
+     "salidaAntes": 0.013273,
+     "despues_proyeccion_anterior": 0.011966,
+     "despues_corregido": 0.012177,
+     "diferencia": 0.000211
+    }
+   }
+  },
+  {
+   "cap": "TEC12",
+   "lote": "LOT-8270e4bb-R2",
+   "decision": "M000001-A1:E0231:302",
+   "jugador": "EQ02-J01",
+   "rol": "primary",
+   "dependencias": [
+    {
+     "refKey": "legalDef",
+     "receta": "receta:legalidad_defensiva",
+     "deltaReceta": 0.7,
+     "peso": 1
+    }
+   ],
+   "incrementos": {
+    "+1": {
+     "salidaAntes": 0.123909,
+     "despues_proyeccion_anterior": 0.125382,
+     "despues_corregido": 0.125888,
+     "diferencia": 0.000506
+    },
+    "+3": {
+     "salidaAntes": 0.123909,
+     "despues_proyeccion_anterior": 0.128373,
+     "despues_corregido": 0.129897,
+     "diferencia": 0.001524
+    },
+    "+5": {
+     "salidaAntes": 0.123909,
+     "despues_proyeccion_anterior": 0.131425,
+     "despues_corregido": 0.133972,
+     "diferencia": 0.002547
+    }
+   }
+  },
+  {
+   "cap": "FIS07",
+   "lote": "LOT-df4bc6b9-R2",
+   "decision": "M000001-A1:E0504:313",
+   "jugador": "EQ11-J01",
+   "rol": "shooter",
+   "dependencias": [
+    {
+     "refKey": "A",
+     "receta": "receta:ataque_tiro:midrange",
+     "deltaReceta": 0.1,
+     "peso": 1
+    }
+   ],
+   "incrementos": {
+    "+1": {
+     "salidaAntes": 0.414445,
+     "despues_proyeccion_anterior": 0.415148,
+     "despues_corregido": 0.416934,
+     "diferencia": 0.001786
+    },
+    "+3": {
+     "salidaAntes": 0.414445,
+     "despues_proyeccion_anterior": 0.416556,
+     "despues_corregido": 0.421929,
+     "diferencia": 0.005373
+    },
+    "+5": {
+     "salidaAntes": 0.414445,
+     "despues_proyeccion_anterior": 0.417965,
+     "despues_corregido": 0.426944,
+     "diferencia": 0.008979
+    }
+   }
+  },
+  {
+   "cap": "FIS07",
+   "lote": "LOT-a96cefde",
+   "decision": "M000005-A1:E0421:316",
+   "jugador": "EQ10-J07",
+   "rol": "shooter",
+   "dependencias": [
+    {
+     "refKey": "A",
+     "receta": "receta:ataque_tiro:three",
+     "deltaReceta": 0.1,
+     "peso": 1
+    }
+   ],
+   "incrementos": {
+    "+1": {
+     "salidaAntes": 0.354415,
+     "despues_proyeccion_anterior": 0.355049,
+     "despues_corregido": 0.356659,
+     "diferencia": 0.00161
+    },
+    "+3": {
+     "salidaAntes": 0.354415,
+     "despues_proyeccion_anterior": 0.356318,
+     "despues_corregido": 0.361168,
+     "diferencia": 0.00485
+    },
+    "+5": {
+     "salidaAntes": 0.354415,
+     "despues_proyeccion_anterior": 0.357589,
+     "despues_corregido": 0.365702,
+     "diferencia": 0.008113
+    }
+   }
+  },
+  {
+   "cap": "MEN04",
+   "lote": "LOT-a96cefde",
+   "decision": "M000002-A1:E0165:293",
+   "jugador": "EQ03-J03",
+   "rol": "primary",
+   "dependencias": [
+    {
+     "refKey": "legalDef",
+     "receta": "receta:legalidad_defensiva",
+     "deltaReceta": 0.2,
+     "peso": 1
+    }
+   ],
+   "incrementos": {
+    "+1": {
+     "salidaAntes": 0.120738,
+     "despues_proyeccion_anterior": 0.121697,
+     "despues_corregido": 0.121829,
+     "diferencia": 0.000132
+    },
+    "+3": {
+     "salidaAntes": 0.120738,
+     "despues_proyeccion_anterior": 0.123634,
+     "despues_corregido": 0.124036,
+     "diferencia": 0.000402
+    },
+    "+5": {
+     "salidaAntes": 0.120738,
+     "despues_proyeccion_anterior": 0.125598,
+     "despues_corregido": 0.126273,
+     "diferencia": 0.000675
+    }
+   }
+  },
+  {
+   "cap": "MEN04",
+   "lote": "LOT-a96cefde",
+   "decision": "M000006-A1:E0329:320",
+   "jugador": "EQ11-J01",
+   "rol": "interceptor",
+   "dependencias": [
+    {
+     "refKey": "legalDef",
+     "receta": "receta:legalidad_defensiva",
+     "deltaReceta": 0.2,
+     "peso": 1
+    }
+   ],
+   "incrementos": {
+    "+1": {
+     "salidaAntes": 0.118644,
+     "despues_proyeccion_anterior": 0.120063,
+     "despues_corregido": 0.120219,
+     "diferencia": 0.000156
+    },
+    "+3": {
+     "salidaAntes": 0.118644,
+     "despues_proyeccion_anterior": 0.122945,
+     "despues_corregido": 0.12342,
+     "diferencia": 0.000475
+    },
+    "+5": {
+     "salidaAntes": 0.118644,
+     "despues_proyeccion_anterior": 0.125886,
+     "despues_corregido": 0.126691,
+     "diferencia": 0.000805
+    }
+   }
+  }
+ ],
+ "aud11": {
+  "tiros": 1461,
+  "desajustes": 72,
+  "efectiva": {
+   "ORG02": 196,
+   "ORG03": 224,
+   "ORG01": 917,
+   "ORG05": 124
+  },
+  "clasificacion": {
+   "alternativa_reglada_acreditada": 72,
+   "orden_aplicada_acreditada": 0,
+   "sin_explicacion": 0,
+   "no_clasificable": 0,
+   "sin_clasificar_por_proyeccion_anterior": 0
+  },
+  "motivos": {},
+  "ejemplos": {
+   "alternativa_acreditada": [
+    {
+     "match_id": "M000001",
+     "source": "LOT-df4bc6b9-R2",
+     "attempt_id": "M000001-A1",
+     "event_id": "E0009",
+     "intended": "ORG06",
+     "effective": "ORG02",
+     "clase": "alternativa_acreditada",
+     "hecho": "E0006",
+     "alternativaConfigurada": "ORG02",
+     "fuente": "plan.fallbackOrg",
+     "motivoDelHecho": "ningún objetivo designado en pista: alternativa declarada del plan"
+    },
+    {
+     "match_id": "M000001",
+     "source": "LOT-df4bc6b9-R2",
+     "attempt_id": "M000001-A1",
+     "event_id": "E0014",
+     "intended": "ORG06",
+     "effective": "ORG02",
+     "clase": "alternativa_acreditada",
+     "hecho": "E0006",
+     "alternativaConfigurada": "ORG02",
+     "fuente": "plan.fallbackOrg",
+     "motivoDelHecho": "ningún objetivo designado en pista: alternativa declarada del plan"
+    }
+   ]
+  },
+  "criterio": "alternativa explicada solo si coinciden organización efectiva, alternativa configurada vigente y hecho causal de activación; una etiqueta aislada no basta; una orden pendiente o rechazada no explica"
+ },
+ "nota_aud11": "Los 72 desajustes son todos B04 (LOT-df4bc6b9-R2): ORG06 pretendida, ORG02 efectiva. El esencial/tabla de tiros contiene 75 filas con def_org distinto de la prevista: 72 son tiros válidos (universo del auditor) y 3 (E0162, E0472, E0493) son tiros con valid=false, fuera del universo."
+}
