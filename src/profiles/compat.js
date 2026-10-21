@@ -15,6 +15,7 @@ export const MODULES = [
   { id: 'population', label: 'Población y generador', ext: 'SEM-MOTOR11', path: 'population' },
   { id: 'batch', label: 'Parámetros de lotes', ext: 'SEM-MOTOR12', path: 'batch' },
   { id: 'audit', label: 'Auditoría', ext: 'SEM-MOTOR13', path: 'audit' },
+  { id: 'familiarity', label: 'Familiaridad y aprendizaje', ext: 'SEM-MOTOR18', path: 'familiarity' },
 ];
 // Los que el motor deportivo necesita para jugar (el resto son de lectura, análisis u operación y tienen valor por defecto declarado).
 export const REQUIRED_TO_PLAY = ['moment', 'coach', 'regulation'];
