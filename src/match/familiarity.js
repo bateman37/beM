@@ -15,7 +15,7 @@ const lvl = (m, key) => { const e = m?.[key]; return e && typeof e.level === 'nu
 P.initFamiliarity = function initFamiliarity() {
   const f = this.profileData.familiarity ?? null; // copia congelada del perfil: sin lectura anotada
   const on = !!(f && f.activation && f.activation.enabled === true);
-  this.fam = { on, anyExplicit: false, exp: { players: {}, operations: { quality: 0, pressedAdvance: 0, noApplicable: 0 } } };
+  this.fam = { on, anyExplicit: false, apps: {}, exp: { players: {}, operations: { quality: 0, pressedAdvance: 0, noApplicable: 0 } } };
   if (!on) return;
   this.fam.cfg = f;
   for (const t of this.input.teams) for (const p of t.players) if (explicit(p.knowledge)) this.fam.anyExplicit = true;
@@ -108,6 +108,13 @@ P.famAdjust = function famAdjust(c, scope) {
 P.famCredit = function famCredit(c) {
   for (const [pids, mods] of [[c.attackP, c.atk], [c.defP, c.dfn]]) if (mods.length) for (const id of pids) { const e = expOf(this, id); for (const mm of mods) e.modules[mm.id] = (e.modules[mm.id] ?? 0) + mm.w; }
 };
+// Resumen compacto de aplicación por ámbito y contexto (numerador, denominador y unidad: se conserva en el esencial sin las trazas por operación).
+P.famApplied = function famApplied(scope, a) {
+  const s = ((this.fam.apps[scope] ??= {})[a.ctx] ??= { operations: 0, withExplicitKnowledge: 0, nonZeroDelta: 0, sumDelta: 0, minDelta: null, maxDelta: null, sumAttackDeficit: 0, sumDefenseDeficit: 0, attackSides: 0, defenseSides: 0 });
+  s.operations += 1; if (a.neutral) return; s.withExplicitKnowledge += 1; s.sumDelta += a.delta; if (a.delta !== 0) s.nonZeroDelta += 1;
+  s.minDelta = s.minDelta == null ? a.delta : Math.min(s.minDelta, a.delta); s.maxDelta = s.maxDelta == null ? a.delta : Math.max(s.maxDelta, a.delta);
+  if (a.DA != null) { s.sumAttackDeficit += a.UA; s.attackSides += 1; } if (a.DD != null) { s.sumDefenseDeficit += a.UD; s.defenseSides += 1; }
+};
 const rnd = (x) => (x == null ? null : round(x, 6));
 P.famRecord = function famRecord(scope, c, a) {
   if (this.opts.detail !== 'full') return;
@@ -119,7 +126,7 @@ P.famRecord = function famRecord(scope, c, a) {
 P.famQuality = function famQuality(ex, hasOpposition) {
   if (!this.fam.on) return 0;
   const c = this.famQualityContext(ex, hasOpposition); const a = this.famAdjust(c, 'quality');
-  this.famCredit(c); this.fam.exp.operations.quality += 1; this.famRecord('quality', c, a);
+  this.famCredit(c); this.fam.exp.operations.quality += 1; this.famApplied('quality', a); this.famRecord('quality', c, a);
   return a.delta;
 };
 // Estimación (media distancia, calidad percibida): misma función pura con el conocimiento pertinente; sin exposición, sin registro y sin azar.
@@ -138,7 +145,7 @@ P.famNotApplicable = function famNotApplicable(reason, ex) {
 P.famPressed = function famPressed(handler, presser, support, height) {
   if (!this.fam.on) return 0;
   const c = this.famPressedContext(handler, presser, support, height); const a = this.famAdjust(c, 'pressedAdvance');
-  this.famCredit(c); this.fam.exp.operations.pressedAdvance += 1; this.famRecord('pressedAdvance', c, a);
+  this.famCredit(c); this.fam.exp.operations.pressedAdvance += 1; this.famApplied('pressedAdvance', a); this.famRecord('pressedAdvance', c, a);
   return a.delta;
 };
 
@@ -148,4 +155,14 @@ P.famExposure = function famExposure() {
   const players = {};
   for (const [pid, e] of Object.entries(this.fam.exp.players)) players[pid] = { liveTenths: e.liveTenths, positions: { ...e.positions }, offensiveRoles: { ...e.offensiveRoles }, defensiveRoles: { ...e.defensiveRoles }, modules: Object.fromEntries(Object.entries(e.modules).map(([k, v]) => [k, round(v, 9)])) };
   return { version: FAMILIARITY_VERSION, units: { liveTenths: 'décimas de juego vivo', positions: 'décimas', offensiveRoles: 'décimas', defensiveRoles: 'décimas', modules: 'crédito ponderado por operación real (1 por jugador–operación repartido entre sus módulos)' }, operations: { ...this.fam.exp.operations }, players };
+};
+
+// Informe único para el export y el esencial (solo lectura): identidad, política, resumen de aplicación y exposición. La instantánea completa de conocimiento vive UNA vez en la entrada.
+P.famReport = function famReport() {
+  if (!this.fam) return null;
+  const c = this.profileData.familiarity ?? null;
+  if (!this.fam.on) return { version: FAMILIARITY_VERSION, enabled: false, reason: c ? 'capa desactivada en el perfil' : 'el perfil no incluye `familiarity` (perfil anterior a MOTOR-18): compatibilidad neutra' };
+  const apps = {}; for (const [sc, byCtx] of Object.entries(this.fam.apps)) apps[sc] = Object.fromEntries(Object.entries(byCtx).map(([k, v]) => [k, { ...v, sumDelta: round(v.sumDelta, 9), minDelta: v.minDelta == null ? null : round(v.minDelta, 9), maxDelta: v.maxDelta == null ? null : round(v.maxDelta, 9), sumAttackDeficit: round(v.sumAttackDeficit, 9), sumDefenseDeficit: round(v.sumDefenseDeficit, 9) }]));
+  const modes = {}; for (const [pid, pl] of Object.entries(this.pl)) modes[pid] = explicit(pl.knowledge) ? 'explicit' : 'legacy-neutral';
+  return { version: FAMILIARITY_VERSION, knowledgeVersion: c.knowledgeVersion, learningVersion: c.learningVersion, enabled: true, compatibilityPolicy: c.activation.compatibilityPolicy, anyExplicitKnowledge: this.fam.anyExplicit, modes, applications: apps, exposure: this.famExposure() };
 };
