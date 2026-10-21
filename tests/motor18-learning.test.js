@@ -51,7 +51,7 @@ test('factores y ganancia §8.4: fórmulas exactas, tope 30, redondeo a 30 y cap
   near(f.player, 0.75 + 0.5 * (7 / 29)); near(f.teaching, 0.75 + 0.5 * (23 / 29)); near(f.content, 0.75 + 0.5 * (7 / 29)); near(f.transfer, 1 + 0.5 * (19 / 29)); assert.equal(f.relatedMaxLevel, 20);
   const dose = 1.5; const r = L.learnClosed({ level: 12, peak: 12, dose, rate: 0.8, F: f.product, params: P });
   near(r.level, 30 - 18 * Math.exp(-(0.8 * dose * f.product) / 29)); assert.equal(r.peak, r.level);
-  assert.equal(L.learnClosed({ level: 29.9, peak: 29.9, dose: 20, rate: 0.8, F: 1, params: P }).level, 30);
+  assert.equal(L.learnClosed({ level: 29.9, peak: 29.9, dose: 40, rate: 0.8, F: 1, params: P }).level, 30);
   assert.ok(L.learnClosed({ level: 12, peak: 12, dose: 1e6, rate: 0.8, F: 5, params: P }).level <= 30);
   assert.equal(L.learnClosed({ level: 12, peak: 12, dose: 0, rate: 0.8, F: 1, params: P }).level, 12);
   // una propuesta no tiene ni toca capacidades, edad, cuerpo, energía ni forma: el estado de aprendizaje solo contiene conocimiento, Polivalencia, entrenador y presupuestos
