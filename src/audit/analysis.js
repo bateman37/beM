@@ -138,25 +138,37 @@ export function selectContexts(projs, perCap) {
   return sel;
 }
 
+// MOTOR-18 (R17B-SENS-01): cambio de UNA receta cuando la capacidad `cap` del jugador `c.player` sube `inc` puntos. Se cambian TODOS los términos de esa receta que son de esa capacidad y jugador (el incremento es de
+// la capacidad del jugador, no de su rol). Misma aritmética que antes (operación pura con tope y energía registrados); sirve para el item principal y para cada receta dependiente de la misma operación.
+export function recipeChange(c, cap, inc, profile) {
+  const [lo, hi] = profile.abilityBounds;
+  const newBase = Math.min(hi, c.base + inc); const effectiveInc = newBase - c.base; let effAfter; let effBefore; let method;
+  // MOTOR-17 §7.1: con tope registrado la operación pura se evalúa ANTES y DESPUÉS con las mismas entradas (sin redondeos de la receta registrada): incremento efectivo 0 ⇒ cambio exactamente 0.
+  const exact = c.taskMax != null && c.energia != null;
+  if (exact) {
+    const pure0 = effectiveAbility(profile, c.base, c.energia, cap, c.taskMax); const gap = pure0 - c.eff; // gap ≠ 0 más allá del redondeo = penalización de decisión ya aplicada (p. ej. presión sobre MEN03): se mantiene fija
+    const fixedPenalty = Math.abs(gap) > 3e-3 ? gap : 0; // el redondeo registrado (energía a 2 decimales, efectiva a 3) no supera ≈0,0015
+    effBefore = fixedPenalty ? c.eff : pure0; effAfter = Math.min(hi, Math.max(lo, effectiveAbility(profile, newBase, c.energia, cap, c.taskMax) - fixedPenalty));
+    method = `${c.topeRegistrado ? 'operación pura effectiveAbility(base, energía, tope registrado en el término)' : 'operación pura effectiveAbility(base, energía, tope de la tarea del perfil)'}${fixedPenalty ? ' con la penalización de decisión registrada mantenida fija' : ''}`;
+  } else { effBefore = c.eff; effAfter = clamp(newBase - (c.base - c.eff), lo, hi); method = 'APROXIMADA: brecha base−efectiva registrada (tope de tarea no registrado)'; }
+  const W = sum(c.terminos.map((x) => x.peso)); const mine = (x) => x.cap === cap && x.jugador === c.player;
+  let num0 = 0; let num = 0; for (const x of c.terminos) { num0 += x.peso * (mine(x) ? effBefore : x.efectiva); num += x.peso * (mine(x) ? effAfter : x.efectiva); }
+  const before = num0 / W; const after = num / W;
+  return { newBase, effectiveInc, effBefore, effAfter, method, exact, before, after, delta: after - before };
+}
+// Cambios de las recetas dependientes de una operación (mismo hecho, misma capacidad, mismo jugador). Devuelve [{refKey, label, peso, delta, deltaReceta}].
+export function dependentChanges(op, cap, inc, profile) {
+  return (op.deps ?? []).map((d) => { const ch = recipeChange({ ...d, player: d.player }, cap, inc, profile); return { refKey: d.refKey, label: d.label, peso: d.peso ?? 1, lado: d.lado ?? null, delta: ch.delta }; });
+}
+
 export function sensitivity(contexts, profile, increments) {
   const [lo, hi] = profile.abilityBounds; const rows = [];
   for (const [cap, list] of Object.entries(contexts)) for (const c of list) for (const inc of increments) {
-    const newBase = Math.min(hi, c.base + inc); const effectiveInc = newBase - c.base; let effAfter; let effBefore; let method;
-    // MOTOR-17 §7.1: con tope registrado la operación pura se evalúa ANTES y DESPUÉS con las mismas entradas (sin redondeos de la receta registrada): incremento efectivo 0 ⇒ cambio exactamente 0.
-    const exact = c.taskMax != null && c.energia != null;
-    if (exact) {
-      const pure0 = effectiveAbility(profile, c.base, c.energia, cap, c.taskMax); const gap = pure0 - c.eff; // gap ≠ 0 más allá del redondeo = penalización de decisión ya aplicada (p. ej. presión sobre MEN03): se mantiene fija
-      const fixedPenalty = Math.abs(gap) > 3e-3 ? gap : 0 // el redondeo registrado (energía a 2 decimales, efectiva a 3) no supera ≈0,0015;
-      effBefore = fixedPenalty ? c.eff : pure0; effAfter = Math.min(hi, Math.max(lo, effectiveAbility(profile, newBase, c.energia, cap, c.taskMax) - fixedPenalty));
-      method = `${c.topeRegistrado ? 'operación pura effectiveAbility(base, energía, tope registrado en el término)' : 'operación pura effectiveAbility(base, energía, tope de la tarea del perfil)'}${fixedPenalty ? ' con la penalización de decisión registrada mantenida fija' : ''}`;
-    }
-    else { effBefore = c.eff; effAfter = clamp(newBase - (c.base - c.eff), lo, hi); method = 'APROXIMADA: brecha base−efectiva registrada (tope de tarea no registrado)'; }
-    const W = sum(c.terminos.map((x) => x.peso)); const mine = (x) => x.cap === cap && x.jugador === c.player && x.rol === c.rol;
-    let num0 = 0; let num = 0; for (const x of c.terminos) { num0 += x.peso * (mine(x) ? effBefore : x.efectiva); num += x.peso * (mine(x) ? effAfter : x.efectiva); }
-    const before = num0 / W; const after = num / W; const special = specialOutput(c, cap, newBase, effAfter, profile); const delta = after - before;
+    const { newBase, effectiveInc, effBefore, effAfter, method, exact, before, after, delta } = recipeChange(c, cap, inc, profile);
+    const special = specialOutput(c, cap, newBase, effAfter, profile);
     // MOTOR-17B: la salida pertinente sale de la operación real enlazada (misma función pura que el productor). Las salidas derivadas de MOTOR-14 que ya eran la magnitud consumida (selección, pérdida por presión,
     // consistencia y gasto de energía) siguen siéndolo; las recetas de rebote y la lectura defensiva son valores INTERMEDIOS y no sustituyen la salida de la operación.
-    let fin = null; for (const op of c.ops ?? []) { fin = consumerOutput(op, profile, { delta, player: c.player, valor: c.valor }); if (fin) break; }
+    let fin = null; let depsUsed = []; for (const op of c.ops ?? []) { const deps = dependentChanges(op, cap, inc, profile); fin = consumerOutput(op, profile, { delta, player: c.player, valor: c.valor, deps }); if (fin) { depsUsed = fin.dependenciasAplicadas ?? []; break; } }
     const specialPert = special && !special.noPertinente && /^receta:(seleccion\.lectura|presion\.perdida|momento\.consistencia|gasto_resistencia)/.test(c.label);
     let salidaCols = {}; let pertinente = false; let consumidor = null; let funcion = null; let cobertura = 'intermedio';
     if (fin) {
@@ -170,7 +182,7 @@ export function sensitivity(contexts, profile, increments) {
     const unitCtx = pertinente ? `${salidaCols.salidaUnidad ?? special?.salidaUnidad} · receta intermedia: puntos (escala 1–30)` : 'puntos de receta (escala 1–30): ENTRADA INTERMEDIA de la operación; la salida pertinente no está registrada para este contexto: NO es probabilidad ni puntos del partido';
     rows.push({ cap, stratum: c.stratum, gdec: c.gdec, decision_id: c.decision_id, event_id: c.event_id, label: c.label, player: c.player, role: c.rol, base: c.base, incrementoSolicitado: inc, incrementoEfectivo: effectiveInc, energia: c.energia, efectivaAntes: c.eff, efectivaDespues: r4(effAfter), valorAntes: c.valor, valorAntesReconstruido: r4(before), valorDespues: r4(after), delta: r4(delta),
       // `delta` es SIEMPRE el cambio del valor de receta (entrada intermedia). La magnitud consumida va en `salida*` con su propia unidad (sección 5 del encargo MOTOR-17B).
-      pertinente, consumidor, funcion, cobertura, ...salidaCols,
+      pertinente, consumidor, funcion, cobertura, dependencias: depsUsed, dependenciasN: depsUsed.length, ...salidaCols,
       magnitud: pertinente ? 'salida de la operación real (ver salida*) y valor de receta intermedio (delta)' : 'valor de receta intermedio: la salida pertinente no se pudo calcular para este contexto', unidad: unitCtx,
       exactitud: exactaSalida || (!pertinente && exact) ? 'exacta' : 'aproximada', exactitudSalida: !pertinente ? 'sin salida pertinente' : exactaSalida ? 'exacta (entradas registradas + función de producción)' : 'aproximada', topeRegistrado: !!c.topeRegistrado, sinSalida: !!c.sinSalida,
       saturacion: effectiveInc < inc ? (effectiveInc === 0 ? 'base en el máximo: incremento efectivo 0' : 'recortada al máximo') : (effAfter >= hi ? 'efectiva en el máximo' : ''), limite: !!c.limite, metodo: method });

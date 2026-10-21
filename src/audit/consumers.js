@@ -17,16 +17,25 @@ const dist = (before, after) => Object.keys(after).map((k) => ({ clave: k, antes
 const normalized = (w) => { const t = Object.values(w).reduce((a, b) => a + b, 0); return Object.fromEntries(Object.entries(w).map(([k, v]) => [k, v / t])); };
 
 // `delta`: cambio del VALOR de la receta enlazada (entrada intermedia). `player`: jugador del contexto. Devuelve null si el contexto no puede evaluarse (se declara, no se inventa).
-export function consumerOutput(op, profile, { delta, player, valor }) {
+// MOTOR-18 (R17B-SENS-01): `deps` = cambios de las demás recetas de la MISMA operación alimentadas por la misma capacidad del mismo jugador ([{refKey, label, peso, delta}]). Se aplican TODOS a la vez sobre las
+// entradas registradas (una sola vez por entrada: se deduplica por refKey y se ignora la que coincide con la principal). Las entradas que no cambian conservan su valor registrado.
+const CONSUMER_KEYS = { tiro: ['A', 'D', 'prep'], control: ['off', 'def', 'legalDef', 'legalOff'], suelto: ['ra', 'rd'], calidad: ['ca', 'cd'] };
+export function consumerOutput(op, profile, { delta, player, valor, deps = [] }) {
   const n = op.note; const kind = consumerOf(op); const key = op.refKey; const peso = op.peso ?? 1;
-  const base = { consumidor: kind, funcion: null, entradaIntermedia: { antes: valor, despues: r4(valor + delta), unidad: 'puntos de receta (escala 1–30)' }, referenciaRegistro: null };
+  const allowed = CONSUMER_KEYS[kind] ?? [];
+  const extra = {}; for (const d of deps) if (d.refKey !== key && allowed.includes(d.refKey) && !extra[d.refKey]) extra[d.refKey] = d;
+  const chg = (k) => (k === key ? { delta, peso } : extra[k] ? { delta: extra[k].delta, peso: extra[k].peso ?? 1 } : null);
+  const depsApplied = Object.values(extra).map((d) => ({ refKey: d.refKey, receta: d.label, deltaReceta: r4(d.delta), peso: d.peso ?? 1 }));
+  const base = { dependenciasAplicadas: depsApplied, consumidor: kind, funcion: null, entradaIntermedia: { antes: valor, despues: r4(valor + delta), unidad: 'puntos de receta (escala 1–30)' }, referenciaRegistro: null };
   if (kind === 'tiro') {
     const sh = profile.shots[n.zona]; const e = n.entradas; if (!sh) return null;
     const b = shotResolution(profile, sh, e); let { A, D, K } = e;
-    if (key === 'A') A += peso * delta; else if (key === 'D') D += peso * delta; else if (key === 'prep') K = e.K + shotPrepCostLogit(profile, e.prep) - shotPrepCostLogit(profile, e.prep + delta); else return null;
+    if (!['A', 'D', 'prep'].includes(key)) return null;
+    const cA = chg('A'); const cD = chg('D'); const cP = chg('prep');
+    if (cA) A += cA.peso * cA.delta; if (cD) D += cD.peso * cD.delta; if (cP) K = e.K + shotPrepCostLogit(profile, e.prep) - shotPrepCostLogit(profile, e.prep + cP.delta);
     const a = shotResolution(profile, sh, { A, D, K, Z: e.Z, alpha: e.alpha });
     return { ...base, funcion: 'shotResolution (src/match/formulas.js)', salida: `probabilidad de acierto del ${n.zona === 'freeThrow' ? 'tiro libre' : `tiro de campo (${n.zona})`}`, salidaUnidad: PROB, antes: b.p, despues: a.p, registrada: n.salida.p, diferenciaBase: Math.abs(b.p - n.salida.p), tolerancia: TOLERANCE.tiro,
-      detalle: { pBaseAntes: r4(b.pBase), pBaseDespues: r4(a.pBase), zona: n.zona, entrada: key === 'A' ? 'capacidad ofensiva efectiva A' : key === 'D' ? 'capacidad defensiva efectiva D' : 'coste logit de preparación del movimiento (K)' } };
+      detalle: { pBaseAntes: r4(b.pBase), pBaseDespues: r4(a.pBase), zona: n.zona, entrada: key === 'A' ? 'capacidad ofensiva efectiva A' : key === 'D' ? 'capacidad defensiva efectiva D' : 'coste logit de preparación del movimiento (K)', entradasCambiadas: ['A', 'D', 'prep'].filter((k) => chg(k)) } };
   }
   if (kind === 'tapon') {
     const sh = profile.shots[n.zona]; const e = n.entradas; const b = blockResolution(profile, sh, e);
@@ -50,13 +59,16 @@ export function consumerOutput(op, profile, { delta, player, valor }) {
     return null;
   }
   if (kind === 'suelto') {
-    const e = n.entradas; const b = looseControlP(profile, e.ra, e.rd); const a = looseControlP(profile, key === 'ra' ? e.ra + delta : e.ra, key === 'rd' ? e.rd + delta : e.rd);
+    const e = n.entradas; const b = looseControlP(profile, e.ra, e.rd); const a = looseControlP(profile, e.ra + (chg('ra')?.delta ?? 0), e.rd + (chg('rd')?.delta ?? 0));
     return { ...base, funcion: 'looseControlP (src/match/formulas.js)', salida: 'probabilidad de que el ataque conserve el balón suelto', salidaUnidad: PROB, antes: b, despues: a, registrada: n.salida.p, diferenciaBase: Math.abs(b - n.salida.p), tolerancia: TOLERANCE.suelto, detalle: {} };
   }
   if (kind === 'control') {
     const spec = { ...n.entradas }; const out = (s) => { const r = categoryResolution(profile, s); return r.final ?? normalized(r.w); };
     const b = out(spec); const s2 = { ...spec };
-    if (key === 'off') s2.off += delta; else if (key === 'def') { if (s2.def == null) return null; s2.def += peso * delta; } else if (key === 'legalDef') s2.legalDef += delta; else if (key === 'legalOff') s2.legalOff += delta; else return null;
+    if (!['off', 'def', 'legalDef', 'legalOff'].includes(key)) return null;
+    if (key === 'def' && s2.def == null) return null;
+    const cO = chg('off'); const cDf = chg('def'); const cLD = chg('legalDef'); const cLO = chg('legalOff');
+    if (cO) s2.off += cO.delta; if (cDf && s2.def != null) s2.def += cDf.peso * cDf.delta; if (cLD) s2.legalDef += cLD.delta; if (cLO) s2.legalOff += cLO.delta;
     const a = out(s2); const focus = key === 'legalOff' ? 'offensiveFoul' : key === 'legalDef' ? (spec.hasDefend ? 'shootingFoul' : 'defensiveNonShootingFoul') : 'turnover';
     if (b[focus] == null) return null;
     const rec = n.salida; const diff = Math.max(...Object.keys(rec).map((k) => Math.abs((b[k] ?? 0) - rec[k])));
@@ -64,7 +76,7 @@ export function consumerOutput(op, profile, { delta, player, valor }) {
   }
   if (kind === 'calidad') {
     const e = n.entradas; const q = (x) => { const r = qualityResolution(profile, x); return r.final; };
-    const b = q(e); const a = q({ ...e, ca: key === 'ca' ? e.ca + delta : e.ca, cd: key === 'cd' && e.cd != null ? e.cd + delta : e.cd });
+    const b = q(e); const a = q({ ...e, ca: e.ca + (chg('ca')?.delta ?? 0), cd: e.cd != null ? e.cd + (chg('cd')?.delta ?? 0) : e.cd });
     const rec = Object.fromEntries((n.pesos ?? []).map((x) => [x.clase, x.p])); const diff = Math.max(...Object.keys(b).map((k) => Math.abs(b[k] - (rec[k] ?? 0))));
     return { ...base, funcion: 'qualityResolution (src/match/formulas.js)', salida: 'probabilidad de calidad previa cómoda de la oportunidad', salidaUnidad: PROB, antes: b.comfortable, despues: a.comfortable, registrada: rec.comfortable ?? null, diferenciaBase: diff, tolerancia: TOLERANCE.calidad, opciones: dist(b, a), detalle: { lado: key === 'ca' ? 'ataque' : 'defensa' } };
   }

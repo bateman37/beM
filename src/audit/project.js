@@ -3,8 +3,9 @@
 // toca ningún archivo original.
 import { jsonlRecords, ensure, inc, fnv, r4, sum } from './util.js';
 import { effectiveAbility } from '../match/core.js';
+import { classifyDefOrg } from './aud11.js';
 
-export const PROJECTION_VERSION = 'PRJ-MOTOR17B-R1'; // MOTOR-17B: contextos enlazados a la operación real que consume la receta (`salida:*`); MOTOR-15B: cadenas de saque con clasificación y casos; energía por ámbito y tarea con ejemplos
+export const PROJECTION_VERSION = 'PRJ-MOTOR18-R1'; // MOTOR-18 (R17B-SENS-01): cada operación enlazada conserva las recetas hermanas del mismo jugador y capacidad que la alimentan (`deps`); AUD11 clasificado;  MOTOR-17B: MOTOR-17B: contextos enlazados a la operación real que consume la receta (`salida:*`); MOTOR-15B: cadenas de saque con clasificación y casos; energía por ámbito y tarea con ejemplos
 export const BIN_EDGES = [0, 0.2, 0.4, 0.6, 0.8, 1];
 export const binOf = (p) => { for (let i = 0; i < BIN_EDGES.length - 2; i++) if (p < BIN_EDGES[i + 1]) return i; return BIN_EDGES.length - 2; };
 const PLAYER = /^EQ\d+(_B)?-J\d+$/;
@@ -83,7 +84,7 @@ export function projectAttempt(src, a, profile, cfg) {
   P.ms.decisiones = performance.now() - t0;
 
   // ---------------------------------------------------------------- hechos (relojes, bucles, tipos)
-  const ev = src.stream(a, 'eventos'); P.bytes.eventos = ev?.length ?? 0; const lastOf = {};
+  const ev = src.stream(a, 'eventos'); P.bytes.eventos = ev?.length ?? 0; const lastOf = {}; const orgEv = []; const seqOf = {};
   if (ev) {
     let prev = null; let streak = 0; let prevSig = null; let prevScore = [0, 0]; const SKIP = new Set(['free_throw', 'foul', 'substitution', 'timeout', 'period_start', 'period_end', 'interval', 'tipoff', 'correction']);
     for (const e of jsonlRecords(ev)) {
@@ -94,7 +95,8 @@ export function projectAttempt(src, a, profile, cfg) {
       if (e.type !== 'correction' && e.score && (e.score[0] < prevScore[0] || e.score[1] < prevScore[1]) ) P.events.scoreBad += 1; prevScore = e.score ?? prevScore;
       const sig = `${e.type}|${e.team}|${e.possession_id}|${e.intent?.motivo ?? ''}|${e.clock?.after}`;
       if (!SKIP.has(e.type) && (e.durationTenths ?? 0) === 0 && sig === prevSig) { streak += 1; if (streak === 1) P.events.loop.streaks += 1; if (streak > P.events.loop.maxStreak) { P.events.loop.maxStreak = streak; P.events.loop.example = { event_id: e.event_id, signature: sig }; } } else streak = 0;
-      prevSig = sig; prev = e;
+      prevSig = sig; prev = e; seqOf[e.event_id] = e.sequence;
+      if (e.type === 'defense' && e.intent?.origen === 'organización defensiva efectiva') orgEv.push({ id: e.event_id, seq: e.sequence, team: e.intent.defiende, idx: e.team == null ? null : 1 - e.team, intencion: e.intent.intencion, efectiva: e.intent.efectiva, alternativa: !!e.intent.alternativa, objetivo: e.intent.objetivo ?? null, motivo: e.intent.motivo ?? null });
       if (e.possession_id) lastOf[e.possession_id] = { id: e.event_id, type: e.type, fin: e.effects?.fin ?? null, perdida: !!e.effects?.perdida };
     }
   }
@@ -104,7 +106,7 @@ export function projectAttempt(src, a, profile, cfg) {
     if (r.record_type === 'cambio_estado') { P.states.changes += 1; inc(P.states.ambito, r.ambito); inc(P.states.nuevoSum, r.ambito, r.nuevo ?? 0); inc(P.states.nuevoN, r.ambito); if (r.ambito === 'T') { P.states.T.n += 1; if (r.nuevo) P.states.T.nonzero += 1; } }
     else if (r.record_type === 'episodio') inc(P.states.episodes, r.tipo ?? r.id ?? 'episodio');
   }
-  const or = src.stream(a, 'ordenes'); if (or) for (const r of jsonlRecords(or)) { P.orders.n += 1; inc(P.orders.tipos, r.record_type + ':' + (r.tipo ?? r.type ?? r.state ?? '')); }
+  const defOrders = []; const or = src.stream(a, 'ordenes'); P._ordersSeen = !!or; if (or) for (const r of jsonlRecords(or)) { if (r.record_type === 'orden' && r.type === 'defOrg') defOrders.push({ id: r.order_id ?? r.id, team: r.team, state: r.state, defense: r.content?.defense ?? null, fallback: r.content && 'fallbackOrg' in r.content ? r.content.fallbackOrg : undefined, lastEvent: r.activation?.lastEvent ?? null, step: r.activation?.step ?? null }); P.orders.n += 1; inc(P.orders.tipos, r.record_type + ':' + (r.tipo ?? r.type ?? r.state ?? '')); }
   P.bytes.sorteos = src.stream(a, 'sorteos')?.length ?? 0;
 
   // ---------------------------------------------------------------- tablas
@@ -125,10 +127,10 @@ export function projectAttempt(src, a, profile, cfg) {
   // finalizadores y familias (§11.1): unidades y presencia por equipo
   P.finalizers = {}; for (const f of fin) { if (!f.closed) continue; const x = ensure(P.finalizers, f.team_instance_id, () => ({ total: 0, byPlayer: {} })); x.total += 1; inc(x.byPlayer, f.shooter_player_instance_id); }
   P.families = {}; for (const r of T.ejecuciones ?? []) { const x = ensure(P.families, r.team_instance_id, () => ({ total: 0, byFamily: {}, byFicha: {} })); x.total += 1; inc(x.byFamily, r.family ?? 'sin_familia'); if (r.ficha) inc(x.byFicha, r.ficha); }
-  P.shots = { n: 0, byQuality: {}, defOrg: { n: 0, mismatch: 0, effective: {} }, noParticipants: 0 };
-  for (const s of T.tiros ?? []) { if (!s.valid || s.annulled) continue; P.shots.n += 1; const q = ensure(P.shots.byQuality, s.quality ?? 'sin_calidad', () => ({ n: 0, sumPFinal: 0, sumPConv: 0, made: 0 })); q.n += 1; q.sumPFinal += s.p_final ?? 0; q.sumPConv += s.p_conversion ?? 0; if (s.made) q.made += 1; if (s.def_org_intended) { P.shots.defOrg.n += 1; inc(P.shots.defOrg.effective, s.def_org_effective ?? 'null'); if (s.def_org_effective !== s.def_org_intended) P.shots.defOrg.mismatch += 1; } if (!s.shooter_player_instance_id) P.shots.noParticipants += 1; }
+  P.shots = { n: 0, byQuality: {}, defOrg: { n: 0, mismatch: 0, effective: {}, clases: {}, motivos: {}, ejemplos: {} }, noParticipants: 0 }; const planCache = {};
+  for (const s of T.tiros ?? []) { if (!s.valid || s.annulled) continue; P.shots.n += 1; const q = ensure(P.shots.byQuality, s.quality ?? 'sin_calidad', () => ({ n: 0, sumPFinal: 0, sumPConv: 0, made: 0 })); q.n += 1; q.sumPFinal += s.p_final ?? 0; q.sumPConv += s.p_conversion ?? 0; if (s.made) q.made += 1; if (s.def_org_intended) { const D = P.shots.defOrg; D.n += 1; inc(D.effective, s.def_org_effective ?? 'null'); if (s.def_org_effective !== s.def_org_intended) { D.mismatch += 1; const c = classifyDefOrg(s, { orgEv, defOrders, seqOf, ordersSeen: P._ordersSeen, planOf: (id) => planCache[id] ??= (src.planOf?.(a, id) ?? null), defaultFallback: profile.defense?.specials?.boxAndOneDefaultFallback ?? null }); inc(D.clases, c.clase); if (c.motivo) inc(D.motivos, `${c.clase}: ${c.motivo}`); const ex = (D.ejemplos[c.clase] ??= []); if (ex.length < 2) ex.push({ attempt_id: a.attempt_id, event_id: s.event_id, intended: s.def_org_intended, effective: s.def_org_effective, ...c }); } } if (!s.shooter_player_instance_id) P.shots.noParticipants += 1; }
   P.ms.total = performance.now() - t0;
-  delete P._lastSel;
+  delete P._lastSel; delete P._ordersSeen;
   return P;
 }
 
@@ -196,8 +198,28 @@ function linkMix(P, r) {
 }
 // Cierra el hecho: retiene (selección ciega y determinista por hash) los contextos con operación enlazada o con entradas derivadas (siete capacidades de MOTOR-14); el resto queda como contexto intermedio de reserva.
 const PERTINENT_SPECIAL = /^receta:(seleccion\.lectura|presion\.perdida|momento\.consistencia|gasto_resistencia)/; // magnitudes que ya eran la salida consumida (MOTOR-14); rebote y lectura defensiva son intermedios
+// MOTOR-18 (R17B-SENS-01): la misma capacidad del mismo jugador puede alimentar DOS recetas de la misma operación (p. ej. FIS07 → A y prep del tiro; MEN04 → def y legalDef del control). Para cada op de un item se
+// conservan, como copias ligeras sin referencias circulares, las recetas hermanas del MISMO hecho que comparten la nota de la operación y contienen esa capacidad de ese jugador. Se deduplica por (entrada, receta):
+// un incremento no se suma dos veces.
+function linkDeps(ev) {
+  const recOf = new Map(); for (const rc of ev.recs) for (const it of rc.items) recOf.set(it, rc);
+  for (const item of ev.items) {
+    if (!item.ops?.length) continue; const rc = recOf.get(item);
+    for (const op of item.ops) {
+      const seen = new Set([`${op.refKey}|${item.label}`]); const deps = [];
+      for (const other of ev.items) {
+        if (other === item || other.cap !== item.cap || other.player !== item.player || recOf.get(other) === rc) continue;
+        for (const o2 of other.ops ?? []) {
+          if (o2.note !== op.note) continue; const k = `${o2.refKey}|${other.label}`; if (seen.has(k)) continue; seen.add(k);
+          deps.push({ refKey: o2.refKey, peso: o2.peso ?? 1, lado: o2.lado ?? null, label: other.label, valor: other.valor, base: other.base, eff: other.eff, energia: other.energia, taskMax: other.taskMax, topeRegistrado: other.topeRegistrado, terminos: other.terminos, player: other.player, cap: other.cap });
+        }
+      }
+      if (deps.length) op.deps = deps;
+    }
+  }
+}
 function flushEvent(P) {
-  const ev = P._ev; if (!ev) return; P._ev = null; const R = P.recipes; const [, hi] = R._bounds;
+  const ev = P._ev; if (!ev) return; P._ev = null; const R = P.recipes; const [, hi] = R._bounds; linkDeps(ev);
   for (const item of ev.items) {
     const out = item.ops?.length || (item.ex && PERTINENT_SPECIAL.test(item.label) && (!/seleccion/.test(item.label) || item.ex.mix?.entradas || item.ex.accept?.entradas)); const ctxList = ensure(R.contexts, item.cap, () => ({}));
     const stratum = out ? item.stratum : `INTERMEDIO|${item.stratum}`;
