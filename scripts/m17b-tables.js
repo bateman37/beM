@@ -106,6 +106,13 @@ for (const x of rows.filter((q) => q.v === 'M17B' && q.es)) { const t = x.es.sho
 writeFileSync(join(R, '10-ORGANIZACION-EFECTIVA.csv'), orl.join('')); writeFileSync(join(R, '10b-ORGANIZACION-POR-CASO.csv'), head(ORS) + Object.values(ors).map((a) => line(ORS, { ...a, plan_versions: [...a.plan_versions].sort().join('|') })).join(''));
 ctx.counts.organizacion = { filas: orl.length - 1, valoresNoCadena: legacyShape };
 
+// órdenes de organización defensiva con su historia de estados (solicitada → pendiente → vigente…): el estado pendiente de B03 se conserva por orden y por posición del hecho de activación
+const ORD = ['row_key', 'logical_key', 'order_id', 'type', 'team_index', 'issuer', 'state_final', 'history_states', 'requested_step', 'requested_period', 'requested_last_event', 'activation_step', 'activation_period', 'activation_last_event', 'content_defense', 'reason'];
+const ordl = [head(ORD)]; let ordN = 0;
+for (const x of rows.filter((q) => q.es)) for (const o of x.es.direction.orders ?? []) { if (o.type !== 'defOrg') continue; ordN += 1; const h = o.history ?? [];
+  ordl.push(line(ORD, { row_key: x.rec.row_key, logical_key: x.lk, order_id: o.id, type: o.type, team_index: o.team, issuer: o.issuer, state_final: o.state, history_states: h.map((q) => q.state).join('>'), requested_step: h[0]?.step, requested_period: h[0]?.period, requested_last_event: h[0]?.lastEvent, activation_step: o.activation?.step, activation_period: o.activation?.period, activation_last_event: o.activation?.lastEvent, content_defense: o.content?.defense, reason: o.reason })); }
+writeFileSync(join(R, '10c-ORDENES-DE-ORGANIZACION.csv'), ordl.join('')); ctx.counts.ordenesDeOrganizacion = ordN;
+
 // ---------------------------------------------------------------------------------------------------------------- diagnósticos: embudo de robos (criterio y procedencia comunes), cadenas de saque y diagnóstico ↔ principal
 const FUN = ['row_key', 'logical_key', 'match_id', 'event_id', 'period', 'route', 'event_type', 'turnover_cause', 'ball', 'turnover_player', 'turnover_team', 'defender_resolved', 'intervention_attempt', 'recoverer', 'steal_credit_to', 'credit_source', 'credit_contact', 'reason_no_credit', 'possession_id'];
 const CH = ['row_key', 'logical_key', 'chain', 'possession', 'period', 'kind', 'origen', 'status', 'cierre', 'receptor', 'opcionUsada', 'negadas', 'clase'];

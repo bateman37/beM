@@ -154,14 +154,14 @@ def org_semantics():
                     if e['essential_version'] != 'ESE-MOTOR17-R1': bad.append(f'CONTROL17 con versión inesperada {e["essential_version"]}')
                     di = cols.index('defense_org'); legacy += sum(1 for r in sh['rows'] if isinstance(r[di], dict) or r[di] is None); continue
                 if e['essential_version'] != 'ESE-MOTOR17B-R1' or e.get('field_semantics', {}).get('version') != 'ESE-MOTOR17B-R1': bad.append(f'M17B sin versión/semántica de conservación en {os.path.basename(f)}')
-                ix = {c: cols.index(c) for c in ['defense_org', 'defense_org_intended', 'defense_org_alternate', 'defense_org_objective', 'defense_org_plan_version', 'defense_org_source', 'defense_intervention']}
+                ix = {c: cols.index(c) for c in ['defense_org', 'defense_org_intended', 'defense_org_alternate', 'defense_org_objective', 'defense_org_plan_version', 'defense_org_source', 'defense_org_reason', 'defense_intervention']}
                 for r in sh['rows']:
                     n += 1
                     if not (r[ix['defense_org']] is None or re.fullmatch(r'ORG0[1-6]', str(r[ix['defense_org']]))): bad.append(f"defense_org no es un código de organización: {r[ix['defense_org']]!r}")
                     if r[ix['defense_org_source']] not in ENUM: bad.append('defense_org_source fuera del enum')
                     if r[ix['defense_org_alternate']] not in (True, False, None): bad.append('defense_org_alternate no booleano')
                     if not isinstance(r[ix['defense_org_plan_version']], int): bad.append('defense_org_plan_version no entero')
-                    if r[ix['defense_org_source']] == 'no reconstruible' and r[ix['defense_org']] is not None: bad.append('organización inventada en una posesión no reconstruible')
+                    if r[ix['defense_org_source']] == 'no reconstruible' and (r[ix['defense_org']] is not None or not r[ix['defense_org_reason']]): bad.append('organización inventada o sin motivo en una posesión no reconstruible')
                     if r[ix['defense_org_source']] == 'alternativa' and not (r[ix['defense_org_alternate']] is True and r[ix['defense_org_intended']] != r[ix['defense_org']]): bad.append('alternativa sin condición o sin diferir de la pretendida')
                     if r[ix['defense_intervention']] is not None and not isinstance(r[ix['defense_intervention']], dict): bad.append('defense_intervention no es un objeto')
                 if any(not (x['org_mixed'] is False or x['org'] is None) for x in e['tactics']): bad.append('posesión mixta con una organización única')

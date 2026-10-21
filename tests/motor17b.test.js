@@ -38,6 +38,7 @@ test('M17B·1 organización efectiva: el código de la organización vigente ANT
   const plan = res.input.teams[1].plan.defense;
   for (const r of before) { assert.equal(r[ci('defense_org')], plan); assert.equal(r[ci('defense_org_plan_version')], 0); assert.equal(typeof r[ci('defense_org')], 'string', 'código, no el objeto de intervención'); assert.equal(r[ci('defense_org_source')], 'plan'); }
   for (const r of after) { assert.equal(r[ci('defense_org')], applied.content.defense); assert.equal(r[ci('defense_org_plan_version')], 1); assert.equal(r[ci('defense_org_source')], 'orden aplicada'); }
+  assert.ok(t.columns.includes('defense_org_reason'), 'el motivo de una organización no reconstruible tiene su campo'); assert.ok(t.rows.every((r) => r[ci('defense_org_source')] !== 'no reconstruible' || (r[ci('defense_org')] === null && r[ci('defense_org_reason')])), 'nunca una organización inventada: sin reconstrucción, nulo con motivo');
   // la decisión de intervención sigue disponible, en su campo, y es un objeto distinto del código
   assert.ok(t.rows.some((r) => r[ci('defense_intervention')] && typeof r[ci('defense_intervention')] === 'object'));
   // lector compartido: coincide con el `orgAt` del análisis del partido
