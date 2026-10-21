@@ -4,6 +4,7 @@ import { buildRows, uncoveredLeaves, indexRows, COVERAGE_STATES } from './rows.j
 import { canonical, getAt } from './util.js';
 import { SLOTS } from '../match/data.js';
 import { motor08Issues } from './validate-motor08.js';
+import { familiarityIssues } from './validate-motor18.js';
 import { validateMatrix } from '../match/regs.js';
 
 const finite = (v) => typeof v === 'number' && Number.isFinite(v);
@@ -122,6 +123,7 @@ function relationIssues(profile, add) {
   // MOTOR-15: resultados excluyentes por oportunidad (ninguna, ofensiva, defensiva): la suma de masas elegibles no puede superar 1
   const itf = profile.interference;
   if (itf) for (const k of ['fieldGoal', 'lastFreeThrow']) { const d = itf[k]?.defensiveP; const o = itf[k]?.offensiveP; if (finite(d) && finite(o) && d + o > 1) add(`interference.${k}.defensiveP`, 'error', 'masa', 'la suma de las masas defensiva y ofensiva de una oportunidad no puede superar 1 (la residual es 1 − suma)', d + o); }
+  familiarityIssues(profile, add); // MOTOR-18: catálogo, pesos, relaciones de transferencia, aprendizaje y retención
   motor08Issues(profile, add); // MOTOR-08: referencias, prioridades, unidades y límites del entrenador y la memoria
 }
 
