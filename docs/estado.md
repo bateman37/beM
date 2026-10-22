@@ -1,6 +1,6 @@
 # Estado del proyecto
 
-Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANGELOG.md)). Última actualización: 2026-10-22, entrega MOTOR-18B (sobre MOTOR-18, PR #19 abierta).
+Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANGELOG.md)). Última actualización: 2026-10-22, entrega MOTOR-18C (sobre MOTOR-18/18B, ya fusionadas en `main` con la PR #19).
 
 ## Qué hay realmente en el repositorio
 
@@ -8,6 +8,14 @@ Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANG
 - **Diseño funcional del motor y del primer laboratorio**, organizado por temas en [`motor/`](motor/README.md) (34 capítulos). Es **especificación**: está *definida*, no implementada.
 - **Copia original congelada** del funcional unificado y **exportado completo vigente** generado: ver [`historico/`](historico/README.md) y [`exportados/`](exportados/README.md).
 - **Utilidades documentales** en `scripts/docs/` (Python 3, librería estándar).
+
+## MOTOR-18C (ejecutado; identidad del aprendizaje del laboratorio; pendiente de Dennis)
+
+- **Qué es**: dos correcciones de la interfaz de aplicación del aprendizaje posterior al partido, reproducidas en la revisión independiente de MOTOR-18B. **C18-01**: un encuentro solo figura como aplicado a un equipo si hay una aplicación vigente cuya fuente es **igual** a la fuente completa (`<copia>|M<n>|<equipo>`): M10/M11/M100 ya no bloquean M1. **C18-02**: un resultado solo propone y aplica aprendizaje a su **propia copia** (igualdad exacta de la identidad completa de copia extraída de `input.labMatchId`), al dibujar la tarjeta y de nuevo al invocar el manejador; un resultado de otra copia muestra un aviso y no ofrece aplicación. 18C completa la identidad del aprendizaje del laboratorio y prevalece sobre la comprobación parcial de equipo/prefijo de 18B. Detalle: [`tecnico/motor18c.md`](tecnico/motor18c.md) · [recorrido manual](prompts/MOTOR-18C-recorrido-manual.md) · [evidencia](tecnico/evidencia-motor18c/RESUMEN.md).
+- **Git**: la PR #19 (MOTOR-18 + 18B) ya estaba fusionada (`d744e23`); la rama `claude/busy-edison-b1fmnc` se reinició desde `main` y 18C es una PR independiente, sin fusionar.
+- **Versiones**: solo cambia la etiqueta de la aplicación (`MOTOR-18C`). Motor `0.18.1-MOTOR18B`, `SEM-MOTOR18B-20261022`, `FAM/LEARN-MOTOR18B-R1`, `ESE-MOTOR18B-R1`, entrada `/7` y export `/10` **sin cambio**. Ningún coeficiente, curva ni dato de perfil cambia (176 archivos de `src/` y `data/` idénticos a la base).
+- **Comprobado por Claude**: T18C-01…04 (fallan 01–03 con el comportamiento anterior), suite 279/279, `data:check`, comprobador documental en copia limpia, recorrido de Chromium (15 pasos, consola 0, red 0, un partido nuevo). **Pendiente de Dennis**: [recorrido manual](prompts/MOTOR-18C-recorrido-manual.md). **No ejecutado**: otros navegadores, Node 24, campañas.
+- **No cerrado**: aceptación manual de Dennis, calibración, conformidad FIBA integral, rendimiento masivo y partidos simultáneos del mundo (no son objetivos de esta entrega).
 
 ## MOTOR-18B (ejecutado; cierre de familiaridad y curva de Polivalencia; pendiente de Dennis)
 

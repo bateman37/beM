@@ -2,6 +2,12 @@
 
 Registro breve de entregas. Una entrada por entrega; las más recientes primero.
 
+## MOTOR-18C — Identidad del aprendizaje del laboratorio — 2026-10-22
+
+- **C18-01 (REV18B-01):** «ya aplicado» se decide por igualdad exacta de la fuente completa (`<copia>|M<n>|<equipo>`), equipo y recibo vigente; M10/M11/M100 ya no bloquean M1 (antes `startsWith`).
+- **C18-02 (REV18B-02):** un resultado solo propone y aplica aprendizaje a su propia copia (igualdad exacta de la identidad de copia de `input.labMatchId`), al dibujar y al aplicar; aviso para copia ajena, sin forzar ni transferir; el manejador obsoleto se rechaza sin tocar ninguna copia.
+- Pruebas T18C-01…04 sobre los manejadores reales con DOM mínimo; sin cambio deportivo (176 archivos de `src/`/`data/` idénticos). Aplicación `MOTOR-18C`; motor, perfil, entrada y export sin cambio. **Pendiente de Dennis.** Ver [`docs/tecnico/motor18c.md`](docs/tecnico/motor18c.md).
+
 ## MOTOR-18B — Cierre de familiaridad y mayor diferencia de Polivalencia — 2026-10-22
 
 - **Curva de Polivalencia:** factor de aprendizaje lineal por tramos con cinco anclajes administrables (1→0,25 · 8→0,50 · 16→1,00 · 24→2,00 · 30→2,50; `SEM-MOTOR18B-20261022`, semillas del encargo, sin calibración). P24 aprende con el cuádruple de factor que P8; P16 = 1 exacto; los perfiles de MOTOR-18 conservan su factor lineal. Nada deportivo cambia: la Polivalencia sigue sin entrar en el partido.
