@@ -99,8 +99,8 @@ for k, v in bad.items():
     check(f'limites:{k}', not v, v[:5])
 # 7 · repetición de aplicación y continuación
 apr = Q('aprendizaje.json')
-check('aprendizaje:propuestas-no-aplicadas', all(p.get('applied') is False for p in apr['proposals'] if p.get('ok')), len(apr['proposals']))
-check('aprendizaje:presupuesto-diario', all(b['allowed'] <= b['cap'] + 1e-12 for p in apr['proposals'] if p.get('ok') for pl in p['players'].values() for b in (pl.get('budgets') or {}).values()))
+check('aprendizaje:propuestas-no-aplicadas', all(t.get('applied') is False for p in apr['proposals'] if p.get('ok') for t in p['teams']), len(apr['proposals']))
+check('aprendizaje:presupuesto-diario', all(b['allowed'] <= b['cap'] + 1e-12 for p in apr['proposals'] if p.get('ok') for t in p['teams'] for pl in t['players'].values() for b in (pl.get('budgets') or {}).values()))
 cont = Q('continuidad-y-niveles.json')
 check('continuidad:C-igual-esencial', all(x['same_sport'] in (True, None) for x in cont['c_pairs']) and (a.allow_incomplete or all(x['same_sport'] is True for x in cont['c_pairs'])), [x['diagnostic'] for x in cont['c_pairs'] if x['same_sport'] is not True])
 check('continuidad:D02', (cont['d02'] or {}).get('identical') is True or a.allow_incomplete, (cont['d02'] or {}).get('equal_sections'))
