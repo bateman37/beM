@@ -147,7 +147,7 @@
    "route": "SIM · descargas",
    "action": "descargas REALES de entrada/perfil, resultado y conciliación; el resultado conserva la huella",
    "ok": true,
-   "obs": "beM-sim-candidata-5045f98389bbdeb2.json 339 B · beM-sim-entrada-314159.json 190873 B · beM-sim-resultado-314159.json 114789 B · beM-sim-conciliacion-314159.json 3609 B"
+   "obs": "beM-sim-candidata-5045f98389bbdeb2.json 339 B · beM-sim-entrada-314159.json 190873 B · beM-sim-resultado-314159.json 115082 B · beM-sim-conciliacion-314159.json 3609 B"
   },
   {
    "n": 22,
@@ -161,21 +161,21 @@
    "route": "SIM · Lote",
    "action": "agenda de 1.000 terminada: todos válidos",
    "ok": true,
-   "obs": "1000/1000 terminados · válidos 1000 · fallidos/inválidos 0 · 9.3 s · 108 partidos/s · 4 worker(s) (9.4 s en el navegador)"
+   "obs": "1000/1000 terminados · válidos 1000 · fallidos/inválidos 0 · 8.8 s · 113 partidos/s · 4 worker(s) (8.9 s en el navegador)"
   },
   {
    "n": 24,
    "route": "SIM · Lote",
    "action": "descarga REAL del resumen del lote",
    "ok": true,
-   "obs": "beM-sim-lote-resumen-150d47b11f7ab5be.json 1015822 B"
+   "obs": "beM-sim-lote-resumen-150d47b11f7ab5be.json 1015177 B"
   },
   {
    "n": 25,
    "route": "SIM",
    "action": "volver al selector y reabrir SIM conserva el estado propio (resumen del último lote)",
    "ok": true,
-   "obs": "1000/1000 terminados · válidos 1000 · fallidos/inválidos 0 · 9.3 s · 108 partidos/s · 4 worker(s)"
+   "obs": "1000/1000 terminados · válidos 1000 · fallidos/inválidos 0 · 8.8 s · 113 partidos/s · 4 worker(s)"
   },
   {
    "n": 26,
@@ -204,8 +204,8 @@
   {
    "what": "resultado",
    "name": "beM-sim-resultado-314159.json",
-   "bytes": 114789,
-   "sha256": "7f352d06395069e0b0e42592746fd720ea96b5681ed31c610da5b046652977f1"
+   "bytes": 115082,
+   "sha256": "70514e52b9acd3d7a26382e0dce66bd8a875774799ff1f4484bc419f581d3b41"
   },
   {
    "what": "conciliación",
@@ -216,8 +216,8 @@
   {
    "what": "resumen del lote",
    "name": "beM-sim-lote-resumen-150d47b11f7ab5be.json",
-   "bytes": 1015822,
-   "sha256": "dfd2033245a11657817b260a229f13e0235e254f56c83388fdfe11cdcd6b3d06"
+   "bytes": 1015177,
+   "sha256": "7ff950f0f7a3f546a5e1cbf6659c0605c1527237a190acd228ddce96f624aa2a"
   }
  ],
  "nota": "Chromium automatizado (Playwright). No es la aceptación manual de Dennis; no cubre otros navegadores."
