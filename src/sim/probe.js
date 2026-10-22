@@ -17,7 +17,7 @@ export function probeVector(ctx, input, over = {}) {
     for (const key of M.termOrder) v[`term.${key}.${k}`] = M.term[key];
     v[`dnRatio.${k}`] = M.dnRatio; v[`pSteal.${k}`] = M.pSteal; v[`OffC.${k}`] = M.OffC; v[`DefC.${k}`] = M.DefC; v[`legalDef.${k}`] = M.legalDef; v[`legalOff.${k}`] = M.legalOff; v[`reading.q.${k}`] = M.q;
     const zmix = Object.fromEntries(ZONES.map((z) => [z, 0])); const fam = {}; let comf = 0; let pass = 0;
-    for (const c of s.cells) { zmix[c.cell.zone] += c.w; const f = c.kind === 'play' ? c.cell.family : c.kind; fam[f] = (fam[f] ?? 0) + c.w; comf += c.w * c.q.comfortable; }
+    for (const c of s.cells) { zmix[c.cell.zone] += c.w; const f = c.kind === 'play' ? c.cell.family : c.kind; fam[f] = (fam[f] ?? 0) + c.w; if (c.q) comf += c.w * c.q.comfortable; }
     for (const z of ZONES) v[`mix.zone.${z}.${k}`] = zmix[z]; for (const f of Object.keys(fam)) v[`mix.family.${f}.${k}`] = fam[f]; v[`quality.comfortable.${k}`] = comf; void pass;
     for (const z of ZONES) {
       v[`pMake.${z}.${k}`] = mean(lu.map((p) => shotProbs(S, T, m.sides, k, M, { kind: 'trans', cell: { zone: z, moved: false, role: 'handler' } }, p, 1).p));

@@ -327,7 +327,7 @@ function spontaneousZones(S, T, view, plan, M) {
 // Familiaridad (FAM-MOTOR18B-R1): ajuste logit ÚNICO por operación de calidad; neutral con conocimiento no explícito o todos los niveles al máximo.
 function famQuality(S, T, A, D, family, comp, plan) {
   const fam = S.familiarity; const tcw = fam.tacticContextWeights.organized;
-  const aw = (pl, side) => { const k = pl.kn; if (!explicit(k)) return null; const mods = side === 'a' ? [{ w: tcw.attack.disposition, K: lvl(k.modules, plan.disposition) }, { w: tcw.attack.family, K: lvl(k.modules, `FAM:${family}`) }] : [{ w: tcw.defense.organization, K: lvl(k.modules, D.plan.defense) }, { w: tcw.defense.coverage, K: lvl(k.modules, D.plan.coverage) }]; return familiarityActor(fam, { position: lvl(k.positions, pl.slot), role: lvl(side === 'a' ? k.offensiveRoles : k.defensiveRoles, side === 'a' ? pl.offRole : pl.defRole), modules: mods }).D; };
+  const aw = (pl, side) => { const k = pl.kn; if (!explicit(k)) return null; const mods = side === 'a' ? [{ w: tcw.attack.disposition, K: lvl(k.tactics, plan.disposition) }, { w: tcw.attack.family, K: lvl(k.tactics, `FAM:${family}`) }] : [{ w: tcw.defense.organization, K: lvl(k.tactics, D.plan.defense) }, { w: tcw.defense.coverage, K: lvl(k.tactics, D.plan.coverage) }]; return familiarityActor(fam, { position: lvl(k.positions, pl.slot), role: lvl(side === 'a' ? k.offensiveRoles : k.defensiveRoles, side === 'a' ? pl.offRole : pl.defRole), modules: mods }).D; };
   const DA = familiaritySide(A.view.players.map((p) => aw(p, 'a'))); const DD = familiaritySide(D.view.players.map((p) => aw(p, 'd')));
   return familiarityDelta(fam, 'quality', DA, DD).delta;
 }

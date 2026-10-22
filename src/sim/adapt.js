@@ -45,6 +45,8 @@ export function validateSimInput(input, sp, tables) {
     else for (const [i, e] of pl.playbook.entries()) { if (!tables.plays[e.playId]) add(`${tp}.plan.playbook[${i}]`, `ficha ${e.playId} desconocida`); if (!Number.isInteger(e.priority) || e.priority < 1 || e.priority > 5) add(`${tp}.plan.playbook[${i}].priority`, 'prioridad entera 1–5'); }
     for (const s of tables.slots) { const id = pl.starters?.[s]; if (!id || !ids.has(id)) add(`${tp}.plan.starters.${s}`, 'titular ausente o ajeno al equipo'); }
     if (new Set(Object.values(pl.starters ?? {})).size !== 5) add(`${tp}.plan.starters`, 'los cinco titulares deben ser distintos');
+    for (const s of tables.slots) { const st = t.players.find((p) => p.id === pl.starters?.[s]); if (st && st.state?.available === false) add(`${tp}.plan.starters.${s}`, 'el titular figura como no disponible'); }
+    if (t.players.filter((p) => p.state?.available !== false).length < 5) add(`${tp}.players`, 'menos de cinco jugadores disponibles');
     if (pl.coach?.policy && !tables.coachPolicies[pl.coach.policy]) add(`${tp}.plan.coach.policy`, `política ${pl.coach.policy} desconocida`);
     if (pl.defense === 'ORG06' && !pl.target) { /* el box and one pierde su objetivo → alternativa efectiva; se declara abajo */ }
   });
