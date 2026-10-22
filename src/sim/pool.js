@@ -7,10 +7,10 @@ const WORKER_URL = new URL('./worker-node.js', import.meta.url);
 export class SimPool {
   constructor({ workers = 4 } = {}) { this.size = Math.max(1, Math.min(workers, cpus().length)); this.requested = workers; this.workers = []; this.pending = new Map(); this.seq = 1; this.ready = false; void fileURLToPath; }
   _send(w, msg) { return new Promise((res, rej) => { const id = this.seq++; this.pending.set(id, { res, rej }); w.postMessage({ ...msg, id }); }); }
-  async start(ctxJSON, key, teams) {
+  async start(ctxJSON, key, teams, warm = []) {
     const t0 = performance.now(); this.workers = Array.from({ length: this.size }, () => { const w = new Worker(WORKER_URL); w.on('message', (m) => { const p = this.pending.get(m.id); if (!p) return; this.pending.delete(m.id); m.type === 'error' ? p.rej(new Error(m.error)) : p.res(m); }); w.on('error', (e) => { for (const p of this.pending.values()) p.rej(e); }); return w; });
     this.startedAt = performance.now();
-    await Promise.all(this.workers.map((w) => this._send(w, { type: 'init', key, ctx: ctxJSON, teams }))); this.ready = true; this.startMs = performance.now() - t0; return this.startMs;
+    this.readyInfo = await Promise.all(this.workers.map((w) => this._send(w, { type: 'init', key, ctx: ctxJSON, teams, warm }))); this.ready = true; this.startMs = performance.now() - t0; return this.startMs;
   }
   // Ejecuta `cases` repartiendo lotes de `chunk` casos; devuelve { results, workerMs[], wallMs }.
   async run(cases, { chunk = 4 } = {}) {

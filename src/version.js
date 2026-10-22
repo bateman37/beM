@@ -3,8 +3,8 @@
 // muestran por separado. Un perfil guardado con una versión anterior NO convierte la aplicación en una versión anterior.
 import { ENGINE_VERSION, EXPORT_SCHEMA } from './match/data.js';
 
-export const APP_VERSION = 'MOTOR-18C';
-export const APP_TITLE = 'identidad del aprendizaje del laboratorio';
+export const APP_VERSION = 'SIM-MOTOR-01';
+export const APP_TITLE = 'generador estadístico por tramos (motor ultrarrápido)';
 export const APP_DATE = '2026-10-22';
 export { ENGINE_VERSION, EXPORT_SCHEMA };
 export const appLine = () => `beM ${APP_VERSION} — ${APP_TITLE} · motor ${ENGINE_VERSION} · ${EXPORT_SCHEMA}`;

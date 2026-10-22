@@ -27,6 +27,8 @@ export class Rng {
   roundUnbiased(x) { const f = Math.floor(x); return f + (this.next() < x - f ? 1 : 0); }
   // Índice ponderado (pesos ≥ 0). Si todos son 0, devuelve -1 sin consumir azar.
   weighted(ws) { let tot = 0; for (let i = 0; i < ws.length; i++) tot += ws[i]; if (!(tot > 0)) return -1; let x = this.next() * tot; for (let i = 0; i < ws.length; i++) { x -= ws[i]; if (x < 0 && ws[i] > 0) return i; } for (let i = ws.length - 1; i >= 0; i--) if (ws[i] > 0) return i; return -1; }
+  // Igual que `weighted` sobre la propiedad `key` de cada elemento, sin crear arreglos intermedios (misma aritmética y orden).
+  weightedBy(arr, key) { let tot = 0; for (let i = 0; i < arr.length; i++) tot += arr[i][key]; if (!(tot > 0)) return -1; let x = this.next() * tot; for (let i = 0; i < arr.length; i++) { x -= arr[i][key]; if (x < 0 && arr[i][key] > 0) return i; } for (let i = arr.length - 1; i >= 0; i--) if (arr[i][key] > 0) return i; return -1; }
   normal() { let u = 0; while (u === 0) u = this.next(); const v = this.next(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
   shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(this.next() * (i + 1)); const t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
 }

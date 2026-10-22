@@ -97,7 +97,13 @@ export function compilePlan(S, T, plan) {
       }
     }
   }
-  plan._c = { src: JSON.stringify([plan.playbook, plan.disposition]), cells, plays };
+  const gids = new Map(); for (const c of cells) { const k = `${c.pi}|${c.role}|${c.zone}`; if (!gids.has(k)) gids.set(k, gids.size); c.gid = gids.get(k); }
+  // objetos de celda reutilizables (se reescriben en cada tramo); transición y espontáneo solo con zonas posibles
+  const cellObjs = cells.map((c, ci) => ({ kind: 'play', ci, cell: c, w: 0, q: null }));
+  const mkPseudo = (kind, family) => ZONES.map((z) => ({ kind, cell: { zone: z, family, role: 'handler', exec: 'auto', moved: false, passShare: 0, movedShare: 0 }, w: 0, q: null }));
+  const trans = mkPseudo('trans', 'transition'); const spont = mkPseudo('spont', 'spontaneous');
+  plays.forEach((p) => { p.receiverFamily = ['handoff', 'off_ball_screen', 'give_and_go'].includes(p.family); });
+  plan._c = { src: JSON.stringify([plan.playbook, plan.disposition]), cells, plays, cellObjs, trans, spont, all: [...cellObjs, ...trans, ...spont] };
   return plan._c;
 }
 
@@ -115,7 +121,7 @@ function viewCache(S, view) {
   if (view.cache) return view.cache;
   const tech = S.energy.defaultTechnicalTaskMax; const sel = S.selection; const idx = new Map(view.players.map((p, i) => [p, i])); const A = {}; const fit = {};
   for (const z of ZONES) { const sh = S.shots[z]; A[z] = view.players.map((p) => recipe(S, p, sh.attack, tech)); fit[z] = view.players.map((p, i) => abilityFit(S, A[z][i]) * (sel.finishingVocationMix[0] + sel.finishingVocationMix[1] * p.voc) * (sel.initiativeMix[0] + sel.initiativeMix[1] * p.init)); }
-  view.cache = { idx, A, fit, pool: new Map(), fw: new Map() }; return view.cache;
+  view.cache = { idx, A, fit, pool: new Map(), fw: new Map(), fwG: [] }; return view.cache;
 }
 const attrOfZone = (S, z) => Object.keys(S.shots[z].attack)[0];
 const abilityFit = (S, x) => { const f = S.selection.abilityFit; return Math.min(f.max, Math.max(f.min, 1 + f.slope * (x - S.neutralAbility))); };
@@ -211,62 +217,54 @@ export function finishPace(S, models) {
 // Devuelve { cells:[{kind, w, zone, ...}], total } con pesos que suman 1 por equipo y por tramo.
 export function shotCells(S, T, sides, k, M, ctx) {
   const A = sides[k]; const D = sides[1 - k]; const av = A.view; const dv = D.view; const da = D.assign; const plan = A.plan; const comp = compilePlan(S, T, plan);
-  const N = S.neutralAbility; const styles = plan.styles;
-  const tech = S.energy.defaultTechnicalTaskMax;
+  const N = S.neutralAbility; const styles = plan.styles; const tech = S.energy.defaultTechnicalTaskMax; const sel = S.selection;
   // calidad por ficha (una vez por ficha disponible)
-  const qByPlay = {}; const kctxCache = {};
-  const hasCoverage = (p) => p.play.coverage != null;
-  const covEff = (p) => { if (!hasCoverage(p)) return 0; const allowed = p.play.coverage === true || p.play.coverage.allowed?.includes(plan.coverage) !== false; return allowed ? 1 : 0; };
   const grp = (xs) => xs.map((pl) => ({ pl, w: 1 })); const intGrp = grp(da.interiorDefs.length ? da.interiorDefs : da.rimDefs); const perGrp = grp(da.perimeterDefs.length ? da.perimeterDefs : dv.players);
   const defRolePlayers = (role) => (INTERIOR_DEF.has(role) ? intGrp : perGrp);
-  const famCache = {}; const Zq0 = perturbBinaryZ(S, M, av, dv);
-  for (const p of comp.plays) {
-    if (!p.available) continue;
-    const pool = (r) => rolePool(S, T, av, p.play, r);
-    const caRaw = recipeByRoleGroups(S, p.play.qualityAttack, pool, tech);
+  const famCache = {}; const Zq0 = perturbBinaryZ(S, M, av, dv); const beaten = Math.log(S.defense.pressure.closePressureBeatenWeightFactor) * (M.pClose - S.defense.choiceReferences.closePressureChoiceP0) / S.defense.choiceReferences.closePressureChoiceP0;
+  const nPlays = comp.plays.length; const qc = new Array(nPlays);
+  for (let pi = 0; pi < nPlays; pi++) {
+    const p = comp.plays[pi]; if (!p.available) continue;
+    const caRaw = recipeByRoleGroups(S, p.play.qualityAttack, (r) => rolePool(S, T, av, p.play, r), tech);
     let cdRaw = recipeByRoleGroups(S, p.play.qualityDefense, defRolePlayers, tech);
-    if (['handoff', 'off_ball_screen', 'give_and_go'].includes(p.family)) cdRaw = N + (cdRaw - N) * 2 * M.pDeny; // negación de receptores: efecto proporcional a su elección (neutral en nivel 3)
-    const kctx = 0; let extraZ = 0;
-    extraZ += Math.log(S.defense.pressure.closePressureBeatenWeightFactor) * (M.pClose - S.defense.choiceReferences.closePressureChoiceP0) / S.defense.choiceReferences.closePressureChoiceP0;
-    if (sides.fam) { const f = famQuality(S, T, A, D, p.family, comp, plan); extraZ += f; famCache[p.id] = f; }
-    const final = qualityFast(S, caRaw, cdRaw, kctx, extraZ, Zq0);
-    qByPlay[p.id] = { p: final, ca: caRaw, cd: cdRaw };
+    if (p.receiverFamily) cdRaw = N + (cdRaw - N) * 2 * M.pDeny; // negación de receptores: efecto proporcional a su elección (neutral en nivel 3)
+    let extraZ = beaten; if (sides.fam) { const f = famQuality(S, T, A, D, p.family, comp, plan); extraZ += f; famCache[p.id] = f; }
+    qc[pi] = qualityFast(S, caRaw, cdRaw, 0, extraZ, Zq0);
   }
-  // pesos de opción (mezcla de entrenador, adaptación y preferencias)
-  const items = []; const meta = [];
-  const orientIn = S.selection.orientationInside[styles.finishPreference - 1]; const orientOut = S.selection.orientationThree[styles.finishPreference - 1];
-  const rEst = S.selection.candidateRead.opponentAbilityEstimate; const ctlPass = mean(av.players.map((p) => taskFor(S, 'TAR07', 'attack', 'passer', p)));
-  const riskD = S.outcomes.base.turnover * Math.exp(S.outcomes.controlSensitivity * (rEst - M.OffC)); const riskP = S.outcomes.base.turnover * Math.exp(S.outcomes.controlSensitivity * (rEst - ctlPass)); const riskN = S.outcomes.base.turnover * Math.exp(S.outcomes.controlSensitivity * (rEst - N));
-  const risk = (zone, exec) => (exec === 'none' ? 0 : exec === 'dribble' ? riskD : exec === 'pass' ? riskP : riskN);
-  const mp = plan.midrange; const mpPol = S.selection.midrangePolicy;
-  const priorityWeightSum = comp.plays.reduce((s, p) => s + (p.available ? p.coach : 0), 0);
-  for (let ci = 0; ci < comp.cells.length; ci++) {
+  // pesos de opción (mezcla de entrenador, adaptación y preferencias; misma fórmula que mixResolution)
+  const rEst = sel.candidateRead.opponentAbilityEstimate; const ctlPass = mean(av.players.map((p) => taskFor(S, 'TAR07', 'attack', 'passer', p))); const ob = S.outcomes.base.turnover; const cs = S.outcomes.controlSensitivity;
+  const riskD = ob * Math.exp(cs * (rEst - M.OffC)); const riskP = ob * Math.exp(cs * (rEst - ctlPass)); const riskN = ob * Math.exp(cs * (rEst - N));
+  const orientIn = sel.orientationInside[styles.finishPreference - 1]; const orientOut = sel.orientationThree[styles.finishPreference - 1]; const tilt = sel.offensiveRiskPreferenceTilt[styles.offensiveRisk - 1];
+  const mp = plan.midrange; const mpPol = sel.midrangePolicy; const seekMid = mp === 'seek' ? mean(av.players.map((pl) => mpPol.suitablePlayerBase + mpPol.suitablePlayerAbilitySlope * a01(ea(S, pl, 'TEC02', tech)))) : 0;
+  let psum = 0; for (const p of comp.plays) if (p.available) psum += p.coach;
+  const nc = comp.cells.length; const cc = new Float64Array(nc); const pp = new Float64Array(nc); const aa = new Float64Array(nc); const rr = new Float64Array(nc); const md = new Float64Array(nc); const hasMid = new Uint8Array(nc);
+  let sc = 0; let sp = 0; let sa = 0;
+  for (let ci = 0; ci < nc; ci++) {
     const c = comp.cells[ci]; const p = comp.plays[c.pi]; if (!p.available) continue;
-    const sh = S.shots[c.zone]; const qd = qByPlay[p.id].p;
-    // finalizadores del rol y su peso total (preferencia de jugadores)
-    const fw = finisherWeights(S, T, av, p.play, c, plan); if (fw.pref === undefined) { let pf = 0; for (const x of fw) pf += x.w; fw.pref = pf / Math.max(1, fw.length); fw.pEst = estP(S, sh, fw, N, false, vcA(S, av, c.zone)); } const pref = fw.pref;
-    const mid = c.zone !== 'midrange' ? null : mp === 'avoid' ? mpPol.avoidWeight : mp === 'openOnly' ? qd.comfortable * mpPol.openOnlyComfortableWeight + (1 - qd.comfortable) * mpPol.openOnlyOtherWeight : mean(av.players.map((pl) => mpPol.suitablePlayerBase + mpPol.suitablePlayerAbilitySlope * a01(ea(S, pl, 'TEC02', tech))));
-    const orient = c.zone === 'three' ? orientOut : (c.zone === 'rim' || c.zone === 'inside') ? orientIn : 1;
-    const pEst = fw.pEst;
-    const V = Math.max(S.selection.candidateRead.minimumUtility, sh.points * pEst - S.selection.candidateRead.expectedTurnoverCostPoints * risk(c.zone, c.exec));
-    items.push({ key: ci, coach: (p.coach / priorityWeightSum) * c.share * orient, pref: c.share * pref, adapt: c.share * V, risk: risk(c.zone, c.exec), mid, cont: false });
-    meta.push(c);
+    const sh = S.shots[c.zone]; const qd = qc[c.pi];
+    const fw = finisherWeights(S, T, av, p.play, c, plan); if (fw.pref === undefined) { let pf = 0; for (let i = 0; i < fw.length; i++) pf += fw[i].w; fw.pref = pf / Math.max(1, fw.length); fw.pEst = estP(S, sh, fw, N, false, vcA(S, av, c.zone)); }
+    if (c.zone === 'midrange') { hasMid[ci] = 1; md[ci] = mp === 'avoid' ? mpPol.avoidWeight : mp === 'openOnly' ? qd.comfortable * mpPol.openOnlyComfortableWeight + (1 - qd.comfortable) * mpPol.openOnlyOtherWeight : seekMid; }
+    const orient = c.zone === 'three' ? orientOut : (c.zone === 'rim' || c.zone === 'inside') ? orientIn : 1; const risk = c.exec === 'none' ? 0 : c.exec === 'dribble' ? riskD : c.exec === 'pass' ? riskP : riskN;
+    const V = Math.max(sel.candidateRead.minimumUtility, sh.points * fw.pEst - sel.candidateRead.expectedTurnoverCostPoints * risk);
+    cc[ci] = (p.coach / psum) * c.share * orient; pp[ci] = c.share * fw.pref; aa[ci] = c.share * V; rr[ci] = risk; sc += cc[ci]; sp += pp[ci]; sa += aa[ci];
   }
-  const org = items.length ? mixWeights(items, M.L, M.q, S.selection.offensiveRiskPreferenceTilt[styles.offensiveRisk - 1]) : [];
-  let totalW = 0; for (const it of org) totalW += it.w;
-  const cells = []; const shareOrg = Math.max(0, 1 - M.tau - M.sigma);
-  for (let i = 0; i < org.length; i++) { const c = meta[i]; cells.push({ kind: 'play', ci: items[i].key, cell: c, w: totalW > 0 ? (org[i].w / totalW) * shareOrg : 0, q: qByPlay[comp.plays[c.pi].id].p }); }
+  const L = M.L; const q = M.q; const shareOrg = Math.max(0, 1 - M.tau - M.sigma); const cells = comp.cellObjs; let totalW = 0;
+  for (let ci = 0; ci < nc; ci++) {
+    const o = cells[ci]; const p = comp.plays[comp.cells[ci].pi]; if (!p.available) { o.w = 0; o.q = null; continue; }
+    const pa = sa > 0 ? aa[ci] / sa : 0; const ppr = sp > 0 ? pp[ci] / sp : 0; const pj = q * pa + (1 - q) * ppr; let w = sc > 0 ? (1 - L) * (cc[ci] / sc) + L * pj : pj;
+    if (tilt !== 0) w *= Math.exp(tilt * rr[ci]); if (hasMid[ci]) w *= md[ci]; o.w = w; o.q = qc[comp.cells[ci].pi]; totalW += w;
+  }
+  for (let ci = 0; ci < nc; ci++) cells[ci].w = totalW > 0 ? (cells[ci].w / totalW) * shareOrg : 0;
   // transición (zonas ESP de llegada, pase y movimiento derivados) y decisiones espontáneas (preferencias de los jugadores)
-  const tz = S.derived.transition.zoneWeights; const trq = transitionQuality(S, T, sides, k, M);
-  for (const z of ZONES) if (tz[z] > 0) cells.push({ kind: 'trans', cell: { zone: z, family: 'transition', role: 'handler', exec: 'auto', moved: false, passShare: S.derived.transition.passShare, movedShare: S.derived.transition.movedShare }, w: M.tau * tz[z], q: trq });
-  const sp = spontaneousZones(S, T, av, plan, M); const spq = spontaneousQuality(S, T, sides, k, M);
-  for (const z of ZONES) if (sp[z] > 0) cells.push({ kind: 'spont', cell: { zone: z, family: 'spontaneous', role: 'handler', exec: 'auto', moved: false, passShare: S.derived.spontaneous.passShare, movedShare: S.derived.spontaneous.movedShare }, w: M.sigma * sp[z], q: spq });
-  let tw = 0; for (const c of cells) tw += c.w; if (tw > 0) for (const c of cells) c.w /= tw;
+  const tz = S.derived.transition.zoneWeights; const trq = transitionQuality(S, T, sides, k, M); const spz = spontaneousZones(S, T, av, plan, M); const spq = spontaneousQuality(S, T, sides, k, M);
+  for (const o of comp.trans) { o.w = M.tau * tz[o.cell.zone]; o.q = trq; o.cell.passShare = S.derived.transition.passShare; o.cell.movedShare = S.derived.transition.movedShare; }
+  for (const o of comp.spont) { o.w = M.sigma * spz[o.cell.zone]; o.q = spq; o.cell.passShare = S.derived.spontaneous.passShare; o.cell.movedShare = S.derived.spontaneous.movedShare; }
+  const all = comp.all; let tw = 0; for (let i = 0; i < all.length; i++) tw += all[i].w; if (tw > 0) for (let i = 0; i < all.length; i++) all[i].w /= tw;
   // protección del tiro rival: desplaza la mezcla entre interior y exterior (peso de elección ↑ ⇒ menos intentos en esa zona)
-  for (const c of cells) { const z = c.cell.zone; const f = (z === 'rim' || z === 'inside') ? 1 / M.protect.inside : z === 'three' ? 1 / M.protect.outside : 1; c.w *= f; }
-  tw = 0; for (const c of cells) tw += c.w; for (const c of cells) c.w /= tw;
+  tw = 0; for (let i = 0; i < all.length; i++) { const z = all[i].cell.zone; all[i].w *= (z === 'rim' || z === 'inside') ? 1 / M.protect.inside : z === 'three' ? 1 / M.protect.outside : 1; tw += all[i].w; }
+  for (let i = 0; i < all.length; i++) all[i].w /= tw;
   M.famQuality = famCache;
-  return cells;
+  return all;
 }
 const INTERIOR_DEF = new Set(['screenMarker', 'postMarker', 'lowMarker', 'shortMarker', 'hubMarker']);
 // Calidad previa de la oportunidad con el momento colectivo/individual ya aplicado: misma aritmética que `qualityDistributionPure` + `perturbCategories` (grupo favorable = «cómoda»), sin objetos intermedios.
@@ -287,12 +285,12 @@ function mixWeights(items, L, q, tilt) {
 }
 // Peso de cada jugador como finalizador de una celda: favorecido por rol, adecuación de capacidad, vocación e iniciativa. Memoizado por (ficha, rol, zona) dentro del tramo.
 export function finisherWeights(S, T, view, play, c, plan) {
-  const vc = viewCache(S, view); const pid = play ? play.id : '*'; let byPlay = vc.fw.get(pid); if (!byPlay) { byPlay = new Map(); vc.fw.set(pid, byPlay); }
-  const rz = c.rz ?? (c.rz = `${c.role}|${c.zone}`); const hit = byPlay.get(rz); if (hit) return hit;
-  const pool = play ? rolePool(S, T, view, play, c.role) : view.players.map((pl) => ({ pl, w: 1 }));
-  const fit = vc.fit[c.zone]; const out = pool.map(({ pl, w }) => ({ pl, w: w * fit[vc.idx.get(pl)] }));
-  byPlay.set(rz, out); return out;
+  const vc = viewCache(S, view);
+  if (c.gid !== undefined && play) { const hit = vc.fwG[c.gid]; if (hit) return hit; }
+  else { const pid = play ? play.id : '*'; let byPlay = vc.fw.get(pid); if (!byPlay) { byPlay = new Map(); vc.fw.set(pid, byPlay); } const rz = c.rz ?? (c.rz = `${c.role}|${c.zone}`); const hit = byPlay.get(rz); if (hit) return hit; const out = buildFw(S, T, view, vc, play, c); byPlay.set(rz, out); return out; }
+  const out = buildFw(S, T, view, vc, play, c); vc.fwG[c.gid] = out; return out;
 }
+function buildFw(S, T, view, vc, play, c) { const pool = play ? rolePool(S, T, view, play, c.role) : view.players.map((pl) => ({ pl, w: 1 })); const fit = vc.fit[c.zone]; const out = new Array(pool.length); for (let i = 0; i < pool.length; i++) out[i] = { pl: pool[i].pl, w: pool[i].w * fit[vc.idx.get(pool[i].pl)] }; return out; }
 function estP(S, sh, fw, N, moved, A) { const b0 = logit(sh.p0) - sh.sD * (S.selection.candidateRead.opponentAbilityEstimate - N); let s = 0; let ws = 0; for (let i = 0; i < fw.length; i++) { const x = fw[i]; s += x.w * sigmoid(b0 + sh.sA * (A.get(x.pl) - N)); ws += x.w; } return ws > 0 ? s / ws : sh.p0; }
 
 // Calidad de la transición: parte sin oposición (llegada) y parte con oposición (llegada de defensores por FIS01/FIS02).

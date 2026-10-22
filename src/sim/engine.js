@@ -149,7 +149,7 @@ export class SimMatch {
     const ctx = [0, 1].map((k) => ({ period, secondsLeft: secLeft, margin: over?.margin != null ? (k === 0 ? over.margin : -over.margin) : this.score[k] - this.score[1 - k], importance: over?.importance ?? this.norm.importance }));
     const models = [attackModel(S, this.T, this.sides, 0, ctx[0]), attackModel(S, this.T, this.sides, 1, ctx[1])];
     finishPace(S, models);
-    this.sides.forEach((s, k) => { s.M = models[k]; s.cells = shotCells(S, this.T, this.sides, k, models[k], ctx[k]); s.reb = reboundModel(S, this.T, this.sides, k, models[k]); s.assist = assistModel(S, models[k], s, null, null, s.plan); });
+    this.sides.forEach((s, k) => { s.putbackCells = null; s.M = models[k]; s.cells = shotCells(S, this.T, this.sides, k, models[k], ctx[k]); s.reb = reboundModel(S, this.T, this.sides, k, models[k]); s.assist = assistModel(S, models[k], s, null, null, s.plan); });
     return models;
   }
 
@@ -164,7 +164,7 @@ export class SimMatch {
     this._prepareSides(d); if (this.segments.length) this._updateMoments(d);
     const seg = { n: this.segments.length, start, end: start + d, period: this.period, lineups: this.teams.map((t) => this.sides[t.idx].onCourt.map((e) => e.pl.id)), first: this.controlTeam, controls: [0, 0], ctlPeriod: this.period };
     seg.org = null; this.segments.push(seg);
-    seg.org = this.sides.map((x) => x.assign.orgId); seg.plans = this.teams.map((t) => ({ disposition: t.plan.disposition, defense: t.plan.defense, coverage: t.plan.coverage, pressureHeight: t.plan.pressureHeight, styles: { ...t.plan.styles }, defStyles: { ...t.plan.defStyles }, midrange: t.plan.midrange }));
+    seg.org = this.sides.map((x) => x.assign.orgId); seg.slots = this.teams.map((t) => Object.fromEntries(this.sides[t.idx].onCourt.map((en) => [en.pl.id, en.slot]))); seg.plans = this.teams.map((t) => ({ disposition: t.plan.disposition, defense: t.plan.defense, coverage: t.plan.coverage, pressureHeight: t.plan.pressureHeight, styles: { ...t.plan.styles }, defStyles: { ...t.plan.defStyles }, midrange: t.plan.midrange }));
     const models = this._compile(start);
     const common = S.volume.commonRhythmFactorBounds[0] + this.rng.next() * (S.volume.commonRhythmFactorBounds[1] - S.volume.commonRhythmFactorBounds[0]);
     const E = d / (models[0].secPerControl + models[1].secPerControl) * common;
@@ -195,7 +195,7 @@ export class SimMatch {
     for (const r of recs) this._resolve(r, k, 0, false);
     return recs;
   }
-  _sampleCell(s, putback) { const cells = s.cells; if (!putback) return cells[this.rng.weighted(cells.map((c) => c.w))]; const sub = cells.filter((c) => c.cell.zone === 'rim' || c.cell.zone === 'inside'); return sub[this.rng.weighted(sub.map((c) => c.w))] ?? cells[0]; }
+  _sampleCell(s, putback) { const cells = s.cells; if (!putback) return cells[this.rng.weightedBy(cells, 'w')]; const sub = s.putbackCells ??= cells.filter((c) => c.cell.zone === 'rim' || c.cell.zone === 'inside'); return sub[this.rng.weightedBy(sub, 'w')] ?? cells[0]; }
   // Resuelve un registro terminal: pérdidas, faltas de tiro y tiros de campo con sus créditos, rebotes y continuaciones por rebote ofensivo.
   _resolve(rec, k, depth, putback) {
     const rng = this.rng; const S = this.S; const T = this.T; const s = this.sides[k]; const o = this.sides[1 - k]; const M = s.M; const A = s.view.players; const Dp = o.view.players;
@@ -209,7 +209,7 @@ export class SimMatch {
     }
     // tiro de campo o falta en el tiro
     const cell = this._sampleCell(s, putback); const c = cell.cell; const play = c.playId ? T.plays[c.playId] : null;
-    const fw = finisherWeights(S, T, s.view, play, cell.kind === 'play' ? { ...c, kind: 'play' } : c, s.plan); const fi = rng.weighted(fw.map((x) => x.w)); if (fi < 0) throw new Error(`sin finalizadores: lu=${s.view.lu.length} dir=${s.view.director?.id} ${JSON.stringify({ c, fw: fw.map((x) => [x.pl.id, x.w]), kind: cell.kind })}`); const shooter = fw[fi].pl;
+    const fw = finisherWeights(S, T, s.view, play, cell.kind === 'play' ? { ...c, kind: 'play' } : c, s.plan); const fi = rng.weightedBy(fw, 'w'); if (fi < 0) throw new Error(`sin finalizadores: lu=${s.view.lu.length} dir=${s.view.director?.id} ${JSON.stringify({ c, fw: fw.map((x) => [x.pl.id, x.w]), kind: cell.kind })}`); const shooter = fw[fi].pl;
     const q = rng.weighted([cell.q.comfortable, cell.q.normal, cell.q.forced]);
     const moved = putback ? false : (cell.kind === 'play' ? c.moved : rng.bernoulli(c.movedShare));
     let passer = null; const passable = putback ? false : cell.kind === 'play' ? c.exec === 'pass' : rng.bernoulli(c.passShare);

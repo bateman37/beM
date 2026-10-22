@@ -1,0 +1,65 @@
+// Recorrido de Chromium de SIM-MOTOR-01 (§10.2): selector → detallado → cambiar de motor → SIM → partido → vistas → repetición → edición de parámetro → descarga → lote.
+// Comprueba descargas reales por sus bytes y conserva los errores reales de consola y red. Uso: node scripts/browser/sim01-recorrido.mjs [--out=out/sim-motor01/navegador] [--port=5199] [--batch=1000]
+import { createRequire } from 'node:module';
+import { writeFileSync, mkdirSync, readFileSync, mkdtempSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { createHash } from 'node:crypto';
+import { createLabServer } from '../dev-server.js';
+const require = createRequire('/opt/node22/lib/node_modules/'); const { chromium } = require('playwright');
+const arg = (k, d) => { const a = process.argv.find((x) => x.startsWith(`--${k}=`)); return a ? a.slice(k.length + 3) : d; };
+const OUT = arg('out', 'out/sim-motor01/navegador'); const PORT = Number(arg('port', 5199)); mkdirSync(OUT, { recursive: true });
+const scratch = mkdtempSync(join(tmpdir(), 'sim01-ui-')); mkdirSync(join(scratch, 'batches'), { recursive: true });
+const server = createLabServer({ savesRoot: join(scratch, 'saves'), batchRoot: join(scratch, 'batches'), closureRoot: join(scratch, 'closure') }).listen(PORT, '127.0.0.1');
+const log = []; const step = (n, route, action, ok, obs) => { log.push({ n, route, action, ok: !!ok, obs: String(obs).replace(/\s+/g, ' ').slice(0, 300) }); console.log(`${ok ? 'OK   ' : 'FALLO'} [${n}] ${route} · ${action} — ${String(obs).replace(/\s+/g, ' ').slice(0, 160)}`); };
+const browser = await chromium.launch(); const bctx = await browser.newContext({ acceptDownloads: true }); const p = await bctx.newPage();
+const consoleErrors = []; const netErrors = [];
+p.on('console', (m) => m.type() === 'error' && consoleErrors.push(m.text())); p.on('pageerror', (e) => consoleErrors.push(String(e))); p.on('response', (r) => r.status() >= 400 && netErrors.push(`${r.status()} ${r.url()}`));
+const URL0 = `http://127.0.0.1:${PORT}/`; const text = async (sel = '#view') => p.locator(sel).innerText();
+const download = async (sel) => { const [dl] = await Promise.all([p.waitForEvent('download', { timeout: 60000 }), p.click(sel)]); const buf = readFileSync(await dl.path()); return { name: dl.suggestedFilename(), bytes: buf.length, sha: createHash('sha256').update(buf).digest('hex'), json: JSON.parse(buf.toString('utf8')) }; };
+let n = 0; const dls = [];
+try {
+  await p.goto(URL0); await p.waitForSelector('#engine-select');
+  step(++n, URL0, 'arranque: pantalla inicial con dos accesos y cabecera de modelo', (await p.locator('#engine-detailed').count()) === 1 && (await p.locator('#engine-sim').count()) === 1 && /Selecciona un motor/.test(await text('#model-badge')), await text('#model-badge'));
+  await p.click('#engine-detailed'); await p.waitForSelector('#tabs button');
+  const dh = await text('#model-badge'); const labels = await p.locator('#tabs button').allInnerTexts();
+  step(++n, 'detallado', 'acceso directo al motor detallado con todas sus pestañas', /Motor detallado.*beM-motor-0\.18\.1-MOTOR18B/.test(dh) && ['Plantillas', 'Preparación', 'Partido', 'Análisis', 'Lotes', 'Auditorías', 'Panel de ajustes', 'Cobertura', 'Cierre'].every((t) => labels.includes(t)), `${dh} · ${labels.join(',')}`);
+  await p.click('#tabs button:has-text("Plantillas")'); await p.waitForTimeout(500); step(++n, 'detallado', 'la pestaña Plantillas del detallado se pinta', (await text()).length > 200, (await text()).slice(0, 80));
+  await p.click('#change-engine'); await p.waitForSelector('#engine-select'); step(++n, 'selector', '«Cambiar de motor» vuelve al selector', true, 'selector visible');
+  await p.click('#engine-sim'); await p.waitForSelector('#sim-generate');
+  const sh = await text('#model-badge'); const pb = await text('#profile-badge'); step(++n, 'SIM', 'cabecera persistente con modelo+versión y el perfil SIM aparte', /beM-sim-segment 0\.1\.0-SIMMOTOR01/.test(sh) && /SEM-SIM01-20261022/.test(pb), `${sh} | ${pb}`);
+  await p.selectOption('#sim-teamA', 'EQ03'); await p.selectOption('#sim-teamB', 'EQ03'); await p.fill('#sim-seed', '314159'); await p.dispatchEvent('#sim-seed', 'change'); await p.waitForTimeout(150);
+  step(++n, 'SIM · Partido', 'dos plantillas iguales EQ03–EQ03 con identidades de instancia distintas', /EQ03 y EQ03_B/.test(await text()), 'EQ03 y EQ03_B');
+  await p.click('#sim-generate'); await p.waitForSelector('#sim-dl-result'); const head = await text('#view'); const fp1 = /hechos · huella ([0-9a-f]{16})/.exec(head)?.[1];
+  step(++n, 'SIM · Partido', 'generar un partido completo con conciliación correcta', /conciliación 18\/18/.test(head) && /estado finished/.test(head), head.match(/EQ03 \d+ – \d+ EQ03_B/)?.[0] ?? '');
+  for (const [id, expect] of [['zonas', /Tiros por zona/], ['familias', /Uso táctico/], ['quintetos', /Quintetos/], ['evolucion', /Diferencia de marcador/], ['concilia', /R01_marcador_periodos/], ['acta', /Acta · EQ03/]]) { await p.click(`#simv-${id}`); await p.waitForTimeout(150); step(++n, 'SIM · vistas', `vista ${id}`, expect.test(await text()), (await text()).slice(0, 60)); }
+  await p.click('#sim-generate'); await p.waitForTimeout(300); const rep = await text('#view');
+  step(++n, 'SIM · repetición', 'repetir la misma entrada da la misma huella', new RegExp(`huella idéntica \\(${fp1}\\)`).test(rep), rep.match(/Repetición[^)]*\)/)?.[0] ?? 'sin mensaje');
+  await p.selectOption('#plan0-height', 'full'); await p.waitForTimeout(150); await p.click('#sim-generate'); await p.waitForTimeout(300); const fp2 = /hechos · huella ([0-9a-f]{16})/.exec(await text('#view'))?.[1];
+  step(++n, 'SIM · plan', 'cambiar un control (presión total del equipo A) sin tocar la referencia detallada: otra huella', fp2 && fp2 !== fp1, `${fp1} → ${fp2}`);
+  await p.click('#sim-reset-plans'); await p.waitForTimeout(150);
+  await p.click('#simtab-params'); await p.waitForSelector('#sim-filter'); await p.fill('#sim-filter', 'neutralSecondsPerControl'); await p.dispatchEvent('#sim-filter', 'change'); await p.waitForTimeout(200);
+  const inp = p.locator('input[data-path="volume.neutralSecondsPerControl"]'); step(++n, 'SIM · Parámetros', 'fila SEM-SIM01 visible con procedencia', (await inp.count()) === 1 && /SEM-SIM01/.test(await text()), (await text()).slice(0, 100));
+  await inp.fill('14'); await inp.dispatchEvent('change'); await p.waitForTimeout(200); await p.click('#sim-validate'); await p.waitForTimeout(150);
+  step(++n, 'SIM · Parámetros', 'editar el valor, validar la candidata y ver la diferencia frente a la base', /Candidata válida \(1 fila/.test(await text('#sim-params-msg')) && /volume\.neutralSecondsPerControl: 16 → 14/.test(await text()), await text('#sim-params-msg'));
+  await inp.fill('-3'); await inp.dispatchEvent('change'); await p.waitForTimeout(150); step(++n, 'SIM · Parámetros', 'un valor no válido se rechaza con causa y no modifica la candidata', /debe ser positivo/.test(await text()), 'rechazo localizado'); await inp.fill('14'); await inp.dispatchEvent('change'); await p.waitForTimeout(150);
+  const cand = await download('#sim-download-candidate'); dls.push({ what: 'candidata', name: cand.name, bytes: cand.bytes, sha256: cand.sha }); step(++n, 'SIM · Parámetros', 'descarga REAL de la candidata (bytes y SHA-256)', cand.json.overrides?.length === 1 && cand.json.overrides[0].value === 14, `${cand.name} ${cand.bytes} B`);
+  await p.click('#simtab-match'); await p.waitForSelector('#sim-generate'); await p.click('#sim-generate'); await p.waitForSelector('#sim-dl-result'); const fp3 = /hechos · huella ([0-9a-f]{16})/.exec(await text('#view'))?.[1];
+  step(++n, 'SIM · Partido', 'con la candidata el partido cambia (perfil SIM distinto, misma semilla)', fp3 && fp3 !== fp1 && /candidata con 1 fila/.test(await text()), `${fp1} → ${fp3}`);
+  const dIn = await download('#sim-dl-input'); const dRe = await download('#sim-dl-result'); const dCo = await download('#sim-dl-recon'); for (const [w, d] of [['entrada+perfil', dIn], ['resultado', dRe], ['conciliación', dCo]]) dls.push({ what: w, name: d.name, bytes: d.bytes, sha256: d.sha });
+  step(++n, 'SIM · descargas', 'descargas REALES de entrada/perfil, resultado y conciliación; el resultado conserva la huella', dIn.json.input?.schema?.startsWith('beM-match-input') && dIn.json.simProfile.rows.length > 400 && dRe.json.schema === 'beM-sim-match/1' && dRe.json.sportFingerprint === fp3 && dCo.json.valid === true, dls.map((x) => `${x.name} ${x.bytes} B`).join(' · '));
+  await p.click('#simtab-params'); await p.click('#sim-restore'); await p.waitForTimeout(150);
+  await p.click('#simtab-batch'); await p.waitForSelector('#sim-batch-start');
+  const t0 = Date.now(); await p.click('#sim-batch-start'); await p.waitForTimeout(500); const ui1 = await p.locator('#sim-tabs, #tabs button').first().isVisible();
+  const mid = await text('#sim-batch-text'); step(++n, 'SIM · Lote', 'la agenda arranca y la interfaz sigue respondiendo (progreso visible)', /\/1000/.test(mid) && ui1, mid);
+  await p.waitForFunction(() => /1000\/1000/.test(document.querySelector('#sim-batch-text')?.innerText ?? ''), null, { timeout: 600000 }); await p.waitForSelector('#sim-batch-download', { timeout: 30000 });
+  const done = await text('#sim-batch-text'); step(++n, 'SIM · Lote', 'agenda de 1.000 terminada: todos válidos', /1000\/1000 terminados · válidos 1000/.test(done), `${done} (${((Date.now() - t0) / 1000).toFixed(1)} s en el navegador)`);
+  const sum = await download('#sim-batch-download'); dls.push({ what: 'resumen del lote', name: sum.name, bytes: sum.bytes, sha256: sum.sha }); step(++n, 'SIM · Lote', 'descarga REAL del resumen del lote', sum.json.cases === 1000 && sum.json.valid === 1000 && sum.json.results.length === 1000, `${sum.name} ${sum.bytes} B`);
+  await p.click('#change-engine'); await p.waitForSelector('#engine-select'); await p.click('#engine-sim'); await p.waitForSelector('#sim-batch-download'); step(++n, 'SIM', 'volver al selector y reabrir SIM conserva el estado propio (resumen del último lote)', /1000\/1000 terminados/.test(await text('#sim-batch-text')), await text('#sim-batch-text'));
+  step(++n, 'consola/red', 'sin errores de consola ni de red', consoleErrors.length === 0 && netErrors.length === 0, `consola ${consoleErrors.length} · red ${netErrors.length} ${consoleErrors.join(' | ').slice(0, 300)}`);
+} catch (e) { step(++n, 'recorrido', 'EXCEPCIÓN', false, e.stack ?? e); }
+await browser.close(); server.close();
+const ok = log.every((s) => s.ok);
+writeFileSync(join(OUT, 'recorrido.json'), JSON.stringify({ app: 'SIM-MOTOR-01', ok, steps: log, pasos: log.length, consoleErrors, netErrors, descargas: dls, nota: 'Chromium automatizado (Playwright). No es la aceptación manual de Dennis; no cubre otros navegadores.' }, null, 1));
+console.log(`\n${ok ? 'RECORRIDO CORRECTO' : 'RECORRIDO CON FALLOS'}: ${log.filter((s) => s.ok).length}/${log.length} pasos · consola ${consoleErrors.length} · red ${netErrors.length} ${consoleErrors.join(' | ').slice(0, 300)}`);
+process.exit(ok ? 0 : 1);
