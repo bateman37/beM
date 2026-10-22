@@ -1,0 +1,218 @@
+{
+ "unit": "dosis eficaz en horas equivalentes dirigidas al OBJETIVO (no es una sesión total repartida 60/40); factores constantes salvo la Polivalencia",
+ "scenario": {
+  "target": "tactic:ORG02",
+  "level": 12,
+  "peak": 12,
+  "dose_h_eq": 1,
+  "teaching": 16,
+  "content_mastery": 16,
+  "related_levels": 12,
+  "rate": 0.8,
+  "transfer": "1 + 0,5·11/29",
+  "no_relearning": true
+ },
+ "anchors": [
+  {
+   "level": 1,
+   "factor": 0.25
+  },
+  {
+   "level": 8,
+   "factor": 0.5
+  },
+  {
+   "level": 16,
+   "factor": 1
+  },
+  {
+   "level": 24,
+   "factor": 2
+  },
+  {
+   "level": 30,
+   "factor": 2.5
+  }
+ ],
+ "curve_kind": "piecewise-linear",
+ "anterior_model": {
+  "base": 0.75,
+  "slope": 0.5
+ },
+ "formula": "fJugador(P) = Fa + (Fb − Fa)·(P − Pa)/(Pb − Pa) entre anclajes consecutivos; extremos exactos",
+ "rows": [
+  {
+   "polivalencia": 1,
+   "factor_anterior": 0.75,
+   "factor_nuevo": 0.25,
+   "factor_anterior_tabla": 0.75,
+   "factor_nuevo_tabla": 0.25,
+   "teaching": 1.0086206896551724,
+   "contenido": 1.0086206896551724,
+   "transferencia": 1.1896551724137931,
+   "producto_anterior": 0.9076911594366311,
+   "producto_nuevo": 0.3025637198122104,
+   "G_anterior": 0.7261529275493049,
+   "G_nuevo": 0.24205097584976834,
+   "K_final_anterior": 12.445119511340618,
+   "K_final_nuevo": 12.149613288120591,
+   "K_final_anterior_tabla": 12.4451195113,
+   "K_final_nuevo_tabla": 12.1496132881,
+   "ganancia_anterior": 0.4451195113406179,
+   "ganancia_nueva": 0.14961328812059094,
+   "ok": true
+  },
+  {
+   "polivalencia": 8,
+   "factor_anterior": 0.8706896551724138,
+   "factor_nuevo": 0.5,
+   "factor_anterior_tabla": 0.8706896552,
+   "factor_nuevo_tabla": 0.5,
+   "teaching": 1.0086206896551724,
+   "contenido": 1.0086206896551724,
+   "transferencia": 1.1896551724137931,
+   "producto_anterior": 1.0537564034839053,
+   "producto_nuevo": 0.6051274396244208,
+   "G_anterior": 0.8430051227871243,
+   "G_nuevo": 0.4841019516995367,
+   "K_final_anterior": 12.515712582881893,
+   "K_final_nuevo": 12.29798301313106,
+   "K_final_anterior_tabla": 12.5157125829,
+   "K_final_nuevo_tabla": 12.2979830131,
+   "ganancia_anterior": 0.5157125828818927,
+   "ganancia_nueva": 0.29798301313105924,
+   "ok": true
+  },
+  {
+   "polivalencia": 12,
+   "factor_anterior": 0.9396551724137931,
+   "factor_nuevo": 0.75,
+   "factor_anterior_tabla": 0.9396551724,
+   "factor_nuevo_tabla": 0.75,
+   "teaching": 1.0086206896551724,
+   "contenido": 1.0086206896551724,
+   "transferencia": 1.1896551724137931,
+   "producto_anterior": 1.1372222572252046,
+   "producto_nuevo": 0.9076911594366311,
+   "G_anterior": 0.9097778057801638,
+   "G_nuevo": 0.7261529275493049,
+   "K_final_anterior": 12.55592395375474,
+   "K_final_nuevo": 12.445119511340618,
+   "K_final_anterior_tabla": 12.5559239538,
+   "K_final_nuevo_tabla": 12.4451195113,
+   "ganancia_anterior": 0.5559239537547391,
+   "ganancia_nueva": 0.4451195113406179,
+   "ok": true
+  },
+  {
+   "polivalencia": 16,
+   "factor_anterior": 1.0086206896551724,
+   "factor_nuevo": 1,
+   "factor_anterior_tabla": 1.0086206897,
+   "factor_nuevo_tabla": 1,
+   "teaching": 1.0086206896551724,
+   "contenido": 1.0086206896551724,
+   "transferencia": 1.1896551724137931,
+   "producto_anterior": 1.2206881109665042,
+   "producto_nuevo": 1.2102548792488417,
+   "G_anterior": 0.9765504887732034,
+   "G_nuevo": 0.9682039033990734,
+   "K_final_anterior": 12.596042844201655,
+   "K_final_nuevo": 12.59103303314464,
+   "K_final_anterior_tabla": 12.5960428442,
+   "K_final_nuevo_tabla": 12.5910330331,
+   "ganancia_anterior": 0.596042844201655,
+   "ganancia_nueva": 0.5910330331446403,
+   "ok": true
+  },
+  {
+   "polivalencia": 20,
+   "factor_anterior": 1.0775862068965516,
+   "factor_nuevo": 1.5,
+   "factor_anterior_tabla": 1.0775862069,
+   "factor_nuevo_tabla": 1.5,
+   "teaching": 1.0086206896551724,
+   "contenido": 1.0086206896551724,
+   "transferencia": 1.1896551724137931,
+   "producto_anterior": 1.3041539647078035,
+   "producto_nuevo": 1.8153823188732623,
+   "G_anterior": 1.0433231717662428,
+   "G_nuevo": 1.4523058550986099,
+   "K_final_anterior": 12.636069466914446,
+   "K_final_nuevo": 12.879231723827008,
+   "K_final_anterior_tabla": 12.6360694669,
+   "K_final_nuevo_tabla": 12.8792317238,
+   "ganancia_anterior": 0.6360694669144458,
+   "ganancia_nueva": 0.879231723827008,
+   "ok": true
+  },
+  {
+   "polivalencia": 24,
+   "factor_anterior": 1.146551724137931,
+   "factor_nuevo": 2,
+   "factor_anterior_tabla": 1.1465517241,
+   "factor_nuevo_tabla": 2,
+   "teaching": 1.0086206896551724,
+   "contenido": 1.0086206896551724,
+   "transferencia": 1.1896551724137931,
+   "producto_anterior": 1.3876198184491029,
+   "producto_nuevo": 2.4205097584976834,
+   "G_anterior": 1.1100958547592823,
+   "G_nuevo": 1.9364078067981467,
+   "K_final_anterior": 12.676004034095758,
+   "K_final_nuevo": 13.16265939705216,
+   "K_final_anterior_tabla": 12.6760040341,
+   "K_final_nuevo_tabla": 13.1626593971,
+   "ganancia_anterior": 0.676004034095758,
+   "ganancia_nueva": 1.1626593970521597,
+   "ok": true
+  },
+  {
+   "polivalencia": 30,
+   "factor_anterior": 1.25,
+   "factor_nuevo": 2.5,
+   "factor_anterior_tabla": 1.25,
+   "factor_nuevo_tabla": 2.5,
+   "teaching": 1.0086206896551724,
+   "contenido": 1.0086206896551724,
+   "transferencia": 1.1896551724137931,
+   "producto_anterior": 1.5128185990610523,
+   "producto_nuevo": 3.0256371981221046,
+   "G_anterior": 1.210254879248842,
+   "G_nuevo": 2.420509758497684,
+   "K_final_anterior": 12.735733743738752,
+   "K_final_nuevo": 13.441395035162177,
+   "K_final_anterior_tabla": 12.7357337437,
+   "K_final_nuevo_tabla": 13.4413950352,
+   "ganancia_anterior": 0.7357337437387521,
+   "ganancia_nueva": 1.4413950351621772,
+   "ok": true
+  }
+ ],
+ "ratios": {
+  "G24_over_G8": 4,
+  "expected_G_ratio": 4,
+  "gain24_over_gain8": 3.9017640127720887,
+  "expected_gain_ratio": 3.901764,
+  "note": "cociente 4 en G, no en la ganancia absoluta: actúan la cercanía a 30 y el reaprendizaje"
+ },
+ "dose_to_reach_K12_to_K18": [
+  {
+   "polivalencia": 8,
+   "dosis_efectiva_necesaria_h_eq": 24.289280582026667,
+   "referencia_encargo": 24.289281
+  },
+  {
+   "polivalencia": 16,
+   "dosis_efectiva_necesaria_h_eq": 12.144640291013333,
+   "referencia_encargo": 12.14464
+  },
+  {
+   "polivalencia": 24,
+   "dosis_efectiva_necesaria_h_eq": 6.072320145506667,
+   "referencia_encargo": 6.07232
+  }
+ ],
+ "dose_ratio_P8_over_P24": 4,
+ "dose_note": "comparación controlada de producto con factores constantes; no es una promesa de días de entrenamiento real"
+}

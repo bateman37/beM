@@ -1,0 +1,79 @@
+{
+ "note": "correspondencia módulo → contexto con entradas FIJAS; no es exposición natural ni afirma que estos módulos aparezcan en un partido",
+ "rows": [
+  {
+   "module": "ORG04",
+   "kind": "organización efectiva",
+   "context": "organized",
+   "weight_in_context_normalized": 1,
+   "raw_weight": 0.7,
+   "side": "defensa",
+   "ok": true
+  },
+  {
+   "module": "ORG05",
+   "kind": "organización efectiva",
+   "context": "organized",
+   "weight_in_context_normalized": 1,
+   "raw_weight": 0.7,
+   "side": "defensa",
+   "ok": true
+  },
+  {
+   "module": "ORG06",
+   "kind": "organización efectiva",
+   "context": "organized",
+   "weight_in_context_normalized": 1,
+   "raw_weight": 0.7,
+   "side": "defensa",
+   "ok": true
+  },
+  {
+   "module": "COB04",
+   "kind": "cobertura ejecutada",
+   "context": "organized",
+   "weight_in_context_normalized": 0.3,
+   "raw_weight": 0.3,
+   "side": "defensa",
+   "defenders_in_participants": true,
+   "ok": true
+  },
+  {
+   "module": "DIS03",
+   "kind": "disposición",
+   "context": "organized",
+   "weight_in_context_normalized": 0.4,
+   "raw_weight": 0.4,
+   "side": "ataque",
+   "ok": true
+  },
+  {
+   "module": "DIS04",
+   "kind": "disposición",
+   "context": "organized",
+   "weight_in_context_normalized": 0.4,
+   "raw_weight": 0.4,
+   "side": "ataque",
+   "ok": true
+  },
+  {
+   "module": "DIS05",
+   "kind": "disposición",
+   "context": "organized",
+   "weight_in_context_normalized": 0.4,
+   "raw_weight": 0.4,
+   "side": "ataque",
+   "ok": true
+  },
+  {
+   "module": "DIS06",
+   "kind": "disposición",
+   "context": "organized",
+   "weight_in_context_normalized": 0.4,
+   "raw_weight": 0.4,
+   "side": "ataque",
+   "ok": true
+  }
+ ],
+ "all_ok": true
+}

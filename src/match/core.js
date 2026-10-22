@@ -74,6 +74,7 @@ export class MatchCore {
     this.pendingWindows = []; this.periodBreak = null; this.periodStartPending = false; this.pendingFoul = null;
     this.initDirection();
     this.initDefense();
+    this.initFamiliarity(); // MOTOR-18: familiaridad táctica (instantánea congelada del conocimiento y acumuladores de exposición)
     this.initStates(); // MOTOR-07: Forma, momentos y T (estado deportivo recibido en la entrada)
     this.initCoach(); // MOTOR-08: entrenador automático, delegación, decisiones y memoria defensiva
     this.initIncidents(); // MOTOR-15: cola de incidencias tipadas y cola causal común de sanciones
@@ -211,6 +212,7 @@ export class MatchCore {
       }
     }
     if (trace && trace.length) { const tw = trace.map((x) => ({ ...x, peso: round(1 / trace.length, 6) })); this.note('receta:gasto_resistencia', { valor: round(tw.reduce((a, x) => a + x.efectiva, 0) / tw.length, 4), intervaloDecimas: dur, claseDeCarga: loadKind, cargaBase: round(load, 4), costePorMinutoVivo: e.costPerLiveMinute, terminos: tw }); }
+    if (dur > 0 && this.fam?.on) this.famTick(dur); // MOTOR-18: exposición (minutos vivos por posición y rol); solo acumula, no cambia nada
     this.clock = Math.max(0, this.clock - dur);
     this.sportT += dur; // reloj deportivo de los estados: solo cuenta juego vivo
     if (this.shotClockOn) this.shotClock = Math.max(0, this.shotClock - dur);

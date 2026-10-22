@@ -1,0 +1,28 @@
+{
+ "seedExtensionId": "SEM-MOTOR18B-20261022",
+ "status": "SEM18B: semilla provisional de producto autorizada por el encargo MOTOR-18B, sin calibración empírica ni aceptación deportiva. Sustituye SOLO el factor de Polivalencia del aprendizaje por una curva lineal por tramos de cinco anclajes y actualiza las identidades de familiaridad y aprendizaje. Ningún coeficiente deportivo cambia: con el mismo conocimiento inicial, órdenes y semilla, cambiar la Polivalencia no cambia el partido.",
+ "basedOn": "SEM-MOTOR01-20261016",
+ "origin": "Encargo MOTOR-18B §3 (curva de Polivalencia): 1→0,25 · 8→0,50 · 16→1,00 · 24→2,00 · 30→2,50. Los perfiles MOTOR-18 que guardan {base, slope} conservan su factor lineal antiguo.",
+ "additions": {
+  "familiarity.provenance18b": "SEM18B (encargo MOTOR-18B): sustituye el factor lineal 0,75+0,50·n(P) de MOTOR-18 por una curva lineal por tramos con cinco anclajes administrables. P=16 pasa a 1 exacto. Las tasas, los factores de enseñanza, contenido y transferencia, la retención y los presupuestos diarios no cambian."
+ },
+ "replacements": {
+  "familiarity.version": "FAM-MOTOR18B-R1",
+  "familiarity.learningVersion": "LEARN-MOTOR18B-R1",
+  "familiarity.learning.factors.player": {
+   "kind": "piecewise-linear",
+   "points": [
+    { "level": 1, "factor": 0.25 },
+    { "level": 8, "factor": 0.5 },
+    { "level": 16, "factor": 1 },
+    { "level": 24, "factor": 2 },
+    { "level": 30, "factor": 2.5 }
+   ]
+  }
+ },
+ "replacementNotes": {
+  "familiarity.version": "MOTOR-18B: identidad de familiaridad y selección de participantes",
+  "familiarity.learningVersion": "MOTOR-18B: identidad del aprendizaje (curva de Polivalencia por tramos)",
+  "familiarity.learning.factors.player": "MOTOR-18B §3: el factor de Polivalencia {base:0,75, slope:0,50} se sustituye por la curva de cinco anclajes"
+ }
+}

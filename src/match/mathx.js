@@ -1,5 +1,9 @@
 // Funciones matemáticas comunes del perfil (apartado 5.4 del encargo MOTOR-01).
 
+// MOTOR-18B: identidad de una interacción organizada (el objeto `roles` de su ficha). Solo sirve para comparar igualdad dentro del proceso (la cobertura, los participantes y la familiaridad pertenecen a UNA interacción);
+// nunca se guarda en un archivo ni se compara entre procesos.
+const INTERACTIONS = new WeakMap(); let interSeq = 0;
+export const interOf = (obj) => { if (obj == null || typeof obj !== 'object') return null; let id = INTERACTIONS.get(obj); if (id == null) { id = ++interSeq; INTERACTIONS.set(obj, id); } return id; };
 export const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 export const sigmoid = (z) => 1 / (1 + Math.exp(-z));
 export const logit = (p) => Math.log(p / (1 - p));

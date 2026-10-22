@@ -170,5 +170,13 @@ El informe puede mostrar a un veterano con menos llegada física y buena lectura
 
 Una comparación por edad/etapa puede ser útil para historia y ojeo. El grupo de edad es un filtro descriptivo; la ejecución usa las capacidades y estados actuales ya definidos.
 
+### Nota de implementación MOTOR-18 (Familiaridad, Polivalencia y aprendizaje)
+
+Se amplía el funcional con conocimiento persistente de posiciones, roles y sistemas (62 niveles con `level`, `peak` y `lastPracticeDay`) y con el rasgo de desarrollo **«Polivalencia · aprendizaje táctico»** (1–30, semilla 16), separado de las 32 capacidades. La Polivalencia y la enseñanza del entrenador actúan **entre partidos**; no hay bono automático de veterano ni penalización por juventud, y el desuso y el reaprendizaje son reglas de producto SEM18 (posición 30 sin práctica durante 3650 días → 26,4), no medición científica. Detalle: `docs/tecnico/motor18.md`.
+
+### Nota de implementación MOTOR-18B (Curva de Polivalencia)
+
+La Polivalencia sigue siendo un rasgo de desarrollo (1–30, semilla 16) que actúa **solo entre partidos**. MOTOR-18B sustituye su factor de aprendizaje por una **curva lineal por tramos con cinco anclajes administrables** (1 → 0,25 · 8 → 0,50 · 16 → 1,00 · 24 → 2,00 · 30 → 2,50; continua, extremos exactos): un jugador de 24 aprende con el cuádruple de factor que uno de 8 con la misma dosis y los demás factores constantes (no cuatro veces la ganancia absoluta: actúan la cercanía a 30 y el reaprendizaje). No cambia el desuso, el suelo ni el techo, y cambiar solo la Polivalencia no cambia el partido. Los perfiles de MOTOR-18 conservan su factor lineal anterior. Son semillas SEM18B autorizadas por el encargo, no calibración empírica. Detalle: `docs/tecnico/motor18b.md`.
+
 <!-- beM:pie-inicio -->
 > [Índice del tema](README.md) · Anterior: [c05-tendencias-individuales-y-decisiones](c05-tendencias-individuales-y-decisiones.md) · Siguiente: [c07-p01-estructura-de-la-configuracion-tactica](../tacticas/c07-p01-estructura-de-la-configuracion-tactica.md)

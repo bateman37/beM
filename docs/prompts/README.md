@@ -31,6 +31,8 @@ Directorio de los encargos a Claude Code. **El texto original de un prompt ejecu
 | MOTOR-16 | Campaña masiva y extracción de evidencia para ChatGPT (3.732 ejecuciones con las herramientas existentes; sin corregir ni calibrar) | [MOTOR-16-campana-y-extraccion-para-chatgpt.md](MOTOR-16-campana-y-extraccion-para-chatgpt.md) | **Ejecutado** (campaña completa; análisis pendiente en ChatGPT) | 2026-10-18 · [ficha](#motor-16) | — |
 | MOTOR-17 | Ajustes, rendimiento y auditoría de cierre: crédito de robo y registro, rendimiento exacto, candidatas numéricas acotadas y campaña comparativa R0/R17 con paquetes para ChatGPT | [MOTOR-17-ajustes-rendimiento-y-auditoria-de-cierre.md](MOTOR-17-ajustes-rendimiento-y-auditoria-de-cierre.md) · [recorrido manual](MOTOR-17-recorrido-manual.md) | **Ejecutado** (propuesta numérica sin aceptar; pendiente de Dennis; objetivo de coste NO alcanzado) | 2026-10-18 · [ficha](#motor-17) | — |
 | MOTOR-17B | Cierre técnico y auditoría acotada: organización efectiva en el esencial, contraste de las 32 capacidades hasta la salida de su operación real, AUD05 derivado de la evidencia, crédito de robo con procedencia común y evidencia final verificable | [MOTOR-17B-cierre-y-auditoria-acotada.md](MOTOR-17B-cierre-y-auditoria-acotada.md) · [recorrido manual](MOTOR-17B-recorrido-manual.md) | **Ejecutado** (calibración general, rendimiento masivo, aceptación manual y FIBA integral pendientes; pendiente de Dennis) | 2026-10-21 · [ficha](#motor-17b) | — |
+| MOTOR-18 | Familiaridad táctica, roles, posiciones y aprendizaje: conocimiento por jugador (62 niveles), efecto limitado en calidad de la oportunidad y avance presionado, Polivalencia, aprendizaje/retención entre partidos, laboratorio de sesión, corrección de sensibilidad (SENS-01) y AUD11, y campaña de 36 ejecuciones | [MOTOR-18-familiaridad-tactica-roles-posiciones.md](MOTOR-18-familiaridad-tactica-roles-posiciones.md) · [recorrido manual](MOTOR-18-recorrido-manual.md) | **Ejecutado** (pendiente de Dennis) | 2026-10-21 (intento 1) | — |
+| MOTOR-18B | Cierre de familiaridad y mayor diferencia de Polivalencia: curva por tramos de cinco anclajes, Preparación sobre la copia activa, bloqueadores en los participantes, secuencias persistidas, exposición terminada, sesiones válidas, estimación coherente, unidades y campaña acotada de 36 ejecuciones | [`MOTOR-18B-cierre-y-polivalencia.md`](MOTOR-18B-cierre-y-polivalencia.md) · [recorrido manual](MOTOR-18B-recorrido-manual.md) | **Ejecutado** (pendiente de Dennis; amplía la PR #19 de MOTOR-18, sin fusionar) | 2026-10-22 · intento 1 | — |
 
 ## Fichas de ejecución
 
@@ -311,3 +313,25 @@ Comprobación local de enlaces: hecha por Claude. Presentación en GitHub: no co
 | Comprobaciones realizadas | Suite, datos, documentación en copia limpia, recorrido de Chromium, descarga real y comprobador: estado de cada una en el resumen operativo §7. No ejecutado: otros navegadores, Node 24, lectura directa de FIBA, recorrido humano. |
 | Limitaciones | Muestra de 30 casos lógicos (no 72 observaciones independientes); contraste de cálculo fijo representativo; criterio de robo por síntesis de ChatGPT; no es el benchmark frío de rendimiento. |
 | Pendientes | Validación de Dennis ([recorrido manual](MOTOR-17B-recorrido-manual.md)); análisis deportivo de ChatGPT; calibración general, rendimiento masivo y FIBA integral. |
+
+### MOTOR-18
+
+| Campo | Valor |
+|---|---|
+| Objetivo | Capa de familiaridad táctica (posiciones, roles y 30 módulos) con efecto limitado en dos puntos, aprendizaje y retención entre partidos, laboratorio, corrección de sensibilidad y AUD11, y campaña de 36 ejecuciones. |
+| Medio de entrada del texto | Archivo `.md` adjunto (`beM-PROMPT-MOTOR-18-FAMILIARIDAD-TACTICA-ROLES-POSICIONES.md`); la copia archivada es byte a byte idéntica. |
+| Fecha real de ejecución | 2026-10-21 · intento 1 |
+| Rama | `claude/busy-edison-b1fmnc` (reiniciada desde `main` tras fusionarse MOTOR-17B, PR #18). |
+| Resultado breve | Ver [`../tecnico/motor18.md`](../tecnico/motor18.md) y [`../tecnico/evidencia-motor18/`](../tecnico/evidencia-motor18/). |
+| Pendientes | Validación de Dennis ([recorrido manual](MOTOR-18-recorrido-manual.md)); análisis deportivo de ChatGPT; ninguna calibración aceptada. |
+
+### MOTOR-18B
+
+| Campo | Valor |
+|---|---|
+| Objetivo | Implementar las seis correcciones aceptadas de la revisión de MOTOR-18 (M18-R01…R06), corregir la etiqueta de unidades de `min_tenths`, sustituir el factor de Polivalencia por una curva lineal por tramos con cinco anclajes administrables y entregar una auditoría final acotada y verificable. |
+| Medio de entrada del texto | Archivo `.md` adjunto (`beM-PROMPT-MOTOR-18B-CIERRE-Y-POLIVALENCIA.md`); la copia archivada es byte a byte idéntica. |
+| Fecha real de ejecución | 2026-10-22 · intento 1 |
+| Rama | `claude/busy-edison-b1fmnc` (la PR de MOTOR-18, `bateman37/beM#19`, seguía abierta y sin fusionar: 18B se desarrolla encima y amplía esa PR como unidad MOTOR-18 + MOTOR-18B). |
+| Resultado breve | Ver [`../tecnico/motor18b.md`](../tecnico/motor18b.md) y [`../tecnico/evidencia-motor18b/`](../tecnico/evidencia-motor18b/RESUMEN-OPERATIVO.md). Paquetes `MOTOR-18B-*` y recibo de verificación fuera de Git (`out/motor18b/entrega-final/`). |
+| Pendientes | Validación de Dennis ([recorrido manual](MOTOR-18B-recorrido-manual.md)); análisis deportivo de ChatGPT; ninguna calibración aceptada. |

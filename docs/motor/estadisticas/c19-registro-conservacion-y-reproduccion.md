@@ -326,5 +326,13 @@ La semilla sola no basta si cambian algoritmo, parámetros o entradas. Para repe
 
 Consultar un partido histórico usa sus hechos conservados. No vuelve a simular bajo parámetros nuevos para reconstruir su resumen.
 
+### Nota de implementación MOTOR-18 (Exposición y audiencias de la familiaridad (MOTOR-18))
+
+El resultado exportado y el registro esencial conservan la instantánea de conocimiento, un resumen de aplicación y la exposición final por jugador y conocimiento (con unidad). El público y el rival no reciben conocimiento, Polivalencia ni enseñanza; la audiencia propia solo su equipo; el diagnóstico va identificado. Detalle: `docs/tecnico/motor18.md`.
+
+### Nota de implementación MOTOR-18B (Exposición terminada, unidades y reproducción)
+
+El aprendizaje de partido exige una exposición **terminada** (`complete === true`) producida por un productor común. Unidades: `min_tenths`/`liveTenths` son **décimas de segundo de juego vivo** (600 = 1 minuto; 24.000 = 40 minutos; nombre histórico del campo conservado); los créditos de módulo son participaciones ponderadas por operación (no horas ni posesiones) y las dosis son horas equivalentes. El resultado conserva, solo en el laboratorio, la identidad estable del encuentro (`input.labMatchId`). Un export de MOTOR-18 se consulta como histórico y no se reproduce con el motor `0.18.1-MOTOR18B`. Detalle: `docs/tecnico/motor18b.md`.
+
 <!-- beM:pie-inicio -->
 > [Índice del tema](README.md) · Anterior: [c18-reglamento-y-administracion-deportiva](../reglamento/c18-reglamento-y-administracion-deportiva.md) · Siguiente: [c20-p01-unidad-de-finalizacion-de-tiro](c20-p01-unidad-de-finalizacion-de-tiro.md)

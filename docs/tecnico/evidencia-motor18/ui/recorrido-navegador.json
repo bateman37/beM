@@ -1,0 +1,173 @@
+{
+ "app": "MOTOR-18",
+ "date": "2026-10-21T21:04:08.114Z",
+ "browser": "Chromium (Playwright)",
+ "url": "http://127.0.0.1:5198/",
+ "steps": [
+  {
+   "n": 1,
+   "route": "http://127.0.0.1:5198/",
+   "action": "arranque: cabecera con aplicación, motor y formato de MOTOR-18",
+   "ok": true,
+   "obs": "MOTOR-18 — familiaridad táctica, roles, posiciones y aprendizaje · motor beM-motor-0.18.0-MOTOR18 · beM-match-export/10"
+  },
+  {
+   "n": 2,
+   "route": "Plantillas › ficha",
+   "action": "referencia sin copia: «sin historial de aprendizaje; compatibilidad neutra» (no «domina todo»); Polivalencia separada de las 32 capacidades",
+   "ok": true,
+   "obs": "Conocimiento sin historial de aprendizaje; compatibilidad neutra. Crea una copia de apren | Desarrollo Polivalencia · aprendizaje táctico — Rasgo de desarrollo (1–30, semilla 16): fa"
+  },
+  {
+   "n": 3,
+   "route": "Plantillas",
+   "action": "Crear copia de aprendizaje MOTOR-18: copia identificada y activa; las fichas editadas de referencia no reciben conocimiento",
+   "ok": true,
+   "obs": "Copia activa para el próximo partido: LEARN18-S-EQ01-EQ02-d0 (52 diferencias listadas). Tus fichas y planes no se han modificado."
+  },
+  {
+   "n": 3,
+   "route": "Plantillas › ficha",
+   "action": "apartado «Conocimiento» con nivel y categoría (posiciones, roles y módulos)",
+   "ok": true,
+   "obs": "Conocimiento (explicit, día 0) Mostrar Todo Módulos elegidos por el plan Posición Rol ofensivo Rol defensivo Módulo tác"
+  },
+  {
+   "n": 4,
+   "route": "Plantillas",
+   "action": "vista previa del +3 al conocimiento seleccionado (sin tocar las 32 capacidades)",
+   "ok": true,
+   "obs": "Se revisarán 360 entradas: 360 cambian, 0 ya están en el máximo. Detalle Aplicar"
+  },
+  {
+   "n": 4,
+   "route": "Plantillas",
+   "action": "aplicar y deshacer: el estado guardado vuelve exactamente al anterior",
+   "ok": true,
+   "obs": "cambió=true restaurado=true"
+  },
+  {
+   "n": 5,
+   "route": "Plantillas › sesión",
+   "action": "previsualizar «solo desuso» a 3650 días: posición 30 → 26,40 (no se escribe nada)",
+   "ok": true,
+   "obs": "Vista previa (solo-desuso) · fuente lab|LEARN18-S-EQ01-EQ02-d0|EQ01|S1 · día 0 → 3650 — nada se escribe hasta pulsar «Aplicar». Jugador Objetivo Dosis Antes → "
+  },
+  {
+   "n": 5,
+   "route": "Plantillas › sesión",
+   "action": "aplicar a la copia con recibo",
+   "ok": true,
+   "obs": "Aplicado (APL-1). Se puede deshacer."
+  },
+  {
+   "n": 5,
+   "route": "Plantillas › sesión",
+   "action": "deshacer: restaura conocimiento, peak, reloj y presupuestos; aplicación revertida con rastro",
+   "ok": true,
+   "obs": "Deshecho APL-1: conocimiento, peak, reloj y presupuestos restaurados (la aplicación queda como revertida y su rastro se conserva)."
+  },
+  {
+   "n": 6,
+   "route": "Plantillas › sesión",
+   "action": "previsualizar entrenamiento colectivo (dosis, factores, presupuesto del día)",
+   "ok": true,
+   "obs": "Vista previa (sesion) · fuente lab|LEARN18-S-EQ01-EQ02-d0|EQ01|S2 · día 0 → 0 — nada se escribe hasta pulsar «Aplicar». Jugador Objetivo Dosis Antes → después Factores / presupuesto EQ01-J01 tactic:F"
+  },
+  {
+   "n": 6,
+   "route": "Plantillas › sesión",
+   "action": "aplicar entrenamiento",
+   "ok": true,
+   "obs": "Aplicado (APL-3). Se puede deshacer."
+  },
+  {
+   "n": 7,
+   "route": "Preparación",
+   "action": "dominio del quinteto para disposición, organización, cobertura y familias elegidas, y jugadores con menor familiaridad",
+   "ok": true,
+   "obs": "Familiaridad del quinteto actual (copia de aprendizaje) Resumen de solo lectura con los conocimientos de los titulares actuales; se recalcula al cambiar quinte"
+  },
+  {
+   "n": 8,
+   "route": "Partido",
+   "action": "antes de empezar: familiaridad propia con lo que se va a pedir (sin ventana de confirmación)",
+   "ok": true,
+   "obs": "Familiaridad de EQ01 con lo que se pide (quinteto en pista) Resumen de solo lectura con los conocimientos de los titulares actuales; se rec"
+  },
+  {
+   "n": 8,
+   "route": "Partido",
+   "action": "terminar el encuentro con copia de aprendizaje",
+   "ok": true,
+   "obs": "Finalizado EQ01 84 – 102 EQ02"
+  },
+  {
+   "n": 9,
+   "route": "Partido",
+   "action": "«Ver aprendizaje propuesto»: exposiciones y diferencias; ver no aplica nada",
+   "ok": true,
+   "obs": "Aprendizaje propuesto por este partido La exposición del encuentro (minutos por posición y rol, crédito por módulo) propone una actualización del conocimiento "
+  },
+  {
+   "n": 9,
+   "route": "Partido/Análisis",
+   "action": "abrir el análisis y volver no aplica aprendizaje",
+   "ok": true,
+   "obs": "aplicaciones 3 → 3"
+  },
+  {
+   "n": 9,
+   "route": "Partido",
+   "action": "Aplicar a esta variante (acción separada)",
+   "ok": true,
+   "obs": "EQ01: aplicado (APL-4) · EQ02: aplicado (APL-1)"
+  },
+  {
+   "n": 9,
+   "route": "Partido",
+   "action": "repetir la aplicación de la misma fuente queda bloqueado",
+   "ok": true,
+   "obs": "botón deshabilitado=true"
+  },
+  {
+   "n": 10,
+   "route": "Análisis › Familiaridad",
+   "action": "público: no observable; propia: solo su equipo sin Polivalencia; diagnóstico identificado con Polivalencia",
+   "ok": true,
+   "obs": "no es observable desde el exterior: no se muestra. | propia sin columna Polivalencia=true | diag=true"
+  },
+  {
+   "n": 11,
+   "route": "Plantillas",
+   "action": "recargar: la copia de aprendizaje y su registro de aplicaciones se restauran",
+   "ok": true,
+   "obs": "Copia activa: LEARN18-S-EQ01-EQ02-d0 · historia sintética SEM18 · día de aprendi · registros 4"
+  },
+  {
+   "n": 12,
+   "route": "Panel de ajustes",
+   "action": "el panel abre con el perfil de MOTOR-18 sin errores",
+   "ok": true,
+   "obs": "Panel de ajustes del motor Inicio Mesa de ajustes Tabla maestra Vistas temáticas Repertorio Catálogo"
+  },
+  {
+   "n": 13,
+   "route": "Partido",
+   "action": "descarga REAL del encuentro (JSON): bytes, SHA-256 y contenido de familiaridad/versión",
+   "ok": true,
+   "obs": "beM-MOTOR02-20261016-EQ01-EQ02.json 16862753 B sha 99e80b99cfcd schema beM-match-export/10"
+  },
+  {
+   "n": 13,
+   "route": "Análisis › Exportar",
+   "action": "descarga REAL del análisis (audiencia pública): bytes y sin conocimiento privado",
+   "ok": true,
+   "obs": "beM-analisis-public-EQ01-20261016.json 109836 B sha 4449e4e414e5"
+  }
+ ],
+ "consoleErrors": [],
+ "netErrors": [],
+ "passed": 23,
+ "failed": 0
+}

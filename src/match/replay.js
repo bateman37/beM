@@ -3,7 +3,7 @@
 // frontera de avance que en el original. Las activaciones del historial sirven solo para comprobar, nunca se reaplican.
 // El archivo se trata como datos: no se evalúa ni se ejecuta nada de su contenido.
 import { createMatch, buildResult } from './index.js';
-import { validateInput, deepCopy, ENGINE_VERSION, EXPORT_SCHEMA, EXPORT_SCHEMA_MOTOR01, EXPORT_SCHEMA_MOTOR14, EXPORT_SCHEMA_MOTOR02, EXPORT_SCHEMA_MOTOR04, EXPORT_SCHEMA_MOTOR05, EXPORT_SCHEMA_MOTOR06, EXPORT_SCHEMA_MOTOR07, EXPORT_SCHEMA_MOTOR08 } from './data.js';
+import { validateInput, deepCopy, ENGINE_VERSION, EXPORT_SCHEMA, EXPORT_SCHEMA_MOTOR01, EXPORT_SCHEMA_MOTOR14, EXPORT_SCHEMA_MOTOR02, EXPORT_SCHEMA_MOTOR04, EXPORT_SCHEMA_MOTOR05, EXPORT_SCHEMA_MOTOR06, EXPORT_SCHEMA_MOTOR07, EXPORT_SCHEMA_MOTOR08, EXPORT_SCHEMA_MOTOR17B } from './data.js';
 import { buildActa } from './acta.js';
 import { projectBox } from './box.js';
 
@@ -45,6 +45,10 @@ export function validateReplayFile(file) {
   }
   if (file.schema === EXPORT_SCHEMA_MOTOR14) {
     problems.push(`formato ${EXPORT_SCHEMA_MOTOR14} de MOTOR-09 a MOTOR-14: se puede consultar, pero no es reproducible con esta versión del motor (${file.meta?.engineVersion ?? 'versión desconocida'} ≠ ${ENGINE_VERSION}); MOTOR-15 cambia el deporte (liberación y resolución del tiro, interferencia condicionada) y añade incidencias tipadas, correcciones del art. 45 y muestras de estado por tramo`);
+    return out({ reproducible: false, legacy: true });
+  }
+  if (file.schema === EXPORT_SCHEMA_MOTOR17B) {
+    problems.push(`formato ${EXPORT_SCHEMA_MOTOR17B} de MOTOR-15 a MOTOR-17B: se puede consultar (análisis histórico), pero no es reproducible con esta versión del motor (${file.meta?.engineVersion ?? 'versión desconocida'} ≠ ${ENGINE_VERSION}); MOTOR-18 añade la familiaridad táctica (instantánea de conocimiento y exposición) y su ajuste único en la calidad de la oportunidad y el avance presionado. Con compatibilidad neutra el deporte coincide, pero esta versión no lo reinterpreta ni lo reproduce con otro motor: use el motor original`);
     return out({ reproducible: false, legacy: true });
   }
   if (file.schema !== EXPORT_SCHEMA) { problems.push(`formato no reconocido: ${String(file.schema)} (se espera ${EXPORT_SCHEMA})`); return out(); }

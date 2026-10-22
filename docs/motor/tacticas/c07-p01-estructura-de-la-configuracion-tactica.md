@@ -428,5 +428,13 @@ Cuando el balón pasa a otro jugador, ese jugador realiza su siguiente lectura c
 
 Los receptores, bloqueadores y compañeros necesitan ejecutar sus tareas. La dirección no sustituye la capacidad colectiva ni garantiza el acierto final.
 
+### Nota de implementación MOTOR-18 (Familiaridad táctica)
+
+La ejecución de roles y tácticas incorpora preparación aprendida (30 módulos: ORG, COB, DIS, familias, transición, continuidad, salida de presión, PRESS y saques) mediante un único ajuste logit limitado por operación en la calidad de la oportunidad y en el avance ante presión adelantada. Las prioridades, estilos y reglas actuales no cambian; la posición nominal sigue sin filtrar elegibilidad, pero la posición realmente asignada puede tener otra familiaridad. Detalle: `docs/tecnico/motor18.md`.
+
+### Nota de implementación MOTOR-18B (Participantes y contexto de la familiaridad)
+
+El ajuste de familiaridad usa los **participantes de la interacción elegida**: poseedor/actor, pasador, el **bloqueador efectivamente usado** (aunque el contacto final sea una penetración) y los defensores comprometidos; una continuación que inicia otra interacción no arrastra al bloqueador anterior. La cobertura ejecutada y sus defensores solo cuentan si pertenecen a la misma interacción; la estimación de una opción candidata usa los datos ya determinados y declara lo que aún no lo está (sin inventar probabilidades). Detalle: `docs/tecnico/motor18b.md`.
+
 <!-- beM:pie-inicio -->
 > [Índice del tema](README.md) · Anterior: [c06-experiencia-veteranos-y-desarrollo](../jugadores/c06-experiencia-veteranos-y-desarrollo.md) · Siguiente: [c07-p02-estilos-y-disposiciones-de-precarga](c07-p02-estilos-y-disposiciones-de-precarga.md)

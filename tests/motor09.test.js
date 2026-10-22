@@ -22,7 +22,7 @@ const shot = (p, team, zone, points, made, extra = {}) => ({ k: 'shot', p, team,
 const ft = (p, team, i, n, made, series, extra = {}) => ({ k: 'ft', p, team, made, series, i, n, cause: 'falta en acto de tiro', shooting: true, shotEvent: 'E0003', shotMade: false, feed: null, ...extra });
 
 test('1. perfil MOTOR-09: matriz normativa coherente, estado de contraste por fila y una candidata ambigua no es activable', () => {
-  assert.match(profile.effectiveId, /\+SEM-MOTOR09-20261016(\+SEM-MOTOR10-20261016)?(\+SEM-MOTOR11-20261017)?(\+SEM-MOTOR12-20261017)?(\+SEM-MOTOR13-20261017)?(\+SEM-MOTOR14-20261017)?(\+SEM-MOTOR15-20261017)?(\+SEM-MOTOR15B-20261017)?(\+SEM-MOTOR17-20261018)?(\+SEM-MOTOR17B-20261021)?$/);
+  assert.match(profile.effectiveId, /\+SEM-MOTOR09-20261016(\+SEM-MOTOR10-20261016)?(\+SEM-MOTOR11-20261017)?(\+SEM-MOTOR12-20261017)?(\+SEM-MOTOR13-20261017)?(\+SEM-MOTOR14-20261017)?(\+SEM-MOTOR15-20261017)?(\+SEM-MOTOR15B-20261017)?(\+SEM-MOTOR17-20261018)?(\+SEM-MOTOR17B-20261021)?(\+SEM-MOTOR18-20261021)?(\+SEM-MOTOR18B-20261022)?$/);
   assert.deepEqual(validateMatrix(profile), []);
   const reg = profile.regulation;
   // honestidad de fuentes: ninguna fila se presenta como lectura directa de un PDF inaccesible; lo contrastado remite al encargo §4.3 (MOTOR-09) o §7.3 (MOTOR-14)
@@ -278,7 +278,7 @@ test('11. memoria: denominadores separados, claves semánticas sin fragmentació
 
 test('12. reproducción: acta reconstruida = acta de la ejecución, sin dobles sanciones; export/7 se rechaza conservando el archivo', () => {
   const res = reference();
-  assert.equal(res.schema, EXPORT_SCHEMA); assert.match(EXPORT_SCHEMA, /export\/[89]$/); assert.equal(res.meta.engineVersion, ENGINE_VERSION);
+  assert.equal(res.schema, EXPORT_SCHEMA); assert.match(EXPORT_SCHEMA, /export\/(8|9|10)$/); assert.equal(res.meta.engineVersion, ENGINE_VERSION);
   assert.equal(res.reconciliation.ok, true, JSON.stringify(res.reconciliation.checks.filter((c) => !c.ok)));
   const file = JSON.parse(JSON.stringify(res));
   const rebuilt = buildActa({ events: file.events, lineups: file.lineups, input: file.input, possessions: file.possessions, status: file.status }, file.profile.statsPolicy);

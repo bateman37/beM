@@ -1,12 +1,14 @@
 // Pantalla «Preparación» (MOTOR-04): semilla, quinteto, director, disposición, roles por jugador, siete estilos agrupados,
 // instrucción de media distancia y libro de quince fichas por familia con su ficha legible y su compatibilidad con el quinteto.
 import { h, clear } from './dom.js';
-import { store, PLAY_NAMES, persist, prepProfile, loadDemoPlan, loadNaturalPlan } from './store.js';
+import { store, PLAY_NAMES, persistActive, prepProfile, loadDemoPlan, loadNaturalPlan, prepInput, prepSourceInfo } from './store.js';
+const persist = persistActive; // MOTOR-18B (R01): se persiste la entrada realmente editada (copia de aprendizaje o entrada editada)
 import { srcText, planSummary } from './population-ui.js';
 import { SLOTS, validateInput, createMatch, deepCopy, defaultParticipationPlan } from '../match/index.js';
 import { defenseControls } from './defense-ui.js';
 import { throwInControls } from './throwin-ui.js';
 import { coachPrepControls } from './coach-ui.js';
+import { prepFamiliarity, familiarityHint } from './knowledge-ui.js';
 import { STYLE_DEFS, STYLE_GROUPS, STYLE_TITLES, MIDRANGE_OPTIONS, FAMILY_NAMES, FAMILY_ORDER, STATUS_TEXT, styleLevelLabels } from './styles.js';
 
 export { STYLE_TITLES };
@@ -25,9 +27,10 @@ function compat(profile, edit) {
 
 export function renderPrep(root) {
   clear(root);
-  const { edit } = store; const profile = prepProfile();
+  const edit = prepInput(); const profile = prepProfile(); const src = prepSourceInfo();
   const legacy = !store.profile.moment || !store.profile.coach || !store.profile.regulation;
   root.append(h('h2', {}, 'Preparación del encuentro'));
+  root.append(h('p', { class: src.editing === 'learning' ? 'pill warn' : 'small muted', id: 'prep-source' }, src.text));
   if (legacy) root.append(h('div', { class: 'errbox' }, h('strong', { class: 'err' }, 'El perfil activo es anterior a MOTOR-09. '), 'Puedes preparar la entrada (se valida con el perfil de MOTOR-09), pero no se podrá jugar hasta activar la base de MOTOR-09 o una candidata explícita (Panel de ajustes › Inicio).'));
   if (store.upgradeNotes?.length) root.append(h('p', { class: 'small muted' }, `Entrada guardada con una versión anterior: se añadieron explícitamente los campos nuevos con su valor inicial (${store.upgradeNotes.join('; ')}).`));
   root.append(h('div', { class: 'card' },
@@ -55,7 +58,7 @@ function teamPrep(team, idx, profile, cm, root) {
       plan.starters[slot] = nid;
       if (plan.participation) plan.participation = defaultParticipationPlan(profile, team.players, plan); // MOTOR-08: cambian los titulares, se recarga la precarga SEM (revisable)
       again();
-    } }, team.players.map((p) => h('option', { value: p.id, selected: p.id === plan.starters[slot] }, optLabel(p)))));
+    } }, team.players.map((p) => h('option', { value: p.id, selected: p.id === plan.starters[slot] }, optLabel(p)))), familiarityHint(plan.starters[slot], 'position', slot)); // MOTOR-18: familiaridad con la posición asignada (nunca bloquea por la nominal)
   const dirList = h('ol', {}, plan.directorPriority.map((id, i) => h('li', {}, id, ' ',
     h('button', { class: 'link small', disabled: i === 0, onclick: () => { [plan.directorPriority[i - 1], plan.directorPriority[i]] = [plan.directorPriority[i], plan.directorPriority[i - 1]]; again(); } }, '↑'), ' ',
     h('button', { class: 'link small', disabled: i === plan.directorPriority.length - 1, onclick: () => { [plan.directorPriority[i + 1], plan.directorPriority[i]] = [plan.directorPriority[i], plan.directorPriority[i + 1]]; again(); } }, '↓'), ' ',
@@ -81,7 +84,7 @@ function teamPrep(team, idx, profile, cm, root) {
   const roles = h('div', {}, h('h3', {}, 'Roles ofensivos'),
     h('p', { class: 'small muted' }, 'Orientan quién ocupa cada función y el protagonismo (peso moderado, una sola vez al elegir participante). No cambian capacidades ni prohíben nada por la posición nominal.'),
     h('div', { style: 'display:grid; gap:4px' }, team.players.map((p) => h('label', { class: 'row' }, h('span', { style: 'width:150px' }, `${p.id}${starterSet.has(p.id) ? ' ★' : ''}`),
-      h('select', { onchange: (e) => { p.offensiveRole = { code: e.target.value, name: roleDict[e.target.value] }; again(); } }, Object.entries(roleDict).map(([c, n]) => h('option', { value: c, selected: p.offensiveRole.code === c }, `${c} ${n}`)))))));
+      h('select', { onchange: (e) => { p.offensiveRole = { code: e.target.value, name: roleDict[e.target.value] }; again(); } }, Object.entries(roleDict).map(([c, n]) => h('option', { value: c, selected: p.offensiveRole.code === c }, `${c} ${n}`))), familiarityHint(p.id, 'offensiveRole', p.offensiveRole.code)))));
 
   // ---- estilos agrupados + media distancia
   const labels = styleLevelLabels(profile);
@@ -119,7 +122,7 @@ function teamPrep(team, idx, profile, cm, root) {
       plan.demo ? h('span', { class: 'pill warn' }, 'plan de demostración de cobertura') : null));
 
   // ---- defensa (MOTOR-05): organización, altura, cinco estilos, cobertura, roles, marcas y especiales
-  const rivalTeam = store.edit.teams[1 - idx];
+  const rivalTeam = prepInput().teams[1 - idx];
   const defense = h('details', { open: ui.open.has(`def:${idx}`), ontoggle: (e) => { const k = `def:${idx}`; if (e.target.open) ui.open.add(k); else ui.open.delete(k); } },
     h('summary', {}, h('strong', {}, 'Defensa'), ` — ${plan.defense} · ${plan.pressureHeight} · ${plan.coverage}`),
     h('div', { style: 'margin-top:8px' },
@@ -127,7 +130,7 @@ function teamPrep(team, idx, profile, cm, root) {
         label: (id) => `${id}${starterSet.has(id) ? ' ★' : ''}`,
         getRole: (pid) => team.players.find((p) => p.id === pid).defensiveRole?.code, setRole: (pid, code) => { team.players.find((p) => p.id === pid).defensiveRole = { code, name: profile.fixtureContract.defensiveRoleDictionary[code] }; } }),
       h('div', { class: 'row', style: 'margin-top:8px' },
-        h('button', { class: 'btn secondary', type: 'button', onclick: () => { const o = store.edit.teams[1 - idx].plan; for (const k of ['defense', 'target', 'targetAlt', 'fallbackOrg', 'pressureHeight', 'coverage', 'navigation']) o[k] = deepCopy(plan[k]); o.defStyles = deepCopy(plan.defStyles); o.marks = []; o.specials = []; ui.msg = `Defensa copiada a ${store.edit.teams[1 - idx].id} (sin marcas ni especiales: apuntan a jugadores del otro equipo). Es solo para pruebas; no es una recomendación de «mejor defensa».`; again(); } }, 'Copiar organización, altura, estilos y cobertura al otro equipo'))));
+        h('button', { class: 'btn secondary', type: 'button', onclick: () => { const o = prepInput().teams[1 - idx].plan; for (const k of ['defense', 'target', 'targetAlt', 'fallbackOrg', 'pressureHeight', 'coverage', 'navigation']) o[k] = deepCopy(plan[k]); o.defStyles = deepCopy(plan.defStyles); o.marks = []; o.specials = []; ui.msg = `Defensa copiada a ${prepInput().teams[1 - idx].id} (sin marcas ni especiales: apuntan a jugadores del otro equipo). Es solo para pruebas; no es una recomendación de «mejor defensa».`; again(); } }, 'Copiar organización, altura, estilos y cobertura al otro equipo'))));
 
   // ---- saques de banda y fondo (MOTOR-06): libro, sacadores y respuesta defensiva
   const setPrio = (id, v) => { const i = plan.throwInBook.findIndex((b) => b.playId === id); if (v == null) { if (i >= 0) plan.throwInBook.splice(i, 1); } else if (i >= 0) plan.throwInBook[i].priority = v; else plan.throwInBook.push({ playId: id, priority: v }); };
@@ -148,6 +151,7 @@ function teamPrep(team, idx, profile, cm, root) {
     h('span', { class: 'small muted' }, planSummary(profile, plan)));
   return h('div', { class: 'card' }, h('h3', {}, `${team.id} — ${team.name}`), h('p', { class: 'small muted' }, srcText(team.source)), natural,
     coach,
+    prepFamiliarity(team, idx, profile),
     disposition,
     defense,
     throwIns,

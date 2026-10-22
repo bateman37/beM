@@ -13,7 +13,9 @@ import { orgAt } from '../analysis/orgat.js';
 
 export const ESSENTIAL_LEVEL = 'world-essential';
 export const ESSENTIAL_SCHEMA = 'beM-essential-record/1';
-export const ESSENTIAL_VERSION = 'ESE-MOTOR17B-R1'; // MOTOR-17B (B17-01): `defense_org` es el CÓDIGO de la organización efectiva (antes: objeto de intención de intervención); ESE-MOTOR17-R1 añadió `team_index` por jugador; ESE-MOTOR15-R1 no lo incluía
+export const ESSENTIAL_VERSION = 'ESE-MOTOR18B-R1'; // MOTOR-18: añade `familiarity` (instantánea de conocimiento, resumen de aplicación y exposición final); ESE-MOTOR17B-R1 es idéntico en `defense_org` y se reconoce como tal
+const DEFENSE_ORG_CURRENT = new Set(['ESE-MOTOR17B-R1', 'ESE-MOTOR18-R1', 'ESE-MOTOR18B-R1']);
+// MOTOR-17B (B17-01): `defense_org` es el CÓDIGO de la organización efectiva (antes: objeto de intención de intervención); ESE-MOTOR17-R1 añadió `team_index` por jugador; ESE-MOTOR15-R1 no lo incluía
 // Semántica explícita de los campos de organización defensiva (MOTOR-17B §4). Un archivo con otra versión NO equivale: ver `legacyDefenseOrg`.
 export const DEFENSE_ORG_SEMANTICS = {
   version: 'ESE-MOTOR17B-R1',
@@ -22,7 +24,7 @@ export const DEFENSE_ORG_SEMANTICS = {
     defense_org_source: "'plan'|'orden aplicada'|'alternativa'|'no reconstruible' · origen de la lectura (nunca se inventa una organización)", defense_org_reason: 'string|null · motivo cuando el origen es «no reconstruible»', defense_intervention: 'object|null · decisiones de intervención (contener, negar, ayudar, intentar robo) de la intención del hecho; NO es la organización' },
   tactics: { org: 'string|null · organización efectiva si no cambia en la posesión; null con `org_mixed` si hay varias', orgs: 'string[] · organizaciones efectivas distintas por orden de aparición', org_mixed: 'boolean', org_intended: 'string|null', org_source: 'ver shots.defense_org_source', intervention: 'object|null · última intención de intervención de la posesión' },
 };
-export const legacyDefenseOrg = (rec) => (rec?.essential_version === ESSENTIAL_VERSION ? null : { status: 'histórico', reason: `${rec?.essential_version ?? 'sin versión'}: \`defense_org\` guardaba la intención de intervención (objeto), no el código de organización efectiva; no se reinterpreta como observación original` });
+export const legacyDefenseOrg = (rec) => (DEFENSE_ORG_CURRENT.has(rec?.essential_version) ? null : { status: 'histórico', reason: `${rec?.essential_version ?? 'sin versión'}: \`defense_org\` guardaba la intención de intervención (objeto), no el código de organización efectiva; no se reinterpreta como observación original` });
 // Huella de trayectoria: `incremental` (observador durante la simulación, por defecto), `full` (TRAY-MOTOR12-R1 sobre el resultado) o `none` (no se calcula y se declara así).
 export const FINGERPRINT_MODES = ['incremental', 'full', 'none'];
 // Validación: `full` (conciliación del acta + conciliación analítica, las mismas operaciones comunes que el resto de niveles) o `acta` (solo la conciliación del acta; declarado).
@@ -66,6 +68,13 @@ export function compactTactics(res) {
 }
 const lineByPlayer = (a) => Object.values(a.players).map((p) => ({ id: p.id, team: p.team, team_index: p.team, participation: p.participation, min_tenths: p.minTenths, pts: p.pts, fg2m: p.fg2m, fg2a: p.fg2a, fg3m: p.fg3m, fg3a: p.fg3a, ftm: p.ftm, fta: p.fta, oreb: p.oreb, dreb: p.dreb, ast: p.ast, ast_fg: p.astFg, ast_ft: p.astFt, tov: p.tov, stl: p.stl, blk: p.blk, blk_rec: p.blkRec, pf: p.pf, fr: p.fr, pm: p.pm, val: p.val, fouls: p.fouls }));
 
+// MOTOR-18 (§13.1): la instantánea completa de conocimiento vive UNA vez por intento; las operaciones solo guardan referencias y lo realmente usado (resumen de aplicación y exposición final con unidad).
+function familiarityBlock(res, dg) {
+  const fam = dg.familiarity ?? null; if (!fam) return null;
+  const snapshot = res.input.teams.map((t) => ({ team: t.id, coach_learning: t.coachLearning ?? null, players: t.players.map((p) => ({ id: p.id, mode: p.knowledge?.mode ?? 'legacy-neutral', tactical_learning: p.development?.tacticalLearning ?? null, knowledge: p.knowledge?.mode === 'explicit' ? p.knowledge : null })) }));
+  return { ...fam, snapshot };
+}
+
 export function buildEssential(res, { keys, validity, fp, fpMode, sim }) {
   const a = res.acta; const dg = res.diagnostics ?? {};
   return {
@@ -80,6 +89,7 @@ export function buildEssential(res, { keys, validity, fp, fpMode, sim }) {
     sequence: compactSequence(res), shots: compactShots(res), tactics: compactTactics(res),
     direction: { orders: res.orders, commands: res.commands, coach: dg.coach ? { delegation: dg.coach.delegation, counts: dg.coach.counts } : null },
     states: { samples: dg.stateSamples ?? null, final_energy: dg.finalEnergy ?? null, state_log: dg.stateLog ?? null, episodes: dg.episodes ?? null, snapshot: dg.states ?? null },
+    familiarity: familiarityBlock(res, dg),
     regulation: { coach_counters: dg.coachCounters ?? null, incidents: dg.incidents ?? null, corrections: dg.corrections ?? null, interference: dg.interference ?? null },
     integrity: { trajectory_fp: fp?.sha256 ?? null, trajectory_fp_mode: fpMode, trajectory_fp_version: fpMode === 'incremental' ? INCREMENTAL_FP_VERSION : fpMode === 'full' ? 'TRAY-MOTOR12-R1' : null,
       steps: res.result?.stepCount ?? null, sporting_draws: dg.sportingDraws ?? null, events: res.events.length, coverage_observed: dg.coverageObserved ?? null, policies: { acta: a.policy }, reconciliation_version: res.reconciliation?.version ?? null,

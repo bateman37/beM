@@ -13,7 +13,7 @@ export const SNAPSHOT_SCHEMA = 'beM-match-snapshot/1';
 export const SNAPSHOT_CODEC = 'graph-json/1';
 
 // Campos que NO son estado vivo: configuración congelada (se reconstruye de la entrada y el perfil), seguimiento de filas (se restaura aparte) y generador (se guarda su posición exacta).
-const DERIVED = new Set(['opts', 'profileData', 'tracker', 'profile', 'cfg', 'input', 'rng', 'pl']);
+const DERIVED = new Set(['opts', 'profileData', 'tracker', 'profile', 'cfg', 'input', 'rng', 'pl', 'famCfg']); // MOTOR-18: famCfg = parámetros de familiaridad congelados (se reconstruyen del perfil; no son estado vivo)
 
 // ------------------------------------------------------------------------------------------------ códec de grafo (JSON válido, determinista, con aliasing)
 // Cada objeto/matriz/Set/Map recibe un índice la primera vez que se encuentra (recorrido en anchura, orden de claves estable); las referencias se escriben como {"$":índice}.

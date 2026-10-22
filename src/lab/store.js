@@ -3,7 +3,9 @@
 import { parsePlayersCsv, deepCopy, validateInput, applyExtension, upgradeInput } from '../match/index.js';
 import { PopulationLibrary, referenceTeam, historicalPair, instantiate, dropStaleRivalRefs, generateTeam, resolveTeam, fingerprint, planBulk as planBulkCore, applyBulk, undoBulk } from '../population/index.js';
 import { storage } from './dom.js';
+import { INPUT_SCHEMA } from '../match/data.js';
 import { ProfileLibrary } from '../profiles/library.js';
+import { isLearningScenarioOf, prepInputOf, matchSourceOf } from './prep-source.js';
 
 const KEY = 'beM.motor01.edit.v1'; // la entrada editable no cambia de formato en MOTOR-02: se conserva la clave
 export const ATTR_GROUPS = [
@@ -19,12 +21,12 @@ export const PLAY_NAMES = {};
 
 // `profile` es el perfil EFECTIVO de la versión ACTIVA (MOTOR-03): lo que usarán los próximos encuentros. Los encuentros ya
 // iniciados llevan su propia copia congelada y no se ven afectados por activar otra versión.
-export const store = { baseProfile: null, extension: null, extension3: null, extension4: null, extension5: null, extension6: null, extension7: null, extension8: null, extension9: null, extension10: null, extension11: null, extension12: null, extension13: null, extension14: null, extension15: null, extension15b: null, extension17: null, extension17b: null, candidates17: null, base: null, edit: null, labels: {}, catalog: null, last: null, scenario: null, persisted: false, library: null, matchRef: null, pop: null, undo: [],
+export const store = { baseProfile: null, extension: null, extension3: null, extension4: null, extension5: null, extension6: null, extension7: null, extension8: null, extension9: null, extension10: null, extension11: null, extension12: null, extension13: null, extension14: null, extension15: null, extension15b: null, extension17: null, extension17b: null, extension18: null, extension18b: null, candidates17: null, base: null, edit: null, labels: {}, catalog: null, last: null, scenario: null, persisted: false, library: null, matchRef: null, pop: null, undo: [],
   get profile() { return this.library ? this.library.activeVersion().effective : null; },
   get profileRef() { return this.library ? this.library.profileRef(this.library.activeId) : null; } };
 
 export async function loadAll() {
-  const [baseProfile, extension, extension3, extension4, extension5, extension6, extension7, extension8, extension9, extension10, extension11, extension12, extension13, extension14, extension15, extension15b, extension17, extension17b, candidates17, csv, catalog] = await Promise.all([
+  const [baseProfile, extension, extension3, extension4, extension5, extension6, extension7, extension8, extension9, extension10, extension11, extension12, extension13, extension14, extension15, extension15b, extension17, extension17b, extension18, extension18b, candidates17, csv, catalog] = await Promise.all([
     fetch('/data/match/motor01-seed-profile.json').then((r) => r.json()),
     fetch('/data/match/motor02-seed-extension.json').then((r) => r.json()),
     fetch('/data/match/motor03-seed-extension.json').then((r) => r.json()),
@@ -43,19 +45,21 @@ export async function loadAll() {
     fetch('/data/match/motor15b-seed-extension.json').then((r) => r.json()),
     fetch('/data/match/motor17-seed-extension.json').then((r) => r.json()),
     fetch('/data/match/motor17b-seed-extension.json').then((r) => r.json()),
+    fetch('/data/match/motor18-seed-extension.json').then((r) => r.json()),
+    fetch('/data/match/motor18b-seed-extension.json').then((r) => r.json()),
     fetch('/data/match/motor17-candidates.json').then((r) => r.json()).catch(() => null),
     fetch('/data/fixtures/reference-players-MOTOR01.csv').then((r) => r.text()),
     fetch('/data/catalog.json').then((r) => (r.ok ? r.json() : null)).catch(() => null),
   ]);
   const players = parsePlayersCsv(csv, baseProfile);
-  const profile = applyExtension(baseProfile, extension, extension3, extension4, extension5, extension6, extension7, extension8, extension9, extension10, extension11, extension12, extension13, extension14, extension15, extension15b, extension17, extension17b); // perfil efectivo base: el original no se sobrescribe
-  store.baseProfile = baseProfile; store.extension = extension; store.extension3 = extension3; store.extension4 = extension4; store.extension5 = extension5; store.extension6 = extension6; store.extension7 = extension7; store.extension8 = extension8; store.extension9 = extension9; store.extension10 = extension10; store.extension11 = extension11; store.extension12 = extension12; store.extension13 = extension13; store.extension14 = extension14; store.extension15 = extension15; store.extension15b = extension15b; store.extension17 = extension17; store.extension17b = extension17b; store.candidates17 = candidates17; store.catalog = catalog;
+  const profile = applyExtension(baseProfile, extension, extension3, extension4, extension5, extension6, extension7, extension8, extension9, extension10, extension11, extension12, extension13, extension14, extension15, extension15b, extension17, extension17b, extension18, extension18b); // perfil efectivo base: el original no se sobrescribe
+  store.baseProfile = baseProfile; store.extension = extension; store.extension3 = extension3; store.extension4 = extension4; store.extension5 = extension5; store.extension6 = extension6; store.extension7 = extension7; store.extension8 = extension8; store.extension9 = extension9; store.extension10 = extension10; store.extension11 = extension11; store.extension12 = extension12; store.extension13 = extension13; store.extension14 = extension14; store.extension15 = extension15; store.extension15b = extension15b; store.extension17 = extension17; store.extension17b = extension17b; store.extension18 = extension18; store.extension18b = extension18b; store.candidates17 = candidates17; store.catalog = catalog;
   store.library = new ProfileLibrary({ storage: storage(), base: profile });
   store.labels = Object.fromEntries(profile.attributeDictionary.map((a) => [a.id, a.label]));
   store.players = players; store.baseNew = profile; // perfil efectivo de MOTOR-10: siempre disponible para construir la entrada, aunque el activo sea anterior
   for (const [id, p] of Object.entries(profile.repertoire.plays)) PLAY_NAMES[id] = p.name;
   store.pop = new PopulationLibrary({ storage: storage() }); // variantes, generados, escenarios y resultados (las referencias nunca se guardan: están protegidas)
-  store.base = { schema: 'beM-match-input/6', seed: profile.scenario.seed, importance: 'ordinary', teams: historicalPair(profile, players) }; // entrada inicial = referencia histórica de MOTOR-10 (EQ01/EQ02 con sus planes históricos)
+  store.base = { schema: INPUT_SCHEMA, seed: profile.scenario.seed, importance: 'ordinary', teams: historicalPair(profile, players) }; // entrada inicial = referencia histórica de MOTOR-10 (EQ01/EQ02 con sus planes históricos)
   for (const t of store.base.teams) t.source.loadedFingerprint = fpOf(t);
   store.edit = restore() ?? deepCopy(store.base);
   return store;
@@ -95,19 +99,31 @@ export const prepProfile = () => (store.profile?.moment && store.profile?.coach 
 
 // Copia de demostración MOTOR-04: misma plantilla, DIS02, estilos actuales y las quince fichas a prioridad 3. Escenario de cobertura.
 export function loadDemoPlan(teamIdx) {
-  const t = store.edit.teams[teamIdx];
+  const t = prepInput().teams[teamIdx];
   const demo = store.baseNew.scenario.demoPlans.find((d) => d.demoOf === t.id);
   if (!demo) return false;
   t.plan.playbook = deepCopy(demo.playbook); t.plan.disposition = demo.disposition; t.plan.midrange = demo.midrange;
   if (demo.throwInBook) t.plan.throwInBook = deepCopy(demo.throwInBook); // MOTOR-06: las seis fichas de saque a prioridad 3 (escenario de cobertura)
   t.plan.demo = true;
-  persist();
+  persistActive();
   return true;
 }
 export const playerById = (id) => store.edit.teams.flatMap((t) => t.players).find((p) => p.id === id);
 
 // Entrada que se congelará al preparar un encuentro: la COPIA de contraste activa (identificada, con sus cambios listados) o la entrada editada de Dennis.
-export const matchSource = () => store.scenario?.input ?? store.edit;
+export const matchSource = () => matchSourceOf(store);
+// MOTOR-18B (R01): cuando la copia de APRENDIZAJE es la entrada activa del próximo partido, Preparación EDITA esa copia (no `store.edit`). El indicador `learning` vive en `store.scenario.scenario`.
+// Las referencias (EQ01–EQ12), los planes naturales/históricos y la entrada editada de Dennis permanecen intactos. Las copias de contraste distintas del aprendizaje conservan su significado: se editan en `store.edit`.
+export const isLearningScenario = () => isLearningScenarioOf(store);
+export const prepInput = () => prepInputOf(store);
+// Persistencia de la entrada que se está editando: la copia de aprendizaje (con su registro) o la entrada editada. El gancho lo registra knowledge-ui (sin dependencia circular).
+export function persistActive() { if (isLearningScenario()) store.persistLearningHook?.(); else persist(); }
+// Descripción breve de qué entrada se edita y cuál recibirá el próximo partido (solo lectura).
+export function prepSourceInfo() {
+  if (isLearningScenario()) return { editing: 'learning', id: store.scenario.scenario.id, text: `Estás editando la COPIA DE APRENDIZAJE ${store.scenario.scenario.id}: es la entrada que recibirá el próximo partido. Tus fichas de referencia y tu entrada editada no se modifican.` };
+  if (store.scenario?.input) return { editing: 'edit', id: store.scenario.scenario?.id ?? null, text: `Estás editando tu entrada. El próximo partido usará la copia de contraste ${store.scenario.scenario?.id ?? ''}, no esta entrada (quita la copia en Escenarios para jugar con tu entrada).` };
+  return { editing: 'edit', id: null, text: 'Estás editando tu entrada; es la que recibirá el próximo partido.' };
+}
 
 // ---------------------------------------------------------------------------------------------- población (MOTOR-11)
 // La receta y los equipos de referencia salen del perfil ACTIVO si ya incluye la población; si no, de la base de MOTOR-11 (siempre disponible) y se identifica.
@@ -146,15 +162,16 @@ export function restoreSlot(slot, { planKind = null } = {}) {
 }
 // Plan natural versionado de la identidad de origen, cargado de forma EXPLÍCITA sobre el equipo del puesto (conserva fichas y ediciones de jugadores).
 export function loadNaturalPlan(slot) {
-  const t = store.edit.teams[slot]; const src = t.source;
+  const input = prepInput(); const t = input.teams[slot]; const src = t.source;
   const baseId = src?.kind === 'generated' ? src.base : src?.kind === 'reference' ? src.teamId : (src?.base?.teamId ?? '').match(/^EQ\d\d/)?.[0];
   const ref = baseId ? popProfile().population.teams[baseId] : null; if (!ref) return { ok: false, error: 'este equipo no procede de una identidad con plan natural' };
   const logical = refTeam(baseId); const inst = instantiate({ ...logical, id: baseId }, []);
   const remap = (v) => JSON.parse(JSON.stringify(v).split(`"${inst.id}-J`).join(`"${t.id}-J`));
   const keep = { ...t.plan }; const plan = remap(inst.plan); plan.teamId = t.id;
   t.plan = plan; t.plan.initialTeamMoment = keep.initialTeamMoment ?? 0;
-  const other = store.edit.teams[1 - slot]; dropStaleRivalRefs(t, other.players.map((p) => p.id));
-  store.scenario = null; persist();
+  const other = input.teams[1 - slot]; dropStaleRivalRefs(t, other.players.map((p) => p.id));
+  if (!isLearningScenario()) store.scenario = null; // la copia de aprendizaje activa sigue siendo la entrada del partido
+  persistActive();
   return { ok: true, id: baseId, version: ref.planVersion };
 }
 export function saveVariantFromSlot(slot, name) {

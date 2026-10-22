@@ -264,5 +264,13 @@ Un cambio de sistema defensivo puede afectar responsabilidades, acceso y oposici
 
 Los parámetros globales se reservan a conceptos globales reales. Si varios mecanismos usan una sensibilidad común, la relación se ve. Si deben diferir por tarea, se puede sobreescribir explícitamente.
 
+### Nota de implementación MOTOR-18 (Filas de familiaridad y aprendizaje (MOTOR-18))
+
+Las magnitudes de la capa de familiaridad viven en el panel existente (grupo «Familiaridad y aprendizaje», filas `familiarity.*`, procedencia SEM18) y en `data:check`; el catálogo de 30 módulos, las correspondencias y las relaciones de transferencia son contenido declarativo validado. Detalle: `docs/tecnico/motor18.md`.
+
+### Nota de implementación MOTOR-18B (Filas de la curva de Polivalencia)
+
+`familiarity.learning.factors.player` pasa a ser la curva `{kind: 'piecewise-linear', points: [{level, factor} ×5]}` (extensión `SEM-MOTOR18B-20261022`): once filas visibles (tipo y diez de anclajes; los niveles son referencia y los factores son editables). Un perfil con `{base, slope}` conserva sus filas anteriores como históricas; el panel muestra solo los mandos del modelo efectivo y valida la curva (orden, extremos, anclajes previstos, factores positivos y no decrecientes). Detalle: `docs/tecnico/motor18b.md`.
+
 <!-- beM:pie-inicio -->
 > [Índice del tema](README.md) · Anterior: [c27-p02-estadistica-y-resumen-est01est08](c27-p02-estadistica-y-resumen-est01est08.md) · Siguiente: [c28-p01-poblacion-modalidades-y-conservacion](../validacion/c28-p01-poblacion-modalidades-y-conservacion.md)

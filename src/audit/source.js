@@ -43,6 +43,14 @@ export class BatchSource {
     return rowsAsObjects({ header: cols, rows }).map((o) => typed(name, o));
   }
   frozenFile(rel) { const p = join(this.dir, rel); return existsSync(p) ? JSON.parse(readFileSync(p, 'utf8')) : null; }
+  // MOTOR-18 (AUD11): plan inicial del equipo de ESTE intento (entrada del lote → partido → plan congelado). null si la entrada no se conserva (no se inventa).
+  planOf(a, teamInstanceId) {
+    try {
+      const ag = (this.lote.agenda ?? []).find((x) => x.match_id === a.match_id); if (!ag?.entry_id) return null;
+      const entry = this.frozenFile(`entradas/partidos/${ag.entry_id}.json`); const t = entry?.teams?.find((x) => x.team_instance_id === teamInstanceId); if (!t?.plan_ref) return null;
+      return this.frozenFile(`entradas/planes/${t.plan_ref}.json`);
+    } catch { return null; }
+  }
   listFrozen(dir) { const p = join(this.dir, dir); return existsSync(p) ? readdirSync(p).filter((f) => f.endsWith('.json')).map((f) => `${dir}/${f}`) : []; }
   audiences() { return this.attempts().flatMap((a) => (a.files ?? []).filter((f) => f.kind === 'jsonl').map((f) => f.audience)); }
   fingerprint(policy) { return sha({ kind: this.kind, batch: this.batchId, a: this.attempts().map((a) => [a.attempt_id, (a.files ?? []).map((f) => f.sha256)]), policy }).slice(0, 16); }
@@ -70,6 +78,7 @@ export class PackageSource {
   verifyIntegrity() { const r = verifySet(this.providers); return { ok: r.ok, files: null, bytes: null, problems: r.problems ?? [], method: `comprobador de paquete (${r.checks?.length ?? 0} controles)`, checks: r.checks?.map((c) => ({ id: c.id, status: c.status })) }; }
   stream(a, name) { const path = `${STREAMS[name].dir}/${STREAMS[name].prefix}-${a.match_id}--${a.attempt_id}.jsonl`; const p = a._p; if (p.has(path)) return p.read(path); const m = this.parts.find((x) => x.p.has(path)); return m ? m.p.read(path) : null; }
   table(a, name) { const rows = this.read(a._p, TABLES[name].file); if (!rows) return null; return rows.filter((r) => r.attempt_id === a.attempt_id).map((o) => typed(name, { ...o })); }
+  planOf() { return null; } // un paquete de MOTOR-12 no conserva los planes por equipo: la alternativa configurada no es acreditable desde él
   frozenFile(rel) { for (const { p } of this.parts) if (p.has(rel)) return JSON.parse(p.read(rel).toString('utf8')); return null; }
   listFrozen(dir) { return [...new Set(this.parts.flatMap(({ p }) => p.list().filter((n) => n.startsWith(`${dir}/`) && n.endsWith('.json'))))]; }
   audiences() { return this.manifests.flatMap((m) => (m.files ?? []).filter((f) => f.format === 'jsonl' || /\.jsonl$/.test(f.path)).map((f) => f.audience)).filter(Boolean); }

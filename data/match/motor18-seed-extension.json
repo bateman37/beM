@@ -1,0 +1,142 @@
+{
+ "seedExtensionId": "SEM-MOTOR18-20261021",
+ "status": "SEM18: semillas provisionales de producto, no porcentajes extraídos de estudios reales ni calibración deportiva aceptada. Añade la capa de familiaridad táctica (posiciones, roles y 30 módulos), su efecto limitado en la calidad de la oportunidad y en el avance ante presión adelantada, y las reglas de aprendizaje/retención entre partidos. Con la política legacy-neutral, con la capa desactivada o con todas las familiaridades a 30 el deporte de CONTROL17B no cambia.",
+ "basedOn": "SEM-MOTOR01-20261016",
+ "origin": "Encargo MOTOR-18 de Dennis (21 de octubre de 2026), §4–§10: cifras y correspondencias fijadas por el encargo; Claude no ha escogido ninguna.",
+ "additions": {
+  "familiarity": {
+   "version": "FAM-MOTOR18-R1",
+   "knowledgeVersion": "KNOW-MOTOR18-R1",
+   "learningVersion": "LEARN-MOTOR18-R1",
+   "provenance": "SEM18 (encargo MOTOR-18): semillas provisionales de producto; no son porcentajes de estudios reales ni calibración aceptada.",
+   "activation": {
+    "enabled": true,
+    "compatibilityPolicy": "legacy-neutral"
+   },
+   "range": { "min": 1, "max": 30 },
+   "componentWeights": { "position": 0.2, "role": 0.3, "tactic": 0.5 },
+   "tacticContextWeights": {
+    "organized": { "attack": { "disposition": 0.4, "family": 0.6 }, "defense": { "organization": 0.7, "coverage": 0.3 } },
+    "transition": { "attack": { "transition": 1 }, "defense": { "organization": 1 } },
+    "pressBreak": { "attack": { "press_break": 1 }, "defense": { "press": 0.7, "organization": 0.3 } },
+    "throwIn": { "attack": { "throwIn": 1 }, "defense": { "throwIn": 0.7, "organization": 0.3 } },
+    "spontaneous": { "attack": { "disposition": 0.4, "family": 0.6 }, "defense": { "organization": 0.7, "coverage": 0.3 } }
+   },
+   "maxLogit": {
+    "quality": { "attack": 0.3, "defense": 0.3 },
+    "pressedAdvance": { "attack": 0.3, "defense": 0.3 }
+   },
+   "catalog": {
+    "positions": ["PG", "SG", "SF", "PF", "C"],
+    "offensiveRoles": ["O01", "O02", "O03", "O04", "O05", "O06", "O07", "O08", "O09", "O10", "O11", "O12", "O13", "O14", "O15"],
+    "defensiveRoles": ["D01", "D02", "D03", "D04", "D05", "D06", "D07", "D08", "D09", "D10", "D11", "D12"],
+    "modules": [
+     { "id": "ORG01", "group": "organization", "source": "organización defensiva ORG01 del catálogo vigente" },
+     { "id": "ORG02", "group": "organization", "source": "organización defensiva ORG02 del catálogo vigente" },
+     { "id": "ORG03", "group": "organization", "source": "organización defensiva ORG03 del catálogo vigente" },
+     { "id": "ORG04", "group": "organization", "source": "organización defensiva ORG04 del catálogo vigente" },
+     { "id": "ORG05", "group": "organization", "source": "organización defensiva ORG05 del catálogo vigente" },
+     { "id": "ORG06", "group": "organization", "source": "organización defensiva ORG06 del catálogo vigente" },
+     { "id": "COB01", "group": "coverage", "source": "cobertura del bloqueo: contener" },
+     { "id": "COB02", "group": "coverage", "source": "cobertura del bloqueo: cambiar" },
+     { "id": "COB03", "group": "coverage", "source": "cobertura del bloqueo: salir y recuperar" },
+     { "id": "COB04", "group": "coverage", "source": "cobertura del bloqueo: atrapar" },
+     { "id": "DIS01", "group": "disposition", "source": "disposición ofensiva DIS01 del catálogo vigente" },
+     { "id": "DIS02", "group": "disposition", "source": "disposición ofensiva DIS02 del catálogo vigente" },
+     { "id": "DIS03", "group": "disposition", "source": "disposición ofensiva DIS03 del catálogo vigente" },
+     { "id": "DIS04", "group": "disposition", "source": "disposición ofensiva DIS04 del catálogo vigente" },
+     { "id": "DIS05", "group": "disposition", "source": "disposición ofensiva DIS05 del catálogo vigente" },
+     { "id": "DIS06", "group": "disposition", "source": "disposición ofensiva DIS06 del catálogo vigente" },
+     { "id": "FAM:pick_and_roll", "group": "family", "source": "spec.family del repertorio: POS01–POS04" },
+     { "id": "FAM:handoff", "group": "family", "source": "spec.family del repertorio: POS05–POS06" },
+     { "id": "FAM:off_ball_screen", "group": "family", "source": "spec.family del repertorio: POS07–POS08" },
+     { "id": "FAM:give_and_go", "group": "family", "source": "spec.family del repertorio: POS09–POS10" },
+     { "id": "FAM:post", "group": "family", "source": "spec.family del repertorio: POS11–POS13" },
+     { "id": "FAM:isolation", "group": "family", "source": "spec.family del repertorio: POS14–POS15" },
+     { "id": "FAM:transition", "group": "otherOffense", "source": "transición" },
+     { "id": "FAM:continuity", "group": "otherOffense", "source": "continuidad compartida (CONT04, CONT05, CONT08 y continuaciones sin antecedente)" },
+     { "id": "FAM:press_break", "group": "otherOffense", "source": "salida ante presión adelantada" },
+     { "id": "PRESS", "group": "pressure", "source": "presión adelantada 3/4 y total (comparten conocimiento)" },
+     { "id": "SAQ:O:band", "group": "throwIn", "source": "ejecución ofensiva del saque de banda" },
+     { "id": "SAQ:O:endline", "group": "throwIn", "source": "ejecución ofensiva del saque de fondo" },
+     { "id": "SAQ:D:band", "group": "throwIn", "source": "respuesta defensiva al saque de banda" },
+     { "id": "SAQ:D:endline", "group": "throwIn", "source": "respuesta defensiva al saque de fondo" }
+    ],
+    "continuationFamily": {
+     "CONT01": "inherit", "CONT02": "inherit", "CONT03": "inherit", "CONT07": "inherit",
+     "CONT04": "continuity", "CONT05": "continuity", "CONT08": "continuity",
+     "CONT06": "give_and_go",
+     "CONT09": "none"
+    }
+   },
+   "transfer": {
+    "positionPairs": [["PG", "SG"], ["SG", "SF"], ["SF", "PF"], ["PF", "C"]],
+    "offensiveRoleGroups": [["O01", "O08", "O11", "O12"], ["O02", "O07", "O13"], ["O03", "O05", "O06"], ["O04", "O09", "O14", "O15"]],
+    "offensiveRolePairs": [["O10", "O05"], ["O10", "O09"]],
+    "defensiveRoleGroups": [["D01", "D02", "D03", "D07"], ["D04", "D11"], ["D05", "D12"], ["D08", "D09", "D10"]],
+    "defensiveRolePairs": [["D06", "D01"], ["D06", "D04"], ["D06", "D07"]],
+    "moduleGroups": [["ORG02", "ORG03", "ORG04", "ORG05"], ["DIS03", "DIS04", "DIS05", "DIS06"]],
+    "modulePairs": [["ORG06", "ORG01"], ["ORG06", "ORG02"], ["DIS01", "DIS02"], ["FAM:pick_and_roll", "FAM:handoff"], ["FAM:off_ball_screen", "FAM:give_and_go"], ["FAM:continuity", "FAM:give_and_go"], ["FAM:continuity", "FAM:handoff"], ["FAM:transition", "FAM:press_break"]]
+   },
+   "learning": {
+    "traits": {
+     "range": { "min": 1, "max": 30 },
+     "tacticalLearningSeed": 16,
+     "teachingSeed": 16,
+     "coachMasteryUnit": "1–30 por módulo; semilla explícita 16 al crear una copia de laboratorio",
+     "coachMasterySeed": 16
+    },
+    "rates": { "position": 0.4, "offensiveRole": 0.4, "defensiveRole": 0.4, "tactic": 0.8 },
+    "factors": {
+     "player": { "base": 0.75, "slope": 0.5 },
+     "teaching": { "base": 0.75, "slope": 0.5 },
+     "content": { "base": 0.75, "slope": 0.5 },
+     "transfer": { "base": 1, "slope": 0.5 },
+     "relearning": 2
+    },
+    "gainDivisor": 29,
+    "snapToMaxThreshold": 29.95,
+    "session": {
+     "minHoursPerPlayerDay": 0.25,
+     "maxHoursPerPlayerDay": 4,
+     "collectiveShare": 0.6,
+     "individualShare": 0.4,
+     "maxIdleDays": 3650
+    },
+    "match": {
+     "liveMinutesForFullDose": 40,
+     "domainBudgetPerDay": 1
+    },
+    "practiceThresholds": { "position": 0.1, "offensiveRole": 0.1, "defensiveRole": 0.1, "tactic": 0.02 }
+   },
+   "retention": {
+    "position": { "graceDays": 365, "lossPerYear": 0.4, "floorFraction": 0.85 },
+    "offensiveRole": { "graceDays": 180, "lossPerYear": 0.6, "floorFraction": 0.8 },
+    "defensiveRole": { "graceDays": 180, "lossPerYear": 0.6, "floorFraction": 0.8 },
+    "tactic": { "graceDays": 90, "lossPerYear": 1.5, "floorFraction": 0.6 }
+   },
+   "presentation": {
+    "categoryBoundaries": [6, 12, 18, 24],
+    "categoryLabels": ["inicial", "básico", "competente", "avanzado", "dominado"],
+    "lowestShown": 5,
+    "bulkSteps": [1, 3, 5]
+   },
+   "syntheticSeeds": {
+    "nominalPosition": 30,
+    "relatedPosition": 18,
+    "otherPosition": 8,
+    "habitualOffensiveRole": 26,
+    "relatedOffensiveRole": 18,
+    "otherOffensiveRole": 8,
+    "habitualDefensiveRole": 26,
+    "relatedDefensiveRole": 18,
+    "otherDefensiveRole": 8,
+    "generalModule": 12,
+    "loadedPlanModule": 24,
+    "priorityFamily": 24,
+    "priorityFamilyMaxPriority": 2,
+    "allMastered": 30
+   }
+  }
+ }
+}

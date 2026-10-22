@@ -10,6 +10,7 @@ import './defense-specials.js';
 import './spontaneous.js';
 import './throwin.js';
 import './states.js';
+import './familiarity.js';
 import './coach.js';
 import './memory.js';
 import './orders.js';
@@ -19,7 +20,7 @@ import './correction-admin.js';
 import { projectBox, teamTotals } from './box.js';
 import { buildActa } from './acta.js';
 import { reconcile } from './reconcile.js';
-import { deepCopy, validateInput, buildMatchInput, parsePlayersCsv, validateProfileAndFixtures, applyExtension, validateExtension, upgradeInput, ENGINE_VERSION, EXPORT_SCHEMA, EXPORT_SCHEMA_MOTOR01, EXPORT_SCHEMA_MOTOR02, EXPORT_SCHEMA_MOTOR04, EXPORT_SCHEMA_MOTOR05, EXPORT_SCHEMA_MOTOR06, EXPORT_SCHEMA_MOTOR07, EXPORT_SCHEMA_MOTOR08, MIDRANGE_POLICIES, ATTRS, SLOTS } from './data.js';
+import { deepCopy, validateInput, buildMatchInput, parsePlayersCsv, validateProfileAndFixtures, applyExtension, validateExtension, upgradeInput, ENGINE_VERSION, EXPORT_SCHEMA, EXPORT_SCHEMA_MOTOR01, EXPORT_SCHEMA_MOTOR02, EXPORT_SCHEMA_MOTOR04, EXPORT_SCHEMA_MOTOR05, EXPORT_SCHEMA_MOTOR06, EXPORT_SCHEMA_MOTOR07, EXPORT_SCHEMA_MOTOR08, EXPORT_SCHEMA_MOTOR17B, MIDRANGE_POLICIES, ATTRS, SLOTS } from './data.js';
 import { diagnosticQueries } from './diagnostics.js';
 import { coachCounts } from './coach.js';
 export { ownStateView, rivalPublicView, diagnosticView, publicStreak, SCOPE_TEXT } from './visibility.js';
@@ -30,7 +31,7 @@ export { coachCounts, describeDecision, AREA_TEXT, ROTATION_TEXT, TIMEOUT_TEXT }
 export { COACH_AREAS, defaultParticipationPlan, validateParticipation, endgameState, foulBookRow, utilityFor } from './coach-policy.js';
 import { ORDER_TYPES, ORDER_STATES, TERMINAL_STATES, EDITABLE_STYLES } from './order-types.js';
 
-export { ENGINE_VERSION, EXPORT_SCHEMA, EXPORT_SCHEMA_MOTOR01, EXPORT_SCHEMA_MOTOR02, EXPORT_SCHEMA_MOTOR04, EXPORT_SCHEMA_MOTOR05, EXPORT_SCHEMA_MOTOR06, EXPORT_SCHEMA_MOTOR07, EXPORT_SCHEMA_MOTOR08, MIDRANGE_POLICIES, upgradeInput, ATTRS, SLOTS, validateInput, buildMatchInput, parsePlayersCsv, validateProfileAndFixtures, applyExtension, validateExtension, projectBox, teamTotals, deepCopy, ORDER_TYPES, ORDER_STATES, TERMINAL_STATES, EDITABLE_STYLES };
+export { ENGINE_VERSION, EXPORT_SCHEMA, EXPORT_SCHEMA_MOTOR01, EXPORT_SCHEMA_MOTOR02, EXPORT_SCHEMA_MOTOR04, EXPORT_SCHEMA_MOTOR05, EXPORT_SCHEMA_MOTOR06, EXPORT_SCHEMA_MOTOR07, EXPORT_SCHEMA_MOTOR08, EXPORT_SCHEMA_MOTOR17B, MIDRANGE_POLICIES, upgradeInput, ATTRS, SLOTS, validateInput, buildMatchInput, parsePlayersCsv, validateProfileAndFixtures, applyExtension, validateExtension, projectBox, teamTotals, deepCopy, ORDER_TYPES, ORDER_STATES, TERMINAL_STATES, EDITABLE_STYLES };
 
 export const INSTRUMENTATION = 'INSTR-MOTOR11-R1';
 
@@ -125,7 +126,7 @@ export function buildResult(m, extra = {}) {
     meta: m.meta(),
     status: m.status,
     errors: m.errors,
-    input: { seed: m.input.seed, importance: m.input.importance, ...(m.input.contrast ? { contrast: m.input.contrast } : {}), teams: m.input.teams },
+    input: { seed: m.input.seed, importance: m.input.importance, ...(m.input.contrast ? { contrast: m.input.contrast } : {}), ...(m.input.labMatchId ? { labMatchId: m.input.labMatchId } : {}), teams: m.input.teams }, // MOTOR-18B: `labMatchId` (opcional, solo laboratorio) = identidad estable del encuentro de una copia de aprendizaje
     profile: m.profileData,
     teams,
     lineups: m.lineupTable,
@@ -162,6 +163,7 @@ export function buildResult(m, extra = {}) {
       // MOTOR-08: decisiones del entrenador (observación → propuesta → autorización → ejecución), memoria defensiva y delegación efectiva; se regeneran al reproducir
       coach: { decisions: m.decisions, counts: coachCounts(m.decisions, m.orders), delegation: m.coachState.map((s, i) => ({ equipo: m.teams[i].id, politica: s.policy, areas: { ...s.delegation } })), attacks: [...m.attackSeq] },
       memory: { log: m.memLog, final: m.memorySnapshot() },
+      familiarity: m.famReport(), // MOTOR-18: política, resumen de aplicación y exposición final por jugador/conocimiento (solo lectura)
     },
     coverage: COVERAGE,
   };

@@ -1,0 +1,180 @@
+{
+ "app": "MOTOR-18B",
+ "date": "2026-10-22T10:17:52.604Z",
+ "browser": "Chromium (Playwright)",
+ "url": "http://127.0.0.1:5199/",
+ "steps": [
+  {
+   "n": 1,
+   "route": "http://127.0.0.1:5199/",
+   "action": "arranque: cabecera con aplicación, motor y formato de MOTOR-18B",
+   "ok": true,
+   "obs": "MOTOR-18B — cierre de familiaridad y curva de Polivalencia · motor beM-motor-0.18.1-MOTOR18B · beM-match-export/10"
+  },
+  {
+   "n": 2,
+   "route": "Panel de ajustes › Inicio",
+   "action": "modelo efectivo: curva por tramos (0,50 / 1,00 / 2,00) con comparación P8/P16/P24; sin aviso de modelo anterior",
+   "ok": true,
+   "obs": "Polivalencia y aprendizaje (rasgo de desarrollo) Modelo efectivo: curva lineal por tramos, 5 anclajes (MOTOR-18B). Perfil SEM-MOTOR18-20261021+SEM-MOTOR18B-202"
+  },
+  {
+   "n": 3,
+   "route": "Plantillas",
+   "action": "crear la copia de aprendizaje: identificada con secuencia de instancia",
+   "ok": true,
+   "obs": "Copia activa para el próximo partido: LEARN18-S-EQ01-EQ02-d0-I1 (52 diferencias · LEARN18-S-EQ01-EQ02-d0-I1"
+  },
+  {
+   "n": 4,
+   "route": "Preparación",
+   "action": "señala qué entrada se edita: la copia de aprendizaje, que recibirá el próximo partido",
+   "ok": true,
+   "obs": "Estás editando la COPIA DE APRENDIZAJE LEARN18-S-EQ01-EQ02-d0-I1: es la entrada que recibirá el próximo partido. Tus fichas de referencia y tu entrada editada no se modifican."
+  },
+  {
+   "n": 4,
+   "route": "Preparación",
+   "action": "disposición y rol editados quedan en la COPIA (persistida con su registro)",
+   "ok": true,
+   "obs": "DIS02→DIS03 · O12→O11"
+  },
+  {
+   "n": 4,
+   "route": "Preparación",
+   "action": "la entrada editada de referencia no cambia",
+   "ok": true,
+   "obs": "sin copia local de la entrada editada (referencia intacta)"
+  },
+  {
+   "n": 4,
+   "route": "Preparación",
+   "action": "familiaridad del quinteto visible sin reinicializar el conocimiento",
+   "ok": true,
+   "obs": "Familiaridad del quinteto actual (copia de aprendizaje) Resumen de solo lectura con los conocimient"
+  },
+  {
+   "n": 5,
+   "route": "Plantillas › sesión",
+   "action": "primera sesión aplicada con recibo; la fuente incluye copia, equipo y S1; factor de Polivalencia visible",
+   "ok": true,
+   "obs": "Aplicado (APL-1). Se puede deshacer. · lab|LEARN18-S-EQ01-EQ02-d0-I1|EQ01|S1"
+  },
+  {
+   "n": 5,
+   "route": "Plantillas",
+   "action": "RECARGA real: la copia, su registro y la secuencia de sesión se restauran",
+   "ok": true,
+   "obs": "Conocimiento táctico: copia de aprendizaje MOTOR-18 Las fichas de referencia (EQ01–EQ12),"
+  },
+  {
+   "n": 5,
+   "route": "Plantillas › sesión",
+   "action": "tras recargar, la sesión nueva recibe OTRA fuente (S2) y se aplica; sin colisión con S1",
+   "ok": true,
+   "obs": "Aplicado (APL-2). Se puede deshacer. · lab|LEARN18-S-EQ01-EQ02-d0-I1|EQ01|S2"
+  },
+  {
+   "n": 5,
+   "route": "Plantillas › sesión",
+   "action": "el presupuesto del día se acumula tras la recarga (2 h de 4)",
+   "ok": true,
+   "obs": "horas acumuladas 2"
+  },
+  {
+   "n": 5,
+   "route": "Plantillas",
+   "action": "el conocimiento cambia solo por el aprendizaje aplicado (no por editar el plan)",
+   "ok": true,
+   "obs": "cambió=true"
+  },
+  {
+   "n": 6,
+   "route": "Partido",
+   "action": "con el encuentro SIN terminar no se propone aprendizaje aplicable",
+   "ok": true,
+   "obs": "tarjeta de aprendizaje presente=0"
+  },
+  {
+   "n": 6,
+   "route": "Partido",
+   "action": "guardar en la frontera de un cuarto",
+   "ok": true,
+   "obs": "Guardado SAVE-77bfa5950e34 (EQ01 – EQ02 · C2 0:00.0 · 43–45 · paso 213). La partida sigue en su esta"
+  },
+  {
+   "n": 6,
+   "route": "Partido",
+   "action": "continuar el guardado (rama de laboratorio) con su entrada congelada",
+   "ok": true,
+   "obs": "Continuando SAVE-77bfa5950e34 como rama de laboratorio: el guardado original no se modifica. Perfil "
+  },
+  {
+   "n": 6,
+   "route": "Partido",
+   "action": "terminar el encuentro continuado",
+   "ok": true,
+   "obs": "Finalizado EQ01 95 – 83 EQ02"
+  },
+  {
+   "n": 7,
+   "route": "Partido",
+   "action": "«Ver aprendizaje propuesto» desde el resultado completo (fuente con identidad de encuentro, no semilla/sorteos)",
+   "ok": true,
+   "obs": "Aprendizaje propuesto por este partido La exposición del encuentro (minutos por posición y rol, crédito por módulo) propone una actualización del conocimiento de la copia. Reabrir, analizar, descarga"
+  },
+  {
+   "n": 7,
+   "route": "Partido/Análisis",
+   "action": "abrir el análisis y volver no aplica aprendizaje",
+   "ok": true,
+   "obs": "aplicaciones 2"
+  },
+  {
+   "n": 7,
+   "route": "Partido",
+   "action": "aplicar a esta variante (acción separada): una aplicación por equipo con la identidad del encuentro",
+   "ok": true,
+   "obs": "EQ01: aplicado (APL-3) · EQ02: aplicado (APL-1) · LEARN18-S-EQ01-EQ02-d0-I1|M1|EQ01"
+  },
+  {
+   "n": 7,
+   "route": "Partido",
+   "action": "repetir la aplicación de la misma fuente queda bloqueado",
+   "ok": true,
+   "obs": "botón deshabilitado"
+  },
+  {
+   "n": 8,
+   "route": "Plantillas",
+   "action": "deshacer: restaura el estado previo y deja la aplicación como revertida con rastro",
+   "ok": true,
+   "obs": "Deshecho APL-1: conocimiento, peak, reloj y presupuestos restaurados (la aplicación queda como revertida y su rastro se "
+  },
+  {
+   "n": 9,
+   "route": "Partido",
+   "action": "descarga REAL del encuentro: bytes, SHA-256, motor 18B, identidad del encuentro y la disposición/rol editados en la entrada congelada",
+   "ok": true,
+   "obs": "beM-MOTOR02-20261016-EQ01-EQ02.json 17567169 B sha d099bb61116f · LEARN18-S-EQ01-EQ02-d0-I1|M1 · DIS03/O11"
+  },
+  {
+   "n": 9,
+   "route": "Partido",
+   "action": "el conocimiento de la entrada congelada es el de la copia antes del partido (no se modifica durante el juego)",
+   "ok": true,
+   "obs": "igual al de la copia tras las dos sesiones"
+  },
+  {
+   "n": 9,
+   "route": "Análisis › Exportar",
+   "action": "descarga REAL del análisis (audiencia pública) sin conocimiento privado",
+   "ok": true,
+   "obs": "beM-analisis-public-EQ01-20261016.json 111322 B sha 8af2f60ab386"
+  }
+ ],
+ "consoleErrors": [],
+ "netErrors": [],
+ "passed": 24,
+ "failed": 0
+}

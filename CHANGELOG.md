@@ -2,6 +2,19 @@
 
 Registro breve de entregas. Una entrada por entrega; las más recientes primero.
 
+## MOTOR-18B — Cierre de familiaridad y mayor diferencia de Polivalencia — 2026-10-22
+
+- **Curva de Polivalencia:** factor de aprendizaje lineal por tramos con cinco anclajes administrables (1→0,25 · 8→0,50 · 16→1,00 · 24→2,00 · 30→2,50; `SEM-MOTOR18B-20261022`, semillas del encargo, sin calibración). P24 aprende con el cuádruple de factor que P8; P16 = 1 exacto; los perfiles de MOTOR-18 conservan su factor lineal. Nada deportivo cambia: la Polivalencia sigue sin entrar en el partido.
+- **R01–R06:** Preparación edita la copia de aprendizaje activa; el bloqueador efectivamente usado entra en los participantes de la familiaridad (caso fijo −0,045 logit; los seis diagnósticos pasan de 35 operaciones con bloqueador ausente a 0); secuencia de sesión, de instancia y de encuentro persistidas (entrenar → recargar → entrenar); aprendizaje de partido solo desde exposición terminada y sesiones validadas; estimación y resolución con el mismo contexto conocido (la cobertura solo cuenta en su interacción). `min_tenths` = décimas de segundo.
+- **Campaña** `MOTOR18B-CIERRE-20261022` (36 ejecuciones planificadas) y paquetes fuera de Git. Motor `0.18.1-MOTOR18B`, `FAM/LEARN-MOTOR18B-R1`, `ESE-MOTOR18B-R1`; `beM-match-input/7` y `beM-match-export/10` sin cambio de esquema. **Pendiente de Dennis.** Ver [`docs/tecnico/motor18b.md`](docs/tecnico/motor18b.md).
+
+## MOTOR-18 — Familiaridad táctica, roles, posiciones y aprendizaje — 2026-10-21
+
+- **Conocimiento:** 62 niveles por jugador (posiciones, roles, 30 módulos) y ajuste logit único por operación en la calidad de la oportunidad y el avance presionado (máx. 0,30 por lado, SEM18); exposición acumulada sin aprender durante el partido; camino neutral exacto frente a CONTROL17B.
+- **Aprendizaje:** Polivalencia y enseñanza, reaprendizaje, retención (posición 30 → 26,4 a 3650 días) y aplicación idempotente con deshacer; laboratorio de sesión, copias de aprendizaje y vista por audiencia.
+- **Auditor:** R17B-SENS-01 (todas las entradas dependientes de la operación), AUD11 clasificado y sensibilidad de conocimiento aparte.
+- **Campaña** `MOTOR18-CIERRE-20261021` (36 ejecuciones) y paquetes fuera de Git. Motor `0.18.0-MOTOR18`, `beM-match-input/7`, `beM-match-export/10`. **Pendiente de Dennis.** Ver [`docs/tecnico/motor18.md`](docs/tecnico/motor18.md).
+
 ## MOTOR-17B — Cierre técnico y auditoría acotada — 2026-10-21
 
 - **Organización efectiva (B17-01):** `defense_org` del registro esencial es el código de la organización vigente antes de cada hecho (plan, orden aplicada, alternativa), leído con el mismo `orgAt` del análisis; la intención de intervención va en `defense_intervention`; `ESE-MOTOR17B-R1` y semántica explícita; un esencial anterior se declara histórico.

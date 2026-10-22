@@ -97,6 +97,20 @@
       "origin": "Encargo MOTOR-17B (§7): recogida controlada sin interceptor previo y procedencia común del crédito de robo (síntesis verificada por ChatGPT de FIBA Statisticians' Manual 2024 cap. 7); ningún coeficiente cambia",
       "state": "SEM provisional; solo crédito estadístico"
     },
+    "data/match/motor18-seed-extension.json": {
+      "id": "SEM-MOTOR18-20261021",
+      "status": "SEM18: semillas provisionales de producto, no porcentajes extraídos de estudios reales ni calibración deportiva aceptada. Añade la capa de familiaridad táctica (posiciones, roles y 30 módulos), su efecto limitado en la calidad de la oportunidad y en el avance ante presión adelantada, y las reglas de aprendizaje/retención entre partidos. Con la política legacy-neutral, con la capa desactivada o con todas las familiaridades a 30 el deporte de CONTROL17B no cambia.",
+      "sha256": "09081bae93bdcfcf174c7fb0adb356ae313ac046ee45afa32c2fbd476aa1ede9",
+      "origin": "Encargo MOTOR-18 (§4–§10): capa de familiaridad táctica, aprendizaje y retención; cifras y correspondencias fijadas por el encargo (SEM18)",
+      "state": "SEM provisional; capa de familiaridad (legacy-neutral por defecto); no cambia ningún coeficiente previo"
+    },
+    "data/match/motor18b-seed-extension.json": {
+      "id": "SEM-MOTOR18B-20261022",
+      "status": "SEM18B: semilla provisional de producto autorizada por el encargo MOTOR-18B, sin calibración empírica ni aceptación deportiva. Sustituye SOLO el factor de Polivalencia del aprendizaje por una curva lineal por tramos de cinco anclajes y actualiza las identidades de familiaridad y aprendizaje. Ningún coeficiente deportivo cambia: con el mismo conocimiento inicial, órdenes y semilla, cambiar la Polivalencia no cambia el partido.",
+      "sha256": "e39a06e9fbd641c75bce525e36cb8642e883dd7fe002661d3897615b02d4d25b",
+      "origin": "Encargo MOTOR-18B (§3): curva de Polivalencia lineal por tramos con cinco anclajes y nuevas identidades FAM/LEARN",
+      "state": "SEM provisional; solo cambia el factor de aprendizaje de Polivalencia; ningún coeficiente deportivo cambia"
+    },
     "data/match/motor17-candidates.json": {
       "id": "MOTOR-17-candidatas",
       "status": "propuestas cuantificadas sin aceptación deportiva",

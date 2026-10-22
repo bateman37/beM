@@ -21,6 +21,7 @@ export const VIEWS = {
   laboratorio: 'Laboratorio',
   versiones: 'Versiones e intercambio',
   saques: 'Saques de banda y fondo',
+  familiaridad: 'Familiaridad y aprendizaje',
 };
 
 // [id, responsabilidad, resultado/contrato de referencia, entrega prevista]
@@ -107,11 +108,14 @@ const G = [
   ['REF02', 'Bandas u objetivos provisionales, contexto y motivo.', 'Diferencia entre dato medido y preferencia de diseño.', 'MOTOR-13', 'poblacion'],
   ['LAB01', 'Escenario, entradas, pregunta, comparación, métricas, tolerancias y evidencia.', 'Informe vinculado a versiones y ejecuciones.', 'MOTOR-12 / MOTOR-13', 'laboratorio'],
 ];
+const FAM = [
+  ['FAM01', 'Familiaridad táctica (posiciones, roles y 30 módulos), su ajuste limitado en calidad y avance presionado, aprendizaje entre partidos y retención.', 'Conocimiento adquirido separado de las 32 capacidades; efecto único por operación; reaprendizaje y desuso en bloque.', 'MOTOR-18', 'familiaridad'],
+];
 const SUP = [
   ['SUP01', 'Diccionario', 'Identificadores, etiquetas, tipos, unidades, campos y operadores admitidos.', 'MOTOR-03 (continuidad en cada entrega)', 'versiones'],
   ['SUP02', 'Perfiles/versiones', 'Componentes, herencia, valores efectivos, activación y congelación.', 'MOTOR-03 (continuidad en cada entrega)', 'versiones'],
   ['SUP03', 'Historial', 'Antes/candidato/después, motivo, dependencia y evidencia.', 'MOTOR-03 (continuidad en cada entrega)', 'versiones'],
   ['SUP04', 'Cobertura/validación', 'Filas obligatorias, referencias, rangos, conflictos y ausencia.', 'MOTOR-03 (continuidad en cada entrega)', 'versiones'],
 ];
-export const GROUPS = [...G, ...SUP].map(([id, resp, contract, delivery, view]) => ({ id, resp, contract, delivery, view, support: id.startsWith('SUP') }));
+export const GROUPS = [...G, ...FAM, ...SUP].map(([id, resp, contract, delivery, view]) => ({ id, resp, contract, delivery, view, support: id.startsWith('SUP') }));
 export const GROUP_BY_ID = Object.fromEntries(GROUPS.map((g) => [g.id, g]));

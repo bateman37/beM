@@ -144,6 +144,28 @@ export const QUESTIONS = [
     },
     pending: ['Memoria rival y saturación (MEM01–MEM04): pendiente de MOTOR-08. No existe todavía un mecanismo que modere la repetición de una jugada.'],
   },
+  {
+    id: 'familiaridad', title: '¿Cuánto penaliza el desconocimiento táctico?',
+    summary: 'El conocimiento adquirido (posiciones, roles y 30 módulos) ajusta UNA vez la calidad de la oportunidad y el avance ante presión adelantada, con un máximo logit por lado. No cambia las 32 capacidades ni el acierto del tiro. Con política legacy-neutral o con todos los niveles a 30 el ajuste es cero.',
+    sections: [
+      { title: 'Máximo del ajuste', text: 'Logit máximo por lado (ataque/defensa) en calidad y en avance presionado.', match: /^familiarity\.maxLogit\./ },
+      { title: 'Qué cuenta como dominio', text: 'Pesos de posición, rol y táctica, y pesos de los módulos por contexto.', match: /^familiarity\.(componentWeights|tacticContextWeights)\./ },
+      { title: 'Activación y compatibilidad', text: 'Capa activada y política para fichas sin historial.', match: /^familiarity\.(activation|range)\./ },
+    ],
+    indicators() { return []; },
+    pending: ['Las cifras son SEM18 (semillas provisionales de producto); la sensibilidad deportiva la interpretan ChatGPT y Dennis, no se calibra aquí.'],
+  },
+  {
+    id: 'aprendizaje', title: '¿Cómo aprenden y olvidan los jugadores?',
+    summary: 'Entre partidos: tasas por dominio, factores de Polivalencia, enseñanza y competencia del entrenador, transferencia y reaprendizaje, más una curva de desuso con gracia, pérdida anual y suelo. Nada se aprende ni se olvida durante un partido.',
+    sections: [
+      { title: 'Aprendizaje', text: 'Tasas, factores y divisor de la ganancia.', match: /^familiarity\.learning\.(rates|factors|gainDivisor|snapToMaxThreshold|traits)/ },
+      { title: 'Sesiones y partidos', text: 'Presupuestos diarios, reparto de sesión y dosis procedente de partido.', match: /^familiarity\.learning\.(session|match|practiceThresholds)/ },
+      { title: 'Retención y desuso', text: 'Gracia sin práctica, pérdida anual y suelo por dominio.', match: /^familiarity\.retention\./ },
+    ],
+    indicators() { return []; },
+    pending: ['Reloj real del manager y entrenamiento automático: fuera de esta entrega; el laboratorio usa un reloj de aprendizaje explícito.'],
+  },
 ];
 
 export const QUESTION_BY_ID = Object.fromEntries(QUESTIONS.map((q) => [q.id, q]));
