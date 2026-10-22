@@ -544,6 +544,7 @@ export function buildRows(profile, { presentation = null } = {}) {
       ? (profile.plays ?? []).flatMap((p, i) => (f.dom.zone ?? []).map((zone) => ({ path: ['plays', i, f.path.split('.')[2], zone], m: { play: p.id, zone }, node: p[f.path.split('.')[2]]?.[zone], missing: p[f.path.split('.')[2]]?.[zone] === undefined })))
       : expandTemplate(profile, f.path.replace(/\.\{cap\}$/, '.{cap}'), f.dom);
     for (const e of exp) {
+      if (f.onlyIfPresent && e.missing) continue; // MOTOR-18B: filas de un modelo alternativo (p. ej. curva de Polivalencia frente a base/pendiente): solo existen en los perfiles que lo conservan
       if (f.node === 'array') { if (e.missing) { push(f, { path: e.path, required: true, missing: true }, e.m, {}); continue; } push(f, { path: e.path, required: true }, e.m, {}); continue; }
       if (!isLeaf(e.node) && !e.missing) continue; // nodo intermedio ya cubierto por comodines posteriores
       push(f, { path: e.path, required: !f.optional && (Object.values(f.dom ?? {}).length > 0 || !/\{/.test(f.path)), id: f.plays ? `plays.${e.m.play}.shotWeights.${e.m.zone}` : undefined, missing: e.missing }, e.m, {});

@@ -13,6 +13,8 @@ import { validateMatrix } from '../../match/regs.js';
 import { CATALOG } from '../../analysis/catalog.js';
 import { VISIBILITY } from '../../analysis/visibility.js';
 import { compatCard } from './compat-ui.js';
+import { polyCard } from './polivalencia.js';
+import { playerFactorModel } from '../../knowledge/model.js';
 import { assessProfile } from '../../profiles/compat.js';
 import { APP_VERSION, ENGINE_VERSION, EXPORT_SCHEMA } from '../../version.js';
 
@@ -45,12 +47,19 @@ export function renderHome() {
   const famCard = noFam ? h('div', { class: 'card', id: 'fam-card' }, h('strong', {}, 'El perfil activo no incluye la familiaridad y el aprendizaje de MOTOR-18. '), 'Puede jugar con normalidad: la capa queda desactivada (compatibilidad neutra, efecto deportivo cero) y sus fichas no se interpretan como «dominan todas las tácticas». ',
     h('button', { class: 'btn secondary', type: 'button', id: 'activate-m18', onclick: () => { L.activate(L.baseId, 'activar la base de MOTOR-18 (familiaridad y aprendizaje; semillas SEM18; no cambia el deporte con la política legacy-neutral)'); window.dispatchEvent(new Event('beM:repaint')); repaint(); } }, 'Activar la base de MOTOR-18'),
     h('p', { class: 'small muted' }, 'Las cifras son SEM18 (semillas provisionales de producto, no calibración). La activación es explícita y no migra nada en silencio: tus fichas y perfiles se conservan.')) : null;
+  // MOTOR-18B: modelo de Polivalencia del perfil activo. Un perfil con el modelo lineal de MOTOR-18 sigue siendo válido y reproducible; se ofrece activar la base 18B (acción explícita, sin migrar nada).
+  const activeFam = L.version(a.id)?.effective;
+  const oldPoly = !noFam && !L.isLegacy(a.id) && playerFactorModel(activeFam?.familiarity?.learning?.factors?.player) === 'linear';
+  const polyOld = oldPoly ? h('div', { class: 'card', id: 'poly-old' }, h('strong', {}, 'El perfil activo usa el factor de Polivalencia lineal de MOTOR-18. '), 'Sigue siendo válido: sus recibos y resultados no cambian. La curva por tramos de MOTOR-18B (Polivalencia 8 → ×0,50, 16 → ×1,00, 24 → ×2,00) está en la base 18B o en una candidata explícita. ',
+    h('button', { class: 'btn secondary', type: 'button', id: 'activate-m18b', onclick: () => { L.activate(L.baseId, 'activar la base de MOTOR-18B (curva de Polivalencia por tramos; +SEM-MOTOR18B-20261022; no cambia el deporte)'); window.dispatchEvent(new Event('beM:repaint')); repaint(); } }, 'Activar la base de MOTOR-18B'),
+    h('p', { class: 'small muted' }, 'La activación es explícita: tus perfiles, candidatas, copias de aprendizaje y su historia se conservan; el conocimiento y el reloj no se reinician.')) : null;
+  const polyModel = !noFam && !L.isLegacy(a.id) ? polyCard(activeFam) : null;
   const versionCard = h('div', { class: 'card', id: 'versions' }, h('h3', { style: 'margin-top:0' }, 'Versiones visibles (cuatro cosas distintas)'),
     table(['', 'Valor'], [['Aplicación / motor cargados', `${APP_VERSION} — motor ${ENGINE_VERSION}`], ['Perfil numérico/analítico activo', `${a.id} «${a.label}» · ${(L.version(a.id)?.effective?.effectiveId ?? '').split('+').slice(-2).join('+')} · ${a.status}`],
       ['Dataset, plan o escenario seleccionado', `${(L.version(a.id)?.effective?.population ?? store.baseNew.population)?.version}${L.version(a.id)?.effective?.population ? '' : ' (base de MOTOR-11; el perfil activo es anterior)'} · ${store.scenario ? `escenario ${store.scenario.scenario.id}` : 'sin escenario activo'}`], ['Formato de exportación del encuentro', EXPORT_SCHEMA]]),
     h('p', { class: 'small muted' }, 'Un perfil guardado con una versión anterior no convierte la aplicación en esa versión: conserva su identidad y, si el motor rechaza su contrato, se explica la incompatibilidad sin perder datos.'));
   return h('div', {},
-    legacyCard, analysisCard, popCard, batchCard, famCard, versionCard,
+    legacyCard, analysisCard, popCard, batchCard, famCard, polyOld, polyModel, versionCard,
     h('div', { class: 'card' }, h('h3', { style: 'margin-top:0' }, 'Perfil activo para futuros partidos'),
       h('div', { class: 'row' }, h('strong', { style: 'font-size:18px' }, `${a.id} · ${a.label}`), h('span', { class: 'pill warn' }, `${a.status}`), h('span', { class: 'pill' }, a.kind), h('code', { title: a.hash }, a.hash.slice(0, 12))),
       h('p', { class: 'small muted' }, `Versión ${a.id}${a.parent ? `, hereda de ${a.parent.id} «${a.parent.label}» (huella ${a.parent.hash.slice(0, 8)})` : ', base protegida sin padre'} · creada ${a.createdAt.slice(0, 16).replace('T', ' ')} por ${a.actor}`),

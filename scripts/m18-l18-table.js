@@ -9,7 +9,7 @@ const TOL = 1e-9;
 const near = (a, b, t = TOL) => Math.abs(a - b) <= t;
 const r6 = (x) => Math.round(x * 1e6) / 1e6;
 
-export function buildL18(profile = loadData().profile) {
+export function buildL18(profile = loadData().profile18) { // MOTOR-18B: la tabla L18 es HISTÓRICA (perfil de MOTOR-18, factor lineal); la L18B vive en scripts/m18b-l18b-table.js
   const P = profile.familiarity;
   const mods = L.idsOf('tactic', P);
   const coachOf = (teaching = 16, mastery = 16, o = {}) => ({ teaching, tacticalMastery: { ...Object.fromEntries(mods.map((i) => [i, mastery])), ...o } });
@@ -73,7 +73,8 @@ export function buildL18(profile = loadData().profile) {
     const cases = [run(12, 12, 2), run(26, 28, 6), run(26, 30, 3), run(10, 20, 40)];
     add('L18-10', 'Una dosis frente a dos mitades con factores constantes (incluye cruce del peak y reaprendizaje con peak 30)', { F: 1.1, rate: 0.4, casos: cases.map((c) => [c.level, c.peak, c.dose]) }, { cases }, { igualConTolerancia: cases.every((c) => c.diferencia < 1e-9), mismoPeak: cases.every((c) => near(c.peakUna, c.peakMitades, 1e-9)) }); }
   // L18-11: fuente de partido aplicada dos veces.
-  const exposure = (id) => ({ match: { source_id: id }, players: { a: { liveTenths: 40 * 600, positions: { PG: 20000, SG: 4000 }, offensiveRoles: { O01: 24000 }, defensiveRoles: { D01: 24000 }, modules: { ORG02: 10, 'FAM:pick_and_roll': 30 } } } });
+  const exposure = (id) => ({ complete: true, match: { source_id: id }, // MOTOR-18B (R04): el fixture declara explícitamente que es de un encuentro terminado
+    players: { a: { liveTenths: 40 * 600, positions: { PG: 20000, SG: 4000 }, offensiveRoles: { O01: 24000 }, defensiveRoles: { D01: 24000 }, modules: { ORG02: 10, 'FAM:pick_and_roll': 30 } } } });
   { const st = team({ a: block(12) }); const pr = L.proposeFromMatch(st, exposure(L.sourceIdOf({ source: 'lab', batch: 'LOT-1', attempt: 'M000001-A1', teamInstance: 'T-L18' })), P);
     const a1 = L.applyProposal(st, L.createLedger(), pr); const a2 = L.applyProposal(a1.state, a1.ledger, pr);
     add('L18-11', 'Fuente de partido aplicada dos veces: la segunda no modifica nada', { source: pr.source_id, exposicion: exposure('x').players.a }, { primera: { ok: a1.ok, huellaAntes: pr.prevFingerprint, huellaDespues: pr.nextFingerprint }, segunda: { ok: a2.ok, motivo: a2.reason } }, { primeraAplica: a1.ok && pr.prevFingerprint !== pr.nextFingerprint, segundaRechazada: !a2.ok, estadoIntacto: L.teamFingerprint(a1.state) === pr.nextFingerprint }); }

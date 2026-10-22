@@ -21,6 +21,42 @@ export function knowledgeKeys(params) { return DOMAINS.flatMap((domain) => idsOf
 
 export const normalizeLevel = (K, params) => clamp((K - params.range.min) / (params.range.max - params.range.min), 0, 1);
 
+// ---------------------------------------------------------------- factor de Polivalencia (MOTOR-18B §3)
+// Dos modelos conviven según el perfil: «piecewise-linear» (base 18B: cinco anclajes, interpolación lineal, extremos exactos) y «linear» (perfiles de MOTOR-18: base + pendiente·n(P)).
+// Un perfil anterior NO se convierte en silencio a la curva nueva. Un valor de entrada ausente, no finito o fuera de la escala es un error localizado: nunca se sustituye por 16.
+export const playerFactorModel = (spec) => (spec?.kind === 'piecewise-linear' ? 'piecewise-linear' : (typeof spec?.base === 'number' && typeof spec?.slope === 'number' ? 'linear' : null));
+export function playerFactor(P, params) {
+  const spec = params.learning.factors.player; const model = playerFactorModel(spec); const { min, max } = params.range;
+  if (typeof P !== 'number' || !Number.isFinite(P)) throw new RangeError(`learning.traits.tacticalLearning: la Polivalencia debe ser un número finito (recibido ${P})`);
+  if (P < min || P > max) throw new RangeError(`learning.traits.tacticalLearning: la Polivalencia debe estar entre ${min} y ${max} (recibido ${P})`);
+  if (model === 'linear') return { factor: spec.base + spec.slope * normalizeLevel(P, params), model, segment: null };
+  if (model !== 'piecewise-linear') throw new Error('learning.factors.player: ni curva por tramos ni base/pendiente');
+  const pts = spec.points;
+  for (let i = 0; i < pts.length; i++) {
+    if (P === pts[i].level) return { factor: pts[i].factor, model, segment: null };
+    if (i > 0 && P < pts[i].level) { const a = pts[i - 1]; const b = pts[i]; return { factor: a.factor + (b.factor - a.factor) * (P - a.level) / (b.level - a.level), model, segment: [a.level, b.level] }; }
+  }
+  throw new Error(`learning.factors.player: la Polivalencia ${P} queda fuera de los anclajes`);
+}
+// Anclajes obligatorios de la curva de la base 18B (§3.3). Una candidata editada conserva los niveles y cambia solo los factores.
+export const PLAYER_CURVE_LEVELS = [1, 8, 16, 24, 30];
+export function validatePlayerCurve(spec, range, path = 'learning.factors.player') {
+  const errs = []; const add = (p, message) => errs.push({ path: p, message });
+  if (spec?.kind !== 'piecewise-linear') { add(`${path}.kind`, 'el tipo de curva debe ser piecewise-linear'); return errs; }
+  const pts = spec.points;
+  if (!Array.isArray(pts) || !pts.length) { add(`${path}.points`, 'faltan los anclajes de la curva'); return errs; }
+  pts.forEach((q, i) => {
+    if (typeof q?.level !== 'number' || !Number.isFinite(q.level)) add(`${path}.points.${i}.level`, 'el nivel del anclaje debe ser un número finito');
+    if (typeof q?.factor !== 'number' || !Number.isFinite(q.factor) || !(q.factor > 0)) add(`${path}.points.${i}.factor`, 'el factor del anclaje debe ser un número finito positivo');
+    if (i > 0 && typeof q?.level === 'number' && !(q.level > pts[i - 1].level)) add(`${path}.points.${i}.level`, 'los niveles deben estar en orden estrictamente creciente');
+    if (i > 0 && typeof q?.factor === 'number' && q.factor < pts[i - 1].factor) add(`${path}.points.${i}.factor`, 'los factores no pueden decrecer con la Polivalencia');
+  });
+  if (pts[0]?.level !== range.min) add(`${path}.points.0.level`, `el primer anclaje debe estar en el extremo inferior de la escala (${range.min})`);
+  if (pts[pts.length - 1]?.level !== range.max) add(`${path}.points.${pts.length - 1}.level`, `el último anclaje debe estar en el extremo superior de la escala (${range.max})`);
+  for (const L of PLAYER_CURVE_LEVELS) if (!pts.some((q) => q.level === L)) add(`${path}.points`, `falta el anclaje previsto del nivel ${L}`);
+  return errs;
+}
+
 export const emptyLegacyBlock = () => ({ version: 'KNOW-MOTOR18-R1', mode: 'legacy-neutral' });
 export const isLegacyNeutral = (block) => block == null || block.mode === 'legacy-neutral';
 

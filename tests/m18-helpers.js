@@ -2,8 +2,11 @@
 import { loadData } from '../scripts/node-data.js';
 import * as K from '../src/knowledge/model.js';
 
-export const { profile, players } = loadData();
-export const P = profile.familiarity;
+// MOTOR-18B: las pruebas de L18 son HISTÓRICAS y usan el perfil de MOTOR-18 (factor de Polivalencia lineal); las de 18B usan `profile18b`.
+const data = loadData();
+export const { players } = data;
+export const profile = data.profile18; export const profile18b = data.profile;
+export const P = profile.familiarity; export const P18B = profile18b.familiarity;
 export const playFamily = Object.fromEntries(Object.entries(profile.repertoire.plays).map(([k, v]) => [k, v.family]));
 export const coachOf = (teaching = 16, mastery = 16, overrides = {}) => ({ teaching, tacticalMastery: { ...Object.fromEntries(K.idsOf('tactic', P).map((i) => [i, mastery])), ...overrides } });
 // Bloque uniforme (todas las entradas al mismo nivel y peak) con ajustes puntuales {'domain:id': {level, peak, lastPracticeDay}}.

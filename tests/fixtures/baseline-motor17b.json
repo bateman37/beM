@@ -23,7 +23,7 @@
    ]
   ],
   "draws": 6684,
-  "sha256": "0113efddd2775794737668892cb44b2d630e7b83b744df92e5028a0325df82c9",
+  "sha256": "61e289ab4da0be2b2329f22b6b3858b0aa21a4031725ff7180d799d70b43fb66",
   "trajectorySha256": "ea9a1ef5ba909d00d6217ca2196df7da235479ffded519786bbf2827f8f049d4",
   "note": "Referencia de MOTOR-17B (motor beM-motor-0.17.1-MOTOR17B, perfil +SEM-MOTOR17B-20261021). El deporte NO cambia respecto a baseline-motor17.json (mismo marcador, parciales y sorteos; comprobado con la equivalencia de hechos sin `calc`, `params`, `instr` ni créditos de robo): cambia solo el CRÉDITO estadístico (recogida controlada sin interceptor previo y procedencia común, política ACTA-MOTOR17B-R1), por eso cambian la proyección con acta y la huella de trayectoria (que incluye las estadísticas). No se regenera para ocultar una diferencia sin causa.",
   "previousMotor17": {
@@ -120,6 +120,8 @@
    "trajectorySha256": "ed353769858813fe7ae3bedd271946c6f7c0aef7885ce00e2bbe27d0acc13bc5"
   },
   "previousMotor17bSha256": "d7081105fda72a44782d74a09072efe039f821a8cc483acbab4cc881c52eeee2",
-  "noteMotor18": "MOTOR-18 (panel): la huella de la proyección deportiva cambia SOLO porque coach.decisions[].version.perfil incluye la identidad efectiva del perfil (ahora +SEM-MOTOR18-20261021); hechos, marcador, sorteos y trayectoria son idénticos (comprobado: con el mismo perfil sin el árbol familiarity la huella sigue siendo previousMotor17bSha256). El empaquetado final de MOTOR-18 debe regenerar esta cifra si cambia otra identidad."
+  "noteMotor18": "MOTOR-18 (panel): la huella de la proyección deportiva cambia SOLO porque coach.decisions[].version.perfil incluye la identidad efectiva del perfil (ahora +SEM-MOTOR18-20261021); hechos, marcador, sorteos y trayectoria son idénticos (comprobado: con el mismo perfil sin el árbol familiarity la huella sigue siendo previousMotor17bSha256). El empaquetado final de MOTOR-18 debe regenerar esta cifra si cambia otra identidad.",
+  "previousMotor18Sha256": "0113efddd2775794737668892cb44b2d630e7b83b744df92e5028a0325df82c9",
+  "noteMotor18B": "MOTOR-18B: la huella de la proyección deportiva cambia SOLO porque coach.decisions[].version.perfil incluye la identidad efectiva del perfil (ahora +SEM-MOTOR18B-20261022). Comprobado campo a campo (diff de la proyección completa de MOTOR-18 frente a MOTOR-18B): las únicas líneas distintas son esa cadena de identidad; hechos, marcador (83–98), sorteos (6.684) y trayectoria son idénticos. La entrada de referencia es legacy-neutral: la familiaridad, la curva de Polivalencia y la corrección de participantes no actúan."
  }
 }

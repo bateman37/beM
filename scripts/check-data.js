@@ -4,7 +4,7 @@
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { join } from 'node:path';
-import { ROOT, PROFILE_PATH, PLAYERS_PATH, EXTENSION_PATH, EXTENSION3_PATH, EXTENSION4_PATH, EXTENSION5_PATH, EXTENSION6_PATH, EXTENSION7_PATH, EXTENSION8_PATH, EXTENSION9_PATH, EXTENSION10_PATH, EXTENSION11_PATH, EXTENSION12_PATH, EXTENSION13_PATH, EXTENSION14_PATH, EXTENSION15_PATH, EXTENSION15B_PATH, EXTENSION17_PATH, EXTENSION17B_PATH, EXTENSION18_PATH, CANDIDATES17_PATH, loadData } from './node-data.js';
+import { ROOT, PROFILE_PATH, PLAYERS_PATH, EXTENSION_PATH, EXTENSION3_PATH, EXTENSION4_PATH, EXTENSION5_PATH, EXTENSION6_PATH, EXTENSION7_PATH, EXTENSION8_PATH, EXTENSION9_PATH, EXTENSION10_PATH, EXTENSION11_PATH, EXTENSION12_PATH, EXTENSION13_PATH, EXTENSION14_PATH, EXTENSION15_PATH, EXTENSION15B_PATH, EXTENSION17_PATH, EXTENSION17B_PATH, EXTENSION18_PATH, EXTENSION18B_PATH, CANDIDATES17_PATH, loadData } from './node-data.js';
 import { validateProfileAndFixtures, validateExtension, applyExtension } from '../src/match/data.js';
 import { familiarityIssues } from '../src/profiles/validate-motor18.js';
 import { buildRows } from '../src/profiles/rows.js';
@@ -331,6 +331,25 @@ export function checkMotor17b(extension17b, profile17, profile) {
   return problems;
 }
 
+// MOTOR-18B: solo sustituye el factor de Polivalencia del aprendizaje (curva por tramos) y las identidades FAM/LEARN. Nada deportivo cambia.
+export function checkMotor18b(extension18b, profile18, profile) {
+  const problems = [];
+  if (extension18b.seedExtensionId !== 'SEM-MOTOR18B-20261022') problems.push('MOTOR-18B: identidad de la extensión inesperada');
+  const strip = (p) => { const q = JSON.parse(JSON.stringify(p)); for (const k of ['extensions', 'effectiveId']) delete q[k]; if (q.familiarity) { delete q.familiarity.version; delete q.familiarity.learningVersion; delete q.familiarity.provenance18b; if (q.familiarity.learning?.factors) delete q.familiarity.learning.factors.player; } return q; };
+  if (JSON.stringify(strip(profile)) !== JSON.stringify(strip(profile18))) problems.push('MOTOR-18B: el perfil difiere del de MOTOR-18 fuera de la curva de Polivalencia y las identidades (no puede cambiar ningún coeficiente deportivo)');
+  const f = profile.familiarity;
+  if (!f) problems.push('MOTOR-18B: falta el árbol familiarity');
+  else {
+    if (f.version !== 'FAM-MOTOR18B-R1' || f.knowledgeVersion !== 'KNOW-MOTOR18-R1' || f.learningVersion !== 'LEARN-MOTOR18B-R1') problems.push('MOTOR-18B: versiones FAM/KNOW/LEARN inesperadas');
+    familiarityIssues(profile, (id, sev, rule, message) => { if (sev === 'error') problems.push(`MOTOR-18B: ${id}: ${message}`); });
+    const pts = f.learning?.factors?.player?.points?.map((q) => `${q.level}:${q.factor}`).join(',');
+    if (pts !== '1:0.25,8:0.5,16:1,24:2,30:2.5') problems.push(`MOTOR-18B: anclajes de la curva distintos de los del encargo (${pts})`);
+    const rows = buildRows(profile).filter((r) => r.id.startsWith('familiarity.learning.factors.player.points.'));
+    if (rows.length !== 10 || rows.some((r) => r.missing || !r.label || !r.unit || !r.effect)) problems.push('MOTOR-18B: cada anclaje necesita sus dos filas (nivel y factor) visibles en el panel');
+  }
+  return problems;
+}
+
 // MOTOR-18: solo se AÑADE el árbol `familiarity` (SEM18). Ningún coeficiente deportivo previo cambia: el perfil efectivo es idéntico al de MOTOR-17B salvo ese árbol, `extensions` y `effectiveId`.
 export function checkMotor18(extension18, profile17b, profile) {
   const problems = [];
@@ -342,10 +361,10 @@ export function checkMotor18(extension18, profile17b, profile) {
   if (!profile.familiarity) problems.push('MOTOR-18: falta el árbol familiarity en el perfil efectivo');
   else {
     const f = profile.familiarity;
-    if (f.version !== 'FAM-MOTOR18-R1' || f.knowledgeVersion !== 'KNOW-MOTOR18-R1' || f.learningVersion !== 'LEARN-MOTOR18-R1') problems.push('MOTOR-18: versiones FAM/KNOW/LEARN inesperadas');
+    if (f.version !== 'FAM-MOTOR18-R1' || f.knowledgeVersion !== 'KNOW-MOTOR18-R1' || f.learningVersion !== 'LEARN-MOTOR18-R1') /* perfil efectivo SIN la extensión 18B */ problems.push('MOTOR-18: versiones FAM/KNOW/LEARN inesperadas');
     familiarityIssues(profile, (id, sev, rule, message) => { if (sev === 'error') problems.push(`MOTOR-18: ${id}: ${message}`); });
     if (f.catalog?.positions?.length + f.catalog?.offensiveRoles?.length + f.catalog?.defensiveRoles?.length + f.catalog?.modules?.length !== 62) problems.push('MOTOR-18: el bloque de conocimiento debe tener 62 niveles (5 posiciones + 15 + 12 roles + 30 módulos)');
-    const rows = buildRows(profile).filter((r) => r.id.startsWith('familiarity.'));
+    const rows = buildRows(profile).filter((r) => r.id.startsWith('familiarity.') && !/^familiarity\.learning\.factors\.player\.(kind|points)/.test(r.id)); // las filas de la curva son de MOTOR-18B
     if (rows.some((r) => !r.label || !r.unit || !r.mech || !r.effect || r.ext !== 'SEM-MOTOR18' || r.missing)) problems.push('MOTOR-18: cada fila de familiaridad necesita rótulo, unidad, consumidor, explicación y procedencia SEM18');
   }
   return problems;
@@ -353,7 +372,7 @@ export function checkMotor18(extension18, profile17b, profile) {
 
 export function checkData() {
   const problems = [];
-  const { profile, baseProfile, extension, extension3, extension4, extension5, extension6, extension7, extension8, extension9, extension10, extension11, extension12, extension13, extension14, extension15, extension15b, extension17, extension17b, extension18, players } = loadData();
+  const { profile, baseProfile, extension, extension3, extension4, extension5, extension6, extension7, extension8, extension9, extension10, extension11, extension12, extension13, extension14, extension15, extension15b, extension17, extension17b, extension18, extension18b, players } = loadData();
   for (const e of validateProfileAndFixtures(profile, players)) problems.push(`${e.path}: ${e.message}`);
   for (const e of validateExtension(baseProfile, extension)) problems.push(`extensión MOTOR-02: ${e}`);
   for (const e of validateExtension(baseProfile, extension3)) problems.push(`extensión MOTOR-03: ${e}`);
@@ -394,8 +413,11 @@ export function checkData() {
   const profile17bEff = applyExtension(baseProfile, ...exts15b, extension17, extension17b); // perfil efectivo SIN la extensión de MOTOR-18
   problems.push(...checkMotor17b(extension17b, profile17Eff, profile17bEff));
   for (const e of validateExtension(baseProfile, extension18, profile17bEff)) problems.push(`extensión MOTOR-18: ${e}`);
-  problems.push(...checkMotor18(extension18, profile17bEff, profile));
-  const hashes = { profile: sha(PROFILE_PATH), players: sha(PLAYERS_PATH), prompt: sha(PROMPT), extension: sha(EXTENSION_PATH), extension3: sha(EXTENSION3_PATH), extension4: sha(EXTENSION4_PATH), extension5: sha(EXTENSION5_PATH), extension6: sha(EXTENSION6_PATH), extension7: sha(EXTENSION7_PATH), extension8: sha(EXTENSION8_PATH), extension9: sha(EXTENSION9_PATH), extension10: sha(EXTENSION10_PATH), extension11: sha(EXTENSION11_PATH), extension12: sha(EXTENSION12_PATH), extension13: sha(EXTENSION13_PATH), extension14: sha(EXTENSION14_PATH), extension15: sha(EXTENSION15_PATH), extension15b: sha(EXTENSION15B_PATH), extension17: sha(EXTENSION17_PATH), extension17b: sha(EXTENSION17B_PATH), extension18: sha(EXTENSION18_PATH), candidates17: sha(CANDIDATES17_PATH) };
+  const profile18Eff = applyExtension(baseProfile, ...exts15b, extension17, extension17b, extension18); // perfil efectivo SIN la extensión de MOTOR-18B
+  problems.push(...checkMotor18(extension18, profile17bEff, profile18Eff));
+  for (const e of validateExtension(baseProfile, extension18b, profile18Eff)) problems.push(`extensión MOTOR-18B: ${e}`);
+  problems.push(...checkMotor18b(extension18b, profile18Eff, profile));
+  const hashes = { profile: sha(PROFILE_PATH), players: sha(PLAYERS_PATH), prompt: sha(PROMPT), extension: sha(EXTENSION_PATH), extension3: sha(EXTENSION3_PATH), extension4: sha(EXTENSION4_PATH), extension5: sha(EXTENSION5_PATH), extension6: sha(EXTENSION6_PATH), extension7: sha(EXTENSION7_PATH), extension8: sha(EXTENSION8_PATH), extension9: sha(EXTENSION9_PATH), extension10: sha(EXTENSION10_PATH), extension11: sha(EXTENSION11_PATH), extension12: sha(EXTENSION12_PATH), extension13: sha(EXTENSION13_PATH), extension14: sha(EXTENSION14_PATH), extension15: sha(EXTENSION15_PATH), extension15b: sha(EXTENSION15B_PATH), extension17: sha(EXTENSION17_PATH), extension17b: sha(EXTENSION17B_PATH), extension18: sha(EXTENSION18_PATH), extension18b: sha(EXTENSION18B_PATH), candidates17: sha(CANDIDATES17_PATH) };
   if (existsSync(PROMPT4)) problems.push(...checkMotor04Annex(extension4, extractAnnexA4(readFileSync(PROMPT4, 'utf8'))));
   else problems.push('falta el prompt archivado de MOTOR-04');
   if (existsSync(PROMPT5)) problems.push(...checkMotor05Annex(extension5, extractAnnexA5(readFileSync(PROMPT5, 'utf8'))));
@@ -435,6 +457,7 @@ export function checkData() {
     if (cat.files['data/match/motor17-seed-extension.json']?.sha256 !== hashes.extension17) problems.push('hash de la extensión de MOTOR-17 distinto del catálogo');
     if (cat.files['data/match/motor17b-seed-extension.json']?.sha256 !== hashes.extension17b) problems.push('hash de la extensión de MOTOR-17B distinto del catálogo');
     if (cat.files['data/match/motor18-seed-extension.json']?.sha256 !== hashes.extension18) problems.push('hash de la extensión de MOTOR-18 distinto del catálogo');
+    if (cat.files['data/match/motor18b-seed-extension.json']?.sha256 !== hashes.extension18b) problems.push('hash de la extensión de MOTOR-18B distinto del catálogo');
     if (cat.files['data/match/motor17-candidates.json']?.sha256 !== hashes.candidates17) problems.push('hash de las candidatas de MOTOR-17 distinto del catálogo');
   } else problems.push('falta data/catalog.json');
   return { problems, hashes, profile, baseProfile, players };
@@ -442,7 +465,7 @@ export function checkData() {
 
 if (process.argv[1] && process.argv[1].endsWith('check-data.js')) {
   if (process.argv.includes('--write-catalog')) {
-    const { baseProfile: profile, extension, extension3, extension4, extension5, extension6, extension7, extension8, extension9, extension10, extension11, extension12, extension13, extension14, extension15, extension15b, extension17, extension17b, extension18 } = loadData();
+    const { baseProfile: profile, extension, extension3, extension4, extension5, extension6, extension7, extension8, extension9, extension10, extension11, extension12, extension13, extension14, extension15, extension15b, extension17, extension17b, extension18, extension18b } = loadData();
     const cat = {
       description: 'Catálogo de datos: identidad y estado de los materiales (MOTOR-01 cargados literalmente de los anexos del prompt; extensión de MOTOR-02 aparte, sin tocar el perfil original).',
       source: 'docs/prompts/MOTOR-01-primer-partido-completo.md (Anexo A y Anexo B); docs/prompts/MOTOR-02-modos-y-direccion.md (apartado 8.4); docs/prompts/MOTOR-03-panel-y-perfiles.md (apartado 4.1); docs/prompts/MOTOR-04-ataque-posicional.md (anexo A); docs/prompts/MOTOR-05-defensa-completa.md (anexo A); docs/prompts/MOTOR-06-transicion-y-saques.md (anexo A); docs/prompts/MOTOR-07-capacidades-y-estados.md (anexo A); docs/prompts/MOTOR-08-entrenador-y-memoria.md (apartados 6.1, 7.1, 10.2, 10.3 y 11.4)',
@@ -462,6 +485,7 @@ if (process.argv[1] && process.argv[1].endsWith('check-data.js')) {
         'data/match/motor17-seed-extension.json': { id: extension17.seedExtensionId, status: extension17.status, sha256: sha(EXTENSION17_PATH), origin: 'Encargo MOTOR-17 (§5): criterio estadístico compartido de robo (síntesis verificada por ChatGPT de FIBA Statisticians\' Manual 2024 §7); ningún coeficiente cambia', state: 'SEM provisional; solo crédito estadístico' },
         'data/match/motor17b-seed-extension.json': { id: extension17b.seedExtensionId, status: extension17b.status, sha256: sha(EXTENSION17B_PATH), origin: 'Encargo MOTOR-17B (§7): recogida controlada sin interceptor previo y procedencia común del crédito de robo (síntesis verificada por ChatGPT de FIBA Statisticians\' Manual 2024 cap. 7); ningún coeficiente cambia', state: 'SEM provisional; solo crédito estadístico' },
         'data/match/motor18-seed-extension.json': { id: extension18.seedExtensionId, status: extension18.status, sha256: sha(EXTENSION18_PATH), origin: 'Encargo MOTOR-18 (§4–§10): capa de familiaridad táctica, aprendizaje y retención; cifras y correspondencias fijadas por el encargo (SEM18)', state: 'SEM provisional; capa de familiaridad (legacy-neutral por defecto); no cambia ningún coeficiente previo' },
+        'data/match/motor18b-seed-extension.json': { id: extension18b.seedExtensionId, status: extension18b.status, sha256: sha(EXTENSION18B_PATH), origin: 'Encargo MOTOR-18B (§3): curva de Polivalencia lineal por tramos con cinco anclajes y nuevas identidades FAM/LEARN', state: 'SEM provisional; solo cambia el factor de aprendizaje de Polivalencia; ningún coeficiente deportivo cambia' },
         'data/match/motor17-candidates.json': { id: 'MOTOR-17-candidatas', status: 'propuestas cuantificadas sin aceptación deportiva', sha256: sha(CANDIDATES17_PATH), origin: 'Encargo MOTOR-17 (§10): hasta dos candidatas numéricas explícitas sobre los controles existentes; no forman parte del perfil efectivo', state: 'propuesta; activación explícita' },
         'data/match/motor15b-seed-extension.json': { id: extension15b.seedExtensionId, status: extension15b.status, sha256: sha(EXTENSION15B_PATH), origin: 'Encargo MOTOR-15B (§4): consecuencia de RG-I03 (técnica de categoría 2) y numeración 45.4.1–45.4.8 / 45.6; procedencia ChatGPT, sin lectura directa', state: 'normativa contrastada con síntesis de ChatGPT; ningún coeficiente cambia' },
         'data/match/motor14-seed-extension.json': { id: extension14.seedExtensionId, status: extension14.status, sha256: sha(EXTENSION14_PATH), origin: 'Encargo MOTOR-14 (§7.2–§7.4, §8): terminación administrativa por falta de jugadores (art. 21, lectura de ChatGPT de F14-01) y trazabilidad de fuentes; sin coeficientes deportivos nuevos', state: 'SEM provisional; contenido normativo contrastado por ChatGPT, sin lectura directa del PDF por Claude' },

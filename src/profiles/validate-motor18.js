@@ -1,5 +1,6 @@
 // Validación del árbol `familiarity` de SEM-MOTOR18 (encargo §10.1). Errores localizados; no corrige ni completa nada. Un perfil sin `familiarity` (anterior a MOTOR-18) es válido:
 // la capa queda desactivada y no se activa en silencio.
+import { playerFactorModel, validatePlayerCurve } from '../knowledge/model.js';
 const finite = (v) => typeof v === 'number' && Number.isFinite(v);
 const POLICIES = ['legacy-neutral'];
 const DOMAINS = ['position', 'offensiveRole', 'defensiveRole', 'tactic'];
@@ -61,7 +62,10 @@ export function familiarityIssues(profile, add) {
   level('learning.traits.range.min', tr0.range?.min); level('learning.traits.range.max', tr0.range?.max);
   for (const k of ['tacticalLearningSeed', 'teachingSeed', 'coachMasterySeed']) level(`learning.traits.${k}`, tr0[k]);
   for (const k of DOMAINS) num(`learning.rates.${k}`, L.rates?.[k], (x) => x >= 0, 'la tasa no puede ser negativa');
-  for (const k of ['player', 'teaching', 'content', 'transfer']) { num(`learning.factors.${k}.base`, L.factors?.[k]?.base, (x) => x > 0, 'la base debe ser positiva'); num(`learning.factors.${k}.slope`, L.factors?.[k]?.slope, (x) => x >= 0, 'la pendiente no puede ser negativa'); }
+  const pm = playerFactorModel(L.factors?.player);
+  if (pm === 'piecewise-linear') { for (const e of validatePlayerCurve(L.factors.player, f.range ?? {})) bad(e.path, e.message, undefined); }
+  else if (pm !== 'linear') bad('learning.factors.player', 'el factor de Polivalencia debe ser una curva piecewise-linear o {base, pendiente}', L.factors?.player);
+  for (const k of (pm === 'linear' ? ['player', 'teaching', 'content', 'transfer'] : ['teaching', 'content', 'transfer'])) { num(`learning.factors.${k}.base`, L.factors?.[k]?.base, (x) => x > 0, 'la base debe ser positiva'); num(`learning.factors.${k}.slope`, L.factors?.[k]?.slope, (x) => x >= 0, 'la pendiente no puede ser negativa'); }
   num('learning.factors.relearning', L.factors?.relearning, (x) => x >= 1, 'el reaprendizaje no puede ser inferior a 1');
   num('learning.gainDivisor', L.gainDivisor, (x) => x > 0, 'debe ser positivo');
   num('learning.snapToMaxThreshold', L.snapToMaxThreshold, (x) => x >= lo && x <= hi, `debe estar entre ${lo} y ${hi}`);
