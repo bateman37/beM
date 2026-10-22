@@ -43,7 +43,10 @@ function planEditor(ti) {
       sel('cobertura', plan.coverage, Object.keys(T.coverages).map((d) => [d, `${d} · ${T.coverages[d].name}`]), (v) => { plan.coverage = v; }, `plan${ti}-coverage`),
       sel('presión', plan.pressureHeight, T.heights.map((d) => [d, d]), (v) => { plan.pressureHeight = v; }, `plan${ti}-height`),
       sel('media distancia', plan.midrange, T.midrangePolicies.map((d) => [d, d]), (v) => { plan.midrange = v; }, `plan${ti}-midrange`)),
-    h('p', { class: 'small muted' }, `Libro: ${plan.playbook.length} fichas (prioridades del plan natural). Sin efecto aparente en SIM: marcas, navegación, especiales defensivas, saques, roles (exclusivos del detallado).`));
+    h('details', { class: 'small' }, h('summary', {}, `Resumen del plan: ${plan.playbook.length} fichas, titulares, roles y estado`),
+      table(['Ficha', 'Nombre', 'Familia', 'Prioridad (1 = más)'], plan.playbook.map((e) => { const pl = st.ctx.T.plays[e.playId]; return [e.playId, pl.name, pl.family, e.priority]; })),
+      table(['Puesto', 'Titular', 'Rol ofensivo', 'Rol defensivo', 'Energía', 'Forma', 'M-TIR/OFE/DEF'], Object.entries(plan.starters).map(([slot, id]) => { const p = t.players.find((x) => x.id === id); return [slot, id, `${p.offensiveRole?.code ?? '—'} ${p.offensiveRole?.name ?? ''}`, `${p.defensiveRole?.code ?? '—'} ${p.defensiveRole?.name ?? ''}`, p.state.energy, p.state.form ?? 0, `${p.state.M_TIR ?? 0}/${p.state.M_OFE ?? 0}/${p.state.M_DEF ?? 0}`]; }), { numeric: [4, 5] })),
+    h('p', { class: 'small muted' }, 'Sin efecto aparente en SIM (exclusivos del detallado): marcas, navegación, especiales defensivas, saques y roles; se aceptan en la entrada y se declaran como ignorados.'));
 }
 function generate() {
   try {
