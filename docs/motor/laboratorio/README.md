@@ -31,3 +31,7 @@ Relaciones funcionales principales con otros temas. Consulta solo las que afecte
 ### Nota de implementación MOTOR-18 (Laboratorio de conocimiento (MOTOR-18))
 
 El laboratorio incorpora copias de aprendizaje, edición de conocimiento, panel de sesión (previsualizar, aplicar con recibo y deshacer, «solo desuso») y la propuesta de aprendizaje tras un partido terminado; reabrir, analizar, descargar o ejecutar en lote no aplica aprendizaje. Detalle: `docs/tecnico/motor18.md`.
+
+### Nota de implementación MOTOR-18B (Preparación sobre la copia activa)
+
+Cuando la copia de aprendizaje es la entrada activa del próximo partido, **Preparación edita esa copia** (defensa, roles, puestos, estilos, libro y semilla) y la misma entrada se congela al preparar el encuentro; las fichas de referencia y la entrada editada de Dennis no se tocan. Las sesiones llevan una secuencia persistida por copia, las copias una secuencia de instancia y los encuentros una identidad estable, de modo que entrenar → recargar → entrenar no colisiona. Un rechazo no cambia estado alguno. Detalle: `docs/tecnico/motor18b.md`.

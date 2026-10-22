@@ -248,5 +248,9 @@ Una opción táctica debe tener una conexión reconocible con una o varias tabla
 
 Durante el partido solo se consulta la instantánea congelada de conocimiento y se acumula exposición; no se aprende ni se olvida. El ajuste se cobra una vez por operación y no se repite en una calidad heredada ni en la conversión del tiro. Detalle: `docs/tecnico/motor18.md`.
 
+### Nota de implementación MOTOR-18B (Estimación frente a resolución)
+
+Las estimaciones de media distancia/calidad cómoda comparten con la operación resuelta el mismo constructor de contexto de familiaridad. Estimar no cambia la cobertura vigente, la memoria, las órdenes, los participantes, los relojes, el contador de sorteos ni la exposición. Detalle: `docs/tecnico/motor18b.md`.
+
 <!-- beM:pie-inicio -->
 > [Índice del tema](README.md) · Anterior: [c10-banda-fondo-y-situaciones-especiales](../tacticas/c10-banda-fondo-y-situaciones-especiales.md) · Siguiente: [c12-p01-seleccion-oportunidades-y-desenlaces](c12-p01-seleccion-oportunidades-y-desenlaces.md)

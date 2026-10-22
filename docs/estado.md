@@ -1,6 +1,6 @@
 # Estado del proyecto
 
-Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANGELOG.md)). Última actualización: 2026-10-21, entrega MOTOR-18.
+Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANGELOG.md)). Última actualización: 2026-10-22, entrega MOTOR-18B (sobre MOTOR-18, PR #19 abierta).
 
 ## Qué hay realmente en el repositorio
 
@@ -8,6 +8,13 @@ Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANG
 - **Diseño funcional del motor y del primer laboratorio**, organizado por temas en [`motor/`](motor/README.md) (34 capítulos). Es **especificación**: está *definida*, no implementada.
 - **Copia original congelada** del funcional unificado y **exportado completo vigente** generado: ver [`historico/`](historico/README.md) y [`exportados/`](exportados/README.md).
 - **Utilidades documentales** en `scripts/docs/` (Python 3, librería estándar).
+
+## MOTOR-18B (ejecutado; cierre de familiaridad y curva de Polivalencia; pendiente de Dennis)
+
+- **Qué es**: cierra las seis observaciones aceptadas de la revisión independiente de MOTOR-18 (Preparación sobre la copia activa, bloqueadores en los participantes, sesiones tras recargar, exposición terminada, sesiones válidas, estimación coherente), corrige las unidades de `min_tenths` y sustituye el factor de Polivalencia del aprendizaje por una curva lineal por tramos de cinco anclajes (1→0,25 · 8→0,50 · 16→1,00 · 24→2,00 · 30→2,50). Ningún coeficiente deportivo cambia. Se desarrolla sobre MOTOR-18 en la misma rama y amplía la PR #19 (sin fusionar).
+- **Versiones**: aplicación `MOTOR-18B`, motor `0.18.1-MOTOR18B`, `SEM-MOTOR18B-20261022` (**semillas del encargo, sin calibración**), `FAM/LEARN-MOTOR18B-R1`, `ESE-MOTOR18B-R1`, entrada `/7`, export `/10` (cambios aditivos). Los perfiles de MOTOR-18 conservan su factor lineal; un export de MOTOR-18 se consulta pero no se reproduce.
+- **Evidencia**: campaña `MOTOR18B-CIERRE-20261022` (36 ejecuciones planificadas; no son 36 observaciones independientes) y tabla L18B (12 casos puros). Cifras reales y estado de cada comprobación: [`tecnico/evidencia-motor18b/RESUMEN-OPERATIVO.md`](tecnico/evidencia-motor18b/RESUMEN-OPERATIVO.md) (generado desde los archivos finales). Detalle: [`tecnico/motor18b.md`](tecnico/motor18b.md).
+- **No cerrado**: aceptación manual de Dennis ([recorrido](prompts/MOTOR-18B-recorrido-manual.md)), calibración, conformidad FIBA integral, rendimiento masivo y partidos simultáneos del mundo. **Siguiente**: análisis de ChatGPT sobre los paquetes y validación de Dennis.
 
 ## MOTOR-18 (ejecutado; familiaridad táctica y aprendizaje; pendiente de Dennis)
 
