@@ -168,6 +168,8 @@ ${[B.B01, B.B02, B.B03].map((r) => `| ${r.run} | ${r.workers} | ${r.objective.me
 
 B02 es proceso nuevo con cuatro workers (los workers incluyen ${B.B02.definitions.warmup}); B03 repite la agenda con los mismos workers ya iniciados. Las pasadas adicionales (variación) y las mediciones previas a cada optimización se conservan en \`09-RENDIMIENTO.json\`. «Técnicamente implementado» y «objetivo alcanzado» son conclusiones distintas.
 
+**Descripción de la producción (no es calibración ni valoración deportiva)** — en las 1.000 partidas de B01: ${(B.B01.results.reduce((s, x) => s + x.score[0] + x.score[1], 0) / 2000).toFixed(1)} puntos por equipo y partido, ${B.B01.results.filter((x) => x.overtimes > 0).length} partidos con prórroga, margen medio ${(B.B01.results.reduce((s, x) => s + Math.abs(x.score[0] - x.score[1]), 0) / 1000).toFixed(1)} puntos, ${B.B01.results.filter((x) => x.score[0] > x.score[1]).length} victorias del primer equipo del cruce (sin localía), ${(B.B01.results.reduce((s, x) => s + x.events, 0) / 1000).toFixed(0)} hechos por partido. Los equipos EQ01–EQ12 son deliberadamente heterogéneos; la comparación con el detallado y con competiciones reales queda para SIM-MOTOR-03.
+
 **Pendientes** — \`14-PENDIENTES.md\` (defectos, aproximaciones, decisiones requeridas y alcance de SIM-MOTOR-02, sin mezclarlos).
 
 ## Comprobación

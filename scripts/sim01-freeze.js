@@ -28,7 +28,7 @@ export function freezeReference() {
     sport_files: files.length, sport_files_digest: createHash('sha256').update(files.map((f) => `${f.file}:${f.sha256}`).join('\n')).digest('hex'), files,
   };
 }
-if (process.argv[1].endsWith('sim01-freeze.js')) {
+if (process.argv[1]?.endsWith('sim01-freeze.js')) {
   const out = (process.argv.find((a) => a.startsWith('--out=')) ?? '').slice(6);
   const f = freezeReference();
   console.log(JSON.stringify({ ...f, files: undefined }, null, 1));

@@ -71,7 +71,21 @@ La huella deportiva (FNV de 64 bits sobre enteros) incluye la producción y el o
 
 ## 8. Medición de rendimiento (resultado real)
 
-MEDICION_PLACEHOLDER
+**Máquina**: Intel(R) Xeon(R) Processor @ 2.80GHz, 4 CPU lógicas (4 disponibles), 16091 MiB de RAM, linux 6.18.44-fc-v140, Node v22.22.0. Commit de código `0e2adf8`.
+
+**Cronómetro del objetivo** (reloj monotónico): desde la solicitud `pool.run` hasta tener en poder del coordinador los 1.000 resúmenes compactos, **con los workers ya listos**. Incluye despacho (lotes de 5 casos), preparación de la entrada, generación, construcción del resultado, las 18 conciliaciones/invariantes y la comunicación de resultados; no excluye trabajo requerido y no suma tiempos de worker como tiempo de pared. Se muestran aparte: carga de datos, preparación del contexto, arranque de los workers (incluye 12 partidos de calentamiento declarados por worker, fuera de la agenda), serialización a JSON, bytes y escritura. La RSS es la del proceso (máximo muestreado cada 25 ms y `maxRSS` de `getrusage`), **no** se suma por worker. Latencia = tiempo del worker por partido (preparar entrada + generar + resultado + conciliar), sin cola.
+
+| Ejecución | Workers | Proceso | Objetivo (pared) | ≤ 5 s | Partidos/s | Latencia media / p95 | RSS máx. | Válidos | Total desde el inicio del proceso |
+|---|---|---|---|---|---|---|---|---|---|
+| B01 | 1 | nuevo | 15.67 s | no | 64 | 15.5 / 23.6 ms | 174 MiB | 1000/1000 | 16.39 s |
+| B02 | 4 | nuevo | 7.68 s | no | 130 | 30.1 / 63.0 ms | 462 MiB | 1000/1000 | 8.90 s |
+| B03 | 4 | reutilizado | 4.83 s | sí | 207 | 19.0 / 29.3 ms | 462 MiB | 1000/1000 | 13.75 s |
+
+B01: un worker, proceso nuevo. B02: cuatro workers, proceso nuevo (frío). B03: los mismos cuatro workers ya iniciados y contexto reutilizado, otra pasada de 1.000 partidos **generados de nuevo** (la agenda produce las mismas huellas por caso: B01 = B02 = B03 en 1.000/1.000). Pasadas adicionales de variación (no sustituyen a las oficiales): B02 6.89 s; B03 4.77 s; B02 7.72 s; B03 5.16 s; B02 7.68 s; B03 4.54 s; B01 16.66 s.
+
+**Conclusión (sin extrapolar)**: con cuatro workers y arranque en frío (B02) el objetivo **NO se alcanza** (entre 6.89 s y 7.72 s en 4 pasadas); con workers calientes (B03) se alcanza en 3 de 4 pasadas (4.54 s–5.16 s), es decir, **de forma marginal e inestable en esta máquina**. Un worker tarda 15.67 s; cuatro workers dan una aceleración de 2.0× en frío y 3.2× en caliente (hilos lógicos compartidos). La diferencia frío/caliente es el calentamiento del compilador JIT (≈ 100 partidos por worker para alcanzar el régimen estable): reducirla con más calentamiento solo desplaza el tiempo al arranque. Las mediciones previas a cada tanda de optimizaciones exactas (huellas idénticas) y las configuraciones probadas y descartadas se conservan en `09-RENDIMIENTO.json` (`medicionesPreviasExploratorias`).
+
+**Diagnóstico**: el coste está en la compilación de magnitudes por tramo (≈ 60 % del tiempo de generación: ≈ 0,3 ms por tramo y ambos equipos; 24 tramos por partido) y no en el sorteo ni en el registro; SIM no llama al detallado (comprobado). Las optimizaciones aplicadas conservan la producción comprometida (24/24 huellas idénticas antes y después). Una caché de magnitudes entre tramos reduciría el coste pero introduciría una aproximación nueva (queda como decisión para 02).
 
 ## 9. Compromisos para SIM-MOTOR-02
 
