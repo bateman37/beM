@@ -5,6 +5,7 @@ import { syntheticHistory, allMastered, categoryOf, levelOf, normalizeLevel, ids
 import { createTeamState, teamFingerprint, createLedger } from '../learning/index.js';
 
 export const LEARNING_STORE_SCHEMA = 'beM-lab-learning/1';
+// MOTOR-18B (R03): identidades persistidas. Administración de laboratorio: no consumen azar deportivo ni cambian trayectorias.
 export const NEUTRAL_NOTE = 'sin historial de aprendizaje; compatibilidad neutra';
 export const IDLE_TEXT = 'Laboratorio de conocimiento: no adelanta diez años la edad del jugador ni simula fatiga, lesiones o una temporada al pulsar «3650 días». El reloj real del manager se conectará después.';
 
@@ -14,7 +15,7 @@ export const paramsOf = (...profiles) => profiles.map((p) => p?.familiarity).fin
 const playFamilyMap = (profile) => Object.fromEntries(Object.entries(profile.repertoire?.plays ?? {}).map(([id, s]) => [id, s.family]));
 
 // Copia de aprendizaje: «synthetic» (fábrica de historia sintética §10.2) o «mastered» (todo a 30: copia de laboratorio, no historia observada). Devuelve la entrada nueva, la lista de diferencias y los recibos por jugador.
-export function makeLearningCopy(input, profile, { mode = 'synthetic', day = 0, id = null } = {}) {
+export function makeLearningCopy(input, profile, { mode = 'synthetic', day = 0, id = null, instanceSeq = null } = {}) {
   const P = paramsOf(profile); if (!P) throw new Error('el perfil no incluye la familiaridad táctica de MOTOR-18');
   const out = deepCopy(input); out.schema = INPUT_SCHEMA; const changes = []; const receipts = {}; const fam = playFamilyMap(profile); const L = P.learning.traits;
   for (const t of out.teams) {
@@ -29,8 +30,8 @@ export function makeLearningCopy(input, profile, { mode = 'synthetic', day = 0, 
     changes.push({ equipo: t.id, campo: 'enseñanza del entrenador (teaching)', antes: '—', despues: L.teachingSeed });
     changes.push({ equipo: t.id, campo: 'competencia táctica del entrenador (por módulo)', antes: '—', despues: L.coachMasterySeed });
   }
-  const copyId = id ?? `LEARN18-${mode === 'mastered' ? 'M' : 'S'}-${(out.teams.map((t) => t.id).join('-'))}-d${day}`;
-  return { id: copyId, mode, day, input: out, changes, receipts, paramsVersion: P.version };
+  const copyId = id ?? `LEARN18-${mode === 'mastered' ? 'M' : 'S'}-${(out.teams.map((t) => t.id).join('-'))}-d${day}${instanceSeq != null ? `-I${instanceSeq}` : ''}`;
+  return { id: copyId, instanceSeq, mode, day, input: out, changes, receipts, paramsVersion: P.version };
 }
 
 // Estados de aprendizaje por instancia de equipo (el libro de aplicaciones vive aparte).
@@ -89,10 +90,23 @@ export function quintetSummary(team, params, profile) {
 }
 
 // ---------------------------------------------------------------- persistencia (registro de aplicaciones fuera del núcleo deportivo)
-export function serializeLearning(L) { return JSON.stringify({ schema: LEARNING_STORE_SCHEMA, copy: L.copy, day: L.day, states: L.states, ledgers: L.ledgers, undo: L.undo ?? [] }); }
+export function serializeLearning(L) { return JSON.stringify({ schema: LEARNING_STORE_SCHEMA, copy: L.copy, day: L.day, states: L.states, ledgers: L.ledgers, undo: L.undo ?? [], sessionSeq: L.sessionSeq ?? nextSessionSeq(L), matchSeq: L.matchSeq ?? 0 }); }
 export function deserializeLearning(text) {
   const o = JSON.parse(text); if (o?.schema !== LEARNING_STORE_SCHEMA) throw new Error(`esquema ${o?.schema ?? 'ausente'} no reconocido`);
-  return { copy: o.copy, day: o.day, states: o.states, ledgers: o.ledgers ?? {}, undo: o.undo ?? [] };
+  const L = { copy: o.copy, day: o.day, states: o.states, ledgers: o.ledgers ?? {}, undo: o.undo ?? [], matchSeq: o.matchSeq ?? 0 };
+  L.sessionSeq = Math.max(o.sessionSeq ?? 1, nextSessionSeq({ ...L, sessionSeq: 1 })); // una copia anterior sin contador deriva el siguiente número libre de sus recibos
+  return L;
 }
+// Secuencia de sesión por copia de aprendizaje: el siguiente número libre sale del contador persistido y de TODOS los recibos de sesión (aplicados y revertidos). Nunca reutiliza un número ya emitido.
+const SESSION_TAIL = /\|S(\d+)$/;
+export function nextSessionSeq(L) {
+  let max = Math.max(0, (L.sessionSeq ?? 1) - 1);
+  for (const led of Object.values(L.ledgers ?? {})) for (const a of led.applications ?? []) { const m = SESSION_TAIL.exec(a.source_id ?? ''); if (m) max = Math.max(max, Number(m[1])); }
+  for (const u of L.undo ?? []) { const m = SESSION_TAIL.exec(u.source_id ?? ''); if (m) max = Math.max(max, Number(m[1])); }
+  return max + 1;
+}
+export const sessionSourceId = (copyId, teamId, seq) => `lab|${copyId}|${teamId}|S${seq}`;
+// Identidad estable de un encuentro de la copia: se asigna al prepararlo y viaja en la entrada congelada (guardar, continuar, reabrir y exportar la conservan).
+export function nextMatchId(L) { L.matchSeq = (L.matchSeq ?? 0) + 1; return `${L.copy.id}|M${L.matchSeq}`; }
 export const newLedgers = (input) => Object.fromEntries(input.teams.map((t) => [t.id, createLedger()]));
 export { teamFingerprint, knowledgeKeys, parseKey, keyOf, categoryOf, levelOf, idsOf };

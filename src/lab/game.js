@@ -1,7 +1,7 @@
 // Pantalla «Partido» (MOTOR-02): preparar el encuentro, elegir modalidad y equipo dirigido, jugarlo (total, por cuartos o por tiempo),
 // dirigirlo con órdenes, ver acta y relato, descargar el JSON y reproducir un encuentro exportado.
 import { h, clear, fmt, table } from './dom.js';
-import { store, PLAY_NAMES, matchSource } from './store.js';
+import { store, PLAY_NAMES, matchSource, isLearningScenario } from './store.js';
 import { validateInput, deepCopy, SLOTS, diagnosticQueries, ownStateView, rivalPublicView, diagnosticView } from '../match/index.js';
 import { MatchSession, MODES, SESSION_STATES, PRESENTATION } from '../match/session.js';
 import { replayMatch, validateReplayFile } from '../match/replay.js';
@@ -15,7 +15,8 @@ import { coachLiveCard, coachDiagnosticCard } from './coach-ui.js';
 import { actaCards, casesCard } from './acta-ui.js';
 import { LAB_CASES } from '../match/cases.js';
 import { srcText } from './population-ui.js';
-import { matchFamiliarityCard } from './knowledge-ui.js';
+import { matchFamiliarityCard, persistLearning } from './knowledge-ui.js';
+import { nextMatchId } from './learning-model.js';
 import { postMatchLearningCard } from './learning-ui.js';
 
 const ui = { saves: { list: null, msg: null, err: null, label: '', busy: false }, mode: 'total', managed: 0, speed: PRESENTATION.defaultSpeed, session: null, draft: null, msg: null, call: null, filter: 'all', limit: 150, showBox: false, storyLimit: 18, replay: null, compare: null, error: null, root: null };
@@ -79,7 +80,9 @@ function prepare() {
   if (s0) s0.dispose(); // invalida callbacks y temporizadores del anterior
   ui.error = null; ui.draft = null; ui.msg = null; ui.compare = null; ui.call = null; ui.filter = 'all'; ui.limit = 150; ui.storyLimit = 18; ui.showBox = false;
   try {
-    const s = new MatchSession({ input: deepCopy(matchSource()), profile: store.profile, profileRef: store.profileRef, mode: ui.mode, managedTeam: ui.managed, speed: ui.speed, scheduler: sched() });
+    const frozen = deepCopy(matchSource());
+    if (isLearningScenario() && store.learn) { frozen.labMatchId = nextMatchId(store.learn); persistLearning(); } // MOTOR-18B (R03): identidad estable del encuentro de la copia (viaja en la entrada congelada)
+    const s = new MatchSession({ input: frozen, profile: store.profile, profileRef: store.profileRef, mode: ui.mode, managedTeam: ui.managed, speed: ui.speed, scheduler: sched() });
     store.matchRef = store.profileRef; // perfil congelado de este encuentro (se muestra en el panel)
     s.subscribe(onSession); ui.session = s;
   } catch (e) { ui.error = `No se pudo preparar el encuentro: ${e.message}`; ui.session = null; }

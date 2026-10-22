@@ -5,6 +5,7 @@
 import { abilityFit, vocationFactor } from './formulas.js';
 import { MatchCore } from './core.js';
 import { SLOTS } from './data.js';
+import { interOf } from './mathx.js';
 
 const P = MatchCore.prototype;
 export const fit = abilityFit;
@@ -189,6 +190,8 @@ P.buildExits = function buildExits(team, playId, roles, def, list = null, stage 
       if (e.pen && e.pen.includes(zone) && (exec !== 'pass' || e.catchDrive)) offContact = { pid: actor, tech: 'TEC07', kind: 'penetración' };
       // Defensa (MOTOR-05): el atacante abierto (sin función que lo cubra) recibe sin oposición; en zona, la finalización en el aro la
       // defiende la función de protección del aro y no cualquier marcador (la amenaza de la interacción, no la posición nominal).
+      // MOTOR-18B (R02): participantes de la interacción elegida, independientes del contacto que resuelve penetración/falta. El bloqueador existe solo en la salida de primer nivel que usa el bloqueo/poste; una etapa posterior (otra interacción) no lo arrastra.
+      const blocker = !stage && (spec.post || spec.screen) ? (roles[(spec.post ?? spec.screen).role] ?? null) : null;
       const open = this.isOpen(actor);
       const shotDef = open ? null : (this.shotDefenderFor(actor, zone) ?? def[e.defend] ?? null);
       exits.push({
@@ -197,6 +200,7 @@ P.buildExits = function buildExits(team, playId, roles, def, list = null, stage 
         label: e.label ?? null, moved: !!(e.moved && e.moved.includes(zone)),
         offContact, pullup: !!(e.pullupK && e.pullupK.includes(zone)), roller: !!e.rollerK,
         holder: exec === 'pass' ? passer : actor, stage: e.stage ?? null, qual: e.qual ?? null, cont: !!e.label,
+        blocker, inter: interOf(roles), coverageExpected: !!spec.coverage,
       });
     }
   }

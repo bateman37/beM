@@ -17,7 +17,7 @@ const lowModule = (block, id, level) => { block.tactics[id] = makeEntry(level, b
 const same = (a, b) => assert.deepEqual(JSON.stringify(sportsProjection(a)), JSON.stringify(sportsProjection(b)));
 
 test('versiones del motor y del export de MOTOR-18; el export/9 anterior se lee pero no se reproduce', () => {
-  assert.equal(ENGINE_VERSION, 'beM-motor-0.18.0-MOTOR18'); assert.equal(EXPORT_SCHEMA, 'beM-match-export/10');
+  assert.equal(ENGINE_VERSION, 'beM-motor-0.18.1-MOTOR18B'); assert.equal(EXPORT_SCHEMA, 'beM-match-export/10');
   const v = validateReplayFile({ schema: 'beM-match-export/9', meta: { engineVersion: 'beM-motor-0.17.1-MOTOR17B' } });
   assert.equal(v.legacy, true); assert.equal(v.reproducible, false); assert.match(v.problems[0], /MOTOR-18/);
 });

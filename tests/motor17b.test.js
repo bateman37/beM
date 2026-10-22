@@ -53,7 +53,7 @@ test('M17B·1b box and one con objetivo y alternativa ausentes desde la entrada:
   const { res } = play(input); const t = compactShots(res); const ci = (n) => col(t, n); const rows = t.rows.filter((r) => r[ci('team')] === 0 && r[ci('defense_org_source')] !== undefined);
   assert.ok(rows.length > 5); assert.ok(rows.every((r) => r[ci('defense_org')] === 'ORG02' && r[ci('defense_org_intended')] === 'ORG06' && r[ci('defense_org_alternate')] === true && r[ci('defense_org_source')] === 'alternativa'), 'lo realmente ejecutado es la alternativa, con su condición');
   const e = buildEssential(res, { keys: {}, validity: { valid: true, reasons: [], reconciliation_ok: true, analysis_ok: true, mode: 'full' }, fp: null, fpMode: 'none', sim: null });
-  assert.equal(e.essential_version, ESSENTIAL_VERSION); assert.equal(e.essential_version, 'ESE-MOTOR18-R1'); // MOTOR-18: el esencial sube de versión (añade familiaridad); la semántica de defense_org es la de ESE-MOTOR17B-R1 assert.deepEqual(e.field_semantics, DEFENSE_ORG_SEMANTICS);
+  assert.equal(e.essential_version, ESSENTIAL_VERSION); assert.equal(e.essential_version, 'ESE-MOTOR18B-R1'); // MOTOR-18/18B: el esencial sube de versión (18: añade familiaridad; 18B: participantes de la interacción y unidades); la semántica de defense_org es la de ESE-MOTOR17B-R1 assert.deepEqual(e.field_semantics, DEFENSE_ORG_SEMANTICS);
 });
 
 test('M17B·1c compatibilidad: un esencial anterior con `defense_org` como objeto se declara histórico y no se reinterpreta como observación original', () => {

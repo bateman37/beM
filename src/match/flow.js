@@ -1,6 +1,6 @@
 // Flujo de posesiones: entrada (saque, transición), selección de ficha, salidas, ayuda, pases adicionales,
 // reorganización, recursos directos (ESP), periodos y arranque del partido.
-import { clamp, sigmoid, logit, round } from './mathx.js';
+import { clamp, sigmoid, logit, round, interOf } from './mathx.js';
 import { SLOTS, ZONES } from './data.js';
 import { MatchCore } from './core.js';
 import { fit } from './plays.js';
@@ -381,7 +381,7 @@ P.interactionResolve = function interactionResolve(poss, ex, lq, team, entry, kc
       const pAcc = this.acceptance(team, ex.holder, tech);
       const accD = this.bernoulli(pAcc, 'CONT04:aceptación'); this.logOpp({ frontier: 'acceptance', situacion: 'CONT04', aceptada: accD, decide: ex.holder, pAceptacion: round(pAcc, 4) });
       if (accD) {
-        const cand = ['three', 'midrange', 'rim'].map((zone) => ({ actor: help.abandoned, zone, exec: 'pass', passer: ex.holder, icpt: covered, defend: covered, window: !covered, moved: false, offContact: null, holder: ex.holder, role: 'abierto', key: `abierto:${zone}`, qual: null, stage: null }));
+        const cand = ['three', 'midrange', 'rim'].map((zone) => ({ actor: help.abandoned, zone, exec: 'pass', passer: ex.holder, icpt: covered, defend: covered, window: !covered, moved: false, offContact: null, blocker: null, inter: null, coverageExpected: false, holder: ex.holder, role: 'abierto', key: `abierto:${zone}`, qual: null, stage: null }));
         const sc = this.scoreExits(team, cand, null, 'TAR03');
         const pickd = this.pick(this.mixIntention(sc.map((x) => this.exitItem(x)), lq, 'salida:descarga'), 'salida:descarga').exit;
         Object.assign(ex, pickd, { window: !covered, label: 'CONT04', helper: help.helper, helpArrived: help.arrives, helpWindow: covered ? 'descarga con relevo' : 'descarga', denier: null, stealAttempt: undefined, pressureClose: undefined, noDenial: false, defMix: undefined });
@@ -420,6 +420,7 @@ P.runPlay = function runPlay(poss, entry, dir, lq) {
   poss.coverage = null;
   const prep = entry.spec.coverage ? this.preparedCoverage(entry, poss, ex) : null; // MOTOR-09: ruta B de la memoria (preparación dentro de la acción)
   const cov = entry.spec.coverage ? this.beginCoverage(entry, poss, { ex, cob: prep?.cob ?? null }) : null;
+  if (cov) cov.inter = interOf(entry.roles); // MOTOR-18B (R06): la cobertura pertenece a ESTA interacción; otra opción o una interacción anterior no la reutiliza
   if (prep) { ex.prepMemoria = { ...prep.trace, ejecutable: !!cov && !cov.none }; this.cover('ruta B: cobertura preparada por la memoria'); }
   const cvk = this.coverageForExit(ex, cov);
   if (cov && cov.exchanged) CD = this.cdWith(entry, cov.pair.spec.type === 'pnr' ? { primary: cov.D2, screenMarker: cov.D1 } : cov.pair.spec.type === 'handoff' ? { receiverMarker: cov.D1 } : { receiverMarker: cov.D2 }); // tras el cambio, la calidad se evalúa con los defensores intercambiados
@@ -478,7 +479,7 @@ P.extraPassChain = function extraPassChain(ex, lq, entry) {
     const pairs = [];
     for (const id of cands) for (const zone of ZONES) {
       const open = this.isOpen(id); // atacante sin función defensiva que lo cubra: recibe libre (concesión estructural)
-      pairs.push({ actor: id, zone, exec: 'pass', passer: ex.actor, icpt: open ? null : this.markerOf(id), defend: open ? null : (this.shotDefenderFor(id, zone) ?? this.markerOf(id)), window: open, moved: false, offContact: null, holder: ex.actor, role: 'adicional', key: `${id}:${zone}`, qual: null, stage: null });
+      pairs.push({ actor: id, zone, exec: 'pass', passer: ex.actor, icpt: open ? null : this.markerOf(id), defend: open ? null : (this.shotDefenderFor(id, zone) ?? this.markerOf(id)), window: open, moved: false, offContact: null, blocker: null, inter: null, coverageExpected: false, holder: ex.actor, role: 'adicional', key: `${id}:${zone}`, qual: null, stage: null });
     }
     const sc = this.scoreExits(ex.team, pairs, null, 'TAR03');
     const pk = this.pick(this.mixIntention(sc.map((x) => this.exitItem(x)), lq, 'salida:pase_adicional'), 'salida:pase_adicional').exit;

@@ -64,7 +64,7 @@ export class Encounter {
   // MOTOR-18: exposición final por jugador y conocimiento (para `learning.proposeFromMatch`). Solo lectura; no modifica nada ni propone por sí sola. Un encuentro no terminado devuelve la exposición parcial declarada como tal.
   exposure({ source = null, batch = null, attempt = null } = {}) {
     const m = this.match; const x = m.famExposure(); if (!x) return null;
-    return { ...x, complete: m.status === 'finished', match: { source_id: learning.sourceIdOf({ source: source ?? this.id, batch, attempt, teamInstance: m.teams.map((t) => t.id).join('/') }), encounterId: this.id, teams: m.teams.map((t) => t.id) } };
+    return learning.buildExposure({ exposure: x, status: m.status, source_id: learning.sourceIdOf({ source: source ?? this.id, batch, attempt, teamInstance: m.teams.map((t) => t.id).join('/') }), encounterId: this.id, teams: m.teams.map((t) => t.id) }); // MOTOR-18B (R04): productor común; `complete` solo es true si el encuentro terminó
   }
 
   position() {

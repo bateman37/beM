@@ -7,7 +7,7 @@ import { round } from './mathx.js';
 import { familiarityActor, familiaritySide, familiarityDelta } from './formulas.js';
 
 const P = MatchCore.prototype;
-export const FAMILIARITY_VERSION = 'FAM-MOTOR18-R1';
+export const FAMILIARITY_VERSION = 'FAM-MOTOR18B-R1';
 const uniq = (arr) => [...new Set(arr.filter((x) => x != null))];
 const explicit = (k) => k != null && k.mode === 'explicit';
 const lvl = (m, key) => { const e = m?.[key]; return e && typeof e.level === 'number' ? e.level : null; };
@@ -48,15 +48,22 @@ const MODULE_OF_CONT = (cfg, ex) => {
 const normalizeW = (list) => { const t = list.reduce((s, x) => s + x.w, 0); return t > 0 ? list.map((x) => ({ id: x.id, w: x.w / t })) : []; };
 
 // Construye los participantes y los módulos de una operación de calidad. `ex` es la salida/ejecución en curso (`qualityOf`) o una salida candidata (estimación): no se seleccionan jugadores nuevos.
-P.famQualityContext = function famQualityContext(ex, hasOpposition) {
+// MOTOR-18B (R02): participan los de la interacción elegida —poseedor/actor, pasador, BLOQUEADOR efectivamente usado (independiente del contacto de penetración) y los defensores comprometidos—;
+// una continuación que inicia otra interacción lo deja con `blocker: null` y no lo arrastra. (R06): la cobertura y sus defensores solo cuentan si pertenecen a ESTA interacción (`inter`); una referencia
+// de otra opción o de una interacción anterior no se reutiliza. `scope`: «resuelta» (operación real), «determinada» (candidato con los datos ya determinados) o «limitada» (faltan datos que aún requieren una decisión o un sorteo).
+P.famQualityContext = function famQualityContext(ex, hasOpposition, { estimate = false } = {}) {
   const cfg = this.famCfg; const team = ex.team ?? this.pl[ex.actor]?.teamIdx; const defT = 1 - team; const poss = this.poss;
   const inbound = ex.procedencia === 'saque' || ex.contexto === 'saque';
-  const attackP = uniq([ex.holder, ex.actor, ex.passer, ex.offContact && (ex.offContact.kind === 'pantalla' || ex.offContact.kind === 'poste') ? ex.offContact.pid : null])
+  const blocker = ex.blocker !== undefined ? ex.blocker : (ex.offContact && (ex.offContact.kind === 'pantalla' || ex.offContact.kind === 'poste') ? ex.offContact.pid : null); // fichas/recursos sin `blocker`: contacto de bloqueo/poste de la propia salida
+  const attackP = uniq([ex.holder, ex.actor, ex.passer, blocker])
     .filter((id) => this.pl[id] && ((this.ps[id].onCourt && this.ps[id].available) || (inbound && id === ex.passer)));
-  const defP = hasOpposition ? uniq([ex.defend, ex.icpt, ex.defMix?.primary, ex.defMix?.second, ex.helper, ex.presionSacador, !inbound ? poss?.coverage?.D1 : null, !inbound ? poss?.coverage?.D2 : null, ex.cobertura?.defensores?.delBalon, ex.cobertura?.defensores?.delBloqueador])
+  const covOwned = !inbound && !!(poss?.coverage && !poss.coverage.none && ex.inter != null && poss.coverage.inter === ex.inter);
+  const defP = hasOpposition ? uniq([ex.defend, ex.icpt, ex.defMix?.primary, ex.defMix?.second, ex.helper, ex.presionSacador, covOwned ? poss.coverage.D1 : null, covOwned ? poss.coverage.D2 : null, ex.cobertura?.defensores?.delBalon, ex.cobertura?.defensores?.delBloqueador])
     .filter((id) => this.pl[id] && this.ps[id].onCourt) : [];
   let ctx; let atk = []; let dfn = [];
-  const cov = !inbound ? (poss?.coverage && !poss.coverage.none ? poss.coverage.cob : null) : (ex.cobertura?.id && !ex.cobertura.limitada ? ex.cobertura.id : null);
+  const cov = !inbound ? (covOwned ? poss.coverage.cob : null) : (ex.cobertura?.id && !ex.cobertura.limitada ? ex.cobertura.id : null);
+  const missing = [];
+  if (!inbound && ex.coverageExpected && !covOwned) missing.push('cobertura ejecutada', 'defensores de la cobertura');
   if (inbound) {
     ctx = 'throwIn'; const kind = poss?.throwIn?.kind; const w = cfg.tacticContextWeights.throwIn;
     if (kind === 'band' || kind === 'endline') { atk = [{ id: `SAQ:O:${kind}`, w: w.attack.throwIn }]; dfn = [{ id: `SAQ:D:${kind}`, w: w.defense.throwIn }]; }
@@ -71,7 +78,7 @@ P.famQualityContext = function famQualityContext(ex, hasOpposition) {
     const org = this.famEffectiveOrg(defT); if (org) dfn.push({ id: org, w: w.defense.organization });
     if (cov) dfn.push({ id: cov, w: w.defense.coverage });
   }
-  return { ctx, team, defT, attackP, defP, atk: normalizeW(atk), dfn: normalizeW(dfn), cov };
+  return { ctx, team, defT, attackP, defP, atk: normalizeW(atk), dfn: normalizeW(dfn), cov, scope: estimate ? (missing.length ? 'limitada' : 'determinada') : 'resuelta', missing, blocker: blocker && attackP.includes(blocker) ? blocker : null };
 };
 P.famPressedContext = function famPressedContext(handler, presser, support, height) {
   const cfg = this.famCfg; const team = this.pl[handler].teamIdx; const defT = 1 - team; const w = cfg.tacticContextWeights.pressBreak;
@@ -119,7 +126,7 @@ const rnd = (x) => (x == null ? null : round(x, 6));
 P.famRecord = function famRecord(scope, c, a) {
   if (this.opts.detail !== 'full') return;
   this.note('familiaridad', { version: FAMILIARITY_VERSION, aplica: true, ambito: scope, contexto: a.ctx, delta: rnd(a.delta), DA: rnd(a.DA ?? null), DD: rnd(a.DD ?? null), cargaAtaque: rnd(a.UA ?? 0), cargaDefensa: rnd(a.UD ?? 0), maximos: a.max ?? null, neutral: !!a.neutral,
-    modulosAtaque: c.atk.map((x) => ({ id: x.id, w: rnd(x.w) })), modulosDefensa: c.dfn.map((x) => ({ id: x.id, w: rnd(x.w) })), participantes: { ataque: a.ataque ?? null, defensa: a.defensa ?? null } });
+    modulosAtaque: c.atk.map((x) => ({ id: x.id, w: rnd(x.w) })), modulosDefensa: c.dfn.map((x) => ({ id: x.id, w: rnd(x.w) })), participantes: { ataque: a.ataque ?? null, defensa: a.defensa ?? null }, alcance: c.scope ?? 'resuelta', bloqueador: c.blocker ?? null, omitido: c.missing?.length ? c.missing : undefined });
 };
 
 // Operación de CALIDAD (resuelta de verdad): ajuste + exposición + registro. Devuelve el delta que `qualityOf` suma a `extraZ`.
@@ -129,11 +136,17 @@ P.famQuality = function famQuality(ex, hasOpposition) {
   this.famCredit(c); this.fam.exp.operations.quality += 1; this.famApplied('quality', a); this.famRecord('quality', c, a);
   return a.delta;
 };
-// Estimación (media distancia, calidad percibida): misma función pura con el conocimiento pertinente; sin exposición, sin registro y sin azar.
+// Estimación (media distancia, calidad percibida): misma función pura y mismo constructor de contexto que la operación real, con los datos CONOCIDOS de la candidata; sin exposición, sin registro y sin azar.
+// Una cobertura o unos participantes que aún requieren una decisión o un sorteo no se ejecutan por anticipado: se omiten (se normalizan los componentes pertinentes) y el alcance queda declarado en `famEstimateDetail`.
+P.famEstimateDetail = function famEstimateDetail(e, hasOpposition, hint = null) {
+  if (!this.fam?.on || !this.fam.anyExplicit) return { delta: 0, scope: 'neutral', missing: [], provenance: 'capa desactivada o sin conocimiento explícito' };
+  const team = e.team ?? this.pl[e.actor]?.teamIdx; const view = { ...e, team, ...(hint?.family && !e.family ? { family: hint.family, kind: 'organized' } : {}) };
+  const c = this.famQualityContext(view, hasOpposition, { estimate: true }); const a = this.famAdjust(c, 'quality');
+  return { delta: a.delta, scope: c.scope, missing: c.missing, ctx: c.ctx, atk: c.atk, dfn: c.dfn, participantes: { ataque: c.attackP, defensa: c.defP }, bloqueador: c.blocker, provenance: 'candidata: solo datos ya determinados (no se reutiliza la cobertura de otra opción ni de una interacción anterior)' };
+};
 P.famQualityEstimate = function famQualityEstimate(e, hasOpposition, hint = null) {
   if (!this.fam?.on || !this.fam.anyExplicit) return 0;
-  const team = e.team ?? this.pl[e.actor]?.teamIdx; const view = { ...e, team, ...(hint?.family && !e.family ? { family: hint.family, kind: 'organized' } : {}) };
-  return this.famAdjust(this.famQualityContext(view, hasOpposition), 'quality').delta;
+  return this.famEstimateDetail(e, hasOpposition, hint).delta;
 };
 // Calidad heredada o determinista (negada sin sorteo de coordinación, recepción de saque ya resuelta): no abre operación nueva ni cobra otra vez.
 P.famNotApplicable = function famNotApplicable(reason, ex) {
@@ -154,7 +167,7 @@ P.famExposure = function famExposure() {
   if (!this.fam.on) return null;
   const players = {};
   for (const [pid, e] of Object.entries(this.fam.exp.players)) players[pid] = { liveTenths: e.liveTenths, positions: { ...e.positions }, offensiveRoles: { ...e.offensiveRoles }, defensiveRoles: { ...e.defensiveRoles }, modules: Object.fromEntries(Object.entries(e.modules).map(([k, v]) => [k, round(v, 9)])) };
-  return { version: FAMILIARITY_VERSION, units: { liveTenths: 'décimas de juego vivo', positions: 'décimas', offensiveRoles: 'décimas', defensiveRoles: 'décimas', modules: 'crédito ponderado por operación real (1 por jugador–operación repartido entre sus módulos)' }, operations: { ...this.fam.exp.operations }, players };
+  return { version: FAMILIARITY_VERSION, units: { liveTenths: 'décimas de segundo de juego vivo (600 = 1 minuto; 24.000 = 40 minutos)', positions: 'décimas de segundo de juego vivo', offensiveRoles: 'décimas de segundo de juego vivo', defensiveRoles: 'décimas de segundo de juego vivo', modules: 'crédito ponderado por operación real (1 por jugador–operación repartido entre sus módulos); no son horas ni posesiones' }, operations: { ...this.fam.exp.operations }, players };
 };
 
 // Informe único para el export y el esencial (solo lectura): identidad, política, resumen de aplicación y exposición. La instantánea completa de conocimiento vive UNA vez en la entrada.

@@ -1,7 +1,8 @@
 // Conocimiento táctico en el laboratorio (MOTOR-18 §11.1, §11.3, §10.2): copia de aprendizaje explícita, apartado «Conocimiento» de la ficha, Polivalencia en «Desarrollo», edición masiva +1/+3/+5 con vista previa y
 // deshacer exacto, resumen del quinteto en Preparación y consulta de familiaridad en el partido. Las fichas de referencia (EQ01–EQ12) y los planes naturales/históricos NO se tocan: todo vive en una COPIA identificada.
 import { h, table, storage, fmt } from './dom.js';
-import { store } from './store.js';
+import { store, isLearningScenario } from './store.js';
+import { adoptLearningParams } from '../learning/index.js';
 import { paramsOf, makeLearningCopy, teamStatesOf, planKnowledgeEdit, applyKnowledgeEdit, undoKnowledgeEdit, quintetSummary, chosenModules, serializeLearning, deserializeLearning, newLedgers, NEUTRAL_NOTE, categoryOf, levelOf, idsOf, keyOf } from './learning-model.js';
 import { isLegacyNeutral, BLOCK_FIELD, DOMAINS } from '../knowledge/model.js';
 
@@ -9,6 +10,7 @@ const KEY = 'beM.m18.learning.v1';
 const DOMAIN_LABEL = { position: 'Posición', offensiveRole: 'Rol ofensivo', defensiveRole: 'Rol defensivo', tactic: 'Módulo táctico' };
 const k = { sel: new Set(), domain: 'tactic', ids: new Set(), delta: 3, mode: 'level', preview: null, filter: 'all', msg: '' };
 export const kui = k;
+store.persistLearningHook = () => persistLearning(); // MOTOR-18B (R01): la edición de Preparación sobre la copia activa se persiste con su registro
 
 export const learnParams = () => paramsOf(store.profile, store.baseNew);
 export const profileHasFamiliarity = () => !!store.profile?.familiarity;
@@ -18,10 +20,26 @@ export function persistLearning() {
   const ls = storage(); if (!ls) return;
   try { if (store.learn) ls.setItem(KEY, serializeLearning(store.learn)); else ls.removeItem(KEY); } catch { /* sin almacenamiento */ }
 }
+// Secuencia persistida de instancias de laboratorio (distinta de las semillas deportivas): dos copias nuevas nunca comparten identidad aunque partan de los mismos equipos y día.
+const INSTANCE_KEY = 'beM.lab.instanceSeq.v1'; let memInstanceSeq = 0;
+export function nextInstanceSeq() {
+  const ls = storage(); let stored = 0;
+  try { stored = Number(ls?.getItem(INSTANCE_KEY) ?? 0) || 0; } catch { /* sin almacenamiento */ }
+  memInstanceSeq = Math.max(memInstanceSeq, stored) + 1;
+  try { ls?.setItem(INSTANCE_KEY, String(memInstanceSeq)); } catch { /* sin almacenamiento */ }
+  return memInstanceSeq;
+}
+// Adopta la versión de aprendizaje de los parámetros efectivos sin reconstruir el equipo ni borrar sus acumuladores (conversión técnica de metadatos, anotada en el estado).
+export function adoptLearning() {
+  const L = store.learn; const P = learnParams(); if (!L || !P) return false; let any = false;
+  for (const [tid, st] of Object.entries(L.states)) { const r = adoptLearningParams(st, P); if (r.adopted) { L.states[tid] = r.state; any = true; } }
+  if (any) persistLearning();
+  return any;
+}
 export function activateCopy(copy, { day = copy.day } = {}) {
   const P = learnParams(); const { states, errors } = teamStatesOf(copy.input, P, day);
   if (errors.length) throw new Error(`la copia no es coherente: ${errors.slice(0, 3).map((e) => `${e.team} ${e.path}: ${e.message}`).join('; ')}`);
-  store.learn = { copy, day, states, ledgers: newLedgers(copy.input), undo: [], editUndo: [] };
+  store.learn = { copy, day, states, ledgers: newLedgers(copy.input), undo: [], editUndo: [], sessionSeq: 1, matchSeq: 0 };
   syncScenario(); persistLearning();
 }
 // La copia activa es la entrada del próximo partido (mismo mecanismo que las copias de contraste): no sustituye `store.edit`.
@@ -31,7 +49,7 @@ export function syncScenario() {
 }
 export function restoreLearning() {
   const ls = storage(); if (!ls || store.learn) return;
-  try { const raw = ls.getItem(KEY); if (!raw) return; store.learn = deserializeLearning(raw); store.learn.editUndo = []; syncScenario(); } catch { /* copia ilegible: se ignora, no se borra nada */ }
+  try { const raw = ls.getItem(KEY); if (!raw) return; store.learn = deserializeLearning(raw); store.learn.editUndo = []; adoptLearning(); syncScenario(); } catch { /* copia ilegible: se ignora, no se borra nada */ }
 }
 export const copyPlayer = (pid) => store.learn?.copy.input.teams.flatMap((t) => t.players).find((p) => p.id === pid) ?? null;
 export const copyTeam = (tid) => store.learn?.copy.input.teams.find((t) => t.id === tid) ?? null;
@@ -42,7 +60,7 @@ export function learningCopyCard(ctx) {
   const make = (mode) => {
     if (!P) { k.msg = 'El perfil no incluye la familiaridad táctica.'; return rerender(); }
     if (L && !confirm('Ya hay una copia de aprendizaje activa. ¿Sustituirla por una nueva (la anterior y su registro de aplicaciones se descartan)?')) return;
-    try { const src = store.scenario?.learning ? store.edit : (store.scenario?.input ?? store.edit); const copy = makeLearningCopy(src, store.baseNew.familiarity ? store.baseNew : store.profile, { mode, day: 0 }); activateCopy(copy); k.msg = `Copia activa para el próximo partido: ${copy.id} (${copy.changes.length} diferencias listadas). Tus fichas y planes no se han modificado.`; }
+    try { const src = isLearningScenario() ? store.edit : (store.scenario?.input ?? store.edit); const copy = makeLearningCopy(src, store.baseNew.familiarity ? store.baseNew : store.profile, { mode, day: 0, instanceSeq: nextInstanceSeq() }); activateCopy(copy); k.msg = `Copia activa para el próximo partido: ${copy.id} (${copy.changes.length} diferencias listadas). Tus fichas y planes no se han modificado.`; }
     catch (e) { k.msg = `No se pudo crear la copia: ${e.message}`; }
     rerender();
   };
@@ -53,8 +71,8 @@ export function learningCopyCard(ctx) {
     h('div', { class: 'row' },
       h('button', { class: 'btn', type: 'button', id: 'learn-make', onclick: () => make('synthetic') }, 'Crear copia de aprendizaje MOTOR-18'),
       h('button', { class: 'btn secondary', type: 'button', id: 'learn-make-mastered', onclick: () => make('mastered') }, 'Copia «todo dominado» (62 niveles a 30)'),
-      L && !store.scenario?.learning ? h('button', { class: 'btn secondary', type: 'button', id: 'learn-use', onclick: () => { syncScenario(); k.msg = 'La copia vuelve a ser la entrada del próximo partido.'; rerender(); } }, 'Usar la copia en el próximo partido') : null,
-      L ? h('button', { class: 'btn secondary', type: 'button', id: 'learn-drop', onclick: () => { store.learn = null; if (store.scenario?.learning) store.scenario = null; persistLearning(); k.msg = 'Copia descartada.'; rerender(); } }, 'Descartar la copia') : null),
+      L && !isLearningScenario() ? h('button', { class: 'btn secondary', type: 'button', id: 'learn-use', onclick: () => { syncScenario(); k.msg = 'La copia vuelve a ser la entrada del próximo partido.'; rerender(); } }, 'Usar la copia en el próximo partido') : null,
+      L ? h('button', { class: 'btn secondary', type: 'button', id: 'learn-drop', onclick: () => { store.learn = null; if (isLearningScenario()) store.scenario = null; persistLearning(); k.msg = 'Copia descartada.'; rerender(); } }, 'Descartar la copia') : null),
     h('p', { class: 'small muted' }, 'La copia sintética es una fábrica de historia (posición habitual 30, relacionadas 18, otras 8; rol habitual 26…; plan cargado 24; módulos 12; Polivalencia y enseñanza 16): no es una inferencia ni una regla de aprendizaje, y cambiar después el libro no modifica ningún nivel. «Todo dominado» es una copia de laboratorio, no una historia observada.'),
     L ? h('p', { class: 'small' }, h('strong', {}, `Copia activa: ${L.copy.id}`), ` · ${L.copy.mode === 'mastered' ? 'todo dominado' : 'historia sintética SEM18'} · día de aprendizaje ${Object.values(L.states).map((s) => `${s.instanceId}: ${s.day}`).join(' · ')}`) : h('p', { class: 'small muted' }, 'No hay copia de aprendizaje activa.'),
     L ? h('details', {}, h('summary', {}, `Diferencias listadas (${L.copy.changes.length}) y recibo de la fábrica`), table(['Sujeto', 'Campo', 'Antes', 'Después'], L.copy.changes.slice(0, 40).map((c) => [c.jugador ?? c.equipo, c.campo, String(c.antes), String(c.despues)])),
@@ -134,7 +152,8 @@ export function quintetCard(team, profile, { title = 'Familiaridad del quinteto'
 }
 export function prepFamiliarity(team, idx, profile) {
   const ct = copyTeam(team.id); if (!ct) return null;
-  // el plan mostrado es el de Preparación (store.edit); el conocimiento es el de la copia
+  // MOTOR-18B (R01): con la copia activa, Preparación edita ESA copia: el plan y los jugadores mostrados salen de la misma entrada. Si la entrada editada es otra (copia de contraste), se avisa.
+  if (ct !== team) return h('p', { class: 'small muted', id: `fam-quintet-${idx}` }, 'La copia de aprendizaje activa no es la entrada que estás editando: su familiaridad se muestra en el partido.');
   const view = { plan: team.plan, players: ct.players };
   return h('div', {}, quintetCard(view, profile, { title: 'Familiaridad del quinteto actual (copia de aprendizaje)', id: `fam-quintet-${idx}` }),
     h('p', { class: 'small muted' }, 'Al asignar otra posición o rol se muestra su familiaridad en la tabla; nunca se bloquea por la posición nominal ni se promete un porcentaje. Las capacidades pertinentes son las de la ficha y no cambian con el conocimiento.'));

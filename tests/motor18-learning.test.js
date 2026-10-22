@@ -94,7 +94,7 @@ test('sesión: reparto 60/40, parte sin foco sin redistribuir, presupuesto diari
 
 test('partido §8.3: presupuesto min(min/40,1) por dominio repartido, sin exposición táctica no hay dosis táctica, tope diario', () => {
   const st = teamOf({ a: uniformBlock(12), b: uniformBlock(12) });
-  const x = { match: { source_id: 'M' }, players: { a: { liveTenths: 20 * 600, positions: { PG: 3, SG: 1 }, offensiveRoles: { O01: 1 }, defensiveRoles: { D01: 1 }, modules: { ORG02: 1, 'FAM:handoff': 3 } }, b: { liveTenths: 40 * 600, positions: { C: 1 }, offensiveRoles: {}, defensiveRoles: {}, modules: {} } } };
+  const x = { complete: true, match: { source_id: 'M' }, players: { a: { liveTenths: 20 * 600, positions: { PG: 3, SG: 1 }, offensiveRoles: { O01: 1 }, defensiveRoles: { D01: 1 }, modules: { ORG02: 1, 'FAM:handoff': 3 } }, b: { liveTenths: 40 * 600, positions: { C: 1 }, offensiveRoles: {}, defensiveRoles: {}, modules: {} } } };
   const pr = L.proposeFromMatch(st, x, P); const ta = Object.fromEntries(pr.players.a.targets.map((t) => [t.key, t.dose]));
   near(ta['position:PG'], 0.5 * 0.75); near(ta['position:SG'], 0.5 * 0.25); near(ta['tactic:ORG02'], 0.5 * 0.25); near(ta['tactic:FAM:handoff'], 0.5 * 0.75);
   assert.deepEqual(pr.players.b.targets.map((t) => t.key), ['position:C']); near(pr.players.b.targets[0].dose, 1);
@@ -119,7 +119,7 @@ test('aplicación idempotente: duplicado, huella previa, deshacer exacto, restau
 
 test('jugador sin historial (legacy-neutral) no aprende y se indica; la clave de fuente incorpora la instancia', () => {
   const st = teamOf({ a: uniformBlock(12), old: L.emptyLegacyBlock() });
-  const x = { match: { source_id: 'M' }, players: { old: { liveTenths: 24000, positions: { PG: 1 }, offensiveRoles: {}, defensiveRoles: {}, modules: {} } } };
+  const x = { complete: true, match: { source_id: 'M' }, players: { old: { liveTenths: 24000, positions: { PG: 1 }, offensiveRoles: {}, defensiveRoles: {}, modules: {} } } };
   const pr = L.proposeFromMatch(st, x, P); assert.match(pr.players.old.skipped, /sin historial/); assert.equal(pr.players.old.targets.length, 0);
   assert.equal(L.sourceIdOf({ source: 'lote', batch: 'LOT-1', attempt: 'M000001-A1', teamInstance: 'EQ01#2' }), 'lote|LOT-1|M000001-A1|EQ01#2');
   assert.equal(L.proposeFromMatch(st, { players: {} }, P).ok, false); // sin identificador global de fuente

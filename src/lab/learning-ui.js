@@ -2,19 +2,19 @@
 // fuera del núcleo deportivo. Previsualizar, reabrir, analizar, descargar o ejecutar un lote NO aplican aprendizaje: aplicar es siempre una acción explícita aparte.
 import { h, table, fmt } from './dom.js';
 import { store } from './store.js';
-import { proposeFromSession, proposeFromMatch, applyProposal, undoApplication, sourceIdOf } from '../learning/index.js';
-import { learnParams, persistLearning, syncScenario, copyTeam, kui } from './knowledge-ui.js';
-import { writeStateToInput, IDLE_TEXT, NEUTRAL_NOTE } from './learning-model.js';
+import { proposeFromSession, proposeFromMatch, applyProposal, undoApplication, sourceIdOf, exposureFromResult } from '../learning/index.js';
+import { learnParams, persistLearning, syncScenario, copyTeam, kui, adoptLearning } from './knowledge-ui.js';
+import { writeStateToInput, IDLE_TEXT, NEUTRAL_NOTE, nextSessionSeq, sessionSourceId } from './learning-model.js';
 import { idsOf, keyOf, categoryOf } from '../knowledge/model.js';
 
-const S = { team: null, players: new Set(), collective: '', focus: {}, hours: 1, share: 0.6, idle: 0, preview: null, msg: '', seq: 1, ok: true };
+const S = { team: null, players: new Set(), collective: '', focus: {}, hours: 1, share: 0.6, idle: 0, preview: null, msg: '', ok: true };
 const DOMAINS_IND = [['position', 'Posición'], ['offensiveRole', 'Rol ofensivo'], ['defensiveRole', 'Rol defensivo']];
 const pct = (x) => `${fmt(x * 100, 0)} %`;
 
 function commit(tid, prop) {
-  const L = store.learn; const r = applyProposal(L.states[tid], L.ledgers[tid], prop);
+  const L = store.learn; const r = applyProposal(L.states[tid], L.ledgers[tid], prop, learnParams()); // MOTOR-18B: la propuesta queda ligada a la huella de los parámetros efectivos
   if (!r.ok) return r;
-  L.states[tid] = r.state; L.ledgers[tid] = r.ledger; writeStateToInput(L.copy.input, r.state); L.undo.push({ team: tid, application: r.receipt.application, source_id: prop.source_id });
+  L.states[tid] = r.state; L.ledgers[tid] = r.ledger; L.sessionSeq = Math.max(L.sessionSeq ?? 1, nextSessionSeq(L)); writeStateToInput(L.copy.input, r.state); L.undo.push({ team: tid, application: r.receipt.application, source_id: prop.source_id });
   syncScenario(); persistLearning(); return r;
 }
 
@@ -33,13 +33,15 @@ export function sessionCard(ctx) {
   const { rerender } = ctx; const L = store.learn; const P = learnParams();
   const head = h('h3', { style: 'margin-top:0' }, 'Laboratorio de conocimiento: sesión de entrenamiento y desuso');
   if (!L || !P) return h('div', { class: 'card', id: 'learn-session' }, head, h('p', { class: 'small muted' }, 'Necesita una copia de aprendizaje activa.'), h('p', { class: 'small muted' }, IDLE_TEXT));
+  adoptLearning(); // versión de aprendizaje de los parámetros efectivos, sin reconstruir el equipo
   const tids = L.copy.input.teams.map((t) => t.id); S.team = tids.includes(S.team) ? S.team : tids[0];
   const team = copyTeam(S.team); const state = L.states[S.team]; const L2 = P.learning.session; const mods = idsOf('tactic', P);
   const indOptions = DOMAINS_IND.flatMap(([d, lab]) => idsOf(d, P).map((id) => [keyOf(d, id), `${lab} ${id}`]));
-  const sessionSpec = (onlyIdle) => ({ source_id: `lab|${L.copy.id}|${S.team}|S${S.seq}`, idleDays: S.idle, onlyIdle, collectiveFocus: S.collective || null, shares: { collective: S.share, individual: 1 - S.share },
+  const sessionSpec = (onlyIdle) => ({ source_id: sessionSourceId(L.copy.id, S.team, nextSessionSeq(L)), // MOTOR-18B (R03): secuencia persistida por copia; tras recargar sigue el siguiente número libre
+     idleDays: S.idle, onlyIdle, collectiveFocus: S.collective || null, shares: { collective: S.share, individual: 1 - S.share },
     players: Object.fromEntries([...S.players].map((pid) => { const f = S.focus[pid]; const [domain, id] = f ? [f.slice(0, f.indexOf(':')), f.slice(f.indexOf(':') + 1)] : [null, null]; return [pid, { hours: S.hours, individualFocus: f ? { domain, id } : null }]; })) });
   const preview = (onlyIdle) => { const r = proposeFromSession(state, sessionSpec(onlyIdle), P); S.preview = r; S.previewOnlyIdle = onlyIdle; S.msg = r.ok ? '' : `Propuesta rechazada: ${r.errors.map((e) => `${e.path}: ${e.message}`).join('; ')}`; rerender(); };
-  const apply = () => { const r = commit(S.team, S.preview); S.msg = r.ok ? `Aplicado (${r.receipt.application}). Se puede deshacer.` : `No aplicado: ${r.reason}`; if (r.ok) { S.preview = null; S.seq += 1; } rerender(); };
+  const apply = () => { const r = commit(S.team, S.preview); S.msg = r.ok ? `Aplicado (${r.receipt.application}). Se puede deshacer.` : `No aplicado: ${r.reason}`; if (r.ok) S.preview = null; rerender(); };
   const lastUndo = L.undo[L.undo.length - 1];
   const undo = () => { const u = L.undo[L.undo.length - 1]; const r = undoApplication(L.states[u.team], L.ledgers[u.team], u.application); if (!r.ok) { S.msg = `No se pudo deshacer: ${r.reason}`; return rerender(); } L.states[u.team] = r.state; L.ledgers[u.team] = r.ledger; writeStateToInput(L.copy.input, r.state); L.undo.pop(); syncScenario(); persistLearning(); S.preview = null; S.msg = `Deshecho ${u.application}: conocimiento, peak, reloj y presupuestos restaurados (la aplicación queda como revertida y su rastro se conserva).`; rerender(); };
   const card = h('div', { class: 'card', id: 'learn-session' }, head, h('p', { class: 'small muted' }, IDLE_TEXT),
@@ -74,13 +76,19 @@ export function sessionCard(ctx) {
 
 // ---------------------------------------------------------------- tras un partido terminado: aprendizaje propuesto y aplicación SEPARADA
 const MS = { open: false, msg: '' };
-const matchSource = (res) => `lab|${store.learn.copy.id}|seed${res.meta.rng.initialSeed}|d${res.meta.rng.draws}|e${res.events.length}`;
+// MOTOR-18B (R03): identidad estable del encuentro (copia + secuencia de encuentro de la copia), asignada al prepararlo y guardada en la entrada congelada. Ni la semilla, ni el marcador, ni los sorteos ni el número de hechos identifican un partido.
+const matchSource = (res) => res.input?.labMatchId ?? null;
 export function postMatchLearningCard(res, repaint) {
   const L = store.learn; const P = learnParams(); const fam = res.diagnostics?.familiarity;
-  if (!L || !P || !fam?.exposure || res.status !== 'finished') return null;
+  if (!L || !P || !fam?.exposure || res.status !== 'finished') return null; // el aprendizaje de partido solo se propone desde un encuentro TERMINADO
   const same = res.input.teams.every((t) => L.copy.input.teams.some((x) => x.id === t.id));
   if (!same) return null;
-  const src = matchSource(res); const exposure = { match: { source_id: src }, players: fam.exposure.players };
+  adoptLearning();
+  const src = matchSource(res);
+  if (!src) return h('div', { class: 'card', id: 'post-learning' }, h('h3', { style: 'margin-top:0' }, 'Aprendizaje propuesto por este partido'), h('p', { class: 'pill warn' }, 'Este partido no se preparó desde la copia de aprendizaje (no tiene identidad de encuentro de la copia): no se propone aprendizaje. Prepara y juega un partido con la copia activa.'));
+  const made = exposureFromResult(res, { source_id: src }); // productor común: comprueba el estado y marca la exposición como completa
+  if (!made.ok) return h('div', { class: 'card', id: 'post-learning' }, h('p', { class: 'pill bad' }, made.errors.map((e) => e.message).join('; ')));
+  const exposure = made.exposure;
   const props = L.copy.input.teams.map((t) => ({ tid: t.id, prop: proposeFromMatch(L.states[t.id], exposure, P, { source_id: sourceIdOf({ source: src, teamInstance: t.id }), day: L.states[t.id].day }) }));
   const done = (tid) => L.ledgers[tid].applications.some((a) => a.status === 'aplicada' && a.source_id.startsWith(src) && a.teamInstance === tid);
   const applyAll = () => { const out = props.map(({ tid, prop }) => (done(tid) ? `${tid}: ya aplicado` : (prop.ok ? (() => { const r = commit(tid, prop); return r.ok ? `${tid}: aplicado (${r.receipt.application})` : `${tid}: ${r.reason}`; })() : `${tid}: ${prop.errors?.map((e) => e.message).join('; ')}`))); MS.msg = out.join(' · '); repaint(); };

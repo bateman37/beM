@@ -13,8 +13,8 @@ import { orgAt } from '../analysis/orgat.js';
 
 export const ESSENTIAL_LEVEL = 'world-essential';
 export const ESSENTIAL_SCHEMA = 'beM-essential-record/1';
-export const ESSENTIAL_VERSION = 'ESE-MOTOR18-R1'; // MOTOR-18: añade `familiarity` (instantánea de conocimiento, resumen de aplicación y exposición final); ESE-MOTOR17B-R1 es idéntico en `defense_org` y se reconoce como tal
-const DEFENSE_ORG_CURRENT = new Set(['ESE-MOTOR17B-R1', 'ESE-MOTOR18-R1']);
+export const ESSENTIAL_VERSION = 'ESE-MOTOR18B-R1'; // MOTOR-18: añade `familiarity` (instantánea de conocimiento, resumen de aplicación y exposición final); ESE-MOTOR17B-R1 es idéntico en `defense_org` y se reconoce como tal
+const DEFENSE_ORG_CURRENT = new Set(['ESE-MOTOR17B-R1', 'ESE-MOTOR18-R1', 'ESE-MOTOR18B-R1']);
 // MOTOR-17B (B17-01): `defense_org` es el CÓDIGO de la organización efectiva (antes: objeto de intención de intervención); ESE-MOTOR17-R1 añadió `team_index` por jugador; ESE-MOTOR15-R1 no lo incluía
 // Semántica explícita de los campos de organización defensiva (MOTOR-17B §4). Un archivo con otra versión NO equivale: ver `legacyDefenseOrg`.
 export const DEFENSE_ORG_SEMANTICS = {
