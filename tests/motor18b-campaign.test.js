@@ -39,3 +39,8 @@ test('L18B: los doce casos puros de la tabla se cumplen y la curva efectiva es l
   assert.equal(res.rows.length, 12); for (const r of res.rows) for (const [k, v] of Object.entries(r.checks)) assert.ok(v, `${r.id} · ${k}`);
   assert.deepEqual(res.player_curve.points.map((p) => [p.level, p.factor]), [[1, 0.25], [8, 0.5], [16, 1], [24, 2], [30, 2.5]]);
 });
+
+test('módulos no observados en MOTOR-18 (ORG04–06, COB04, DIS03–06): correspondencia con contexto fijo, sin exposición natural', async () => {
+  const { fixedContextModules } = await import('../scripts/m18b-l18b-table.js'); const { loadData } = await import('../scripts/node-data.js'); const res = fixedContextModules(loadData().profile);
+  assert.deepEqual(res.rows.map((r) => r.module), ['ORG04', 'ORG05', 'ORG06', 'COB04', 'DIS03', 'DIS04', 'DIS05', 'DIS06']); for (const r of res.rows) assert.ok(r.ok, r.module); assert.match(res.note, /no es exposición natural/);
+});

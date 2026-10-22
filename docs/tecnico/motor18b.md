@@ -65,11 +65,13 @@ La diferencia de 0,045 entre estimar sin cobertura determinada y resolver con el
 | Esencial | `ESE-MOTOR18B-R1` (lector del anterior conservado) |
 | Entrada / export | `beM-match-input/7` · `beM-match-export/10` (cambios aditivos: `input.labMatchId`, unidades, alcance de la estimación) |
 
+La proyección de auditoría `PRJ-MOTOR18-R2` y el lector de esenciales anteriores no cambian de semántica (leen notas de familiaridad que ahora incluyen al bloqueador, el alcance y lo omitido, de forma aditiva).
+
 Un export de MOTOR-18 se **consulta** como histórico y no se reproduce con el motor 18B (la versión del motor lo distingue); un guardado de MOTOR-18 no se continúa en silencio. Los perfiles anteriores no se sustituyen: la biblioteca conserva su activo y ofrece activar la base 18B de forma explícita.
 
 ## 6 · Pruebas y evidencia
 
-Regresiones agrupadas por propiedad en `tests/motor18b.test.js` (L18B-01…12, falla con el caso anterior y pasa con la corrección) y `tests/motor18b-campaign.test.js`; las expectativas de versión de MOTOR-18 se actualizaron con su motivo; `tests/fixtures/baseline-motor17b.json` conserva la huella anterior (`previousMotor18Sha256`) y documenta que solo cambia la cadena de identidad del perfil. L18 permanece como tabla **histórica** (perfil de MOTOR-18); L18B es nueva (`scripts/m18b-l18b-table.js`).
+Regresiones agrupadas por propiedad en `tests/motor18b.test.js` (L18B-01…12, falla con el caso anterior y pasa con la corrección) y `tests/motor18b-campaign.test.js` (congelación de la campaña, tabla L18B y correspondencias de los módulos no observados ORG04–06, COB04 y DIS03–06 con **contexto fijo**, sin afirmar que sean exposición natural); las expectativas de versión de MOTOR-18 se actualizaron con su motivo; `tests/fixtures/baseline-motor17b.json` conserva la huella anterior (`previousMotor18Sha256`) y documenta que solo cambia la cadena de identidad del perfil. L18 permanece como tabla **histórica** (perfil de MOTOR-18); L18B es nueva (`scripts/m18b-l18b-table.js`).
 
 Campaña `MOTOR18B-CIERRE-20261022`: 36 ejecuciones planificadas (A 12 + B 16 + C 6 + D 2; no son 36 observaciones independientes), agenda y perfiles congelados antes de simular. Cifras reales, estado de cada comprobación y límites: [`evidencia-motor18b/RESUMEN-OPERATIVO.md`](evidencia-motor18b/RESUMEN-OPERATIVO.md) (generado desde los archivos finales). Recorrido real de Chromium: [`evidencia-motor18b/ui/recorrido-navegador.json`](evidencia-motor18b/ui/recorrido-navegador.json). Paquetes finales fuera de Git en `out/motor18b/entrega-final/` (`scripts/m18b-package.py`, `scripts/m18b-verify-delivery.py`).
 

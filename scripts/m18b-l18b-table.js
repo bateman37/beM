@@ -105,6 +105,17 @@ export function buildL18B(p18, p18b) {
   return { id: 'L18B', study: 'MOTOR18B', learningVersion: P.learningVersion, famVersion: P.version, player_curve: P.learning.factors.player, rows, all_ok: rows.every((r) => r.ok), polivalencia: pad };
 }
 
+// §11.3: módulos que los seis diagnósticos de MOTOR-18 no observaron (ORG04, ORG05, ORG06, COB04, DIS03…DIS06): sus correspondencias se comprueban con CONTEXTOS FIJOS (sin forzar su aparición en partidos y sin afirmar que equivalgan a exposición natural).
+export function fixedContextModules(p18b) {
+  const P = p18b.familiarity; const players = loadData().players; const out = []; const W = P.tacticContextWeights.organized;
+  const make = (patch0, patch1) => { const input = buildMatchInput(p18b, players, { seed: 7 }); for (const t of input.teams) for (const p of t.players) p.knowledge = K.allMastered(P, 0); Object.assign(input.teams[0].plan, patch0 ?? {}); Object.assign(input.teams[1].plan, patch1 ?? {}); const m = createMatch(input, p18b, { detail: 'full' }); m.init(); m.startPossession({ team: 0, entry: 'deadFront', shotClock: 240 }); return m; };
+  const ex = { team: 0, origin: 'PRUEBA', kind: 'organized', actor: 'EQ01-J01', zone: 'rim', exec: 'dribble', passer: null, icpt: 'EQ02-J01', defend: 'EQ02-J01', moved: false, offContact: null, holder: 'EQ01-J01', family: 'pick_and_roll', inter: 5, coverageExpected: true };
+  for (const org of ['ORG04', 'ORG05', 'ORG06']) { const m = make({}, org === 'ORG06' ? { defense: org, target: 'EQ01-J01', targetAlt: 'EQ01-J03' } : { defense: org }); m.refreshEffectiveOrg?.(1); const c = m.famQualityContext(ex, true); const hit = c.dfn.find((x) => x.id === org); out.push({ module: org, kind: 'organización efectiva', context: c.ctx, weight_in_context_normalized: hit?.w ?? null, raw_weight: W.defense.organization, side: 'defensa', ok: !!hit && c.ctx === 'organized' }); }
+  { const m = make(); const [d1, d2] = m.onCourt(1); m.poss.coverage = { cob: 'COB04', D1: d1, D2: d2, inter: 5, pair: {}, info: {} }; const c = m.famQualityContext({ ...ex, defend: d1, icpt: d1 }, true); const hit = c.dfn.find((x) => x.id === 'COB04'); out.push({ module: 'COB04', kind: 'cobertura ejecutada', context: c.ctx, weight_in_context_normalized: hit?.w ?? null, raw_weight: W.defense.coverage, side: 'defensa', defenders_in_participants: [d1, d2].every((id) => c.defP.includes(id)), ok: !!hit && [d1, d2].every((id) => c.defP.includes(id)) }); }
+  for (const dis of ['DIS03', 'DIS04', 'DIS05', 'DIS06']) { const m = make({ disposition: dis }); const c = m.famQualityContext(ex, true); const hit = c.atk.find((x) => x.id === dis); out.push({ module: dis, kind: 'disposición', context: c.ctx, weight_in_context_normalized: hit?.w ?? null, raw_weight: W.attack.disposition, side: 'ataque', ok: !!hit && c.ctx === 'organized' }); }
+  return { note: 'correspondencia módulo → contexto con entradas FIJAS; no es exposición natural ni afirma que estos módulos aparezcan en un partido', rows: out, all_ok: out.every((r) => r.ok) };
+}
+
 const csvCell = (v) => { const s = typeof v === 'object' ? JSON.stringify(v) : String(v ?? ''); return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
 if (process.argv[1] && process.argv[1].endsWith('m18b-l18b-table.js')) {
   const arg = (k, d) => { const a = process.argv.find((x) => x.startsWith(`--${k}=`)); return a ? a.slice(k.length + 3) : d; };
@@ -120,7 +131,7 @@ if (process.argv[1] && process.argv[1].endsWith('m18b-l18b-table.js')) {
       `G(P24)/G(P8) = ${res.polivalencia.ratios.G24_over_G8.toFixed(6)} (cociente 4 en la dosis eficaz); ganancia(P24)/ganancia(P8) = ${res.polivalencia.ratios.gain24_over_gain8.toFixed(6)} (≈ 3,901764: no es multiplicar por cuatro la ganancia absoluta).`, '',
       'Dosis eficaz necesaria de K12 a K18 (h-eq al objetivo, factores constantes): ' + res.polivalencia.dose_to_reach_K12_to_K18.map((d) => `P${d.polivalencia} = ${d.dosis_efectiva_necesaria_h_eq.toFixed(6)}`).join(' · ') + '. Comparación controlada de producto; no es un calendario real.', '',
       'Las cifras de la curva son semillas SEM18B autorizadas por el encargo: no son calibración empírica.', ''];
-    writeFileSync(join(dir, 'L18B.md'), md.join('\n'));
+    writeFileSync(join(dir, 'L18B.md'), md.join('\n')); writeFileSync(join(dir, 'modulos-no-observados.json'), JSON.stringify(fixedContextModules(profile), null, 1));
   }
   console.log(JSON.stringify({ all_ok: res.all_ok, rows: res.rows.map((r) => [r.id, r.ok]) })); process.exit(res.all_ok ? 0 : 1);
 }

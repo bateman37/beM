@@ -1,0 +1,353 @@
+{
+ "schema": "beM-audit-summary/1",
+ "result_id": "AUDR-2df620f7",
+ "audit_version": "AUD-MOTOR13-R1",
+ "auditorias": 32,
+ "por_resultado": {
+  "conforme": 17,
+  "inconcluso": 14,
+  "no_evaluado": 1
+ },
+ "identidad": {
+  "study": "MOTOR18B-CIERRE-20261022",
+  "code_version": "M18B@f8112953bcb4",
+  "engine": "beM-motor-0.18.1-MOTOR18B"
+ },
+ "por_auditoria": [
+  {
+   "id": "AUD01",
+   "resultado": "conforme",
+   "exposicion": "observada",
+   "registro": "suficiente",
+   "impl": "ejecutable"
+  },
+  {
+   "id": "AUD02",
+   "resultado": "conforme",
+   "exposicion": "observada",
+   "registro": "suficiente",
+   "impl": "ejecutable"
+  },
+  {
+   "id": "AUD03",
+   "resultado": "conforme",
+   "exposicion": "observada",
+   "registro": "suficiente",
+   "impl": "parcial"
+  },
+  {
+   "id": "AUD04",
+   "resultado": "conforme",
+   "exposicion": "observada",
+   "registro": "suficiente",
+   "impl": "ejecutable"
+  },
+  {
+   "id": "AUD05",
+   "resultado": "conforme",
+   "exposicion": "observada",
+   "registro": "suficiente",
+   "impl": "ejecutable"
+  },
+  {
+   "id": "AUD06",
+   "resultado": "inconcluso",
+   "exposicion": "observada",
+   "registro": "parcial",
+   "impl": "parcial"
+  },
+  {
+   "id": "AUD07",
+   "resultado": "conforme",
+   "exposicion": "observada",
+   "registro": "suficiente",
+   "impl": "parcial"
+  },
+  {
+   "id": "AUD08",
+   "resultado": "inconcluso",
+   "exposicion": "observada",
+   "registro": "suficiente",
+   "impl": "parcial"
+  },
+  {
+   "id": "AUD09",
+   "resultado": "inconcluso",
+   "exposicion": "insuficiente",
+   "registro": "suficiente",
+   "impl": "parcial"
+  },
+  {
+   "id": "AUD10",
+   "resultado": "inconcluso",
+   "exposicion": "observada",
+   "registro": "suficiente",
+   "impl": "parcial"
+  },
+  {
+   "id": "AUD11",
+   "resultado": "conforme",
+   "exposicion": "observada",
+   "registro": "suficiente",
+   "impl": "ejecutable"
+  },
+  {
+   "id": "AUD12",
+   "resultado": "inconcluso",
+   "exposicion": "observada",
+   "registro": "parcial",
+   "impl": "parcial"
+  },
+  {
+   "id": "AUD13",
+   "resultado": "conforme",
+   "exposicion": "observada",
+   "registro": "suficiente",
+   "impl": "ejecutable"
+  },
+  {
+   "id": "AUD14",
+   "resultado": "inconcluso",
+   "exposicion": "observada",
+   "registro": "suficiente",
+   "impl": "parcial"
+  },
+  {
+   "id": "AUD15",
+   "resultado": "inconcluso",
+   "exposicion": "observada",
+   "registro": "suficiente",
+   "impl": "parcial"
+  },
+  {
+   "id": "AUD16",
+   "resultado": "inconcluso",
+   "exposicion": "observada",
+   "registro": "suficiente",
+   "impl": "parcial"
+  },
+  {
+   "id": "AUD17",
+   "resultado": "conforme",
+   "exposicion": "observada",
+   "registro": "suficiente",
+   "impl": "ejecutable"
+  },
+  {
+   "id": "AUD18",
+   "resultado": "inconcluso",
+   "exposicion": "observada",
+   "registro": "suficiente",
+   "impl": "parcial"
+  },
+  {
+   "id": "AUD19",
+   "resultado": "conforme",
+   "exposicion": "observada",
+   "registro": "suficiente",
+   "impl": "parcial"
+  },
+  {
+   "id": "AUD20",
+   "resultado": "conforme",
+   "exposicion": "observada",
+   "registro": "suficiente",
+   "impl": "parcial"
+  },
+  {
+   "id": "AUD21",
+   "resultado": "inconcluso",
+   "exposicion": "observada",
+   "registro": "suficiente",
+   "impl": "parcial"
+  },
+  {
+   "id": "AUD22",
+   "resultado": "conforme",
+   "exposicion": "observada",
+   "registro": "suficiente",
+   "impl": "ejecutable"
+  },
+  {
+   "id": "AUD23",
+   "resultado": "inconcluso",
+   "exposicion": "observada",
+   "registro": "parcial",
+   "impl": "parcial"
+  },
+  {
+   "id": "AUD24",
+   "resultado": "inconcluso",
+   "exposicion": "observada",
+   "registro": "suficiente",
+   "impl": "parcial"
+  },
+  {
+   "id": "AUD25",
+   "resultado": "conforme",
+   "exposicion": "observada",
+   "registro": "suficiente",
+   "impl": "ejecutable"
+  },
+  {
+   "id": "AUD26",
+   "resultado": "conforme",
+   "exposicion": "observada",
+   "registro": "suficiente",
+   "impl": "ejecutable"
+  },
+  {
+   "id": "AUD27",
+   "resultado": "conforme",
+   "exposicion": "observada",
+   "registro": "suficiente",
+   "impl": "ejecutable"
+  },
+  {
+   "id": "AUD28",
+   "resultado": "conforme",
+   "exposicion": "observada",
+   "registro": "suficiente",
+   "impl": "ejecutable"
+  },
+  {
+   "id": "AUD29",
+   "resultado": "no_evaluado",
+   "exposicion": "no observada",
+   "registro": "no registrado",
+   "impl": "ejecutable"
+  },
+  {
+   "id": "AUD30",
+   "resultado": "inconcluso",
+   "exposicion": "insuficiente",
+   "registro": "suficiente",
+   "impl": "ejecutable"
+  },
+  {
+   "id": "AUD31",
+   "resultado": "inconcluso",
+   "exposicion": "observada",
+   "registro": "suficiente",
+   "impl": "ejecutable"
+  },
+  {
+   "id": "AUD32",
+   "resultado": "conforme",
+   "exposicion": "observada",
+   "registro": "suficiente",
+   "impl": "ejecutable"
+  }
+ ],
+ "partidos": 6,
+ "fuentes": [
+  {
+   "kind": "lote",
+   "id": "LOT-01b112a7"
+  },
+  {
+   "kind": "lote",
+   "id": "LOT-4566394b"
+  },
+  {
+   "kind": "lote",
+   "id": "LOT-155013ff"
+  },
+  {
+   "kind": "lote",
+   "id": "LOT-fbc6eac0"
+  },
+  {
+   "kind": "lote",
+   "id": "LOT-5456e058"
+  },
+  {
+   "kind": "lote",
+   "id": "LOT-6b80b9a1"
+  }
+ ],
+ "aud05": {
+  "capacidadesDeclaradas": 32,
+  "declaradasComoTerminoDeRecetaDelPerfil": 29,
+  "declaradasEnOtrasTablasDelPerfil": [
+   "FIS06",
+   "MEN06",
+   "MEN07"
+  ],
+  "capacidadesObservadasEnCalculos": 32,
+  "capacidadesConSalidaPertinenteContrastada": 32,
+  "capacidadesConSalidaExacta": 32,
+  "capacidadesConContrasteAproximado": 0,
+  "capacidadesConContrastePendiente": 0,
+  "pendientesDeContraste": [],
+  "sinExposicionEnLaEvidencia": [],
+  "observadasSinEntradasDeReceta": [],
+  "filasDeContraste": 768,
+  "filasConSalidaPertinente": 768,
+  "filasConSalidaInexacta": 0,
+  "filasConBaseQueNoCoincide": 0,
+  "consumidoresPorCapacidad": {
+   "TEC01": "tiro",
+   "TEC02": "tiro",
+   "TEC03": "tiro",
+   "TEC04": "tiro",
+   "TEC05": "tiro",
+   "TEC06": "tiro",
+   "TEC07": "mezcla:transicion | calidad | control | suelto",
+   "TEC08": "control",
+   "TEC09": "control",
+   "TEC10": "calidad",
+   "TEC11": "calidad | control",
+   "TEC12": "calidad | control",
+   "TEC13": "control | tiro | calidad",
+   "TEC14": "control",
+   "TEC15": "tapon",
+   "TEC16": "calidad",
+   "TEC17": "rebote",
+   "TEC18": "rebote",
+   "FIS01": "mezcla:transicion",
+   "FIS02": "calidad | mezcla:transicion | suelto",
+   "FIS03": "calidad | control",
+   "FIS04": "rebote | calidad | tiro | control",
+   "FIS05": "rebote | tiro | tapon",
+   "FIS06": "gasto",
+   "FIS07": "tiro | calidad | control",
+   "MEN01": "calidad",
+   "MEN02": "seleccion | aceptacion",
+   "MEN03": "seleccion | aceptacion",
+   "MEN04": "rebote | calidad | control | mezcla:transicion",
+   "MEN05": "control | tiro",
+   "MEN06": "consistencia",
+   "MEN07": "presion"
+  },
+  "contextosDeSensibilidad": 256,
+  "alcance": "contraste REPRESENTATIVO de cálculo fijo (hasta ocho contextos reales por capacidad, +1/+3/+5) sobre las funciones de producción; no es un efecto en un marcador ni acredita todas las combinaciones de tarea, estado y participante"
+ },
+ "aud11": {
+  "tiros": 710,
+  "desajustes": 0,
+  "efectiva": {
+   "ORG02": 54,
+   "ORG01": 359,
+   "ORG03": 297
+  },
+  "clasificacion": {
+   "alternativa_reglada_acreditada": 0,
+   "orden_aplicada_acreditada": 0,
+   "sin_explicacion": 0,
+   "no_clasificable": 0,
+   "sin_clasificar_por_proyeccion_anterior": 0
+  },
+  "motivos": {},
+  "ejemplos": {},
+  "criterio": "alternativa explicada solo si coinciden organización efectiva, alternativa configurada vigente y hecho causal de activación; una etiqueta aislada no basta; una orden pendiente o rechazada no explica"
+ },
+ "capacidades_contraste": {
+  "proyeccion": "PRJ-MOTOR18-R2",
+  "dependencias_de_la_operacion": "MOTOR-18: cada fila recalcula TODAS las entradas de la operación alimentadas por la capacidad y el jugador incrementados (columna dependencias); un contraste con proyección anterior a PRJ-MOTOR18-R1 no es comparable",
+  "filas_con_dependencias": 21,
+  "filas": 768,
+  "filas_con_salida_pertinente": 768,
+  "contextos_por_capacidad_max": 8
+ }
+}
