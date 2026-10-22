@@ -16,10 +16,10 @@ writeFileSync(join(OUT, 'identidad-casos.json'), JSON.stringify(identity, null, 
 
 const sec = (L) => ({ learning: { states: L.states }, registry: { ledgers: L.ledgers }, sequences: { sessionSeq: L.sessionSeq, matchSeq: L.matchSeq, undo: L.undo }, fingerprints: Object.fromEntries(Object.entries(L.states).map(([t, s]) => [t, Core.teamFingerprint(s)])) });
 const t3 = R.states.T18C_03; const copySnap = (c) => ({ copy_id: c.copy.id, ...sec(c), full_snapshot_sha256: sha(JSON.stringify(c)) });
-const t4 = R.states.T18C_04;
+const t4 = R.states.T18C_04; const wrap = (x) => ({ learning: { states: x.learning }, registry: { ledgers: x.registry }, sequences: x.sequences, fingerprints: x.fingerprints });
 const states = { schema: 'beM-m18c-estados-y-recibos/1', note: 'Estado de aprendizaje (`learning`), registro de aplicaciones (`registry`) y secuencias (`sequences`) por separado. La huella de cada equipo es `teamFingerprint(state)` de src/learning/team.js y puede recalcularse desde `learning.states[equipo]`.',
   'T18C-03': { copyA: { before: copySnap(t3.copyA_before), after: copySnap(t3.copyA_after) }, copyB: { before: copySnap(t3.copyB_before), after: copySnap(t3.copyB_after) }, stale_handler: R.stale },
-  'T18C-04': { before: t4.before, after_apply: t4.after_apply, after_undo: t4.after_undo, observed: { first: { message: R.ok4.first.message, changed_entries: R.ok4.first.changed }, repeat: { message: R.ok4.repeatMessage, unchanged: R.ok4.repeatUnchanged, core: R.ok4.coreRejectsDuplicate }, restored: R.ok4.restored, undo: R.ok4.undo, reapply_enabled: R.ok4.reapplyEnabled } },
+  'T18C-04': { before: wrap(t4.before), after_apply: wrap(t4.after_apply), after_undo: { fingerprints: t4.after_undo.fingerprints, registry: t4.after_undo.registry }, observed: { first: { message: R.ok4.first.message, changed_entries: R.ok4.first.changed }, repeat: { message: R.ok4.repeatMessage, unchanged: R.ok4.repeatUnchanged, core: R.ok4.coreRejectsDuplicate }, restored: R.ok4.restored, undo: R.ok4.undo, reapply_enabled: R.ok4.reapplyEnabled } },
   'T18C-02': { foreign: R.foreign, malformed: R.malformed } };
 writeFileSync(join(OUT, 'estados-y-recibos.json'), JSON.stringify(states));
 
