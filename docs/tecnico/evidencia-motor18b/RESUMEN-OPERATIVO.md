@@ -65,7 +65,7 @@ Estado: aportado. AUD01–32: {"conforme":17,"inconcluso":14,"no_evaluado":1} (n
 |---|---|
 | Suite completa (`npm test`) | comprobado por Claude: 275/275 sobre `415ae2b709ca9f220da90a70edc1cd3b554b542c` |
 | `npm run data:check` | comprobado por Claude |
-| Comprobación documental | no ejecutado |
+| Comprobación documental | comprobado por Claude |
 | Recorrido de Chromium (Preparación efectiva, entrenar–recargar–entrenar, continuidad, descargas) | comprobado por Claude: 24/24 pasos, consola 0, red 0 |
 | Descarga real del encuentro y del análisis por bytes | comprobado por Claude (beM-MOTOR02-20261016-EQ01-EQ02.json 17567169 B sha d099bb61116f · LEARN18-S-EQ01-EQ02-d0-I) |
 | Otros navegadores, Node 24, tandas de 100/200, rendimiento masivo | **no ejecutado** |
@@ -73,7 +73,7 @@ Estado: aportado. AUD01–32: {"conforme":17,"inconcluso":14,"no_evaluado":1} (n
 
 ## 10 · Coste observado (casos ejecutados; no es un benchmark)
 
-Ejecuciones: 35; tiempo de ejecución por lote entre 705.2959899999998 y 3991.6596290000016 ms (esenciales ~1 s; diagnósticos ~3–4 s); registro de entrada/entorno en `00-congelacion.json`. No se extrapola a cien o doscientos partidos.
+Ejecuciones: 35; tiempo de ejecución por lote entre 705 y 3992 ms (Node v22.22.0, 4 CPU, concurrencia 4 en esenciales y 2 en diagnósticos; modo de registro «world-essential» y «diagnostic») (esenciales ~1 s; diagnósticos ~3–4 s); registro de entrada/entorno en `00-congelacion.json`. No se extrapola a cien o doscientos partidos.
 
 ## 11 · No cerrado por esta entrega
 
