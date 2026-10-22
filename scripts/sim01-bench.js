@@ -31,7 +31,7 @@ const { profile, players } = loadData(); const tData = now();
 const ctx = makeContext(profile); const teams = referenceTeamMap(profile, players); const ctxJSON = contextToJSON(ctx); const tCtx = now();
 const agenda = buildAgenda({ master: SIM_MASTER_SEED }); const agendaFp = fpString(JSON.stringify(agenda));
 const WARM_PAIRS = [['EQ01', 'EQ02'], ['EQ03', 'EQ03'], ['EQ05', 'EQ09'], ['EQ10', 'EQ07'], ['EQ12', 'EQ04'], ['EQ08', 'EQ06']];
-const warm = Array.from({ length: 12 }, (_, i) => ({ n: -(i + 1), id: `WARM-${i + 1}`, a: WARM_PAIRS[i % 6][0], b: WARM_PAIRS[i % 6][1], seed: 11 + i }));
+const WARM_N = Number(arg('warm', 12)); const warm = Array.from({ length: WARM_N }, (_, i) => ({ n: -(i + 1), id: `WARM-${i + 1}`, a: WARM_PAIRS[i % 6][0], b: WARM_PAIRS[i % 6][1], seed: 11 + i }));
 
 const pct = (arr, p) => { const s = arr.slice().sort((a, b) => a - b); return s[Math.min(s.length - 1, Math.floor(p * s.length))]; };
 async function execute(run, pool, startInfo) {

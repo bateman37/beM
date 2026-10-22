@@ -2,6 +2,13 @@
 
 Registro breve de entregas. Una entrada por entrega; las más recientes primero.
 
+## SIM-MOTOR-01 — Generador estadístico por tramos y medición de 1.000 partidos — 2026-10-22
+
+- **Nuevo modelo de resolución** `beM-sim-segment` (`src/sim/`, resultado `beM-sim-match/1`, perfil `SEM-SIM01-20261022`): generador por tramos con flujos agregados y materialización cronológica (faltas, bonus, exclusión a mitad de tramo, prórrogas), 32 capacidades y controles tácticos que alteran magnitudes antes del sorteo, 18 conciliaciones SIM, perfil editable con procedencia (heredada · derivada · SEM-SIM01) y adaptador de la entrada del detallado. No llama al resolutor detallado.
+- **Laboratorio**: pantalla inicial con **Motor detallado** y **Motor ultrarrápido**, cabecera con modelo y versión, «Cambiar de motor», estado separado por modelo; pantalla SIM con Partido, Parámetros y Lote (agenda de 1.000 en Web Workers).
+- **Medición real** B01/B02/B03 (1.000 partidos, agenda congelada 132×7+76): {{MEDICION}}. Paquetes y recibo fuera de Git en `out/sim-motor01/entrega-final/`.
+- Pruebas `S01-01…10`; suite completa {{SUITE}}; recorrido de Chromium 26/26 (consola 0, red 0). Referencia del detallado intacta (83–98, 6.684 sorteos; 176 archivos deportivos idénticos). Aplicación `SIM-MOTOR-01`; motor detallado, perfil y export sin cambio. **Pendiente de Dennis.** Ver [`docs/tecnico/sim-motor01.md`](docs/tecnico/sim-motor01.md).
+
 ## MOTOR-18C — Identidad del aprendizaje del laboratorio — 2026-10-22
 
 - **C18-01 (REV18B-01):** «ya aplicado» se decide por igualdad exacta de la fuente completa (`<copia>|M<n>|<equipo>`), equipo y recibo vigente; M10/M11/M100 ya no bloquean M1 (antes `startsWith`).

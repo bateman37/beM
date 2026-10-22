@@ -1,6 +1,6 @@
 # Estado del proyecto
 
-Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANGELOG.md)). Última actualización: 2026-10-22, entrega MOTOR-18C (sobre MOTOR-18/18B, ya fusionadas en `main` con la PR #19).
+Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANGELOG.md)). Última actualización: 2026-10-22, entrega SIM-MOTOR-01 (sobre MOTOR-18C, ya fusionada en `main` con la PR #20).
 
 ## Qué hay realmente en el repositorio
 
@@ -8,6 +8,16 @@ Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANG
 - **Diseño funcional del motor y del primer laboratorio**, organizado por temas en [`motor/`](motor/README.md) (34 capítulos). Es **especificación**: está *definida*, no implementada.
 - **Copia original congelada** del funcional unificado y **exportado completo vigente** generado: ver [`historico/`](historico/README.md) y [`exportados/`](exportados/README.md).
 - **Utilidades documentales** en `scripts/docs/` (Python 3, librería estándar).
+
+## SIM-MOTOR-01 (ejecutado; generador estadístico por tramos y medición de 1.000 partidos; pendiente de Dennis)
+
+- **Qué es**: un segundo modelo de resolución, **independiente del detallado** (`src/sim/`, `beM-sim-segment`, resultado `beM-sim-match/1`, perfil `SEM-SIM01-20261022`), que genera partidos completos con flujos agregados por tramos (≤120 s; 30 s en la ventana final) y materializa sus registros con faltas, bonus, exclusión a mitad de tramo y prórrogas. Alimentado por los mismos jugadores y planes (EQ01–EQ12) mediante un adaptador; 32 capacidades y controles tácticos que alteran magnitudes antes del sorteo; 18 conciliaciones SIM. Detalle: [`tecnico/sim-motor01.md`](tecnico/sim-motor01.md) · [recorrido manual](prompts/SIM-MOTOR-01-recorrido-manual.md) · [pendientes](tecnico/sim-motor01-pendientes.md) · [evidencia](tecnico/evidencia-sim-motor01/RESUMEN.md).
+- **Laboratorio**: al abrirlo aparece el selector **Motor detallado / Motor ultrarrápido** (ninguno se activa por migración silenciosa; «Cambiar de motor»; estado separado por modelo). La pantalla SIM tiene Partido (planes, semilla, acta, mapa por zonas, familias, quintetos, evolución, repetición y descargas), Parámetros (perfil editable con procedencia) y Lote (agenda de 1.000 en Web Workers).
+- **Git**: la PR #20 (MOTOR-18C) ya estaba fusionada (`606c33b`); la rama `claude/busy-edison-b1fmnc` se reinició desde `main` y SIM-MOTOR-01 es una PR independiente, sin fusionar.
+- **Versiones**: aplicación `SIM-MOTOR-01`; motor detallado `0.18.1-MOTOR18B`, `SEM-MOTOR18B-20261022`, entrada `/7` y export `/10` **sin cambio** (176 archivos deportivos de `src/` y `data/` idénticos; referencia 83–98 y 6.684 sorteos antes y después).
+- **Medición real** (1.000 partidos, agenda `132×7+76`, semilla maestra 20261022): {{MEDICION}}
+- **Comprobado por Claude**: pruebas `S01-01…10` ({{SIM_TESTS}}), suite completa {{SUITE}}, `data:check`, comprobador documental, recorrido de Chromium (26 pasos, consola 0, red 0, descargas por sus bytes), 3.000 ejecuciones válidas con 18 conciliaciones, igualdad B01 = B02 = B03 por caso. **Pendiente de Dennis**: [recorrido manual](prompts/SIM-MOTOR-01-recorrido-manual.md). **No ejecutado**: otros navegadores, Node 24, comparación estadística con el detallado, calibración.
+- **No cerrado**: calidad estadística (no validada), el objetivo de rendimiento en frío, lotes persistentes y todo lo de SIM-MOTOR-02 (ver pendientes). **Siguiente**: análisis de ChatGPT sobre los paquetes y decisión de Dennis; después SIM-MOTOR-02.
 
 ## MOTOR-18C (ejecutado; identidad del aprendizaje del laboratorio; pendiente de Dennis)
 

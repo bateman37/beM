@@ -17,7 +17,9 @@ const mkAb = (a) => ({ TEC01: a.TEC01, TEC02: a.TEC02, TEC03: a.TEC03, TEC04: a.
 
 
 export class SimMatch {
+  static created = 0; static finished = 0; // contadores de proceso para el informe de pruebas (no afectan al deporte)
   constructor(input, ctx, opts = {}) {
+    SimMatch.created += 1;
     this.ctx = ctx; const { sp, T } = ctx; this.S = sp.v; this.T = T;
     this.norm = normalizeInput(input, sp, T);
     this.opts = opts; this.rng = new Rng(this.norm.seed);

@@ -105,7 +105,7 @@ P._closePeriod = function closePeriod() {
     this.teamFouls.push(this.teamFouls[this.period - 2].slice()); // las faltas de equipo del último periodo se arrastran a la prórroga
     this._push({ ty: 'period', start: this.period }); return true;
   }
-  this.status = 'finished'; this._push({ ty: 'end' }); return false;
+  this.status = 'finished'; SimMatch.finished += 1; this._push({ ty: 'end' }); return false;
 };
 
 // ---------------------------------------------------------------------------------------------------------------------- avance, consulta y fin

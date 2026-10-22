@@ -25,6 +25,7 @@ Cómo está **realmente implementado** el proyecto. Distingue lo documentado de 
 - **MOTOR-18** (familiaridad táctica, roles, posiciones y aprendizaje: conocimiento por jugador, ajuste único en calidad y avance presionado, aprendizaje/retención, laboratorio de sesión, corrección de sensibilidad y AUD11): [`motor18.md`](motor18.md).
 - **MOTOR-18B** (cierre de familiaridad y curva de Polivalencia: Preparación sobre la copia activa, bloqueadores en los participantes, secuencias persistidas, exposición terminada, sesiones válidas, estimación coherente, unidades y curva lineal por tramos de cinco anclajes): [`motor18b.md`](motor18b.md).
 - **MOTOR-18C** (identidad del aprendizaje del laboratorio: el encuentro aplicado se identifica por igualdad exacta de la fuente completa y un resultado solo se aplica a su propia copia): [`motor18c.md`](motor18c.md).
+- **SIM-MOTOR-01** (generador estadístico por tramos «motor ultrarrápido», selector de motor del laboratorio y medición de 1.000 partidos): [`sim-motor01.md`](sim-motor01.md) · [pendientes](sim-motor01-pendientes.md).
 - **Utilidades documentales** (`scripts/docs/`): descritas en [`../exportados/README.md`](../exportados/README.md).
 
 ## Pendiente (no existe aún)

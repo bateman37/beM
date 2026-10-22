@@ -15,6 +15,7 @@ import { SimPool } from '../src/sim/pool.js';
 import { Rng } from '../src/sim/rng.js';
 import { uniformBlock } from './m18-helpers.js';
 
+test.after(() => console.log(`SIM01_PARTIDOS ${JSON.stringify({ creados: SimMatch.created, completos: SimMatch.finished })}`));
 const { profile, players } = data; const ctx = makeContext(profile); const teamMap = referenceTeamMap(profile, players);
 const inputOf = (a, b, seed, over) => { const i = buildReferenceInput(profile, players, a, b, { seed }); over?.(i); return i; };
 const play = (input, opts) => { const m = new SimMatch(input, ctx, opts); m.finish(); return m; };
