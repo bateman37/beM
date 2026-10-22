@@ -1,0 +1,224 @@
+{
+ "app": "SIM-MOTOR-01",
+ "ok": true,
+ "steps": [
+  {
+   "n": 1,
+   "route": "http://127.0.0.1:5199/",
+   "action": "arranque: pantalla inicial con dos accesos y cabecera de modelo",
+   "ok": true,
+   "obs": "Selecciona un motor"
+  },
+  {
+   "n": 2,
+   "route": "detallado",
+   "action": "acceso directo al motor detallado con todas sus pestañas",
+   "ok": true,
+   "obs": "Motor detallado · beM-motor-0.18.1-MOTOR18B · beM-match-export/10 · Plantillas,Preparación,Partido,Análisis,Lotes,Auditorías,Panel de ajustes,Cobertura,Cierre,Cambiar de motor"
+  },
+  {
+   "n": 3,
+   "route": "detallado",
+   "action": "la pestaña Plantillas del detallado se pinta",
+   "ok": true,
+   "obs": "Plantillas y fichas Edición para el próximo encuentro. El acta de un encuentro "
+  },
+  {
+   "n": 4,
+   "route": "selector",
+   "action": "«Cambiar de motor» vuelve al selector",
+   "ok": true,
+   "obs": "selector visible"
+  },
+  {
+   "n": 5,
+   "route": "SIM",
+   "action": "cabecera persistente con modelo+versión y el perfil SIM aparte",
+   "ok": true,
+   "obs": "Motor ultrarrápido · beM-sim-segment 0.1.0-SIMMOTOR01 · resultado beM-sim-match/1 | perfil SIM SEM-SIM01-20261022 · huella 150d47b11f7ab5be · datos POB-MOTOR11-R1"
+  },
+  {
+   "n": 6,
+   "route": "SIM · Partido",
+   "action": "dos plantillas iguales EQ03–EQ03 con identidades de instancia distintas",
+   "ok": true,
+   "obs": "EQ03 y EQ03_B"
+  },
+  {
+   "n": 7,
+   "route": "SIM · Partido",
+   "action": "generar un partido completo con conciliación correcta",
+   "ok": true,
+   "obs": "EQ03 84 – 72 EQ03_B"
+  },
+  {
+   "n": 8,
+   "route": "SIM · vistas",
+   "action": "vista zonas",
+   "ok": true,
+   "obs": "Partido con el motor ultrarrápido Generador estadístico por"
+  },
+  {
+   "n": 9,
+   "route": "SIM · vistas",
+   "action": "vista familias",
+   "ok": true,
+   "obs": "Partido con el motor ultrarrápido Generador estadístico por"
+  },
+  {
+   "n": 10,
+   "route": "SIM · vistas",
+   "action": "vista quintetos",
+   "ok": true,
+   "obs": "Partido con el motor ultrarrápido Generador estadístico por"
+  },
+  {
+   "n": 11,
+   "route": "SIM · vistas",
+   "action": "vista evolucion",
+   "ok": true,
+   "obs": "Partido con el motor ultrarrápido Generador estadístico por"
+  },
+  {
+   "n": 12,
+   "route": "SIM · vistas",
+   "action": "vista concilia",
+   "ok": true,
+   "obs": "Partido con el motor ultrarrápido Generador estadístico por"
+  },
+  {
+   "n": 13,
+   "route": "SIM · vistas",
+   "action": "vista acta",
+   "ok": true,
+   "obs": "Partido con el motor ultrarrápido Generador estadístico por"
+  },
+  {
+   "n": 14,
+   "route": "SIM · repetición",
+   "action": "repetir la misma entrada da la misma huella",
+   "ok": true,
+   "obs": "Repetición con la misma entrada: huella idéntica (5ce556609e3b81ee)"
+  },
+  {
+   "n": 15,
+   "route": "SIM · plan",
+   "action": "cambiar un control (presión total del equipo A) sin tocar la referencia detallada: otra huella",
+   "ok": true,
+   "obs": "5ce556609e3b81ee → 1d844be19e1d5e05"
+  },
+  {
+   "n": 16,
+   "route": "SIM · Parámetros",
+   "action": "fila SEM-SIM01 visible con procedencia",
+   "ok": true,
+   "obs": "Perfil SIM (tabla editable por secciones) SEM-SIM01-20261022 · huella 150d47b11f7ab5be · 484 filas "
+  },
+  {
+   "n": 17,
+   "route": "SIM · Parámetros",
+   "action": "editar el valor, validar la candidata y ver la diferencia frente a la base",
+   "ok": true,
+   "obs": "Candidata válida (1 fila(s) editada(s))."
+  },
+  {
+   "n": 18,
+   "route": "SIM · Parámetros",
+   "action": "un valor no válido se rechaza con causa y no modifica la candidata",
+   "ok": true,
+   "obs": "rechazo localizado"
+  },
+  {
+   "n": 19,
+   "route": "SIM · Parámetros",
+   "action": "descarga REAL de la candidata (bytes y SHA-256)",
+   "ok": true,
+   "obs": "beM-sim-candidata-5045f98389bbdeb2.json 339 B"
+  },
+  {
+   "n": 20,
+   "route": "SIM · Partido",
+   "action": "con la candidata el partido cambia (perfil SIM distinto, misma semilla)",
+   "ok": true,
+   "obs": "5ce556609e3b81ee → 660b268763d94330"
+  },
+  {
+   "n": 21,
+   "route": "SIM · descargas",
+   "action": "descargas REALES de entrada/perfil, resultado y conciliación; el resultado conserva la huella",
+   "ok": true,
+   "obs": "beM-sim-candidata-5045f98389bbdeb2.json 339 B · beM-sim-entrada-314159.json 190873 B · beM-sim-resultado-314159.json 114789 B · beM-sim-conciliacion-314159.json 3609 B"
+  },
+  {
+   "n": 22,
+   "route": "SIM · Lote",
+   "action": "la agenda arranca y la interfaz sigue respondiendo (progreso visible)",
+   "ok": true,
+   "obs": "0/1000 terminados · válidos 0 · fallidos/inválidos 0 · 0.0 s · — partidos/s · 4 worker(s)"
+  },
+  {
+   "n": 23,
+   "route": "SIM · Lote",
+   "action": "agenda de 1.000 terminada: todos válidos",
+   "ok": true,
+   "obs": "1000/1000 terminados · válidos 1000 · fallidos/inválidos 0 · 9.3 s · 108 partidos/s · 4 worker(s) (9.4 s en el navegador)"
+  },
+  {
+   "n": 24,
+   "route": "SIM · Lote",
+   "action": "descarga REAL del resumen del lote",
+   "ok": true,
+   "obs": "beM-sim-lote-resumen-150d47b11f7ab5be.json 1015822 B"
+  },
+  {
+   "n": 25,
+   "route": "SIM",
+   "action": "volver al selector y reabrir SIM conserva el estado propio (resumen del último lote)",
+   "ok": true,
+   "obs": "1000/1000 terminados · válidos 1000 · fallidos/inválidos 0 · 9.3 s · 108 partidos/s · 4 worker(s)"
+  },
+  {
+   "n": 26,
+   "route": "consola/red",
+   "action": "sin errores de consola ni de red",
+   "ok": true,
+   "obs": "consola 0 · red 0 "
+  }
+ ],
+ "pasos": 26,
+ "consoleErrors": [],
+ "netErrors": [],
+ "descargas": [
+  {
+   "what": "candidata",
+   "name": "beM-sim-candidata-5045f98389bbdeb2.json",
+   "bytes": 339,
+   "sha256": "b3888b1aae261f060c6f7b2f6c5fa9339cc51d85e40a585e246458bd6e0b5a4c"
+  },
+  {
+   "what": "entrada+perfil",
+   "name": "beM-sim-entrada-314159.json",
+   "bytes": 190873,
+   "sha256": "964e578c5b6f3be947e8e6305669376151e5f138b0bbf6bfdc3e95e98d8cfe76"
+  },
+  {
+   "what": "resultado",
+   "name": "beM-sim-resultado-314159.json",
+   "bytes": 114789,
+   "sha256": "7f352d06395069e0b0e42592746fd720ea96b5681ed31c610da5b046652977f1"
+  },
+  {
+   "what": "conciliación",
+   "name": "beM-sim-conciliacion-314159.json",
+   "bytes": 3609,
+   "sha256": "084a8c883de4fa41e8b5fd79f1debfa8f5879df78ab1c19ea25f4400f3172629"
+  },
+  {
+   "what": "resumen del lote",
+   "name": "beM-sim-lote-resumen-150d47b11f7ab5be.json",
+   "bytes": 1015822,
+   "sha256": "dfd2033245a11657817b260a229f13e0235e254f56c83388fdfe11cdcd6b3d06"
+  }
+ ],
+ "nota": "Chromium automatizado (Playwright). No es la aceptación manual de Dennis; no cubre otros navegadores."
+}
