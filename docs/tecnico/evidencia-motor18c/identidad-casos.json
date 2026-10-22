@@ -1,0 +1,1082 @@
+{
+ "schema": "beM-m18c-identidad-casos/1",
+ "note": "Una fila por caso y equipo. `expected_source` es la fuente completa esperada (<copia>|M<n>|<equipo>); `registered` = registro del equipo tras la acción (id, tipo, fuente, estado). Generado ejecutando los manejadores reales de la tarjeta posterior al partido (tests/m18c-fixture.js) sobre un DOM mínimo.",
+ "base": "d744e23d11738cd20203fd4fc2e87e9232cb1c9c",
+ "code_head": "d744e23d11738cd20203fd4fc2e87e9232cb1c9c",
+ "cases": [
+  {
+   "case": "T18C-01",
+   "sub": "M10 aplicado",
+   "result_copy": "LEARN18-S-EQ01-EQ02-d0-I100",
+   "active_copy": "LEARN18-S-EQ01-EQ02-d0-I100",
+   "match": "LEARN18-S-EQ01-EQ02-d0-I100|M10",
+   "team": "EQ01",
+   "expected_source": "LEARN18-S-EQ01-EQ02-d0-I100|M10|EQ01",
+   "registered": [
+    {
+     "id": "APL-1",
+     "kind": "aplicacion",
+     "source_id": "LEARN18-S-EQ01-EQ02-d0-I100|M10|EQ01",
+     "status": "aplicada"
+    }
+   ],
+   "action": "aplicar M10",
+   "accepted": true,
+   "reason": "EQ01: aplicado (APL-1) · EQ02: aplicado (APL-1)"
+  },
+  {
+   "case": "T18C-01",
+   "sub": "M10 aplicado",
+   "result_copy": "LEARN18-S-EQ01-EQ02-d0-I100",
+   "active_copy": "LEARN18-S-EQ01-EQ02-d0-I100",
+   "match": "LEARN18-S-EQ01-EQ02-d0-I100|M10",
+   "team": "EQ02",
+   "expected_source": "LEARN18-S-EQ01-EQ02-d0-I100|M10|EQ02",
+   "registered": [
+    {
+     "id": "APL-1",
+     "kind": "aplicacion",
+     "source_id": "LEARN18-S-EQ01-EQ02-d0-I100|M10|EQ02",
+     "status": "aplicada"
+    }
+   ],
+   "action": "aplicar M10",
+   "accepted": true,
+   "reason": "EQ01: aplicado (APL-1) · EQ02: aplicado (APL-1)"
+  },
+  {
+   "case": "T18C-01",
+   "sub": "M1 con M10 aplicado: botón",
+   "result_copy": "LEARN18-S-EQ01-EQ02-d0-I100",
+   "active_copy": "LEARN18-S-EQ01-EQ02-d0-I100",
+   "match": "LEARN18-S-EQ01-EQ02-d0-I100|M1",
+   "team": "EQ01",
+   "expected_source": "LEARN18-S-EQ01-EQ02-d0-I100|M1|EQ01",
+   "registered": [
+    {
+     "id": "APL-1",
+     "kind": "aplicacion",
+     "source_id": "LEARN18-S-EQ01-EQ02-d0-I100|M10|EQ01",
+     "status": "aplicada"
+    }
+   ],
+   "action": "consultar si M1 figura como aplicado",
+   "accepted": true,
+   "reason": "M1 no figura como aplicado: el botón está habilitado"
+  },
+  {
+   "case": "T18C-01",
+   "sub": "M1 con M10 aplicado: botón",
+   "result_copy": "LEARN18-S-EQ01-EQ02-d0-I100",
+   "active_copy": "LEARN18-S-EQ01-EQ02-d0-I100",
+   "match": "LEARN18-S-EQ01-EQ02-d0-I100|M1",
+   "team": "EQ02",
+   "expected_source": "LEARN18-S-EQ01-EQ02-d0-I100|M1|EQ02",
+   "registered": [
+    {
+     "id": "APL-1",
+     "kind": "aplicacion",
+     "source_id": "LEARN18-S-EQ01-EQ02-d0-I100|M10|EQ02",
+     "status": "aplicada"
+    }
+   ],
+   "action": "consultar si M1 figura como aplicado",
+   "accepted": true,
+   "reason": "M1 no figura como aplicado: el botón está habilitado"
+  },
+  {
+   "case": "T18C-01",
+   "sub": "M1 aplicado tras M10",
+   "result_copy": "LEARN18-S-EQ01-EQ02-d0-I100",
+   "active_copy": "LEARN18-S-EQ01-EQ02-d0-I100",
+   "match": "LEARN18-S-EQ01-EQ02-d0-I100|M1",
+   "team": "EQ01",
+   "expected_source": "LEARN18-S-EQ01-EQ02-d0-I100|M1|EQ01",
+   "registered": [
+    {
+     "id": "APL-1",
+     "kind": "aplicacion",
+     "source_id": "LEARN18-S-EQ01-EQ02-d0-I100|M10|EQ01",
+     "status": "aplicada"
+    },
+    {
+     "id": "APL-2",
+     "kind": "aplicacion",
+     "source_id": "LEARN18-S-EQ01-EQ02-d0-I100|M1|EQ01",
+     "status": "aplicada"
+    }
+   ],
+   "action": "aplicar M1",
+   "accepted": true,
+   "reason": "EQ01: aplicado (APL-2) · EQ02: aplicado (APL-2)"
+  },
+  {
+   "case": "T18C-01",
+   "sub": "M1 aplicado tras M10",
+   "result_copy": "LEARN18-S-EQ01-EQ02-d0-I100",
+   "active_copy": "LEARN18-S-EQ01-EQ02-d0-I100",
+   "match": "LEARN18-S-EQ01-EQ02-d0-I100|M1",
+   "team": "EQ02",
+   "expected_source": "LEARN18-S-EQ01-EQ02-d0-I100|M1|EQ02",
+   "registered": [
+    {
+     "id": "APL-1",
+     "kind": "aplicacion",
+     "source_id": "LEARN18-S-EQ01-EQ02-d0-I100|M10|EQ02",
+     "status": "aplicada"
+    },
+    {
+     "id": "APL-2",
+     "kind": "aplicacion",
+     "source_id": "LEARN18-S-EQ01-EQ02-d0-I100|M1|EQ02",
+     "status": "aplicada"
+    }
+   ],
+   "action": "aplicar M1",
+   "accepted": true,
+   "reason": "EQ01: aplicado (APL-2) · EQ02: aplicado (APL-2)"
+  },
+  {
+   "case": "T18C-01",
+   "sub": "M1 ya aplicado tras M10",
+   "result_copy": "LEARN18-S-EQ01-EQ02-d0-I100",
+   "active_copy": "LEARN18-S-EQ01-EQ02-d0-I100",
+   "match": "LEARN18-S-EQ01-EQ02-d0-I100|M1",
+   "team": "EQ01",
+   "expected_source": "LEARN18-S-EQ01-EQ02-d0-I100|M1|EQ01",
+   "registered": [
+    {
+     "id": "APL-1",
+     "kind": "aplicacion",
+     "source_id": "LEARN18-S-EQ01-EQ02-d0-I100|M10|EQ01",
+     "status": "aplicada"
+    },
+    {
+     "id": "APL-2",
+     "kind": "aplicacion",
+     "source_id": "LEARN18-S-EQ01-EQ02-d0-I100|M1|EQ01",
+     "status": "aplicada"
+    }
+   ],
+   "action": "repetir M1 (botón y manejador)",
+   "accepted": false,
+   "reason": "botón deshabilitado; manejador: EQ01: ya aplicado · EQ02: ya aplicado",
+   "state_unchanged": true
+  },
+  {
+   "case": "T18C-01",
+   "sub": "M1 ya aplicado tras M10",
+   "result_copy": "LEARN18-S-EQ01-EQ02-d0-I100",
+   "active_copy": "LEARN18-S-EQ01-EQ02-d0-I100",
+   "match": "LEARN18-S-EQ01-EQ02-d0-I100|M1",
+   "team": "EQ02",
+   "expected_source": "LEARN18-S-EQ01-EQ02-d0-I100|M1|EQ02",
+   "registered": [
+    {
+     "id": "APL-1",
+     "kind": "aplicacion",
+     "source_id": "LEARN18-S-EQ01-EQ02-d0-I100|M10|EQ02",
+     "status": "aplicada"
+    },
+    {
+     "id": "APL-2",
+     "kind": "aplicacion",
+     "source_id": "LEARN18-S-EQ01-EQ02-d0-I100|M1|EQ02",
+     "status": "aplicada"
+    }
+   ],
+   "action": "repetir M1 (botón y manejador)",
+   "accepted": false,
+   "reason": "botón deshabilitado; manejador: EQ01: ya aplicado · EQ02: ya aplicado",
+   "state_unchanged": true
+  },
+  {
+   "case": "T18C-01",
+   "sub": "equipo y recibo revertido",
+   "result_copy": "LEARN18-S-EQ01-EQ02-d0-I100",
+   "active_copy": "LEARN18-S-EQ01-EQ02-d0-I100",
+   "match": "LEARN18-S-EQ01-EQ02-d0-I100|M1",
+   "team": "EQ01",
+   "expected_source": "LEARN18-S-EQ01-EQ02-d0-I100|M1|EQ01",
+   "registered": [
+    {
+     "id": "APL-1",
+     "kind": "aplicacion",
+     "source_id": "LEARN18-S-EQ01-EQ02-d0-I100|M10|EQ01",
+     "status": "aplicada"
+    },
+    {
+     "id": "APL-2",
+     "kind": "aplicacion",
+     "source_id": "LEARN18-S-EQ01-EQ02-d0-I100|M1|EQ01",
+     "status": "aplicada"
+    }
+   ],
+   "action": "deshacer M1 de EQ02 y volver a aplicar",
+   "accepted": true,
+   "reason": "EQ01: ya aplicado · EQ02: aplicado (APL-4)"
+  },
+  {
+   "case": "T18C-01",
+   "sub": "equipo y recibo revertido",
+   "result_copy": "LEARN18-S-EQ01-EQ02-d0-I100",
+   "active_copy": "LEARN18-S-EQ01-EQ02-d0-I100",
+   "match": "LEARN18-S-EQ01-EQ02-d0-I100|M1",
+   "team": "EQ02",
+   "expected_source": "LEARN18-S-EQ01-EQ02-d0-I100|M1|EQ02",
+   "registered": [
+    {
+     "id": "APL-1",
+     "kind": "aplicacion",
+     "source_id": "LEARN18-S-EQ01-EQ02-d0-I100|M10|EQ02",
+     "status": "aplicada"
+    },
+    {
+     "id": "APL-2",
+     "kind": "aplicacion",
+     "source_id": "LEARN18-S-EQ01-EQ02-d0-I100|M1|EQ02",
+     "status": "revertida"
+    },
+    {
+     "id": "RST-3",
+     "kind": "restauracion",
+     "source_id": "LEARN18-S-EQ01-EQ02-d0-I100|M1|EQ02",
+     "status": "restauracion"
+    },
+    {
+     "id": "APL-4",
+     "kind": "aplicacion",
+     "source_id": "LEARN18-S-EQ01-EQ02-d0-I100|M1|EQ02",
+     "status": "aplicada"
+    }
+   ],
+   "action": "deshacer M1 de EQ02 y volver a aplicar",
+   "accepted": true,
+   "reason": "EQ01: ya aplicado · EQ02: aplicado (APL-4)"
+  },
+  {
+   "case": "T18C-01",
+   "sub": "M11 aplicado",
+   "result_copy": "LEARN18-S-EQ01-EQ02-d0-I101",
+   "active_copy": "LEARN18-S-EQ01-EQ02-d0-I101",
+   "match": "LEARN18-S-EQ01-EQ02-d0-I101|M11",
+   "team": "EQ01",
+   "expected_source": "LEARN18-S-EQ01-EQ02-d0-I101|M11|EQ01",
+   "registered": [
+    {
+     "id": "APL-1",
+     "kind": "aplicacion",
+     "source_id": "LEARN18-S-EQ01-EQ02-d0-I101|M11|EQ01",
+     "status": "aplicada"
+    }
+   ],
+   "action": "aplicar M11",
+   "accepted": true,
+   "reason": "EQ01: aplicado (APL-1) · EQ02: aplicado (APL-1)"
+  },
+  {
+   "case": "T18C-01",
+   "sub": "M11 aplicado",
+   "result_copy": "LEARN18-S-EQ01-EQ02-d0-I101",
+   "active_copy": "LEARN18-S-EQ01-EQ02-d0-I101",
+   "match": "LEARN18-S-EQ01-EQ02-d0-I101|M11",
+   "team": "EQ02",
+   "expected_source": "LEARN18-S-EQ01-EQ02-d0-I101|M11|EQ02",
+   "registered": [
+    {
+     "id": "APL-1",
+     "kind": "aplicacion",
+     "source_id": "LEARN18-S-EQ01-EQ02-d0-I101|M11|EQ02",
+     "status": "aplicada"
+    }
+   ],
+   "action": "aplicar M11",
+   "accepted": true,
+   "reason": "EQ01: aplicado (APL-1) · EQ02: aplicado (APL-1)"
+  },
+  {
+   "case": "T18C-01",
+   "sub": "M1 con M11 aplicado: botón",
+   "result_copy": "LEARN18-S-EQ01-EQ02-d0-I101",
+   "active_copy": "LEARN18-S-EQ01-EQ02-d0-I101",
+   "match": "LEARN18-S-EQ01-EQ02-d0-I101|M1",
+   "team": "EQ01",
+   "expected_source": "LEARN18-S-EQ01-EQ02-d0-I101|M1|EQ01",
+   "registered": [
+    {
+     "id": "APL-1",
+     "kind": "aplicacion",
+     "source_id": "LEARN18-S-EQ01-EQ02-d0-I101|M11|EQ01",
+     "status": "aplicada"
+    }
+   ],
+   "action": "consultar si M1 figura como aplicado",
+   "accepted": true,
+   "reason": "M1 no figura como aplicado: el botón está habilitado"
+  },
+  {
+   "case": "T18C-01",
+   "sub": "M1 con M11 aplicado: botón",
+   "result_copy": "LEARN18-S-EQ01-EQ02-d0-I101",
+   "active_copy": "LEARN18-S-EQ01-EQ02-d0-I101",
+   "match": "LEARN18-S-EQ01-EQ02-d0-I101|M1",
+   "team": "EQ02",
+   "expected_source": "LEARN18-S-EQ01-EQ02-d0-I101|M1|EQ02",
+   "registered": [
+    {
+     "id": "APL-1",
+     "kind": "aplicacion",
+     "source_id": "LEARN18-S-EQ01-EQ02-d0-I101|M11|EQ02",
+     "status": "aplicada"
+    }
+   ],
+   "action": "consultar si M1 figura como aplicado",
+   "accepted": true,
+   "reason": "M1 no figura como aplicado: el botón está habilitado"
+  },
+  {
+   "case": "T18C-01",
+   "sub": "M1 aplicado tras M11",
+   "result_copy": "LEARN18-S-EQ01-EQ02-d0-I101",
+   "active_copy": "LEARN18-S-EQ01-EQ02-d0-I101",
+   "match": "LEARN18-S-EQ01-EQ02-d0-I101|M1",
+   "team": "EQ01",
+   "expected_source": "LEARN18-S-EQ01-EQ02-d0-I101|M1|EQ01",
+   "registered": [
+    {
+     "id": "APL-1",
+     "kind": "aplicacion",
+     "source_id": "LEARN18-S-EQ01-EQ02-d0-I101|M11|EQ01",
+     "status": "aplicada"
+    },
+    {
+     "id": "APL-2",
+     "kind": "aplicacion",
+     "source_id": "LEARN18-S-EQ01-EQ02-d0-I101|M1|EQ01",
+     "status": "aplicada"
+    }
+   ],
+   "action": "aplicar M1",
+   "accepted": true,
+   "reason": "EQ01: aplicado (APL-2) · EQ02: aplicado (APL-2)"
+  },
+  {
+   "case": "T18C-01",
+   "sub": "M1 aplicado tras M11",
+   "result_copy": "LEARN18-S-EQ01-EQ02-d0-I101",
+   "active_copy": "LEARN18-S-EQ01-EQ02-d0-I101",
+   "match": "LEARN18-S-EQ01-EQ02-d0-I101|M1",
+   "team": "EQ02",
+   "expected_source": "LEARN18-S-EQ01-EQ02-d0-I101|M1|EQ02",
+   "registered": [
+    {
+     "id": "APL-1",
+     "kind": "aplicacion",
+     "source_id": "LEARN18-S-EQ01-EQ02-d0-I101|M11|EQ02",
+     "status": "aplicada"
+    },
+    {
+     "id": "APL-2",
+     "kind": "aplicacion",
+     "source_id": "LEARN18-S-EQ01-EQ02-d0-I101|M1|EQ02",
+     "status": "aplicada"
+    }
+   ],
+   "action": "aplicar M1",
+   "accepted": true,
+   "reason": "EQ01: aplicado (APL-2) · EQ02: aplicado (APL-2)"
+  },
+  {
+   "case": "T18C-01",
+   "sub": "M1 ya aplicado tras M11",
+   "result_copy": "LEARN18-S-EQ01-EQ02-d0-I101",
+   "active_copy": "LEARN18-S-EQ01-EQ02-d0-I101",
+   "match": "LEARN18-S-EQ01-EQ02-d0-I101|M1",
+   "team": "EQ01",
+   "expected_source": "LEARN18-S-EQ01-EQ02-d0-I101|M1|EQ01",
+   "registered": [
+    {
+     "id": "APL-1",
+     "kind": "aplicacion",
+     "source_id": "LEARN18-S-EQ01-EQ02-d0-I101|M11|EQ01",
+     "status": "aplicada"
+    },
+    {
+     "id": "APL-2",
+     "kind": "aplicacion",
+     "source_id": "LEARN18-S-EQ01-EQ02-d0-I101|M1|EQ01",
+     "status": "aplicada"
+    }
+   ],
+   "action": "repetir M1 (botón y manejador)",
+   "accepted": false,
+   "reason": "botón deshabilitado; manejador: EQ01: ya aplicado · EQ02: ya aplicado",
+   "state_unchanged": true
+  },
+  {
+   "case": "T18C-01",
+   "sub": "M1 ya aplicado tras M11",
+   "result_copy": "LEARN18-S-EQ01-EQ02-d0-I101",
+   "active_copy": "LEARN18-S-EQ01-EQ02-d0-I101",
+   "match": "LEARN18-S-EQ01-EQ02-d0-I101|M1",
+   "team": "EQ02",
+   "expected_source": "LEARN18-S-EQ01-EQ02-d0-I101|M1|EQ02",
+   "registered": [
+    {
+     "id": "APL-1",
+     "kind": "aplicacion",
+     "source_id": "LEARN18-S-EQ01-EQ02-d0-I101|M11|EQ02",
+     "status": "aplicada"
+    },
+    {
+     "id": "APL-2",
+     "kind": "aplicacion",
+     "source_id": "LEARN18-S-EQ01-EQ02-d0-I101|M1|EQ02",
+     "status": "aplicada"
+    }
+   ],
+   "action": "repetir M1 (botón y manejador)",
+   "accepted": false,
+   "reason": "botón deshabilitado; manejador: EQ01: ya aplicado · EQ02: ya aplicado",
+   "state_unchanged": true
+  },
+  {
+   "case": "T18C-01",
+   "sub": "M100 aplicado",
+   "result_copy": "LEARN18-S-EQ01-EQ02-d0-I102",
+   "active_copy": "LEARN18-S-EQ01-EQ02-d0-I102",
+   "match": "LEARN18-S-EQ01-EQ02-d0-I102|M100",
+   "team": "EQ01",
+   "expected_source": "LEARN18-S-EQ01-EQ02-d0-I102|M100|EQ01",
+   "registered": [
+    {
+     "id": "APL-1",
+     "kind": "aplicacion",
+     "source_id": "LEARN18-S-EQ01-EQ02-d0-I102|M100|EQ01",
+     "status": "aplicada"
+    }
+   ],
+   "action": "aplicar M100",
+   "accepted": true,
+   "reason": "EQ01: aplicado (APL-1) · EQ02: aplicado (APL-1)"
+  },
+  {
+   "case": "T18C-01",
+   "sub": "M100 aplicado",
+   "result_copy": "LEARN18-S-EQ01-EQ02-d0-I102",
+   "active_copy": "LEARN18-S-EQ01-EQ02-d0-I102",
+   "match": "LEARN18-S-EQ01-EQ02-d0-I102|M100",
+   "team": "EQ02",
+   "expected_source": "LEARN18-S-EQ01-EQ02-d0-I102|M100|EQ02",
+   "registered": [
+    {
+     "id": "APL-1",
+     "kind": "aplicacion",
+     "source_id": "LEARN18-S-EQ01-EQ02-d0-I102|M100|EQ02",
+     "status": "aplicada"
+    }
+   ],
+   "action": "aplicar M100",
+   "accepted": true,
+   "reason": "EQ01: aplicado (APL-1) · EQ02: aplicado (APL-1)"
+  },
+  {
+   "case": "T18C-01",
+   "sub": "M1 con M100 aplicado: botón",
+   "result_copy": "LEARN18-S-EQ01-EQ02-d0-I102",
+   "active_copy": "LEARN18-S-EQ01-EQ02-d0-I102",
+   "match": "LEARN18-S-EQ01-EQ02-d0-I102|M1",
+   "team": "EQ01",
+   "expected_source": "LEARN18-S-EQ01-EQ02-d0-I102|M1|EQ01",
+   "registered": [
+    {
+     "id": "APL-1",
+     "kind": "aplicacion",
+     "source_id": "LEARN18-S-EQ01-EQ02-d0-I102|M100|EQ01",
+     "status": "aplicada"
+    }
+   ],
+   "action": "consultar si M1 figura como aplicado",
+   "accepted": true,
+   "reason": "M1 no figura como aplicado: el botón está habilitado"
+  },
+  {
+   "case": "T18C-01",
+   "sub": "M1 con M100 aplicado: botón",
+   "result_copy": "LEARN18-S-EQ01-EQ02-d0-I102",
+   "active_copy": "LEARN18-S-EQ01-EQ02-d0-I102",
+   "match": "LEARN18-S-EQ01-EQ02-d0-I102|M1",
+   "team": "EQ02",
+   "expected_source": "LEARN18-S-EQ01-EQ02-d0-I102|M1|EQ02",
+   "registered": [
+    {
+     "id": "APL-1",
+     "kind": "aplicacion",
+     "source_id": "LEARN18-S-EQ01-EQ02-d0-I102|M100|EQ02",
+     "status": "aplicada"
+    }
+   ],
+   "action": "consultar si M1 figura como aplicado",
+   "accepted": true,
+   "reason": "M1 no figura como aplicado: el botón está habilitado"
+  },
+  {
+   "case": "T18C-01",
+   "sub": "M1 aplicado tras M100",
+   "result_copy": "LEARN18-S-EQ01-EQ02-d0-I102",
+   "active_copy": "LEARN18-S-EQ01-EQ02-d0-I102",
+   "match": "LEARN18-S-EQ01-EQ02-d0-I102|M1",
+   "team": "EQ01",
+   "expected_source": "LEARN18-S-EQ01-EQ02-d0-I102|M1|EQ01",
+   "registered": [
+    {
+     "id": "APL-1",
+     "kind": "aplicacion",
+     "source_id": "LEARN18-S-EQ01-EQ02-d0-I102|M100|EQ01",
+     "status": "aplicada"
+    },
+    {
+     "id": "APL-2",
+     "kind": "aplicacion",
+     "source_id": "LEARN18-S-EQ01-EQ02-d0-I102|M1|EQ01",
+     "status": "aplicada"
+    }
+   ],
+   "action": "aplicar M1",
+   "accepted": true,
+   "reason": "EQ01: aplicado (APL-2) · EQ02: aplicado (APL-2)"
+  },
+  {
+   "case": "T18C-01",
+   "sub": "M1 aplicado tras M100",
+   "result_copy": "LEARN18-S-EQ01-EQ02-d0-I102",
+   "active_copy": "LEARN18-S-EQ01-EQ02-d0-I102",
+   "match": "LEARN18-S-EQ01-EQ02-d0-I102|M1",
+   "team": "EQ02",
+   "expected_source": "LEARN18-S-EQ01-EQ02-d0-I102|M1|EQ02",
+   "registered": [
+    {
+     "id": "APL-1",
+     "kind": "aplicacion",
+     "source_id": "LEARN18-S-EQ01-EQ02-d0-I102|M100|EQ02",
+     "status": "aplicada"
+    },
+    {
+     "id": "APL-2",
+     "kind": "aplicacion",
+     "source_id": "LEARN18-S-EQ01-EQ02-d0-I102|M1|EQ02",
+     "status": "aplicada"
+    }
+   ],
+   "action": "aplicar M1",
+   "accepted": true,
+   "reason": "EQ01: aplicado (APL-2) · EQ02: aplicado (APL-2)"
+  },
+  {
+   "case": "T18C-01",
+   "sub": "M1 ya aplicado tras M100",
+   "result_copy": "LEARN18-S-EQ01-EQ02-d0-I102",
+   "active_copy": "LEARN18-S-EQ01-EQ02-d0-I102",
+   "match": "LEARN18-S-EQ01-EQ02-d0-I102|M1",
+   "team": "EQ01",
+   "expected_source": "LEARN18-S-EQ01-EQ02-d0-I102|M1|EQ01",
+   "registered": [
+    {
+     "id": "APL-1",
+     "kind": "aplicacion",
+     "source_id": "LEARN18-S-EQ01-EQ02-d0-I102|M100|EQ01",
+     "status": "aplicada"
+    },
+    {
+     "id": "APL-2",
+     "kind": "aplicacion",
+     "source_id": "LEARN18-S-EQ01-EQ02-d0-I102|M1|EQ01",
+     "status": "aplicada"
+    }
+   ],
+   "action": "repetir M1 (botón y manejador)",
+   "accepted": false,
+   "reason": "botón deshabilitado; manejador: EQ01: ya aplicado · EQ02: ya aplicado",
+   "state_unchanged": true
+  },
+  {
+   "case": "T18C-01",
+   "sub": "M1 ya aplicado tras M100",
+   "result_copy": "LEARN18-S-EQ01-EQ02-d0-I102",
+   "active_copy": "LEARN18-S-EQ01-EQ02-d0-I102",
+   "match": "LEARN18-S-EQ01-EQ02-d0-I102|M1",
+   "team": "EQ02",
+   "expected_source": "LEARN18-S-EQ01-EQ02-d0-I102|M1|EQ02",
+   "registered": [
+    {
+     "id": "APL-1",
+     "kind": "aplicacion",
+     "source_id": "LEARN18-S-EQ01-EQ02-d0-I102|M100|EQ02",
+     "status": "aplicada"
+    },
+    {
+     "id": "APL-2",
+     "kind": "aplicacion",
+     "source_id": "LEARN18-S-EQ01-EQ02-d0-I102|M1|EQ02",
+     "status": "aplicada"
+    }
+   ],
+   "action": "repetir M1 (botón y manejador)",
+   "accepted": false,
+   "reason": "botón deshabilitado; manejador: EQ01: ya aplicado · EQ02: ya aplicado",
+   "state_unchanged": true
+  },
+  {
+   "case": "T18C-02",
+   "sub": "resultado I11 · copia activa I12",
+   "result_copy": "LEARN18-S-EQ01-EQ02-d0-I11",
+   "active_copy": "LEARN18-S-EQ01-EQ02-d0-I12",
+   "match": "LEARN18-S-EQ01-EQ02-d0-I11|M1",
+   "team": "EQ01",
+   "expected_source": "LEARN18-S-EQ01-EQ02-d0-I11|M1|EQ01",
+   "registered": [],
+   "action": "dibujar la tarjeta",
+   "accepted": false,
+   "reason": "Aprendizaje propuesto por este partidoEste partido pertenece a otra copia de aprendizaje. No se puede aplicar a la copia activa.Detalle de diagnósticoCopia del ",
+   "state_unchanged": true,
+   "controls": {
+    "apply": false,
+    "see": false,
+    "foreign_notice": true
+   }
+  },
+  {
+   "case": "T18C-02",
+   "sub": "resultado I11 · copia activa I12",
+   "result_copy": "LEARN18-S-EQ01-EQ02-d0-I11",
+   "active_copy": "LEARN18-S-EQ01-EQ02-d0-I12",
+   "match": "LEARN18-S-EQ01-EQ02-d0-I11|M1",
+   "team": "EQ02",
+   "expected_source": "LEARN18-S-EQ01-EQ02-d0-I11|M1|EQ02",
+   "registered": [],
+   "action": "dibujar la tarjeta",
+   "accepted": false,
+   "reason": "Aprendizaje propuesto por este partidoEste partido pertenece a otra copia de aprendizaje. No se puede aplicar a la copia activa.Detalle de diagnósticoCopia del ",
+   "state_unchanged": true,
+   "controls": {
+    "apply": false,
+    "see": false,
+    "foreign_notice": true
+   }
+  },
+  {
+   "case": "T18C-02",
+   "sub": "resultado I10 · copia activa I1",
+   "result_copy": "LEARN18-S-EQ01-EQ02-d0-I10",
+   "active_copy": "LEARN18-S-EQ01-EQ02-d0-I1",
+   "match": "LEARN18-S-EQ01-EQ02-d0-I10|M1",
+   "team": "EQ01",
+   "expected_source": "LEARN18-S-EQ01-EQ02-d0-I10|M1|EQ01",
+   "registered": [],
+   "action": "dibujar la tarjeta",
+   "accepted": false,
+   "reason": "Aprendizaje propuesto por este partidoEste partido pertenece a otra copia de aprendizaje. No se puede aplicar a la copia activa.Detalle de diagnósticoCopia del ",
+   "state_unchanged": true,
+   "controls": {
+    "apply": false,
+    "see": false,
+    "foreign_notice": true
+   }
+  },
+  {
+   "case": "T18C-02",
+   "sub": "resultado I10 · copia activa I1",
+   "result_copy": "LEARN18-S-EQ01-EQ02-d0-I10",
+   "active_copy": "LEARN18-S-EQ01-EQ02-d0-I1",
+   "match": "LEARN18-S-EQ01-EQ02-d0-I10|M1",
+   "team": "EQ02",
+   "expected_source": "LEARN18-S-EQ01-EQ02-d0-I10|M1|EQ02",
+   "registered": [],
+   "action": "dibujar la tarjeta",
+   "accepted": false,
+   "reason": "Aprendizaje propuesto por este partidoEste partido pertenece a otra copia de aprendizaje. No se puede aplicar a la copia activa.Detalle de diagnósticoCopia del ",
+   "state_unchanged": true,
+   "controls": {
+    "apply": false,
+    "see": false,
+    "foreign_notice": true
+   }
+  },
+  {
+   "case": "T18C-02",
+   "sub": "resultado I1 · copia activa I10",
+   "result_copy": "LEARN18-S-EQ01-EQ02-d0-I1",
+   "active_copy": "LEARN18-S-EQ01-EQ02-d0-I10",
+   "match": "LEARN18-S-EQ01-EQ02-d0-I1|M1",
+   "team": "EQ01",
+   "expected_source": "LEARN18-S-EQ01-EQ02-d0-I1|M1|EQ01",
+   "registered": [],
+   "action": "dibujar la tarjeta",
+   "accepted": false,
+   "reason": "Aprendizaje propuesto por este partidoEste partido pertenece a otra copia de aprendizaje. No se puede aplicar a la copia activa.Detalle de diagnósticoCopia del ",
+   "state_unchanged": true,
+   "controls": {
+    "apply": false,
+    "see": false,
+    "foreign_notice": true
+   }
+  },
+  {
+   "case": "T18C-02",
+   "sub": "resultado I1 · copia activa I10",
+   "result_copy": "LEARN18-S-EQ01-EQ02-d0-I1",
+   "active_copy": "LEARN18-S-EQ01-EQ02-d0-I10",
+   "match": "LEARN18-S-EQ01-EQ02-d0-I1|M1",
+   "team": "EQ02",
+   "expected_source": "LEARN18-S-EQ01-EQ02-d0-I1|M1|EQ02",
+   "registered": [],
+   "action": "dibujar la tarjeta",
+   "accepted": false,
+   "reason": "Aprendizaje propuesto por este partidoEste partido pertenece a otra copia de aprendizaje. No se puede aplicar a la copia activa.Detalle de diagnósticoCopia del ",
+   "state_unchanged": true,
+   "controls": {
+    "apply": false,
+    "see": false,
+    "foreign_notice": true
+   }
+  },
+  {
+   "case": "T18C-02",
+   "sub": "identidad no válida «»",
+   "result_copy": null,
+   "active_copy": "LEARN18-S-EQ01-EQ02-d0-I40",
+   "match": "",
+   "team": "EQ01",
+   "expected_source": null,
+   "registered": [],
+   "action": "dibujar la tarjeta",
+   "accepted": false,
+   "reason": "el resultado no trae identidad de encuentro de la copia de aprendizaje"
+  },
+  {
+   "case": "T18C-02",
+   "sub": "identidad no válida «null»",
+   "result_copy": null,
+   "active_copy": "LEARN18-S-EQ01-EQ02-d0-I40",
+   "match": "null",
+   "team": "EQ01",
+   "expected_source": null,
+   "registered": [],
+   "action": "dibujar la tarjeta",
+   "accepted": false,
+   "reason": "el resultado no trae identidad de encuentro de la copia de aprendizaje"
+  },
+  {
+   "case": "T18C-02",
+   "sub": "identidad no válida «7»",
+   "result_copy": null,
+   "active_copy": "LEARN18-S-EQ01-EQ02-d0-I40",
+   "match": "7",
+   "team": "EQ01",
+   "expected_source": null,
+   "registered": [],
+   "action": "dibujar la tarjeta",
+   "accepted": false,
+   "reason": "la identidad de encuentro «7» no tiene el formato <copia>|M<n>"
+  },
+  {
+   "case": "T18C-02",
+   "sub": "identidad no válida «sin-formato»",
+   "result_copy": null,
+   "active_copy": "LEARN18-S-EQ01-EQ02-d0-I40",
+   "match": "sin-formato",
+   "team": "EQ01",
+   "expected_source": null,
+   "registered": [],
+   "action": "dibujar la tarjeta",
+   "accepted": false,
+   "reason": "la identidad de encuentro «sin-formato» no tiene el formato <copia>|M<n>"
+  },
+  {
+   "case": "T18C-02",
+   "sub": "identidad no válida «LEARN18-S-EQ01-EQ02-d0-I40|M0»",
+   "result_copy": null,
+   "active_copy": "LEARN18-S-EQ01-EQ02-d0-I40",
+   "match": "LEARN18-S-EQ01-EQ02-d0-I40|M0",
+   "team": "EQ01",
+   "expected_source": null,
+   "registered": [],
+   "action": "dibujar la tarjeta",
+   "accepted": false,
+   "reason": "la identidad de encuentro «LEARN18-S-EQ01-EQ02-d0-I40|M0» no tiene el formato <copia>|M<n>"
+  },
+  {
+   "case": "T18C-02",
+   "sub": "identidad no válida «LEARN18-S-EQ01-EQ02-d0-I40|M01»",
+   "result_copy": null,
+   "active_copy": "LEARN18-S-EQ01-EQ02-d0-I40",
+   "match": "LEARN18-S-EQ01-EQ02-d0-I40|M01",
+   "team": "EQ01",
+   "expected_source": null,
+   "registered": [],
+   "action": "dibujar la tarjeta",
+   "accepted": false,
+   "reason": "la identidad de encuentro «LEARN18-S-EQ01-EQ02-d0-I40|M01» no tiene el formato <copia>|M<n>"
+  },
+  {
+   "case": "T18C-02",
+   "sub": "identidad no válida «LEARN18-S-EQ01-EQ02-d0-I40|M-1»",
+   "result_copy": null,
+   "active_copy": "LEARN18-S-EQ01-EQ02-d0-I40",
+   "match": "LEARN18-S-EQ01-EQ02-d0-I40|M-1",
+   "team": "EQ01",
+   "expected_source": null,
+   "registered": [],
+   "action": "dibujar la tarjeta",
+   "accepted": false,
+   "reason": "la identidad de encuentro «LEARN18-S-EQ01-EQ02-d0-I40|M-1» no tiene el formato <copia>|M<n>"
+  },
+  {
+   "case": "T18C-02",
+   "sub": "identidad no válida «LEARN18-S-EQ01-EQ02-d0-I40|M1.5»",
+   "result_copy": null,
+   "active_copy": "LEARN18-S-EQ01-EQ02-d0-I40",
+   "match": "LEARN18-S-EQ01-EQ02-d0-I40|M1.5",
+   "team": "EQ01",
+   "expected_source": null,
+   "registered": [],
+   "action": "dibujar la tarjeta",
+   "accepted": false,
+   "reason": "la identidad de encuentro «LEARN18-S-EQ01-EQ02-d0-I40|M1.5» no tiene el formato <copia>|M<n>"
+  },
+  {
+   "case": "T18C-02",
+   "sub": "identidad no válida «LEARN18-S-EQ01-EQ02-d0-I40|Mx»",
+   "result_copy": null,
+   "active_copy": "LEARN18-S-EQ01-EQ02-d0-I40",
+   "match": "LEARN18-S-EQ01-EQ02-d0-I40|Mx",
+   "team": "EQ01",
+   "expected_source": null,
+   "registered": [],
+   "action": "dibujar la tarjeta",
+   "accepted": false,
+   "reason": "la identidad de encuentro «LEARN18-S-EQ01-EQ02-d0-I40|Mx» no tiene el formato <copia>|M<n>"
+  },
+  {
+   "case": "T18C-02",
+   "sub": "identidad no válida «|M1»",
+   "result_copy": null,
+   "active_copy": "LEARN18-S-EQ01-EQ02-d0-I40",
+   "match": "|M1",
+   "team": "EQ01",
+   "expected_source": null,
+   "registered": [],
+   "action": "dibujar la tarjeta",
+   "accepted": false,
+   "reason": "la identidad de encuentro «|M1» no tiene el formato <copia>|M<n>"
+  },
+  {
+   "case": "T18C-03",
+   "sub": "activar B antes de invocar el manejador de A",
+   "result_copy": "LEARN18-S-EQ01-EQ02-d0-I21",
+   "active_copy": "LEARN18-S-EQ01-EQ02-d0-I22",
+   "match": "LEARN18-S-EQ01-EQ02-d0-I21|M1",
+   "team": "EQ01",
+   "expected_source": "LEARN18-S-EQ01-EQ02-d0-I21|M1|EQ01",
+   "registered": [],
+   "action": "invocar el manejador creado para A",
+   "accepted": false,
+   "reason": "rechazado: otra copia activa",
+   "state_unchanged": true,
+   "retained_copy_unchanged": true,
+   "active_copy_unchanged": true
+  },
+  {
+   "case": "T18C-03",
+   "sub": "activar B antes de invocar el manejador de A",
+   "result_copy": "LEARN18-S-EQ01-EQ02-d0-I21",
+   "active_copy": "LEARN18-S-EQ01-EQ02-d0-I22",
+   "match": "LEARN18-S-EQ01-EQ02-d0-I21|M1",
+   "team": "EQ02",
+   "expected_source": "LEARN18-S-EQ01-EQ02-d0-I21|M1|EQ02",
+   "registered": [],
+   "action": "invocar el manejador creado para A",
+   "accepted": false,
+   "reason": "rechazado: otra copia activa",
+   "state_unchanged": true,
+   "retained_copy_unchanged": true,
+   "active_copy_unchanged": true
+  },
+  {
+   "case": "T18C-04",
+   "sub": "aplicación legítima única",
+   "result_copy": "LEARN18-S-EQ01-EQ02-d0-I31",
+   "active_copy": "LEARN18-S-EQ01-EQ02-d0-I31",
+   "match": "LEARN18-S-EQ01-EQ02-d0-I31|M1",
+   "team": "EQ01",
+   "expected_source": "LEARN18-S-EQ01-EQ02-d0-I31|M1|EQ01",
+   "registered": [
+    {
+     "id": "APL-1",
+     "kind": "aplicacion",
+     "source_id": "LEARN18-S-EQ01-EQ02-d0-I31|M1|EQ01",
+     "status": "aplicada"
+    }
+   ],
+   "action": "aplicar a esta variante",
+   "accepted": true,
+   "reason": "EQ01: aplicado (APL-1) · EQ02: aplicado (APL-1)",
+   "changed_entries": 48
+  },
+  {
+   "case": "T18C-04",
+   "sub": "aplicación legítima única",
+   "result_copy": "LEARN18-S-EQ01-EQ02-d0-I31",
+   "active_copy": "LEARN18-S-EQ01-EQ02-d0-I31",
+   "match": "LEARN18-S-EQ01-EQ02-d0-I31|M1",
+   "team": "EQ02",
+   "expected_source": "LEARN18-S-EQ01-EQ02-d0-I31|M1|EQ02",
+   "registered": [
+    {
+     "id": "APL-1",
+     "kind": "aplicacion",
+     "source_id": "LEARN18-S-EQ01-EQ02-d0-I31|M1|EQ02",
+     "status": "aplicada"
+    }
+   ],
+   "action": "aplicar a esta variante",
+   "accepted": true,
+   "reason": "EQ01: aplicado (APL-1) · EQ02: aplicado (APL-1)",
+   "changed_entries": 48
+  },
+  {
+   "case": "T18C-04",
+   "sub": "repetición rechazada",
+   "result_copy": "LEARN18-S-EQ01-EQ02-d0-I31",
+   "active_copy": "LEARN18-S-EQ01-EQ02-d0-I31",
+   "match": "LEARN18-S-EQ01-EQ02-d0-I31|M1",
+   "team": "EQ01",
+   "expected_source": "LEARN18-S-EQ01-EQ02-d0-I31|M1|EQ01",
+   "registered": [
+    {
+     "id": "APL-1",
+     "kind": "aplicacion",
+     "source_id": "LEARN18-S-EQ01-EQ02-d0-I31|M1|EQ01",
+     "status": "aplicada"
+    }
+   ],
+   "action": "repetir la aplicación (botón y manejador; núcleo)",
+   "accepted": false,
+   "reason": "botón deshabilitado=true; manejador: EQ01: ya aplicado · EQ02: ya aplicado; núcleo: la fuente LEARN18-S-EQ01-EQ02-d0-I31|M1|EQ01 ya se aplicó a la instancia EQ01 (APL-1)",
+   "state_unchanged": true
+  },
+  {
+   "case": "T18C-04",
+   "sub": "repetición rechazada",
+   "result_copy": "LEARN18-S-EQ01-EQ02-d0-I31",
+   "active_copy": "LEARN18-S-EQ01-EQ02-d0-I31",
+   "match": "LEARN18-S-EQ01-EQ02-d0-I31|M1",
+   "team": "EQ02",
+   "expected_source": "LEARN18-S-EQ01-EQ02-d0-I31|M1|EQ02",
+   "registered": [
+    {
+     "id": "APL-1",
+     "kind": "aplicacion",
+     "source_id": "LEARN18-S-EQ01-EQ02-d0-I31|M1|EQ02",
+     "status": "aplicada"
+    }
+   ],
+   "action": "repetir la aplicación (botón y manejador; núcleo)",
+   "accepted": false,
+   "reason": "botón deshabilitado=true; manejador: EQ01: ya aplicado · EQ02: ya aplicado; núcleo: la fuente LEARN18-S-EQ01-EQ02-d0-I31|M1|EQ01 ya se aplicó a la instancia EQ01 (APL-1)",
+   "state_unchanged": true
+  },
+  {
+   "case": "T18C-04",
+   "sub": "restaurar la misma copia",
+   "result_copy": "LEARN18-S-EQ01-EQ02-d0-I31",
+   "active_copy": "LEARN18-S-EQ01-EQ02-d0-I31",
+   "match": "LEARN18-S-EQ01-EQ02-d0-I31|M1",
+   "team": "EQ01",
+   "expected_source": "LEARN18-S-EQ01-EQ02-d0-I31|M1|EQ01",
+   "registered": [
+    {
+     "id": "APL-1",
+     "kind": "aplicacion",
+     "source_id": "LEARN18-S-EQ01-EQ02-d0-I31|M1|EQ01",
+     "status": "aplicada"
+    }
+   ],
+   "action": "serializar/restaurar y volver a consultar",
+   "accepted": true,
+   "reason": "pertenece a la copia restaurada y la aplicación vigente sigue reconocida"
+  },
+  {
+   "case": "T18C-04",
+   "sub": "restaurar la misma copia",
+   "result_copy": "LEARN18-S-EQ01-EQ02-d0-I31",
+   "active_copy": "LEARN18-S-EQ01-EQ02-d0-I31",
+   "match": "LEARN18-S-EQ01-EQ02-d0-I31|M1",
+   "team": "EQ02",
+   "expected_source": "LEARN18-S-EQ01-EQ02-d0-I31|M1|EQ02",
+   "registered": [
+    {
+     "id": "APL-1",
+     "kind": "aplicacion",
+     "source_id": "LEARN18-S-EQ01-EQ02-d0-I31|M1|EQ02",
+     "status": "aplicada"
+    }
+   ],
+   "action": "serializar/restaurar y volver a consultar",
+   "accepted": true,
+   "reason": "pertenece a la copia restaurada y la aplicación vigente sigue reconocida"
+  },
+  {
+   "case": "T18C-04",
+   "sub": "deshacer",
+   "result_copy": "LEARN18-S-EQ01-EQ02-d0-I31",
+   "active_copy": "LEARN18-S-EQ01-EQ02-d0-I31",
+   "match": "LEARN18-S-EQ01-EQ02-d0-I31|M1",
+   "team": "EQ01",
+   "expected_source": "LEARN18-S-EQ01-EQ02-d0-I31|M1|EQ01",
+   "registered": [
+    {
+     "id": "APL-1",
+     "kind": "aplicacion",
+     "source_id": "LEARN18-S-EQ01-EQ02-d0-I31|M1|EQ01",
+     "status": "revertida"
+    },
+    {
+     "id": "RST-2",
+     "kind": "restauracion",
+     "source_id": "LEARN18-S-EQ01-EQ02-d0-I31|M1|EQ01",
+     "status": "restauracion"
+    }
+   ],
+   "action": "deshacer (orden inverso)",
+   "accepted": true,
+   "reason": "estado, presupuestos y reloj restaurados; las aplicaciones quedan como revertidas con su rastro"
+  },
+  {
+   "case": "T18C-04",
+   "sub": "deshacer",
+   "result_copy": "LEARN18-S-EQ01-EQ02-d0-I31",
+   "active_copy": "LEARN18-S-EQ01-EQ02-d0-I31",
+   "match": "LEARN18-S-EQ01-EQ02-d0-I31|M1",
+   "team": "EQ02",
+   "expected_source": "LEARN18-S-EQ01-EQ02-d0-I31|M1|EQ02",
+   "registered": [
+    {
+     "id": "APL-1",
+     "kind": "aplicacion",
+     "source_id": "LEARN18-S-EQ01-EQ02-d0-I31|M1|EQ02",
+     "status": "revertida"
+    },
+    {
+     "id": "RST-2",
+     "kind": "restauracion",
+     "source_id": "LEARN18-S-EQ01-EQ02-d0-I31|M1|EQ02",
+     "status": "restauracion"
+    }
+   ],
+   "action": "deshacer (orden inverso)",
+   "accepted": true,
+   "reason": "estado, presupuestos y reloj restaurados; las aplicaciones quedan como revertidas con su rastro"
+  }
+ ]
+}

@@ -2,7 +2,7 @@
 // Sin DOM ni almacenamiento: la interfaz (knowledge-ui.js, learning-ui.js) solo pinta y persiste. No toca fichas de referencia: trabaja SIEMPRE sobre una copia identificada de la entrada.
 import { INPUT_SCHEMA, deepCopy } from '../match/data.js';
 import { syntheticHistory, allMastered, categoryOf, levelOf, normalizeLevel, idsOf, BLOCK_FIELD, isLegacyNeutral, knowledgeKeys, keyOf, parseKey } from '../knowledge/model.js';
-import { createTeamState, teamFingerprint, createLedger } from '../learning/index.js';
+import { createTeamState, teamFingerprint, createLedger, sourceIdOf } from '../learning/index.js';
 
 export const LEARNING_STORE_SCHEMA = 'beM-lab-learning/1';
 // MOTOR-18B (R03): identidades persistidas. Administración de laboratorio: no consumen azar deportivo ni cambian trayectorias.
@@ -108,5 +108,24 @@ export function nextSessionSeq(L) {
 export const sessionSourceId = (copyId, teamId, seq) => `lab|${copyId}|${teamId}|S${seq}`;
 // Identidad estable de un encuentro de la copia: se asigna al prepararlo y viaja en la entrada congelada (guardar, continuar, reabrir y exportar la conservan).
 export function nextMatchId(L) { L.matchSeq = (L.matchSeq ?? 0) + 1; return `${L.copy.id}|M${L.matchSeq}`; }
+
+// MOTOR-18C (C18-02): lectura y validación mínima de la identidad emitida por `nextMatchId`: `<identidad completa de la copia>|M<n>`, con n entero positivo sin ceros a la izquierda.
+const MATCH_TAIL = /^(.+)\|M([1-9]\d*)$/;
+export function parseMatchId(id) {
+  if (id == null || id === '') return { ok: false, reason: 'el resultado no trae identidad de encuentro de la copia de aprendizaje' };
+  const m = typeof id === 'string' ? MATCH_TAIL.exec(id) : null; const seq = m ? Number(m[2]) : NaN;
+  if (!m || !Number.isSafeInteger(seq)) return { ok: false, reason: `la identidad de encuentro «${String(id).slice(0, 80)}» no tiene el formato <copia>|M<n>` };
+  return { ok: true, matchId: id, copyId: m[1], seq };
+}
+// Pertenencia por IGUALDAD EXACTA de la identidad completa de copia (nunca por prefijo: I1 no es I10). Se usa al dibujar la tarjeta y de nuevo al aplicar.
+export const OTHER_COPY_TEXT = 'Este partido pertenece a otra copia de aprendizaje. No se puede aplicar a la copia activa.';
+export function matchBelongsToCopy(labMatchId, activeCopyId) {
+  const p = parseMatchId(labMatchId); if (!p.ok) return { ...p, activeCopyId: activeCopyId ?? null };
+  if (typeof activeCopyId !== 'string' || p.copyId !== activeCopyId) return { ok: false, foreign: true, reason: OTHER_COPY_TEXT, resultCopyId: p.copyId, activeCopyId: activeCopyId ?? null, seq: p.seq };
+  return { ok: true, resultCopyId: p.copyId, activeCopyId, seq: p.seq };
+}
+// MOTOR-18C (C18-01): un encuentro está aplicado a un equipo solo si hay una aplicación VIGENTE de ese equipo cuya fuente es IGUAL a la fuente completa esperada (M1 no es M10 ni M100).
+export const matchSourceFor = (source, teamId) => sourceIdOf({ source, teamInstance: teamId });
+export const isMatchApplied = (ledger, source, teamId) => { const full = matchSourceFor(source, teamId); return (ledger?.applications ?? []).some((a) => a.status === 'aplicada' && a.teamInstance === teamId && a.source_id === full); };
 export const newLedgers = (input) => Object.fromEntries(input.teams.map((t) => [t.id, createLedger()]));
 export { teamFingerprint, knowledgeKeys, parseKey, keyOf, categoryOf, levelOf, idsOf };

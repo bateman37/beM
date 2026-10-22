@@ -2,9 +2,9 @@
 // fuera del núcleo deportivo. Previsualizar, reabrir, analizar, descargar o ejecutar un lote NO aplican aprendizaje: aplicar es siempre una acción explícita aparte.
 import { h, table, fmt } from './dom.js';
 import { store } from './store.js';
-import { proposeFromSession, proposeFromMatch, applyProposal, undoApplication, sourceIdOf, exposureFromResult } from '../learning/index.js';
+import { proposeFromSession, proposeFromMatch, applyProposal, undoApplication, exposureFromResult } from '../learning/index.js';
 import { learnParams, persistLearning, syncScenario, copyTeam, kui, adoptLearning } from './knowledge-ui.js';
-import { writeStateToInput, IDLE_TEXT, NEUTRAL_NOTE, nextSessionSeq, sessionSourceId } from './learning-model.js';
+import { writeStateToInput, IDLE_TEXT, NEUTRAL_NOTE, nextSessionSeq, sessionSourceId, matchBelongsToCopy, matchSourceFor, isMatchApplied } from './learning-model.js';
 import { idsOf, keyOf, categoryOf } from '../knowledge/model.js';
 
 const S = { team: null, players: new Set(), collective: '', focus: {}, hours: 1, share: 0.6, idle: 0, preview: null, msg: '', ok: true };
@@ -75,27 +75,39 @@ export function sessionCard(ctx) {
 }
 
 // ---------------------------------------------------------------- tras un partido terminado: aprendizaje propuesto y aplicación SEPARADA
-const MS = { open: false, msg: '' };
-// MOTOR-18B (R03): identidad estable del encuentro (copia + secuencia de encuentro de la copia), asignada al prepararlo y guardada en la entrada congelada. Ni la semilla, ni el marcador, ni los sorteos ni el número de hechos identifican un partido.
+const MS = { open: false, msg: '', ok: true, src: null };
+// MOTOR-18B: identidad estable del encuentro (copia + secuencia de encuentro de la copia), asignada al prepararlo y guardada en la entrada congelada. Ni la semilla, ni el marcador, ni los sorteos ni el número de hechos identifican un partido.
 const matchSource = (res) => res.input?.labMatchId ?? null;
+const postCard = (...kids) => h('div', { class: 'card', id: 'post-learning' }, h('h3', { style: 'margin-top:0' }, 'Aprendizaje propuesto por este partido'), ...kids);
 export function postMatchLearningCard(res, repaint) {
   const L = store.learn; const P = learnParams(); const fam = res.diagnostics?.familiarity;
   if (!L || !P || !fam?.exposure || res.status !== 'finished') return null; // el aprendizaje de partido solo se propone desde un encuentro TERMINADO
   const same = res.input.teams.every((t) => L.copy.input.teams.some((x) => x.id === t.id));
   if (!same) return null;
-  adoptLearning();
   const src = matchSource(res);
-  if (!src) return h('div', { class: 'card', id: 'post-learning' }, h('h3', { style: 'margin-top:0' }, 'Aprendizaje propuesto por este partido'), h('p', { class: 'pill warn' }, 'Este partido no se preparó desde la copia de aprendizaje (no tiene identidad de encuentro de la copia): no se propone aprendizaje. Prepara y juega un partido con la copia activa.'));
+  if (!src) return postCard(h('p', { class: 'pill warn' }, 'Este partido no se preparó desde la copia de aprendizaje (no tiene identidad de encuentro de la copia): no se propone aprendizaje. Prepara y juega un partido con la copia activa.'));
+  // MOTOR-18C (C18-02): antes de adoptar metadatos, construir propuestas o persistir nada, el resultado debe pertenecer a la copia ACTIVA (igualdad exacta de la identidad completa de copia).
+  const own = matchBelongsToCopy(src, L.copy.id);
+  if (!own.ok) return postCard(h('p', { class: 'pill warn', id: 'pl-foreign' }, own.reason), own.foreign ? h('details', {}, h('summary', {}, 'Detalle de diagnóstico'), h('p', { class: 'small' }, `Copia del resultado: ${own.resultCopyId} · encuentro M${own.seq} · copia activa: ${own.activeCopyId}`)) : null);
+  adoptLearning();
   const made = exposureFromResult(res, { source_id: src }); // productor común: comprueba el estado y marca la exposición como completa
   if (!made.ok) return h('div', { class: 'card', id: 'post-learning' }, h('p', { class: 'pill bad' }, made.errors.map((e) => e.message).join('; ')));
   const exposure = made.exposure;
-  const props = L.copy.input.teams.map((t) => ({ tid: t.id, prop: proposeFromMatch(L.states[t.id], exposure, P, { source_id: sourceIdOf({ source: src, teamInstance: t.id }), day: L.states[t.id].day }) }));
-  const done = (tid) => L.ledgers[tid].applications.some((a) => a.status === 'aplicada' && a.source_id.startsWith(src) && a.teamInstance === tid);
-  const applyAll = () => { const out = props.map(({ tid, prop }) => (done(tid) ? `${tid}: ya aplicado` : (prop.ok ? (() => { const r = commit(tid, prop); return r.ok ? `${tid}: aplicado (${r.receipt.application})` : `${tid}: ${r.reason}`; })() : `${tid}: ${prop.errors?.map((e) => e.message).join('; ')}`))); MS.msg = out.join(' · '); repaint(); };
-  return h('div', { class: 'card', id: 'post-learning' }, h('h3', { style: 'margin-top:0' }, 'Aprendizaje propuesto por este partido'),
+  const props = L.copy.input.teams.map((t) => ({ tid: t.id, prop: proposeFromMatch(L.states[t.id], exposure, P, { source_id: matchSourceFor(src, t.id), day: L.states[t.id].day }) }));
+  const done = (tid, led = L.ledgers[tid]) => isMatchApplied(led, src, tid); // igualdad exacta de la fuente completa, equipo y recibo vigente (C18-01)
+  const reject = (why) => { MS.src = src; MS.ok = false; MS.msg = `No aplicado: ${why}`; repaint(); };
+  const applyAll = () => {
+    const cur = store.learn; // la copia activa AHORA: una tarjeta o propuesta anteriores no escriben sobre otra copia (C18-02)
+    const again = cur ? matchBelongsToCopy(src, cur.copy.id) : { ok: false, reason: 'no hay una copia de aprendizaje activa' };
+    if (!again.ok) return reject(again.reason);
+    const out = props.map(({ tid, prop }) => (done(tid, cur.ledgers[tid]) ? { ok: true, text: `${tid}: ya aplicado` } : (prop.ok ? (() => { const r = commit(tid, prop); return { ok: r.ok, text: r.ok ? `${tid}: aplicado (${r.receipt.application})` : `${tid}: ${r.reason}` }; })() : { ok: false, text: `${tid}: ${prop.errors?.map((e) => e.message).join('; ')}` })));
+    MS.src = src; MS.ok = out.every((o) => o.ok); MS.msg = out.map((o) => o.text).join(' · '); repaint();
+  };
+  const shown = MS.src === src && MS.msg;
+  return postCard(
     h('p', { class: 'small muted' }, 'La exposición del encuentro (minutos por posición y rol, crédito por módulo) propone una actualización del conocimiento de la copia. Reabrir, analizar, descargar o ejecutar un lote NO aplica nada: «Aplicar a esta variante» es una acción separada y la misma fuente no se aplica dos veces.'),
     h('div', { class: 'row' }, h('button', { class: 'btn secondary', type: 'button', id: 'see-learning', onclick: () => { MS.open = !MS.open; repaint(); } }, MS.open ? 'Ocultar aprendizaje propuesto' : 'Ver aprendizaje propuesto'),
       h('button', { class: 'btn', type: 'button', id: 'apply-learning', disabled: props.every(({ tid }) => done(tid)), onclick: applyAll }, 'Aplicar a esta variante')),
-    MS.msg ? h('p', { class: 'pill ok', id: 'pl-msg' }, MS.msg) : null,
-    MS.open ? props.map(({ tid, prop }) => h('div', {}, h('h4', {}, `${tid} · fuente ${prop.source_id ?? src}`), prop.ok ? targetsTable(Object.fromEntries(Object.entries(prop.players).map(([pid, p]) => [pid, { ...p, targets: (p.targets ?? []).filter((t) => t.after.level !== t.before.level || t.after.peak !== t.before.peak).slice(0, 6) }]))) : h('p', { class: 'pill bad' }, prop.errors?.map((e) => e.message).join('; ')))) : null);
+    shown ? h('p', { class: MS.ok ? 'pill ok' : 'pill bad', id: 'pl-msg' }, MS.msg) : null,
+    MS.open ? props.map(({ tid, prop }) => h('div', {}, h('h4', {}, `${tid} · fuente ${prop.source_id ?? matchSourceFor(src, tid)}`), prop.ok ? targetsTable(Object.fromEntries(Object.entries(prop.players).map(([pid, p]) => [pid, { ...p, targets: (p.targets ?? []).filter((t) => t.after.level !== t.before.level || t.after.peak !== t.before.peak).slice(0, 6) }]))) : h('p', { class: 'pill bad' }, prop.errors?.map((e) => e.message).join('; ')))) : null);
 }

@@ -24,6 +24,7 @@ Cómo está **realmente implementado** el proyecto. Distingue lo documentado de 
 - **MOTOR-17B** (cierre técnico y auditoría acotada: organización efectiva en el esencial, contraste de las 32 capacidades hasta la salida de su operación real con funciones compartidas con el productor, AUD05 derivado de la evidencia, crédito de robo con procedencia común y evidencia final verificable): [`motor17b.md`](motor17b.md) · [evidencia](evidencia-motor17b/00-LEEME.md) · [diccionario](evidencia-motor17b/DICCIONARIO.md) · [resumen operativo](evidencia-motor17b/RESUMEN-OPERATIVO.md) · [recorrido manual](../prompts/MOTOR-17B-recorrido-manual.md).
 - **MOTOR-18** (familiaridad táctica, roles, posiciones y aprendizaje: conocimiento por jugador, ajuste único en calidad y avance presionado, aprendizaje/retención, laboratorio de sesión, corrección de sensibilidad y AUD11): [`motor18.md`](motor18.md).
 - **MOTOR-18B** (cierre de familiaridad y curva de Polivalencia: Preparación sobre la copia activa, bloqueadores en los participantes, secuencias persistidas, exposición terminada, sesiones válidas, estimación coherente, unidades y curva lineal por tramos de cinco anclajes): [`motor18b.md`](motor18b.md).
+- **MOTOR-18C** (identidad del aprendizaje del laboratorio: el encuentro aplicado se identifica por igualdad exacta de la fuente completa y un resultado solo se aplica a su propia copia): [`motor18c.md`](motor18c.md).
 - **Utilidades documentales** (`scripts/docs/`): descritas en [`../exportados/README.md`](../exportados/README.md).
 
 ## Pendiente (no existe aún)

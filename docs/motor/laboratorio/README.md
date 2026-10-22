@@ -35,3 +35,7 @@ El laboratorio incorpora copias de aprendizaje, edición de conocimiento, panel 
 ### Nota de implementación MOTOR-18B (Preparación sobre la copia activa)
 
 Cuando la copia de aprendizaje es la entrada activa del próximo partido, **Preparación edita esa copia** (defensa, roles, puestos, estilos, libro y semilla) y la misma entrada se congela al preparar el encuentro; las fichas de referencia y la entrada editada de Dennis no se tocan. Las sesiones llevan una secuencia persistida por copia, las copias una secuencia de instancia y los encuentros una identidad estable, de modo que entrenar → recargar → entrenar no colisiona. Un rechazo no cambia estado alguno. Detalle: `docs/tecnico/motor18b.md`.
+
+### Nota de implementación MOTOR-18C (identidad del aprendizaje)
+
+El aprendizaje posterior al partido completa su identidad: un encuentro solo figura como ya aplicado a un equipo si hay una aplicación vigente cuya fuente es **igual** a la fuente completa (`<copia>|M<n>|<equipo>`; M1 no es M10), y un resultado solo se propone y aplica a **su propia copia de aprendizaje** (igualdad exacta de la identidad completa de copia, comprobada al dibujar y al aplicar). Un resultado de otra copia muestra un aviso y no ofrece aplicación; no hay forzar ni transferir. Prevalece sobre la comprobación parcial de equipo/prefijo de MOTOR-18B. Detalle: `docs/tecnico/motor18c.md`.

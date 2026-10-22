@@ -33,6 +33,7 @@ Directorio de los encargos a Claude Code. **El texto original de un prompt ejecu
 | MOTOR-17B | Cierre técnico y auditoría acotada: organización efectiva en el esencial, contraste de las 32 capacidades hasta la salida de su operación real, AUD05 derivado de la evidencia, crédito de robo con procedencia común y evidencia final verificable | [MOTOR-17B-cierre-y-auditoria-acotada.md](MOTOR-17B-cierre-y-auditoria-acotada.md) · [recorrido manual](MOTOR-17B-recorrido-manual.md) | **Ejecutado** (calibración general, rendimiento masivo, aceptación manual y FIBA integral pendientes; pendiente de Dennis) | 2026-10-21 · [ficha](#motor-17b) | — |
 | MOTOR-18 | Familiaridad táctica, roles, posiciones y aprendizaje: conocimiento por jugador (62 niveles), efecto limitado en calidad de la oportunidad y avance presionado, Polivalencia, aprendizaje/retención entre partidos, laboratorio de sesión, corrección de sensibilidad (SENS-01) y AUD11, y campaña de 36 ejecuciones | [MOTOR-18-familiaridad-tactica-roles-posiciones.md](MOTOR-18-familiaridad-tactica-roles-posiciones.md) · [recorrido manual](MOTOR-18-recorrido-manual.md) | **Ejecutado** (pendiente de Dennis) | 2026-10-21 (intento 1) | — |
 | MOTOR-18B | Cierre de familiaridad y mayor diferencia de Polivalencia: curva por tramos de cinco anclajes, Preparación sobre la copia activa, bloqueadores en los participantes, secuencias persistidas, exposición terminada, sesiones válidas, estimación coherente, unidades y campaña acotada de 36 ejecuciones | [`MOTOR-18B-cierre-y-polivalencia.md`](MOTOR-18B-cierre-y-polivalencia.md) · [recorrido manual](MOTOR-18B-recorrido-manual.md) | **Ejecutado** (pendiente de Dennis; amplía la PR #19 de MOTOR-18, sin fusionar) | 2026-10-22 · intento 1 | — |
+| MOTOR-18C | Dos correcciones de identidad del aprendizaje del laboratorio: identidad exacta del encuentro aplicado (M1 ≠ M10) y pertenencia a la copia activa (un resultado no se aplica a otra copia) | [`MOTOR-18C-identidad-aprendizaje.md`](MOTOR-18C-identidad-aprendizaje.md) · [recorrido manual](MOTOR-18C-recorrido-manual.md) | **Ejecutado** (pendiente de Dennis; la PR #19 ya estaba fusionada: PR independiente) | 2026-10-22 · intento 1 | — |
 
 ## Fichas de ejecución
 
@@ -335,3 +336,14 @@ Comprobación local de enlaces: hecha por Claude. Presentación en GitHub: no co
 | Rama | `claude/busy-edison-b1fmnc` (la PR de MOTOR-18, `bateman37/beM#19`, seguía abierta y sin fusionar: 18B se desarrolla encima y amplía esa PR como unidad MOTOR-18 + MOTOR-18B). |
 | Resultado breve | Ver [`../tecnico/motor18b.md`](../tecnico/motor18b.md) y [`../tecnico/evidencia-motor18b/`](../tecnico/evidencia-motor18b/RESUMEN-OPERATIVO.md). Paquetes `MOTOR-18B-*` y recibo de verificación fuera de Git (`out/motor18b/entrega-final/`). |
 | Pendientes | Validación de Dennis ([recorrido manual](MOTOR-18B-recorrido-manual.md)); análisis deportivo de ChatGPT; ninguna calibración aceptada. |
+
+### MOTOR-18C
+
+| Campo | Valor |
+|---|---|
+| Objetivo | Corregir los dos casos reproducidos en la revisión independiente de MOTOR-18B: coincidencia de prefijos entre encuentros (REV18B-01 / C18-01) y aplicación del resultado de una copia a otra copia (REV18B-02 / C18-02). Sin cambio deportivo. |
+| Medio de entrada del texto | Archivo `.md` adjunto (`beM-PROMPT-MOTOR-18C-IDENTIDAD-APRENDIZAJE.md`); la copia archivada es byte a byte idéntica. |
+| Fecha real de ejecución | 2026-10-22 · intento 1 |
+| Rama | `claude/busy-edison-b1fmnc`, reiniciada desde `main` (`d744e23`) porque la PR de MOTOR-18/18B (`bateman37/beM#19`) ya estaba fusionada: PR independiente. |
+| Resultado breve | Ver [`../tecnico/motor18c.md`](../tecnico/motor18c.md). Paquete `MOTOR-18C-revision-rapida.zip` y recibo `MOTOR-18C-verificacion-final.json` fuera de Git (`out/motor18c/entrega-final/`). |
+| Pendientes | Validación de Dennis ([recorrido manual](MOTOR-18C-recorrido-manual.md)); ninguna calibración. |

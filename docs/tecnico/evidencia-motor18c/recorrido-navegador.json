@@ -1,0 +1,121 @@
+{
+ "app": "MOTOR-18C",
+ "date": "2026-10-22T16:02:45.204Z",
+ "browser": "Chromium (Playwright)",
+ "url": "http://127.0.0.1:5198/",
+ "new_matches_played_in_walkthrough": 1,
+ "steps": [
+  {
+   "n": 1,
+   "route": "http://127.0.0.1:5198/",
+   "action": "arranque: cabecera con la aplicación MOTOR-18C y el motor/formato de 18B sin cambio",
+   "ok": true,
+   "obs": "MOTOR-18C — identidad del aprendizaje del laboratorio · motor beM-motor-0.18.1-MOTOR18B · beM-match-export/10"
+  },
+  {
+   "n": 2,
+   "route": "Plantillas",
+   "action": "crear la copia de aprendizaje A (identificada con secuencia de instancia)",
+   "ok": true,
+   "obs": "LEARN18-S-EQ01-EQ02-d0-I1"
+  },
+  {
+   "n": 3,
+   "route": "Partido",
+   "action": "partido terminado (el único partido nuevo del recorrido): aparece la tarjeta de aprendizaje de la copia A",
+   "ok": true,
+   "obs": "Finalizado EQ01 84 – 102 EQ02"
+  },
+  {
+   "n": 4,
+   "route": "Partido",
+   "action": "abrir la tarjeta no aplica nada (registro vacío)",
+   "ok": true,
+   "obs": "sin aplicaciones"
+  },
+  {
+   "n": 4,
+   "route": "Partido",
+   "action": "«Ver aprendizaje propuesto»: fuentes con la identidad completa de copia y encuentro (<copia>|M1|<equipo>)",
+   "ok": true,
+   "obs": "Aprendizaje propuesto por este partido La exposición del encuentro (minutos por posición y rol, crédito por módulo) propone una actualización del conocimiento de la copia. Reabrir, analizar, descargar o ejecutar un lote"
+  },
+  {
+   "n": 5,
+   "route": "Partido",
+   "action": "aplicar a esta variante: una aplicación por equipo con fuente exacta, mensaje de éxito",
+   "ok": true,
+   "obs": "EQ01: aplicado (APL-1) · EQ02: aplicado (APL-1) · LEARN18-S-EQ01-EQ02-d0-I1|M1|EQ01"
+  },
+  {
+   "n": 5,
+   "route": "Partido",
+   "action": "repetir la aplicación queda bloqueado (botón deshabilitado) y el registro no crece",
+   "ok": true,
+   "obs": "botón deshabilitado"
+  },
+  {
+   "n": 6,
+   "route": "Plantillas",
+   "action": "deshacer dos veces (control existente): aplicaciones revertidas con rastro y estado restaurado",
+   "ok": true,
+   "obs": "Deshecho APL-1: conocimiento, peak, reloj y presupuestos res · Deshecho APL-1: conocimiento, peak, reloj y presupuestos res"
+  },
+  {
+   "n": 6,
+   "route": "Partido",
+   "action": "tras deshacer, la misma fuente vuelve a poder aplicarse (política vigente de reaplicación)",
+   "ok": true,
+   "obs": "botón habilitado"
+  },
+  {
+   "n": 6,
+   "route": "Partido",
+   "action": "descarga REAL del encuentro: la entrada congelada lleva la identidad <copia>|M1 (bytes y SHA-256 conservados)",
+   "ok": true,
+   "obs": "beM-MOTOR02-20261016-EQ01-EQ02.json 16829409 B sha 054797a4a49a66c6 · LEARN18-S-EQ01-EQ02-d0-I1|M1"
+  },
+  {
+   "n": 7,
+   "route": "Plantillas",
+   "action": "sustituir la copia (se confirma el aviso): la copia B tiene otra identidad pero los mismos equipos EQ01/EQ02",
+   "ok": true,
+   "obs": "LEARN18-S-EQ01-EQ02-d0-I1 → LEARN18-S-EQ01-EQ02-d0-I2 · aviso: Ya hay una copia de aprendizaje activa. ¿Sustituirla por una nueva (la anterior y su registro de aplicaciones se descart"
+  },
+  {
+   "n": 8,
+   "route": "Partido",
+   "action": "el resultado de A se mantiene: aviso de copia distinta, sin «Aplicar» ni propuesta, con ambas identidades en el detalle",
+   "ok": true,
+   "obs": "Aprendizaje propuesto por este partido Este partido pertenece a otra copia de aprendizaje. No se puede aplicar a la copia activa. Detalle de diagnóstico Copia del resultado: LEARN18-S-EQ01-EQ02-d0-I1 · encuentro M1 · copia activa: LEARN18-S-EQ01-EQ02-d0-I2"
+  },
+  {
+   "n": 8,
+   "route": "Partido",
+   "action": "la copia B no cambia (registro y estados idénticos; sin aplicaciones)",
+   "ok": true,
+   "obs": "sin cambios"
+  },
+  {
+   "n": 8,
+   "route": "Partido",
+   "action": "abrir el análisis y volver mantiene el aviso y no aplica nada",
+   "ok": true,
+   "obs": "aviso presente"
+  },
+  {
+   "n": 9,
+   "route": "Recarga",
+   "action": "tras RECARGAR, la copia B y su identidad se restauran (el partido en memoria no persiste)",
+   "ok": true,
+   "obs": "LEARN18-S-EQ01-EQ02-d0-I2"
+  }
+ ],
+ "dialogs": [
+  "Ya hay una copia de aprendizaje activa. ¿Sustituirla por una nueva (la anterior y su registro de aplicaciones se descart"
+ ],
+ "consoleErrors": [],
+ "netErrors": [],
+ "passed": 15,
+ "failed": 0
+}
