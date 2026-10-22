@@ -126,7 +126,7 @@ export function buildResult(m, extra = {}) {
     meta: m.meta(),
     status: m.status,
     errors: m.errors,
-    input: { seed: m.input.seed, importance: m.input.importance, ...(m.input.contrast ? { contrast: m.input.contrast } : {}), teams: m.input.teams },
+    input: { seed: m.input.seed, importance: m.input.importance, ...(m.input.contrast ? { contrast: m.input.contrast } : {}), ...(m.input.labMatchId ? { labMatchId: m.input.labMatchId } : {}), teams: m.input.teams }, // MOTOR-18B: `labMatchId` (opcional, solo laboratorio) = identidad estable del encuentro de una copia de aprendizaje
     profile: m.profileData,
     teams,
     lineups: m.lineupTable,

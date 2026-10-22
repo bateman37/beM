@@ -177,6 +177,8 @@ test('L18B-09 Preparación edita la copia de aprendizaje activa: la entrada efec
   const frozen = deepCopy(matchSourceOf(store)); const m = createMatch(frozen, profile, { detail: 'minimal' }); m.init();
   assert.equal(m.teams[0].plan.defense, t0.plan.defense); assert.equal(m.pl[t0.players[0].id].offensiveRole?.code ?? m.roleOf?.[t0.players[0].id], 'O12'); assert.equal(m.teams[0].plan.starters.PG, s1); assert.equal(frozen.seed, 123456); assert.equal(frozen.teams[0].plan.playbook.length, 5);
   assert.equal(JSON.stringify(edit), refSnapshot, 'la entrada editada de Dennis y las referencias no se tocan'); assert.equal(JSON.stringify(t0.players.map((p) => p.knowledge)), knowledgeBefore, 'cambiar defensa, rol o puesto no actualiza el conocimiento');
+  // comportamiento anterior (defecto R01): editar `store.edit` mientras el partido congela `scenario.input` deja la defensa preparada distinta de la que recibe el encuentro
+  edit.teams[0].plan.defense = 'ORG05'; assert.notEqual(matchSourceOf(store).teams[0].plan.defense, 'ORG05'); assert.equal(matchSourceOf(store), target);
   // una copia de contraste distinta del aprendizaje conserva su significado: Preparación sigue editando store.edit
   const contrast = { edit, scenario: { scenario: { id: 'ESC', learning: false }, input: deepCopy(edit) } }; assert.equal(prepInputOf(contrast), edit); assert.equal(matchSourceOf(contrast), contrast.scenario.input);
   assert.equal(prepInputOf({ edit, scenario: { learning: true, input: copy.input } }), edit, 'el indicador de nivel superior (inexistente) no decide la fuente');
@@ -194,6 +196,8 @@ test('L18B-10 tras recargar, una sesión nueva recibe una fuente nueva; repetir 
   const reloaded = M.deserializeLearning(M.serializeLearning(Lr)); reloaded.editUndo = []; // recarga real: se serializa y se recupera
   assert.equal(M.nextSessionSeq(reloaded), 2); const second = apply(reloaded, session(M.nextSessionSeq(reloaded))); assert.ok(second.r.ok, 'una sesión nueva tras recargar no colisiona con S1'); assert.match(second.pr.source_id, /\|S2$/);
   assert.equal(reloaded.states.EQ01.players['EQ01-J01'].ledger.training.hours, 2, 'el presupuesto diario acumulado sobrevive a la recarga'); assert.equal(reloaded.ledgers.EQ01.applications.length, 2);
+  // comportamiento anterior (defecto R03): reiniciar el contador a S1 tras recargar daba una fuente ya aplicada y se rechazaba
+  assert.equal(L.applyProposal(reloaded.states.EQ01, reloaded.ledgers.EQ01, L.proposeFromSession(reloaded.states.EQ01, session(1), P), P).ok, false);
   const again = L.applyProposal(reloaded.states.EQ01, reloaded.ledgers.EQ01, L.proposeFromSession(reloaded.states.EQ01, session(2), P), P); assert.equal(again.ok, false); // la misma fuente real sigue rechazada
   // deshacer conserva el recibo revertido y no libera su número: una sesión nueva obtiene otro
   const u = L.undoApplication(reloaded.states.EQ01, reloaded.ledgers.EQ01, 'APL-2'); assert.ok(u.ok); reloaded.states.EQ01 = u.state; reloaded.ledgers.EQ01 = u.ledger; reloaded.undo.pop(); assert.equal(M.nextSessionSeq(reloaded), 3);
