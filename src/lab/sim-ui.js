@@ -4,7 +4,8 @@
 import { h, clear, table } from './dom.js';
 import { store } from './store.js';
 import { makeContext, contextToJSON, SimMatch, buildSimResult, SIM_MODEL, SIM_RESULT_SCHEMA, SIM_VERSION } from '../sim/index.js';
-import { snapshotSim } from '../sim/snapshot.js';
+import { snapshotSim, restoreSim, validateSimSnapshot } from '../sim/snapshot.js';
+import { SIM_CANDIDATES } from '../sim/candidates.js';
 import { analysisCards, learningCard, rebuildFrom, dl as dlx } from './sim-analysis-ui.js';
 import { makeLearningCopy, teamStatesOf, nextMatchId, newLedgers } from './learning-model.js';
 import { ConsequenceLedger } from '../sim/consequences.js';
@@ -79,6 +80,20 @@ function resultCards(res0) {
   cards.push(learningCard(res, st, () => render(), detailed()));
   return cards;
 }
+// Continuar un guardado de verdad: un guardado de otra revisión (p. ej. SIM-MOTOR-02/03) se rechaza con su explicación y SIN tocar el archivo ni la sesión activa; uno válido se restaura y continúa con la dirección automática.
+function loadSnapshot(file) {
+  const rd = new FileReader();
+  rd.onload = () => {
+    try {
+      const snap = JSON.parse(rd.result); const errs = validateSimSnapshot(snap);
+      if (errs.length) { st.snapMsg = { ok: false, text: `Guardado rechazado (${file.name}): ${errs.map((x) => `${x.path}: ${x.message}`).join('; ')}` }; render(); return; }
+      const m = restoreSim(snap); const from = m.published; playAutomatic(m); st.match = m; st.matchInput = JSON.stringify(snap.input); st.resultInput = st.matchInput; st.error = null; st.result = rebuildFrom(m, st);
+      st.snapMsg = { ok: true, text: `Guardado ${file.name} restaurado en t = ${from} s (perfil ${snap.context?.profileId ?? '—'}, ${snap.simVersion}) y continuado hasta el final.` };
+    } catch (err) { st.snapMsg = { ok: false, text: `Guardado no legible o rechazado: ${err.validation ? err.validation.map((x) => x.message).join('; ') : String(err.message ?? err)}` }; }
+    render();
+  };
+  rd.readAsText(file);
+}
 function matchView(root) {
   ensure(); const opts = TEAM_IDS.map((id) => h('option', { value: id }, `${id} · ${detailed().population.teams[id].identity}`));
   const pick = (key, label) => h('label', {}, `${label} `, h('select', { id: `sim-${key}`, onchange: (e) => { st[key] = e.target.value; resetInput(); render(); } }, opts.map((o) => { const c = o.cloneNode(true); if (c.value === st[key]) c.selected = true; return c; })));
@@ -90,6 +105,7 @@ function matchView(root) {
       h('button', { class: 'btn', id: 'sim-generate', type: 'button', onclick: generate }, st.result ? 'Repetir con la misma entrada' : 'Generar partido'),
       h('button', { class: 'btn secondary', id: 'sim-reset-plans', type: 'button', onclick: () => { resetInput(); render(); } }, 'Restaurar planes naturales')),
     h('p', { class: 'small' }, `Perfil SIM ${st.ctx.sp.id} (huella ${st.ctx.sp.fingerprint}${st.overrides.length ? `, candidata con ${st.overrides.length} fila(s) editada(s)` : ', base'}) · referencia detallada ${st.ctx.sp.detailedProfileId.split('+').slice(-1)[0]}. Equipos con identidades de instancia distintas (${st.input.teams[0].id} y ${st.input.teams[1].id}).`),
+    h('div', { class: 'row', style: 'margin-top:8px' }, h('label', { class: 'btn secondary' }, 'Continuar un guardado (JSON) ', h('input', { type: 'file', id: 'sim-load-snap', accept: 'application/json', style: 'display:none', onchange: (ev) => { const f = ev.target.files?.[0]; if (f) loadSnapshot(f); } })), st.snapMsg ? h('span', { class: `small ${st.snapMsg.ok ? '' : 'err'}`, id: 'sim-snap-msg', style: st.snapMsg.ok ? '' : 'color:var(--bad)' }, st.snapMsg.text) : null),
     st.error ? h('p', { class: 'small', style: 'color:var(--bad)', id: 'sim-error' }, `Entrada no válida o error: ${st.error}`) : null));
   root.append(h('div', { class: 'grid2' }, planEditor(0), planEditor(1)));
   root.append(h('div', { class: 'card' }, h('h3', { style: 'margin-top:0' }, 'Controles tácticos soportados y su efecto'),
@@ -109,7 +125,7 @@ function paramsView(root) {
     delete e.draft[path]; const ov = st.overrides.filter((o) => o.path !== path); if (JSON.stringify(base.index.get(path).value) !== JSON.stringify(val)) ov.push({ path, value: val }); st.overrides = ov; st.result = null; render();
   };
   root.append(h('div', { class: 'card' }, h('h2', { style: 'margin-top:0' }, 'Perfil SIM (tabla editable por secciones)'),
-    h('p', { class: 'small' }, `${sp.id} · huella ${sp.fingerprint} · ${sp.rows.length} filas · base ${base.fingerprint}. Procedencia: heredada (copia de una fila del detallado), derivada (transformación explícita) o SEM-SIM01 (semilla nueva del encargo, pendiente de auditoría).`),
+    h('p', { class: 'small' }, `${sp.id} · huella ${sp.fingerprint} · ${sp.rows.length} filas · base ${base.fingerprint}. Procedencia: heredada (copia de una fila del detallado), derivada (transformación explícita) o SEM-SIM01/02/04 (semilla nueva de un encargo, pendiente de auditoría y sin calibrar).`),
     h('div', { class: 'row' }, h('label', {}, 'Sección ', h('select', { id: 'sim-section', onchange: (ev) => { e.section = ev.target.value; render(); } }, h('option', { value: 'all', selected: e.section === 'all' }, 'todas'), Object.keys(sections).map((s) => h('option', { value: s, selected: e.section === s }, `${s} (${sections[s].length})`)))),
       h('label', {}, 'Filtro ', h('input', { type: 'text', id: 'sim-filter', value: e.filter, oninput: (ev) => { e.filter = ev.target.value; } , onchange: () => render() })),
       h('button', { class: 'btn secondary', id: 'sim-validate', type: 'button', onclick: () => { const errs = validateOverrides(base, st.overrides); e.msg = errs.length ? `NO válida: ${errs.map((x) => `${x.path}: ${x.message}`).join('; ')}` : `Candidata válida (${st.overrides.length} fila(s) editada(s)).`; render(); } }, 'Validar'),
@@ -117,6 +133,20 @@ function paramsView(root) {
       h('button', { class: 'btn', id: 'sim-download-candidate', type: 'button', onclick: () => dl(`beM-sim-candidata-${sp.fingerprint}.json`, JSON.stringify({ model: SIM_MODEL, base: base.id, baseFingerprint: base.fingerprint, candidateFingerprint: sp.fingerprint, overrides: st.overrides, diff: diffProfile(base, sp) }, null, 1)) }, 'Descargar candidata')),
     e.msg ? h('p', { class: 'small', id: 'sim-params-msg' }, e.msg) : null,
     st.overrides.length ? h('div', { class: 'small' }, h('strong', {}, 'Diferencias frente a la base: '), diffProfile(base, sp).map((d) => `${d.path}: ${fmtVal(d.base)} → ${fmtVal(d.candidate)}`).join(' · ')) : null));
+  // Candidatas provisionales (SIM-MOTOR-04): vectores elegidos por el selector mecánico; NUNCA se activan solas. Cargar una es una acción explícita sobre este borrador y deja visibles sus diferencias frente a la base.
+  const loadCand = (c) => { const errs = validateOverrides(base, c.overrides); if (errs.length) { e.msg = `Candidata ${c.id} NO válida: ${errs.map((x) => `${x.path}: ${x.message}`).join('; ')}`; render(); return; } st.overrides = c.overrides.map((o) => ({ ...o })); e.draft = {}; st.result = null; e.msg = `Candidata ${c.id} cargada como BORRADOR (provisional, pendiente de aceptación deportiva): ${c.overrides.length} fila(s) distintas de la base. La base ${base.id} no se ha modificado.`; render(); };
+  root.append(h('div', { class: 'card', id: 'sim-candidates' }, h('h3', { style: 'margin-top:0' }, 'Candidatas provisionales de SIM-MOTOR-04'),
+    h('p', { class: 'small' }, `Perfil base activo: ${base.id} (huella ${base.fingerprint}). Las candidatas son vectores propuestos por un selector mecánico de convergencia funcional de laboratorio; no son un perfil calibrado ni aceptado por Dennis y no se activan sin tu acción.`),
+    SIM_CANDIDATES.map((c) => h('div', { class: 'small', style: 'margin-bottom:8px' }, h('strong', {}, `${c.id} · ${c.version}`), h('div', { class: 'muted' }, c.status),
+      table(['Ruta', 'Base', 'Candidata', 'Unidad', 'Origen', 'Efecto'], c.rows.map((r) => [r.path, fmtVal(r.base), fmtVal(r.value), r.unit, r.origin, r.effect])),
+      h('div', { class: 'row', style: 'margin-top:6px' }, h('button', { class: 'btn', id: `sim-load-candidate-${c.id}`, type: 'button', onclick: () => loadCand(c) }, `Cargar «${c.id}» como borrador`), c.baseFingerprint !== base.fingerprint ? pill('la base actual no es la de la candidata', 'bad') : pill('base coincidente', 'ok'))))));
+  // Perfil anterior: consulta con tarjeta de compatibilidad y creación EXPLÍCITA de una candidata nueva con las filas compatibles; no se convierte ni activa nada en silencio.
+  const importProfile = (file) => { const rd = new FileReader(); rd.onload = () => { try { const j = JSON.parse(rd.result); const rowsIn = Array.isArray(j.overrides) ? j.overrides : []; const items = rowsIn.map((o) => { const errs = validateOverrides(base, [o]); const cur = base.index.get(o.path); return { path: o.path, previous: o.value, current: cur?.value ?? null, status: !cur ? 'ruta desconocida en la base actual' : errs.length ? `no válida: ${errs[0].message}` : 'compatible' }; }); st.imported = { name: file.name, base: j.base ?? null, baseFingerprint: j.baseFingerprint ?? null, same: j.baseFingerprint === base.fingerprint, items, ok: rowsIn.length > 0 }; } catch (err) { st.imported = { name: file.name, ok: false, error: String(err.message ?? err), items: [] }; } render(); }; rd.readAsText(file); };
+  const imp = st.imported;
+  root.append(h('div', { class: 'card', id: 'sim-imported' }, h('h3', { style: 'margin-top:0' }, 'Perfil anterior (consulta y compatibilidad)'),
+    h('label', { class: 'btn secondary' }, 'Importar candidata/perfil (JSON) ', h('input', { type: 'file', id: 'sim-import-profile', accept: 'application/json', style: 'display:none', onchange: (ev) => { const f = ev.target.files?.[0]; if (f) importProfile(f); } })),
+    imp ? h('div', { class: 'small', style: 'margin-top:8px', id: 'sim-imported-card' }, imp.error ? pill(`archivo no legible: ${imp.error}`, 'bad') : h('div', {}, h('p', {}, `Archivo ${imp.name}: base ${imp.base ?? 'desconocida'} (huella ${imp.baseFingerprint ?? '—'}). Base actual ${base.id} (huella ${base.fingerprint}). ${imp.same ? 'Misma base: las filas se pueden usar tal cual.' : 'OTRA BASE: se consulta; para usarlo hay que crear una candidata nueva con las filas compatibles (acción explícita) y revisar sus diferencias.'}`), table(['Ruta', 'Valor anterior', 'Valor base actual', 'Estado'], imp.items.map((x) => [x.path, fmtVal(x.previous), fmtVal(x.current), x.status])),
+      h('div', { class: 'row', style: 'margin-top:6px' }, h('button', { class: 'btn', id: 'sim-import-apply', type: 'button', disabled: !imp.items.some((x) => x.status === 'compatible'), onclick: () => { st.overrides = imp.items.filter((x) => x.status === 'compatible').map((x) => ({ path: x.path, value: x.previous })); e.draft = {}; st.result = null; e.msg = `Candidata nueva creada con ${st.overrides.length} fila(s) compatibles del archivo ${imp.name}; la base ${base.id} no se ha modificado.`; render(); } }, 'Crear candidata nueva con las filas compatibles')))) : h('p', { class: 'small muted' }, 'Importa una candidata descargada de este panel (o de un SIM anterior) para comprobar qué filas siguen siendo válidas en la base actual.')));
   root.append(h('div', { class: 'card' }, table(['Ruta', 'Valor', 'Unidad', 'Procedencia', 'Origen', 'Efecto'], rows.slice(0, 400).map((r) => {
     const d = e.draft[r.path]; const editable = typeof r.value === 'number' || (Array.isArray(r.value) && JSON.stringify(r.value).match(/^[\d.,\-\[\]e\s]+$/));
     const input = editable ? h('input', { type: 'text', 'data-path': r.path, class: edited.has(r.path) ? 'sel' : '', value: d ? d.text : fmtVal(edited.has(r.path) ? edited.get(r.path) : r.value), style: `width:${Array.isArray(r.value) ? 150 : 90}px`, onchange: (ev) => apply(r.path, ev.target.value) }) : h('span', { class: 'muted' }, typeof r.value === 'object' ? 'tabla' : fmtVal(r.value));
