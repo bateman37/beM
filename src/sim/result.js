@@ -4,7 +4,7 @@
 import { SIM_MODEL, SIM_RESULT_SCHEMA, SIM_VERSION, SIM_COVERAGE_ID, SIM_STATS_POLICY_ID } from './version.js';
 import { fpString } from './fp.js';
 import { reconcileResult } from './reconcile.js';
-import { moduleExposure, pressExposure, assistDenominators } from './exposure.js';
+import { moduleExposure, pressExposure, assistDenominators, assistFunnel } from './exposure.js';
 import { buildAnalysis } from './analysis.js';
 
 const ZONES = ['rim', 'inside', 'midrange', 'three'];
@@ -90,7 +90,7 @@ export function buildSimResult(m, opts = {}) {
   // aprendizaje y `moduleOps` conserva la identidad de cada operación para que ninguna se observe dos veces como una sola.
   const modules = moduleExposure(m, evs); const press = pressExposure(m, segs, T, controlsReached);
   for (const id of Object.keys(exposure)) { const a = modules[id] ?? {}; const b = press.byPlayer[id] ?? {}; const sum = { ...a }; for (const [k, v] of Object.entries(b)) sum[k] = Math.round(((sum[k] ?? 0) + v) * 1e6) / 1e6; if (Object.keys(sum).length) { exposure[id].modules = sum; exposure[id].moduleOps = { finalization: a, press: b }; } }
-  const assistDen = assistDenominators(evs);
+  const assistDen = assistDenominators(evs); const assistFun = assistFunnel(evs);
   const periodsReached = periodPts.length; const finished = reachedEnd; const status = m.status === 'error' ? 'error' : finished ? 'finished' : T > 0 || m.segments.length ? 'running' : 'ready';
   // estado observable en el presente: alineación en pista, faltas y bonus desde los hechos; la energía solo para quien tiene autorización (se proyecta a la frontera, no es la del núcleo adelantado)
   const observable = lean ? null : observableAt(m, T, evs, audience, team);
@@ -107,7 +107,7 @@ export function buildSimResult(m, opts = {}) {
     zones: ZONES.map((z) => ({ zone: z, teams: [0, 1].map((k) => { let a = 0; let mk = 0; for (const r of players) if (r.team === k) { a += r.zones[z].a; mk += r.zones[z].m; } return { a, m: mk }; }) })),
     families: famMap.map((f) => Object.values(f)),
     familyDenominators: [0, 1].map((k) => ({ controls: controls[k], finalizations: finTeam[k], ...fdn[k] })),
-    assistDenominators: assistDen, pressOps: { opportunities: press.opportunities, byHeight: press.byHeight, sumDelta: press.sumDelta, explicitOpportunities: press.explicitOpportunities, unit: press.unit },
+    assistDenominators: assistDen, assistFunnel: assistFun, pressOps: { opportunities: press.opportunities, byHeight: press.byHeight, sumDelta: press.sumDelta, explicitOpportunities: press.explicitOpportunities, unit: press.unit },
     exposureInfo: { unit: 'segundos de juego (los módulos en operaciones de finalización SIM ponderadas)', provenance: 'intervalos de presencia por tramo hasta el presente publicado; posición = puesto asignado en el quinteto del tramo; rol = rol vigente de la ficha del jugador; módulos desde las finalizaciones publicadas', familias: 'uso de familias y fichas en families[] con denominadores en familyDenominators[] (finalizaciones únicas: tiro, falta de tiro y serie ligada cuentan una vez)' },
     quintets: [...q.values()].map((e) => ({ ...e, sec: Math.round(e.sec * 1000) / 1000, min: r1(e.sec / 60) })), evolution,
   };

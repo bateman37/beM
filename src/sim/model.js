@@ -2,6 +2,7 @@
 // Todo es PURO (sin azar, sin estado de partido): lo usan el generador y el contraste de las 32 capacidades. Una capacidad solo cuenta como usada si cambia una magnitud de este módulo.
 import { sigmoid, logit, interpolate, a01, clamp } from '../match/mathx.js';
 import { ATTR_INDEX, compileRecipe } from './profile.js';
+import { classifyExit } from './assist-table.js';
 import { perturbBinary, perturbCategories, qualityDistributionPure, pressureLossLogit, mixResolution, looseControlP, blockResolution, reboundTeamResolution, familiarityActor, familiaritySide, familiarityDelta } from '../match/formulas.js';
 
 // ------------------------------------------------------------------------------------------------------------------------------ roles (SIM-MOTOR-02 §4.1)
@@ -119,7 +120,7 @@ export function compilePlan(S, T, plan) {
       const zs = ex.zones.filter((z) => ZONES.includes(z)); if (!zs.length) continue;
       for (const z of zs) {
         const moved = !!ex.moved?.includes(z); const pullup = !!ex.pullupK?.includes(z); const roller = !!ex.rollerK; const key = `${pi}|${ex.role}|${z}|${ex.exec}|${moved}|${pullup}|${roller}`; const share = ex.weightShare / zs.length;
-        const prev = merged.get(key); if (prev) prev.share += share; else { const c = { pi, playId: pl.id, family: pl.family, role: ex.role, zone: z, exec: ex.exec, moved, defend: ex.defend, share, pullup, roller, label: ex.label ?? null }; merged.set(key, c); cells.push(c); }
+        const prev = merged.get(key); if (prev) prev.share += share; else { const c = { pi, playId: pl.id, family: pl.family, role: ex.role, zone: z, exec: ex.exec, moved, defend: ex.defend, share, pullup, roller, label: ex.label ?? null, elc: classifyExit(pl, ex).cls }; merged.set(key, c); cells.push(c); }
       }
     }
   }
@@ -257,14 +258,16 @@ export function shotCells(S, T, sides, k, M, ctx) {
   const grp = (xs) => xs.map((pl) => ({ pl, w: 1 })); const intGrp = grp(da.interiorDefs.length ? da.interiorDefs : da.rimDefs); const perGrp = grp(da.perimeterDefs.length ? da.perimeterDefs : dv.players);
   const defRolePlayers = (role) => (INTERIOR_DEF.has(role) ? intGrp : perGrp);
   const famCache = {}; const Zq0 = perturbBinaryZ(S, M, av, dv); const beaten = Math.log(S.defense.pressure.closePressureBeatenWeightFactor) * (M.pClose - S.defense.choiceReferences.closePressureChoiceP0) / S.defense.choiceReferences.closePressureChoiceP0;
-  const nPlays = comp.plays.length; const qc = new Array(nPlays);
+  // 04B §7.3: desplazamiento de calidad SOLO en celdas de aro, dentro de la misma formación (antes de sortear). Se calcula un objeto de calidad PROPIO para el aro de cada ficha: nunca se muta el objeto compartido por las demás zonas.
+  const dq = S.opportunity.simRimQualityLogit ?? 0;
+  const nPlays = comp.plays.length; const qc = new Array(nPlays); const qcRim = dq !== 0 ? new Array(nPlays) : null;
   for (let pi = 0; pi < nPlays; pi++) {
     const p = comp.plays[pi]; if (!p.available) continue;
     const caRaw = recipeByRoleGroups(S, p.play.qualityAttack, (r) => rolePool(S, T, av, p.play, r), tech);
     let cdRaw = recipeByRoleGroups(S, p.play.qualityDefense, defRolePlayers, tech);
     if (p.receiverFamily) cdRaw = N + (cdRaw - N) * 2 * M.pDeny; // negación de receptores: efecto proporcional a su elección (neutral en nivel 3)
     let extraZ = beaten; if (sides.fam) { const f = famPlayQuality(S, T, A, D, p, plan, defRolePlayers); extraZ += f; famCache[p.id] = f; }
-    qc[pi] = qualityFast(S, caRaw, cdRaw, 0, extraZ, Zq0);
+    qc[pi] = qualityFast(S, caRaw, cdRaw, 0, extraZ, Zq0); if (qcRim) qcRim[pi] = qualityFast(S, caRaw, cdRaw, 0, extraZ + dq, Zq0);
   }
   // pesos de opción (mezcla de entrenador, adaptación y preferencias; misma fórmula que mixResolution)
   const rEst = sel.candidateRead.opponentAbilityEstimate; const ctlPass = mean(av.players.map((p) => taskFor(S, 'TAR07', 'attack', 'passer', p))); const ob = S.outcomes.base.turnover; const cs = S.outcomes.controlSensitivity;
@@ -287,16 +290,20 @@ export function shotCells(S, T, sides, k, M, ctx) {
   for (let ci = 0; ci < nc; ci++) {
     const o = cells[ci]; const p = comp.plays[comp.cells[ci].pi]; if (!p.available) { o.w = 0; o.q = null; continue; }
     const pa = sa > 0 ? aa[ci] / sa : 0; const ppr = sp > 0 ? pp[ci] / sp : 0; const pj = q * pa + (1 - q) * ppr; let w = sc > 0 ? (1 - L) * (cc[ci] / sc) + L * pj : pj;
-    if (tilt !== 0) w *= Math.exp(tilt * rr[ci]); if (hasMid[ci]) w *= md[ci]; o.w = w; o.q = qc[comp.cells[ci].pi]; totalW += w;
+    if (tilt !== 0) w *= Math.exp(tilt * rr[ci]); if (hasMid[ci]) w *= md[ci]; o.w = w; o.q = qcRim && comp.cells[ci].zone === 'rim' ? qcRim[comp.cells[ci].pi] : qc[comp.cells[ci].pi]; totalW += w;
   }
   for (let ci = 0; ci < nc; ci++) cells[ci].w = totalW > 0 ? (cells[ci].w / totalW) * shareOrg : 0;
   // transición (zonas ESP de llegada, pase y movimiento derivados) y decisiones espontáneas (preferencias de los jugadores)
   const tz = S.derived.transition.zoneWeights; const trq = transitionQuality(S, T, sides, k, M); const spz = spontaneousZones(S, T, av, plan, M); const spq = spontaneousQuality(S, T, sides, k, M);
-  for (const o of comp.trans) { o.w = M.tau * tz[o.cell.zone]; o.q = trq; o.cell.passShare = S.derived.transition.passShare; o.cell.movedShare = S.derived.transition.movedShare; }
-  for (const o of comp.spont) { o.w = M.sigma * spz[o.cell.zone]; o.q = spq; o.cell.passShare = S.derived.spontaneous.passShare; o.cell.movedShare = S.derived.spontaneous.movedShare; }
+  const trqR = dq !== 0 ? transitionQuality(S, T, sides, k, M, dq) : null; const spqR = dq !== 0 ? spontaneousQuality(S, T, sides, k, M, dq) : null;
+  for (const o of comp.trans) { o.w = M.tau * tz[o.cell.zone]; o.q = trqR && o.cell.zone === 'rim' ? trqR : trq; o.cell.passShare = S.derived.transition.passShare; o.cell.movedShare = S.derived.transition.movedShare; }
+  for (const o of comp.spont) { o.w = M.sigma * spz[o.cell.zone]; o.q = spqR && o.cell.zone === 'rim' ? spqR : spq; o.cell.passShare = S.derived.spontaneous.passShare; o.cell.movedShare = S.derived.spontaneous.movedShare; }
   // §7.2: ajuste de MEZCLA (no de acierto). Una vez por contexto representado (organizado, transición, espontáneo): multiplica el peso de las celdas de triple y renormaliza dentro del contexto conservando su masa previa. Con 1, identidad exacta.
   const f3 = S.shotMix?.threeWeightFactor ?? 1;
   if (f3 !== 1) for (const grp of [cells, comp.trans, comp.spont]) { let m0 = 0; let m1 = 0; for (const o of grp) { m0 += o.w; if (o.cell.zone === 'three') o.w *= f3; m1 += o.w; } if (m1 > 0 && m0 > 0) { const r = m0 / m1; for (const o of grp) o.w *= r; } }
+  // 04B §7.2: mismo mecanismo para el aro ya representado (una vez por contexto, masa previa conservada, sin crear celdas): con 1, identidad exacta.
+  const fR = S.shotMix?.rimWeightFactor ?? 1;
+  if (fR !== 1) for (const grp of [cells, comp.trans, comp.spont]) { let m0 = 0; let m1 = 0; for (const o of grp) { m0 += o.w; if (o.cell.zone === 'rim') o.w *= fR; m1 += o.w; } if (m1 > 0 && m0 > 0) { const r = m0 / m1; for (const o of grp) o.w *= r; } }
   const all = comp.all; let tw = 0; for (let i = 0; i < all.length; i++) tw += all[i].w; if (tw > 0) for (let i = 0; i < all.length; i++) all[i].w /= tw;
   // protección del tiro rival: desplaza la mezcla entre interior y exterior (peso de elección ↑ ⇒ menos intentos en esa zona)
   tw = 0; for (let i = 0; i < all.length; i++) { const z = all[i].cell.zone; all[i].w *= (z === 'rim' || z === 'inside') ? 1 / M.protect.inside : z === 'three' ? 1 / M.protect.outside : 1; tw += all[i].w; }
@@ -333,20 +340,20 @@ function buildFw(S, T, view, vc, play, c) { const pool = play ? rolePool(S, T, v
 function estP(S, sh, fw, N, moved, A) { const b0 = logit(sh.p0) - sh.sD * (S.selection.candidateRead.opponentAbilityEstimate - N); let s = 0; let ws = 0; for (let i = 0; i < fw.length; i++) { const x = fw[i]; s += x.w * sigmoid(b0 + sh.sA * (A.get(x.pl) - N)); ws += x.w; } return ws > 0 ? s / ws : sh.p0; }
 
 // Calidad de la transición: parte sin oposición (llegada) y parte con oposición (llegada de defensores por FIS01/FIS02).
-function transitionQuality(S, T, sides, k, M) {
+function transitionQuality(S, T, sides, k, M, dq = 0) {
   const A = sides[k]; const D = sides[1 - k]; const dr = S.selection.direct;
   const ca = mean(A.view.players.map((p) => taskFor(S, 'TAR02', 'attack', 'handler', p)));
   let w1 = 0; let w2 = 0; for (const e of Object.entries(dr.defenderArrival)) { w1 += e[1]; }
   const arrival = mean(D.view.players.map((p) => { let s = 0; for (const [a, w] of Object.entries(dr.defenderArrival)) s += w * ea(S, p, a, 0); return s / (w1 || 1); })); void w2;
-  const fz = sides.fam ? famContextDelta(S, T, A, D, 'transition') : 0; const opp = qualityDistributionPure(S, ca, arrival, 0, true, false, fz).p; const free = qualityDistributionPure(S, ca, arrival, 0, false, true, fz).p;
+  const fz = (sides.fam ? famContextDelta(S, T, A, D, 'transition') : 0) + dq; const opp = qualityDistributionPure(S, ca, arrival, 0, true, false, fz).p; const free = qualityDistributionPure(S, ca, arrival, 0, false, true, fz).p;
   const u = (dr.unopposedChanceAfterSteal + dr.unopposedChanceAfterRebound) / 2; const out = {}; for (const q of QUALS) out[q] = u * free[q] + (1 - u) * opp[q];
   return out;
 }
-function spontaneousQuality(S, T, sides, k, M) {
+function spontaneousQuality(S, T, sides, k, M, dq = 0) {
   const A = sides[k]; const D = sides[1 - k]; const tech = S.energy.defaultTechnicalTaskMax;
   const ca = mean(A.view.players.map((p) => taskFor(S, 'TAR02', 'attack', 'handler', p)));
   const cd = mean(D.view.players.map((p) => taskFor(S, 'TAR02', 'defense', 'primary', p))); void tech;
-  return qualityDistributionPure(S, ca, cd, 0, true, false, sides.fam ? famContextDelta(S, T, A, D, 'spontaneous') : 0).p;
+  return qualityDistributionPure(S, ca, cd, 0, true, false, (sides.fam ? famContextDelta(S, T, A, D, 'spontaneous') : 0) + dq).p;
 }
 function spontaneousZones(S, T, view, plan, M) {
   const out = { rim: 0, inside: 0, midrange: 0, three: 0 }; const sel = S.selection; let ws = 0;

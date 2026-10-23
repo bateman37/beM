@@ -1,7 +1,7 @@
 // Perfil SIM (SEM-SIM01-20261022): todas las decisiones numéricas deportivas del generador viven aquí, como filas con ruta, valor, unidad, procedencia y efecto.
 // Procedencia (SIM-MOTOR-01 §4.3): «heredada» (copia de una fila del perfil efectivo detallado), «derivada» (transformación explícita de filas existentes) o «SEM-SIM01»
 // (semilla nueva autorizada por el encargo, pendiente de auditoría/calibración). El código lee `profile.v.<ruta>`; nunca constantes deportivas sueltas.
-import { SIM_PROFILE_ID, SIM_EXTENSION_ID, SIM04_EXTENSION_ID } from './version.js';
+import { SIM_PROFILE_ID, SIM_EXTENSION_ID, SIM04_EXTENSION_ID, SIM04B_EXTENSION_ID } from './version.js';
 import { fpString } from './fp.js';
 
 const deep = (x) => JSON.parse(JSON.stringify(x));
@@ -61,6 +61,12 @@ const SEM04_ROWS = [
   ['rebound.collective.referenceParticipants', 2, 'participantes (entero ≥ 1)', 'SEM04-REB: normaliza RA por la suma de los pesos de los N primeros puestos (con N neutrales enviados, RA = nivel neutral).'],
   ['shotMix.threeWeightFactor', 1, 'factor multiplicativo', 'Mezcla de zonas (no de acierto): multiplica una vez el peso de las celdas de triple de cada contexto y renormaliza dentro del contexto; con 1, identidad exacta de la mezcla previa.'],
 ];
+// Extensión SIM-MOTOR-04B (SEM-SIM04B-20261023, §7): tres filas NEUTRALES. Son semillas de evaluación autorizadas por el encargo, no calibración empírica, y solo existen para expresar los ajustes delimitados de la selección CAL.
+const SEM04B_ROWS = [
+  ['shotMix.rimWeightFactor', 1, 'factor multiplicativo', 'Mezcla de zonas (no de acierto): multiplica una vez el peso de las celdas de aro YA existentes de cada contexto y renormaliza dentro del contexto conservando su masa previa; no crea salidas al aro donde la ficha o el contexto no las admiten. Con 1, identidad exacta.'],
+  ['opportunity.simRimQualityLogit', 0, 'logit', 'Desplaza el logit de calidad de la oportunidad (cómoda frente a forzada) SOLO en las celdas de aro, dentro de la misma formación de calidad y antes de sortearla; no toca el porcentaje base de tiro ni las demás zonas. Con 0, identidad exacta.'],
+  ['assist.receivedAdvantageP0', 0, 'probabilidad', 'Probabilidad de que una salida con recepción previa acreditada por el catálogo (tabla de elegibilidad de pase final) conserve su ventaja hasta finalizar y admita entrega final; no es un segundo multiplicador del crédito (la entrega usa assist.eligibleFinalPassP0). Con 0, ninguna salida sin pase explícito admite entrega.'],
+];
 function flatten(prefix, src, out) {
   if (isLeaf(src)) { out.push([prefix, src]); return; }
   for (const [k, v] of Object.entries(src)) flatten(`${prefix}.${k}`, v, out);
@@ -79,6 +85,7 @@ export function buildSimProfile(detailed) {
   for (const [p, v, unit, effect] of SEM_ROWS) add(p, v, unit, 'SEM-SIM01', 'encargo SIM-MOTOR-01 §4.3 (semilla nueva, pendiente de auditoría/calibración)', effect);
   for (const [p, v, unit, effect] of SEM02_ROWS) add(p, v, unit, SIM_EXTENSION_ID.split('-').slice(0, 2).join('-'), 'encargo SIM-MOTOR-02 §5.1 (semilla nueva, no calibración)', effect);
   for (const [p, v, unit, effect] of SEM04_ROWS) add(p, v, unit, SIM04_EXTENSION_ID.split('-').slice(0, 2).join('-'), 'encargo SIM-MOTOR-04 §4 C04-01 / §7.2 (semilla de evaluación SEM04, no calibración empírica)', effect);
+  for (const [p, v, unit, effect] of SEM04B_ROWS) add(p, v, unit, SIM04B_EXTENSION_ID.split('-').slice(0, 2).join('-'), 'encargo SIM-MOTOR-04B §7.2–§7.4 y §8 (fila neutral de evaluación SEM04B, no calibración empírica)', effect);
   // Correspondencia de roles → créditos compatibles (tabla declarada; los pesos numéricos son los heredados selection.rolePreference y defense.assignment.roleFitWeight/otherRoleFitWeight).
   add('roles.creditTags.block', ['rimProtect', 'rimHelp'], 'etiquetas', 'SEM-SIM02', 'encargo SIM-MOTOR-02 §4.1: etiquetas de función defensiva que orientan el reparto del crédito de tapón', 'Un defensor cuyo rol defensivo favorece estas etiquetas pesa roleFitWeight (una vez) en el reparto del tapón.');
   add('roles.creditTags.steal', ['ballPressure', 'chaser'], 'etiquetas', 'SEM-SIM02', 'encargo SIM-MOTOR-02 §4.1: etiquetas de función defensiva que orientan el reparto del crédito de robo', 'Un defensor cuyo rol defensivo favorece estas etiquetas pesa roleFitWeight (una vez) en el reparto del robo.');
@@ -116,6 +123,7 @@ export function finalize(profile) {
 }
 export function fpOf(rows) { return fpString(JSON.stringify(rows.map((r) => [r.path, r.value]))); }
 
+export const RIM_QUALITY_LOGIT_RANGE = [0, 0.5];
 const deepNumeric = (x) => (Array.isArray(x) ? x.every(deepNumeric) : typeof x === 'number' && Number.isFinite(x));
 const sameShape = (a, b) => (Array.isArray(a) ? Array.isArray(b) && a.length === b.length && a.every((x, i) => sameShape(x, b[i])) : typeof b === 'number' && Number.isFinite(b));
 // Candidata: copia con filas sustituidas. Valida tipo, forma y límites; rechaza rutas desconocidas (nada se corrige en silencio).
@@ -127,6 +135,12 @@ function validateSem04(base, map) {
   if (!Number.isInteger(n) || n < 1 || (Array.isArray(w) && n > w.length)) add('rebound.collective.referenceParticipants', 'entero positivo dentro del array de pesos');
   if (!(typeof f === 'number' && Number.isFinite(f) && f > 0)) add('shotMix.threeWeightFactor', 'factor finito y positivo');
   const g = eff('energy.costPerLiveMinute'); if (!(typeof g === 'number' && Number.isFinite(g) && g > 0)) add('energy.costPerLiveMinute', 'gasto finito y positivo');
+  // 04B §8.1: factores positivos, probabilidades válidas y desplazamientos dentro del rango autorizado; nada se corrige en silencio
+  if (base.index.has('shotMix.rimWeightFactor')) {
+    const fr = eff('shotMix.rimWeightFactor'); if (!(typeof fr === 'number' && Number.isFinite(fr) && fr > 0)) add('shotMix.rimWeightFactor', 'factor finito y positivo');
+    const dq = eff('opportunity.simRimQualityLogit'); if (!(typeof dq === 'number' && Number.isFinite(dq) && dq >= RIM_QUALITY_LOGIT_RANGE[0] && dq <= RIM_QUALITY_LOGIT_RANGE[1])) add('opportunity.simRimQualityLogit', `desplazamiento finito dentro de [${RIM_QUALITY_LOGIT_RANGE.join(', ')}] logit`);
+    const pr = eff('assist.receivedAdvantageP0'); if (!(typeof pr === 'number' && Number.isFinite(pr) && pr >= 0 && pr < 1)) add('assist.receivedAdvantageP0', 'probabilidad finita en [0, 1)');
+  }
   return errs;
 }
 export function validateOverrides(base, overrides) {
@@ -137,7 +151,7 @@ export function validateOverrides(base, overrides) {
     if (Array.isArray(r.value)) { if (!deepNumeric(r.value)) errs.push({ path: o.path, message: 'fila no editable (contiene texto)' }); else if (!sameShape(r.value, o.value)) errs.push({ path: o.path, message: 'debe conservar la forma numérica de la fila' }); }
     else if (typeof r.value === 'number') { if (typeof o.value !== 'number' || !Number.isFinite(o.value)) errs.push({ path: o.path, message: 'debe ser un número finito' }); }
     else errs.push({ path: o.path, message: 'fila no editable' });
-    if (typeof r.value === 'number' && typeof o.value === 'number' && /(^|\.)(p0|blockP0|P0)$|P0$/.test(o.path) && (o.value <= 0 || o.value >= 1)) errs.push({ path: o.path, message: 'una probabilidad base debe estar en (0, 1)' });
+    if (typeof r.value === 'number' && typeof o.value === 'number' && /(^|\.)(p0|blockP0|P0)$|P0$/.test(o.path) && o.path !== 'assist.receivedAdvantageP0' && (o.value <= 0 || o.value >= 1)) errs.push({ path: o.path, message: 'una probabilidad base debe estar en (0, 1)' });
     if (/(^|\.)(normalSeconds|lateSeconds|lateWindowSeconds|neutralSecondsPerControl)$/.test(o.path) && !(o.value > 0)) errs.push({ path: o.path, message: 'debe ser positivo' });
   }
   if (base.index.has('shotMix.threeWeightFactor')) errs.push(...validateSem04(base, new Map((overrides ?? []).map((o) => [o.path, o.value]))));

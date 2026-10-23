@@ -14,7 +14,7 @@ export function decodeZone(v) {
   if (v && typeof v === 'object' && Number.isFinite(v.a) && Number.isFinite(v.m)) return { a: v.a, m: v.m, q: Array.isArray(v.q) ? v.q.slice(0, 3) : [null, null, null] };
   return null; // formato desconocido: se declara no leído, nunca un cero
 }
-export const RETENTION_REFERENCE = { level: 'reference', conserved: ['identity', 'score', 'box.players', 'box.teams', 'zones', 'families', 'familyDenominators', 'assistDenominators', 'pressOps', 'exposure', 'validity'], notConserved: [{ id: 'quintets', reason: 'no exigidos en Referencia' }, { id: 'evolution', reason: 'no exigida en Referencia' }, { id: 'defense_by_organization', reason: 'solo en Análisis' }, { id: 'orders_detail', reason: 'solo nCommands de identidad; el detalle es de Análisis' }, { id: 'decision_traces', reason: 'solo diagnóstico seleccionado' }] };
+export const RETENTION_REFERENCE = { level: 'reference', conserved: ['identity', 'score', 'box.players', 'box.teams', 'zones', 'families', 'familyDenominators', 'assistDenominators', 'assistFunnel', 'pressOps', 'exposure', 'validity'], notConserved: [{ id: 'quintets', reason: 'no exigidos en Referencia' }, { id: 'evolution', reason: 'no exigida en Referencia' }, { id: 'defense_by_organization', reason: 'solo en Análisis' }, { id: 'orders_detail', reason: 'solo nCommands de identidad; el detalle es de Análisis' }, { id: 'decision_traces', reason: 'solo diagnóstico seleccionado' }] };
 const LINE_KEYS = ['sec', 'pts', 'fgPts', 'ftPts', 'fg2m', 'fg2a', 'fg3m', 'fg3a', 'ftm', 'fta', 'oreb', 'dreb', 'astC', 'astL', 'tov', 'stl', 'blk', 'blkAgainst', 'pf', 'pfd', 'pm'];
 const r1 = (x) => Math.round(x * 10) / 10;
 
@@ -29,7 +29,7 @@ export function essentialFromResult(res, { reconcile = null } = {}) {
     schema: ESSENTIAL_SCHEMA, model: SIM_MODEL, version: SIM_VERSION, resultSchema: SIM_RESULT_SCHEMA, statsPolicy: SIM_STATS_POLICY_ID, complete: res.finishedPublished === true, status: res.status,
     identity: { matchId: res.identity.matchId, attemptId: res.identity.attemptId, seed: res.identity.seed, importance: res.identity.importance, teams: res.identity.teams, inputFingerprint: res.identity.inputFingerprint, effectiveInputFingerprint: res.identity.effectiveInputFingerprint, nCommands: res.identity.nCommands, simProfile: res.identity.simProfile, simProfileFingerprint: res.identity.simProfileFingerprint, tablesFingerprint: res.identity.tablesFingerprint, sportFingerprint: res.sportFingerprint },
     score: { final: res.score.final, periods: res.score.periods, overtimes: res.score.overtimes, winner: res.score.winner }, durationSeconds: r1(res.published), controls: res.controls,
-    box: { players, teams }, zones: res.zones, families, familyDenominators: res.familyDenominators, assistDenominators: res.assistDenominators, pressOps: res.pressOps, exposure,
+    box: { players, teams }, zones: res.zones, families, familyDenominators: res.familyDenominators, assistDenominators: res.assistDenominators, assistFunnel: res.assistFunnel ?? null, pressOps: res.pressOps, exposure,
     // contrato de conservación del nivel Referencia (C03-08): lo conservado y lo declarado NO conservado (distinto de cero, de «no ocurrió» y de «no representado»)
     retention: RETENTION_REFERENCE,
     validity: rec ? { valid: rec.valid, evaluated: rec.evaluated, failed: rec.failed, failedIds: rec.checks.filter((c) => !c.ok).map((c) => c.id) } : null,

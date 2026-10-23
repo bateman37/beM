@@ -59,3 +59,20 @@ export function assistDenominators(evs) {
   }
   return out;
 }
+
+// 04B §7.5: embudo causal del pase final POR CLASE de elegibilidad (tabla `assist-table.js`), distinto de `assistDenominators` (que es por contexto). Una finalización cuenta una vez. Por equipo atacante y clase:
+//  opportunities: finalizaciones de la clase · eligible: las que admiten entrega (`elig`) · delivered: entrega producida (pasador sorteado) · eligibleBaskets: canastas de campo elegibles · fgAssists: asistencias de campo ·
+//  eligibleFtSeries / ftAssists: series de libres por falta de tiro elegibles y asistencias a libres. `received_lost` es una oportunidad de la clase recepción cuya ventaja no se conservó (sin entrega).
+export const FUNNEL_CLASSES = ['none', 'explicit_pass', 'received_advantage', 'received_lost', 'transition', 'spontaneous'];
+export function assistFunnel(evs) {
+  const mk = () => ({ opportunities: 0, eligible: 0, delivered: 0, eligibleBaskets: 0, fgAssists: 0, eligibleFtSeries: 0, ftAssists: 0 });
+  const out = [0, 1].map(() => Object.fromEntries(FUNNEL_CLASSES.map((c) => [c, mk()]))); const seen = new Set(); const seriesAssist = new Map();
+  for (const e of evs) if (e.ty === 'ft' && e.cause === 'shooting' && e.made) seriesAssist.set(e.fin, true);
+  for (const e of evs) {
+    if (e.ty !== 'shot' && e.ty !== 'shootfoul') continue; if (e.ctx === 'putback') continue; const k = e.ty === 'shot' ? e.tm : 1 - e.tm; const c = out[k][FUNNEL_CLASSES[e.elc ?? 0] ?? 'none']; if (!c) continue;
+    const key = `${k}|${e.fin}`; const first = !seen.has(key); if (first) { seen.add(key); c.opportunities++; if (e.elig) c.eligible++; if (e.elig && e.passer) c.delivered++; }
+    if (e.ty === 'shot' && e.elig && e.made) { c.eligibleBaskets++; if (e.passer) c.fgAssists++; }
+    if (e.ty === 'shootfoul' && !e.and1 && e.elig) { c.eligibleFtSeries++; if (e.passer && seriesAssist.get(e.fin)) c.ftAssists++; }
+  }
+  return out;
+}

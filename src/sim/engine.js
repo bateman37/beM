@@ -7,6 +7,7 @@ import { SIM_MODEL, SIM_RESULT_SCHEMA, SIM_VERSION } from './version.js';
 import { normalizeInput, validateOrder, chainFingerprint } from './adapt.js';
 import { foulRule, newCoachState } from './coachsim.js';
 import { lineupView, defenseAssignment, attackModel, finishPace, shotCells, finisherWeights, shotProbs, blockProb, reboundModel, assistModel, passAbility, ftProb, severity, ea, recipe, offRoleBias, rolePoolOf, screenRoleOf } from './model.js';
+import { ELC } from './assist-table.js';
 import { consistencySigmaAt, enduranceFactorAt } from '../match/formulas.js';
 import { clamp } from '../match/mathx.js';
 
@@ -25,7 +26,7 @@ export class SimMatch {
     SimMatch.created += 1;
     this.ctx = ctx; const { sp, T } = ctx; this.S = sp.v; this.T = T;
     this.norm = normalizeInput(input, sp, T);
-    this.opts = opts; this.rng = new Rng(this.norm.seed);
+    this.opts = opts; this.rng = new Rng(this.norm.seed); this.rotLog = opts.rotationDiag ? [] : null; // diagnóstico de relevos (04B §7.5): solo lectura, no consume azar ni altera decisiones
     this.events = []; this.segments = []; this.seq = 0; this.gt = 0; this.period = 1; this.status = 'ready'; this.error = null;
     this.published = 0; this.publishedPeriods = 0; this.score = [0, 0]; this.periodScore = [[0, 0]]; this.teamFouls = [[0, 0]]; this.controlTeam = 0;
     this.orders = []; this.appliedOrders = []; this.orderLog = []; this.pendingFrac = 0; this.finSeq = 0; this.commandLog = []; this.contextLog = []; this.coach = newCoachState();
@@ -43,7 +44,7 @@ export class SimMatch {
       id: p.id, team: ti, name: p.name ?? p.id, ab: mkAb(p.abilities), abv: Float64Array.from(ATTR_ORDER, (a) => p.abilities[a]), age: p.age ?? null, height: p.heightCm, wingspan: p.wingspanCm, init: p.initiative, voc: p.finishingVocation, zp: p.zonePreference,
       kn: p.knowledge ?? null, offRole: p.offensiveRole?.code ?? null, defRole: p.defensiveRole?.code ?? null, positions: p.positions,
       energy: p.state.energy, form: p.state.form ?? 0, M: { TIR: p.state.M_TIR ?? 0, OFE: p.state.M_OFE ?? 0, DEF: p.state.M_DEF ?? 0 }, available: p.state.available !== false,
-      fouls: 0, out: false, onCourt: false, slot: null, courtSince: 0, benchSince: 0, minutes: 0, sev: 0, lastMoment: 0, slotMin: {}, roleMin: {},
+      fouls: 0, out: false, onCourt: false, slot: null, courtSince: 0, benchSince: 0, minutes: 0, sev: severity(S, p.state.energy), lastMoment: 0, slotMin: {}, roleMin: {},
     }));
     return { idx: ti, id: t.id, name: t.name, plan, players, byId: Object.fromEntries(players.map((p) => [p.id, p])), T0: plan.initialTeamMoment ?? 0, tLast: 0 };
   }
@@ -96,11 +97,17 @@ export class SimMatch {
 
   // ------------------------------------------------------------------------------------------------------------------------ rotación básica (política del entrenador del plan)
   _utility(pl, slot) { const w = this.S.rotation.slotAbilityWeights[slot]; let s = 0; for (const a in w) s += w[a] * ea(this.S, pl, a, this.S.rotation.utilityMaxEnergyPenalty); return s; }
+  // Severidad de fatiga de TODOS los jugadores desde su energía ACTUAL (04B §4.2): la utilidad de la rotación y la preparación del tramo leen el mismo dato. La energía cambia al cerrar tramos y al recuperarse entre periodos.
+  _refreshSeverity() { const S = this.S; for (const t of this.teams) for (const p of t.players) p.sev = severity(S, p.energy); }
+  _noteRotation(t, slot, reason, cur, best, tol, subbed) {
+    if (!this.rotLog) return; const row = (p) => (p ? { id: p.id, energy: Math.round(p.energy * 100) / 100, sev: Math.round(p.sev * 1e6) / 1e6, utility: Math.round(this._utility(p, slot) * 1e6) / 1e6 } : null);
+    this.rotLog.push({ t: r1(this.gt), tm: t.idx, slot, reason, cur: row(cur), cand: row(best), tolerance: tol, subbed });
+  }
   _rotate(t) {
     const S = this.S; const pol = this.T.coachPolicies[t.plan.coach?.policy ?? 'ENTREF02'] ?? this.T.coachPolicies.ENTREF02; const fb = this.T.foulBook;
     const left = this.periodStart + this.periodLen - this.gt; const margin = this.score[t.idx] - this.score[1 - t.idx];
     const bench = () => t.players.filter((p) => !p.onCourt && !p.out && p.available);
-    const outs = []; const ins = [];
+    const outs = []; const ins = []; const whys = [];
     const pairs = new Map((t.plan.participation?.pairs ?? []).map((x) => [x.slot, x]));
     const elapsed = Math.max(1, this.gt);
     for (const slot of SLOTS) {
@@ -122,19 +129,20 @@ export class SimMatch {
       }
       if (!reason) continue;
       const ready = cands.filter((p) => (reason === 'exclusion' || reason === 'vacante' || reason === 'energia_critica') ? true : (p.energy >= pol.benchReadyEnergy && this.gt - p.benchSince >= pol.minBenchStint) || (p.minutes === 0 && p.energy >= pol.benchReadyEnergy));
-      if (!ready.length) { if (reason === 'exclusion') { cur.onCourt = false; cur.slot = null; outs.push(cur); } continue; } // sin sustitutos: inferioridad con los jugadores reales
+      if (!ready.length) { if (reason === 'exclusion') { cur.onCourt = false; cur.slot = null; outs.push(cur); whys.push(`${slot}:${reason}`); } continue; } // sin sustitutos: inferioridad con los jugadores reales
       let best = null; let bu = -Infinity;
       const pr = pairs.get(slot);
       for (const c of ready) { let u = this._utility(c, slot); if (pr && (c.id === pr.starter || c.id === pr.relief)) u += 0.5 * 0; if (u > bu + 1e-9) { bu = u; best = c; } }
       if (pr) { const pref = ready.find((c) => c.id === (cur?.id === pr.starter ? pr.relief : pr.starter)); if (pref && this._utility(pref, slot) >= bu - 1) best = pref; }
       if (cur && reason !== 'exclusion' && reason !== 'energia_critica' && reason !== 'vacante') {
         const tol = reason === 'faltas' ? pol.foulProtectionSacrifice : reason === 'energia' ? pol.fatigueUtilitySacrifice : reason === 'retorno_titular' ? pol.fatigueUtilitySacrifice : pol.replacementGain;
-        if (this._utility(best, slot) + tol < this._utility(cur, slot)) continue;
-      } else if (cur && reason === 'energia_critica' && this._utility(best, slot) + S.rotation.criticalReplacementTolerance < this._utility(cur, slot)) continue;
+        if (this._utility(best, slot) + tol < this._utility(cur, slot)) { this._noteRotation(t, slot, reason, cur, best, tol, false); continue; }
+      } else if (cur && reason === 'energia_critica' && this._utility(best, slot) + S.rotation.criticalReplacementTolerance < this._utility(cur, slot)) { this._noteRotation(t, slot, reason, cur, best, S.rotation.criticalReplacementTolerance, false); continue; }
+      this._noteRotation(t, slot, reason, cur, best, null, true);
       if (cur) { cur.onCourt = false; cur.slot = null; cur.benchSince = this.gt; outs.push(cur); }
-      best.onCourt = true; best.slot = slot; best.courtSince = this.gt; ins.push(best);
+      best.onCourt = true; best.slot = slot; best.courtSince = this.gt; ins.push(best); whys.push(`${slot}:${reason}`);
     }
-    if (outs.length || ins.length) this._push({ ty: 'sub', tm: t.idx, out: outs.map((p) => p.id), in: ins.map((p) => p.id) });
+    if (outs.length || ins.length) this._push({ ty: 'sub', tm: t.idx, out: outs.map((p) => p.id), in: ins.map((p) => p.id), why: whys });
   }
 
   // ------------------------------------------------------------------------------------------------------------------------ un tramo
@@ -148,9 +156,9 @@ export class SimMatch {
     return d;
   }
 
-  _prepareSides(d) {
+  _prepareSides(d, sevFresh = false) {
     const S = this.S; const T = this.T;
-    for (const t of this.teams) for (const p of t.players) p.sev = severity(S, p.energy);
+    if (!sevFresh) this._refreshSeverity();
     this._lineupSnapshot();
     for (const t of this.teams) { const s = this.sides[t.idx]; s.plan = t.plan; s.view = lineupView(S, T, s); s.teamT = t.T0 * Math.pow(0.5, this.gt / S.teamMoment.halfLifeSeconds); s.view.teamT = s.teamT; }
     for (const t of this.teams) { const s = this.sides[t.idx]; const r = this.sides[1 - t.idx]; s.assign = defenseAssignment(S, T, s, s.view, r.view, r.plan); }
@@ -179,11 +187,11 @@ export class SimMatch {
     if (this.status === 'finished' || this.status === 'error') return false;
     const S = this.S;
     if (this.gt >= this.periodStart + this.periodLen - 1e-9) { if (!this._closePeriod()) return false; }
-    this._applyOrders();
+    this._applyOrders(); this._refreshSeverity();
     for (const t of this.teams) this._rotate(t);
     let d = this._nextSegmentLength(); const start = this.gt;
     if (this.segments.length > 4000) { this.status = 'error'; this.error = { cause: 'tope técnico de tramos', phase: 'generación' }; return false; }
-    this._prepareSides(d); if (this.segments.length) this._updateMoments(d);
+    this._prepareSides(d, true); if (this.segments.length) this._updateMoments(d);
     const seg = { n: this.segments.length, start, end: start + d, period: this.period, lineups: this.teams.map((t) => this.sides[t.idx].onCourt.map((e) => e.pl.id)), first: this.controlTeam, controls: [0, 0], ctlPeriod: this.period };
     seg.org = null; this.segments.push(seg);
     seg.org = this.sides.map((x) => x.assign.orgId); seg.slots = this.teams.map((t) => Object.fromEntries(this.sides[t.idx].onCourt.map((en) => [en.pl.id, en.slot]))); seg.plans = this.teams.map((t) => ({ disposition: t.plan.disposition, defense: t.plan.defense, coverage: t.plan.coverage, pressureHeight: t.plan.pressureHeight, styles: { ...t.plan.styles }, defStyles: { ...t.plan.defStyles }, midrange: t.plan.midrange }));
@@ -240,7 +248,13 @@ export class SimMatch {
     const fw = finisherWeights(S, T, s.view, play, cell.kind === 'play' ? { ...c, kind: 'play' } : c, s.plan); const fi = rng.weightedBy(fw, 'w'); if (fi < 0) throw new Error(`sin finalizadores: lu=${s.view.lu.length} dir=${s.view.director?.id} ${JSON.stringify({ c, fw: fw.map((x) => [x.pl.id, x.w]), kind: cell.kind })}`); const shooter = fw[fi].pl;
     const q = rng.weighted([cell.q.comfortable, cell.q.normal, cell.q.forced]);
     const moved = putback ? false : (cell.kind === 'play' ? c.moved : rng.bernoulli(c.movedShare));
-    let passer = null; const passable = putback ? false : cell.kind === 'play' ? c.exec === 'pass' : rng.bernoulli(c.passShare);
+    // 04B §7.4: elegibilidad de pase final por clase (tabla declarativa `assist-table.js`). `explicit_pass` conserva su regla; la recepción con ventaja acreditada decide una vez (compacta, sin azar si la fila es 0); transición y
+    // espontáneo conservan su productor; la continuación por rebote ofensivo no hereda pase. Con `assist.receivedAdvantageP0 = 0` el consumo de azar es el de 04.
+    let passer = null; let passable = false; let elc = ELC.NONE;
+    if (!putback) {
+      if (cell.kind === 'play') { if (c.elc === ELC.EXPLICIT) { passable = true; elc = ELC.EXPLICIT; } else if (c.elc === ELC.RECEIVED) { const p0 = S.assist.receivedAdvantageP0 ?? 0; passable = p0 > 0 && rng.bernoulli(p0); elc = passable ? ELC.RECEIVED : ELC.RECEIVED_LOST; } }
+      else { passable = rng.bernoulli(c.passShare); elc = cell.kind === 'trans' ? ELC.TRANSITION : ELC.SPONTANEOUS; }
+    }
     if (passable && rng.bernoulli(s.assist.p)) { const others = A.filter((p) => p !== shooter); const ct = S.roles.creditTags.passer; const ws = others.map((p) => Math.max(0.05, passAbility(S, p) / S.neutralAbility) * offRoleBias(S, T, p, ct)); passer = others[rng.weighted(ws)]?.id ?? null; }
     const src = putback ? 'putback' : cell.kind === 'play' ? c.family : cell.kind === 'trans' ? 'transition' : 'spontaneous';
     const zone = c.zone; const fin = ++this.finSeq;
@@ -250,22 +264,24 @@ export class SimMatch {
     // sin filtrar por posición nominal) con otro jugador distinto del ejecutante y del director. Sin candidato: `scrSrc` 0 (ausencia explícita); una continuación/putback no hereda el bloqueo anterior.
     if (ctxName !== 'putback') { dfn = s.zoneDefIds(zone); if (ctxName === 'organized') { dir = s.view.director.id; const sr = screenRoleOf(play); if (sr) { if (c.role === sr) { scr = shooter.id; scrSrc = 1; } else { const pool = rolePoolOf(S, T, s.view, play, sr).filter((x) => x.pl !== shooter && x.pl.id !== dir); const bi = rng.weighted(pool.map((x) => x.w)); scr = bi >= 0 ? pool[bi].pl.id : null; scrSrc = bi >= 0 ? 2 : 0; } } } }
     const elig = passable ? 1 : 0; // C04-06: la finalización admite una entrega final (denominador de asistencias)
-    const base = { ty: 'shot', tm: k, pl: shooter.id, zone, q, src, play: c.playId ?? null, moved, passer, blk: null, made: false, and1: false, pts: 0, end: null, fin, ctx: ctxName, dir, scr, scrSrc, elig, dfn, cont };
+    const base = { ty: 'shot', tm: k, pl: shooter.id, zone, q, src, play: c.playId ?? null, moved, passer, blk: null, made: false, and1: false, pts: 0, end: null, fin, ctx: ctxName, dir, scr, scrSrc, elig, elc, dfn, cont };
     const info = { cell: { ...c, moved }, kind: cell.kind };
     const sp = shotProbs(S, T, this.sides, k, M, info, shooter, q);
+    // 04B §7.5 (diagnóstico seleccionado): lo que el motor YA calculó para este tiro, con la condición de la probabilidad (`p` es condicional a que no haya tapón). No se vuelve a ejecutar ninguna fórmula ni se consume azar.
+    if (this.opts.shotDiag) base.diag = { cond: 'p condicional a ausencia de tapón', p: sp.p, pBase: sp.pBase, K: sp.K, A: sp.A, D: sp.D, qp: [cell.q.comfortable, cell.q.normal, cell.q.forced], blkP: null };
     const origin = { src, play: c.playId ?? null, zone, fin };
     if (kind === 'sf') {
       const made = rng.bernoulli(sp.p); const nFt = zone === 'three' ? 3 : 2;
       if (made) { // canasta con falta: el tiro cuenta y se añade un libre ligado; sigue siendo UNA finalización
         base.made = true; base.and1 = true; base.pts = S.shots[zone].points; const sh = this._pushShotRec(rec, base);
-        rec.chain.push({ foul: { ty: 'shootfoul', tm: 1 - k, zone, victim: shooter.id, src, play: c.playId ?? null, and1: true, fin, cont, ctx: ctxName, dir, scr, scrSrc, elig, dfn, passer } }); this._ftSeries(rec, k, shooter, 1, 'and1', sh, passer, s, putback, origin);
+        rec.chain.push({ foul: { ty: 'shootfoul', tm: 1 - k, zone, victim: shooter.id, src, play: c.playId ?? null, and1: true, fin, cont, ctx: ctxName, dir, scr, scrSrc, elig, elc, dfn, passer } }); this._ftSeries(rec, k, shooter, 1, 'and1', sh, passer, s, putback, origin);
       } else { // fallo con falta de tiro: sin intento de campo (política EST-SIM02), libres del tirador; una finalización
-        const f = { ty: 'shootfoul', tm: 1 - k, zone, victim: shooter.id, src, play: c.playId ?? null, fin, cont, ctx: ctxName, dir, scr, scrSrc, elig, dfn, passer }; rec.chain.push({ foul: f }); this._ftSeries(rec, k, shooter, nFt, 'shooting', f, passer, s, putback, origin);
+        const f = { ty: 'shootfoul', tm: 1 - k, zone, victim: shooter.id, src, play: c.playId ?? null, fin, cont, ctx: ctxName, dir, scr, scrSrc, elig, elc, dfn, passer }; rec.chain.push({ foul: f }); this._ftSeries(rec, k, shooter, nFt, 'shooting', f, passer, s, putback, origin);
       }
       return;
     }
     // intento de campo
-    const bl = blockProb(S, T, this.sides, k, M, shooter, zone, rng);
+    const bl = blockProb(S, T, this.sides, k, M, shooter, zone, rng); if (base.diag) base.diag.blkP = bl.p;
     if (rng.bernoulli(bl.p)) { base.blk = bl.blocker.id; base.end = null; }
     const made = base.blk == null && rng.bernoulli(sp.p); base.made = made; if (made) base.pts = S.shots[zone].points;
     const shot = this._pushShotRec(rec, base);
