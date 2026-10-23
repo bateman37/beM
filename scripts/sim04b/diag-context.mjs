@@ -5,7 +5,7 @@ import { pathToFileURL } from 'node:url';
 import { resolve } from 'node:path';
 const arg = (k, d = null) => { const a = process.argv.find((x) => x.startsWith(`--${k}=`)); return a ? a.slice(k.length + 3) : d; };
 const SELF = new URL('../..', import.meta.url).pathname.replace(/\/$/, ''); const root = resolve(arg('root', SELF)); const imp = (p) => import(pathToFileURL(resolve(root, p)).href);
-const { loadAgenda } = await import('../sim04/exec.mjs');
+const { loadAgenda } = await import('./exec.mjs');
 const { loadData } = await imp('scripts/node-data.js'); const { makeContext } = await imp('src/sim/context.js'); const { SimMatch } = await imp('src/sim/engine.js'); await imp('src/sim/materialize.js'); const { playAutomatic } = await imp('src/sim/coachsim.js');
 const ov = arg('overrides'); const overrides = ov ? (JSON.parse(readFileSync(ov, 'utf8')).overrides ?? JSON.parse(readFileSync(ov, 'utf8'))) : null;
 const ctx = makeContext(loadData().profile, overrides);
