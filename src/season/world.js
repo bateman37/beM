@@ -11,7 +11,7 @@ import { referenceTeamMap } from '../sim/teams.js';
 import { validateSimInput } from '../sim/adapt.js';
 import { youthTeam, buildTeamsInput } from '../matchday/scenario.js';
 import { computeTable } from '../matchday/standings.js';
-import { createEncounter } from '../engine/index.js';
+import { playDetailed } from '../matchday/detailed.js';
 import { SeasonLedger } from './ledger.js';
 
 const deep = (x) => JSON.parse(JSON.stringify(x));
@@ -66,9 +66,9 @@ export class SeasonWorld {
     const matchId = this.matchIdOf(comp, round, home, away); const input = this.inputOf(comp, round, home, away); const depth = this.depths[comp];
     const ownIdx = comp === 'SEN-A' ? [home, away].indexOf(this.own) : -1; const directed = this.directedFrom != null && round > this.directedFrom && ownIdx >= 0 && !this.comps[comp].youth;
     let model; let ess; let analysis = null;
-    if (directed) { const enc = createEncounter({ input, profile: this.profile, controlledTeams: [ownIdx], instanceId: matchId }); while (!enc.done) enc.advance({ until: 'step' }); ess = enc.essential(); model = 'detailed'; }
+    if (directed) { void ownIdx; ess = playDetailed(input, this.profile); model = 'detailed'; }
     else { const m = new SimMatch(input, this.ctx, { matchId, attemptId: 1 }); m.finish(); if (depth === 'analysis') analysis = buildSimResult(m, { events: false, reconcile: false }); ess = buildSimEssential(m); model = 'sim'; if (ess.validity?.valid === false) throw new Error(`encuentro ${matchId} no válido: ${ess.validity.failedIds}`); }
-    const score = model === 'sim' ? ess.score.final : ess.result.court_score;
+    const score = ess.score.final;
     const rec = { matchId, comp, round, home, away, model, depth: directed ? 'directed' : depth, score, essential: ess, analysis }; this.results.set(matchId, rec);
     const clubs = [home, away]; const r = this.ledger.record(ess, { season: this.season, competition: comp, round, clubs: clubs.map((c, i) => this._clubOf(c, round, i)), model, matchId, attemptId: 1 }); rec.recorded = r.ok; return rec;
   }

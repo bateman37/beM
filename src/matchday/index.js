@@ -70,7 +70,7 @@ export class Matchday {
   _finish(p) {
     const id = p.id; const meta = this.meta.get(id);
     if (meta.resolver === 'sim') { const e = this.shard.essential(id); this.results[id] = { model: 'sim', matchId: id, attemptId: meta.attemptId, acceptedAt: this.T, essential: e, valid: e.validity?.valid !== false }; }
-    else { const d = this.detailed.get(id); const e = d.essential(); this.results[id] = { model: 'detailed', matchId: id, attemptId: meta.attemptId, acceptedAt: this.T, essential: e, valid: e?.validity?.valid ?? true }; }
+    else { const d = this.detailed.get(id); const e = d.essential(); this.results[id] = { model: 'detailed', matchId: id, attemptId: meta.attemptId, acceptedAt: this.T, essential: e, valid: e.validity.valid }; }
     p.valid = this.results[id].valid;
   }
   // Orden manual del usuario sobre un encuentro. En el detallado entra en su ventana atómica; en SIM, en la siguiente frontera canónica (source «manual»: la política no la sobrescribe).
@@ -102,7 +102,7 @@ export class Matchday {
     const ctx = contextFromJSON(snap.ctx);
     const fixtures = snap.fixtures.map((f) => ({ id: f.meta.id, competition: f.meta.competition, resolver: f.meta.resolver, start: f.meta.start, controlledTeams: f.meta.controlledTeams, attemptId: f.meta.attemptId, label: f.meta.label, youth: f.meta.youth, input: { teams: f.meta.teams.map((id) => ({ id })) } }));
     const md = new Matchday({ id: snap.id, date: snap.date, fixtures, standings0: snap.standings0, objectives: snap.objectives, ctx, profile, barrierSeconds: snap.barrierSeconds, policy: snap.policy, _restore: true });
-    for (const f of snap.fixtures) { if (f.result) { md.results[f.meta.id] = f.result; continue; } if (f.meta.resolver === 'sim') md.shard.restore({ id: f.meta.id, start: f.meta.start }, f.state); else md.detailed.set(f.meta.id, DetailedFixture.restore(f.meta.id, f.state)); }
+    for (const f of snap.fixtures) { if (f.result) { md.results[f.meta.id] = f.result; continue; } if (f.meta.resolver === 'sim') md.shard.restore({ id: f.meta.id, start: f.meta.start }, f.state); else md.detailed.set(f.meta.id, DetailedFixture.restore(f.meta.id, f.state, profile)); }
     md.T = snap.T; md.barrier = snap.barrier; md.paused = snap.paused; md.log = snap.log; md.decisions = snap.decisions;
     md.packets = new Map(); for (const id of md.ids) { /* se reconstruye el presente publicado sin avanzar */ } md._republish(); return md;
   }

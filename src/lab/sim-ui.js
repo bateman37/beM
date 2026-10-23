@@ -4,6 +4,13 @@
 import { h, clear, table } from './dom.js';
 import { store } from './store.js';
 import { makeContext, contextToJSON, SimMatch, buildSimResult, SIM_MODEL, SIM_RESULT_SCHEMA, SIM_VERSION } from '../sim/index.js';
+import { snapshotSim } from '../sim/snapshot.js';
+import { analysisCards, learningCard, rebuildFrom, dl as dlx } from './sim-analysis-ui.js';
+import { makeLearningCopy, teamStatesOf, nextMatchId, newLedgers } from './learning-model.js';
+import { ConsequenceLedger } from '../sim/consequences.js';
+import { dayView } from './sim-day-ui.js';
+import { seasonView } from './sim-season-ui.js';
+import { pbatchView } from './sim-pbatch-ui.js';
 import { referenceTeamMap, buildPairInput } from '../sim/teams.js';
 import { applyOverrides, validateOverrides, diffProfile, profileSections } from '../sim/profile.js';
 import { buildAgenda, TEAM_IDS } from '../sim/schedule.js';
@@ -15,8 +22,8 @@ const pct = (a, b) => (b > 0 ? `${((100 * a) / b).toFixed(1)} %` : '—');
 const dl = (name, text, type = 'application/json') => { const url = URL.createObjectURL(new Blob([text], { type })); const l = h('a', { href: url, download: name }); document.body.append(l); l.click(); l.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000); };
 
 export const simState = {
-  sub: 'match', teamA: 'EQ01', teamB: 'EQ02', seed: 20261022, input: null, overrides: [], result: null, resultInput: null, firstFp: null, repeatNote: null, view: 'acta', ctxKey: null, ctx: null, teams: null,
-  edit: { filter: '', section: 'all', draft: {} }, batch: { running: false, done: 0, total: 1000, valid: 0, failed: 0, ms: 0, results: null, workers: 0, msg: null, started: 0 }, error: null,
+  sub: 'match', teamA: 'EQ01', teamB: 'EQ02', seed: 20261022, input: null, overrides: [], result: null, resultInput: null, firstFp: null, repeatNote: null, ctxKey: null, ctx: null, teams: null,
+  audience: 'diagnostic', team: 0, at: 'end', view: 'resumen', match: null, learn: null, useCopy: false, day: null, season: null, pb: null, edit: { filter: '', section: 'all', draft: {} }, batch: { running: false, done: 0, total: 1000, valid: 0, failed: 0, ms: 0, results: null, workers: 0, msg: null, started: 0 }, error: null,
 };
 const st = simState;
 const detailed = () => store.baseNew;
@@ -26,7 +33,7 @@ function ensure() {
   if (!st.teams) st.teams = referenceTeamMap(detailed(), store.players);
   if (!st.input) st.input = buildPairInput(st.teams, st.teamA, st.teamB, { seed: st.seed });
 }
-const resetInput = () => { st.input = null; st.result = null; st.repeatNote = null; st.firstFp = null; };
+const resetInput = () => { st.input = null; st.result = null; st.match = null; st.repeatNote = null; st.firstFp = null; };
 
 // ------------------------------------------------------------------------------------------------------------------------------ vista Partido
 function planEditor(ti) {
@@ -50,50 +57,26 @@ function planEditor(ti) {
 }
 function generate() {
   try {
-    ensure(); const m = new SimMatch(st.input, st.ctx, { matchId: `LABSIM-${st.input.teams[0].id}-${st.input.teams[1].id}-${st.input.seed}`, attemptId: 1 }); m.finish();
-    const res = buildSimResult(m, { events: true });
-    st.repeatNote = st.firstFp && st.resultInput === JSON.stringify(st.input) ? (st.firstFp === res.sportFingerprint ? { ok: true, text: `Repetición con la misma entrada: huella idéntica (${res.sportFingerprint}).` } : { ok: false, text: `HUELLA DISTINTA: ${st.firstFp} ≠ ${res.sportFingerprint}` }) : null;
-    st.firstFp = res.sportFingerprint; st.resultInput = JSON.stringify(st.input); st.result = res; st.error = null;
+    ensure(); let input = st.input; let matchId = `LABSIM-${input.teams[0].id}-${input.teams[1].id}-${input.seed}`;
+    // copia de aprendizaje sintética (opcional): conocimiento explícito y rasgos de aprendizaje en una COPIA; la entrada de preparación no se toca
+    if (st.useCopy) { const P = detailed().familiarity; if (!st.learn || st.learn.baseKey !== JSON.stringify([input.teams.map((t) => t.id), input.seed])) { const copy = makeLearningCopy(input, detailed(), { mode: 'synthetic', day: 0, id: `LEARN18-S-${input.teams.map((t) => t.id).join('-')}-d0-I${(st.learn?.instanceSeq ?? 0) + 1}`, instanceSeq: (st.learn?.instanceSeq ?? 0) + 1 }); const { states } = teamStatesOf(copy.input, P, 0); st.learn = { copy, states, ledgers: newLedgers(copy.input), cons: new ConsequenceLedger(), matchSeq: 0, instanceSeq: copy.instanceSeq, baseKey: JSON.stringify([input.teams.map((t) => t.id), input.seed]) }; } matchId = nextMatchId(st.learn); st.learn.copy.input.labMatchId = matchId; input = st.learn.copy.input; } else st.learn = null;
+    const m = new SimMatch(input, st.ctx, { matchId, attemptId: 1 }); m.finish(); st.match = m; st.matchInput = JSON.stringify(input);
+    const res = rebuildFrom(m, st);
+    st.repeatNote = st.firstFp && st.resultInput === JSON.stringify(input) ? (st.firstFp === res.sportFingerprint ? { ok: true, text: `Repetición con la misma entrada: huella idéntica (${res.sportFingerprint}).` } : { ok: false, text: `HUELLA DISTINTA: ${st.firstFp} → ${res.sportFingerprint}` }) : null;
+    st.firstFp = res.sportFingerprint; st.resultInput = JSON.stringify(input); st.result = res; st.error = null;
   } catch (e) { st.error = e.validation ? e.validation.map((v) => `${v.path}: ${v.message}`).join('; ') : String(e.message ?? e); }
   render();
 }
-function resultCards(res) {
-  const A = res.identity.teams; const out = [];
-  out.push(h('div', { class: 'card' }, h('h3', { style: 'margin-top:0' }, `${A[0].id} ${res.score.current[0]} – ${res.score.current[1]} ${A[1].id}`),
-    h('p', { class: 'small' }, `Parciales ${res.score.periods.map((p) => p.join('-')).join(' | ')} · prórrogas ${res.score.overtimes} · ${res.segments.length} tramos · ${res.events?.length ?? 0} hechos · huella ${res.sportFingerprint}`),
-    h('div', { class: 'row' }, pill(`conciliación ${res.reconciliation.passed}/${res.reconciliation.evaluated}`, res.reconciliation.valid ? 'ok' : 'bad'), pill(`estado ${res.status}`, res.status === 'finished' ? 'ok' : 'bad'), st.repeatNote ? pill(st.repeatNote.text, st.repeatNote.ok ? 'ok' : 'bad') : null)));
-  const tabs = [['acta', 'Acta'], ['zonas', 'Mapa por zonas'], ['familias', 'Familias'], ['quintetos', 'Quintetos'], ['evolucion', 'Evolución'], ['concilia', 'Conciliación']];
-  out.push(h('div', { class: 'tabs2', id: 'sim-viewtabs' }, tabs.map(([id, tx]) => h('button', { type: 'button', class: `btn ${st.view === id ? '' : 'secondary'}`, id: `simv-${id}`, onclick: () => { st.view = id; render(); } }, tx))));
-  if (st.view === 'acta') for (const k of [0, 1]) {
-    const rows = res.box.players.filter((p) => p.team === k).map((p) => ({ cls: p.starter ? 'starter' : '', cells: [p.id, p.positions.join('/'), p.dnp ? 'DNP' : f1(p.min), p.pts, `${p.fg2m}/${p.fg2a}`, `${p.fg3m}/${p.fg3a}`, `${p.ftm}/${p.fta}`, p.oreb, p.dreb, p.ast, p.tov, p.stl, p.blk, p.pf, p.pfd, p.pm, p.val] }));
-    const t = res.box.teams[k]; rows.push({ cls: 'total', cells: [`Equipo ${res.identity.teams[k].id}`, '', f1(t.min), t.pts, `${t.fg2m}/${t.fg2a}`, `${t.fg3m}/${t.fg3a}`, `${t.ftm}/${t.fta}`, t.oreb, t.dreb, t.ast, t.tov, t.stl, t.blk, t.pf, t.pfd, '', ''] });
-    out.push(h('div', { class: 'card' }, h('h3', { style: 'margin-top:0' }, `Acta · ${res.identity.teams[k].id}`), table(['Jugador', 'Pos', 'Min', 'PTS', 'T2', 'T3', 'TL', 'RO', 'RD', 'AS', 'PER', 'ROB', 'TAP', 'FC', 'FR', '+/-', 'VAL'], rows, { numeric: [2, 3, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16] }), h('p', { class: 'small muted' }, `Rebotes de equipo: ofensivos ${t.teamReb[0]}, defensivos ${t.teamReb[1]}. VAL = PTS + RT + AS + REC + TAP + FR − fallos de campo − fallos de libre − PER − TREC − FC (política EST-SIM01-R1).`)));
-  }
-  if (st.view === 'zonas') out.push(h('div', { class: 'card' }, h('h3', { style: 'margin-top:0' }, 'Tiros por zona del perfil (sin coordenadas ni lados)'),
-    table(['Zona', `${A[0].id} aciertos/intentos`, `${A[0].id} %`, `${A[1].id} aciertos/intentos`, `${A[1].id} %`], res.zones.map((z) => [z.zone, `${z.teams[0].m}/${z.teams[0].a}`, pct(z.teams[0].m, z.teams[0].a), `${z.teams[1].m}/${z.teams[1].a}`, pct(z.teams[1].m, z.teams[1].a)])),
-    h('h3', {}, 'Por jugador y zona (intentos · calidad cómoda/normal/forzada)'),
-    table(['Jugador', 'Zona', 'Aciertos/intentos', 'Cómoda', 'Normal', 'Forzada'], res.box.players.flatMap((p) => ['rim', 'inside', 'midrange', 'three'].filter((z) => p.zones[z].a > 0).map((z) => [p.id, z, `${p.zones[z].m}/${p.zones[z].a}`, p.zones[z].q[0], p.zones[z].q[1], p.zones[z].q[2]])))));
-  if (st.view === 'familias') [0, 1].forEach((k) => out.push(h('div', { class: 'card' }, h('h3', { style: 'margin-top:0' }, `Uso táctico · ${A[k].id}`),
-    h('p', { class: 'small muted' }, `Denominadores propios: ${res.familyDenominators[k].controls} controles y ${res.familyDenominators[k].finalizations} finalizaciones (tiros de campo + faltas de tiro).`),
-    table(['Familia / ficha', 'TCI', 'TCC', 'PTS', 'AS', 'Con movimiento', 'Cómoda', 'Normal', 'Forzada', 'Faltas de tiro'], res.families[k].map((f) => [f.play ?? f.family, f.fga, f.fgm, f.pts, f.ast, f.moved, f.q[0], f.q[1], f.q[2], f.sf ?? 0]), { numeric: [1, 2, 3, 4, 5, 6, 7, 8, 9] }),
-    h('p', { class: 'small muted' }, `Organización defensiva efectiva por tramo: ${[...new Set(res.segments.map((s) => s.org[k]))].join(', ')}.`))));
-  if (st.view === 'quintetos') out.push(h('div', { class: 'card' }, h('h3', { style: 'margin-top:0' }, 'Quintetos (clave independiente del orden de puestos)'),
-    table(['Equipo', 'Quinteto', 'Min', 'PF', 'PC', '+/-', 'TCI', 'PER', 'Intervalos'], res.quintets.slice().sort((a, b) => b.sec - a.sec).map((q) => [res.identity.teams[q.team].id, q.ids.map((x) => x.split('-')[1]).join(' '), f1(q.min), q.pf, q.pa, q.pf - q.pa, q.fga, q.tov, q.intervals.map((i) => `${i[0]}–${i[1]}`).join(', ')]), { numeric: [2, 3, 4, 5, 6, 7] })));
-  if (st.view === 'evolucion') {
-    const pts = res.evolution; const W = 720; const H = 160; const maxT = Math.max(...pts.map((p) => p.t), 1); const diffs = pts.map((p) => p.score[0] - p.score[1]); const m = Math.max(5, ...diffs.map(Math.abs));
-    const path = pts.map((p, i) => `${i ? 'L' : 'M'}${(p.t / maxT) * W},${H / 2 - ((p.score[0] - p.score[1]) / m) * (H / 2 - 6)}`).join(' ');
-    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.setAttribute('width', '100%'); svg.setAttribute('id', 'sim-evol');
-    svg.innerHTML = `<line x1="0" y1="${H / 2}" x2="${W}" y2="${H / 2}" stroke="#aab" stroke-dasharray="4 4"/><path d="${path}" fill="none" stroke="#1f5fbf" stroke-width="2"/>`;
-    out.push(h('div', { class: 'card' }, h('h3', { style: 'margin-top:0' }, `Diferencia de marcador (${A[0].id} − ${A[1].id}) al final de cada tramo`), svg,
-      table(['Tramo', 'Fin (s)', 'Periodo', 'Marcador', 'Dif.'], pts.map((p) => [p.n, p.t, p.p, p.score.join('–'), p.score[0] - p.score[1]]), { numeric: [0, 1, 2, 4] })));
-  }
-  if (st.view === 'concilia') out.push(h('div', { class: 'card' }, h('h3', { style: 'margin-top:0' }, 'Conciliación SIM (separada de la evaluación deportiva)'),
-    table(['Comprobación', 'Descripción', 'Universo', 'Resultado'], res.reconciliation.checks.map((c) => ({ cls: c.ok ? '' : 'sel', cells: [c.id, c.desc, c.universe, c.ok ? 'conforme' : `${c.failureCount} fallo(s)`] })))));
-  out.push(h('div', { class: 'card' }, h('h3', { style: 'margin-top:0' }, 'Descargas'), h('div', { class: 'row' },
-    h('button', { class: 'btn', id: 'sim-dl-input', type: 'button', onclick: () => dl(`beM-sim-entrada-${res.identity.seed}.json`, JSON.stringify({ input: JSON.parse(st.resultInput), simProfile: { id: st.ctx.sp.id, fingerprint: st.ctx.sp.fingerprint, overrides: st.overrides, rows: st.ctx.sp.rows } }, null, 1)) }, 'Entrada y perfil efectivo'),
-    h('button', { class: 'btn', id: 'sim-dl-result', type: 'button', onclick: () => dl(`beM-sim-resultado-${res.identity.seed}.json`, JSON.stringify(res)) }, 'Resultado'),
-    h('button', { class: 'btn', id: 'sim-dl-recon', type: 'button', onclick: () => dl(`beM-sim-conciliacion-${res.identity.seed}.json`, JSON.stringify(res.reconciliation, null, 1)) }, 'Conciliación'))));
-  return out;
+function resultCards(res0) {
+  // el resultado se reconstruye desde los hechos del encuentro vivo según audiencia y horizonte (leer no consume azar ni cambia la publicación)
+  const res = st.match ? rebuildFrom(st.match, st) : res0; st.result = res;
+  const extra = [h('button', { class: 'btn', id: 'sim-dl-input', type: 'button', onclick: () => dlx(`beM-sim-entrada-${res.identity.seed}.json`, JSON.stringify({ input: JSON.parse(st.matchInput ?? st.resultInput), simProfile: { id: st.ctx.sp.id, fingerprint: st.ctx.sp.fingerprint, overrides: st.overrides } })) }, 'Entrada y perfil'),
+    h('button', { class: 'btn', id: 'sim-dl-result', type: 'button', onclick: () => dlx(`beM-sim-resultado-${res.identity.seed}.json`, JSON.stringify(res)) }, 'Resultado'),
+    h('button', { class: 'btn', id: 'sim-dl-recon', type: 'button', onclick: () => dlx(`beM-sim-conciliacion-${res.identity.seed}.json`, JSON.stringify(res.reconciliation ?? null, null, 1)) }, 'Conciliación'),
+    st.match ? h('button', { class: 'btn', id: 'sim-dl-snap', type: 'button', onclick: () => dlx(`beM-sim-guardado-${res.identity.seed}.json`, JSON.stringify(snapshotSim(st.match))) }, 'Guardado (continuable)') : null];
+  const cards = analysisCards(res, { st, repaint: () => render(), extra });
+  cards.push(learningCard(res, st, () => render(), detailed()));
+  return cards;
 }
 function matchView(root) {
   ensure(); const opts = TEAM_IDS.map((id) => h('option', { value: id }, `${id} · ${detailed().population.teams[id].identity}`));
@@ -102,6 +85,7 @@ function matchView(root) {
     h('p', { class: 'small muted' }, 'Generador estadístico por tramos (SIM-MOTOR). Genera un partido completo sin ejecutar el motor detallado. Calidad estadística aún sin validar frente al detallado ni a competiciones reales.'),
     h('div', { class: 'row' }, pick('teamA', 'Equipo A'), pick('teamB', 'Equipo B'),
       h('label', {}, 'Semilla ', h('input', { type: 'number', id: 'sim-seed', class: 'wide', value: st.seed, onchange: (e) => { st.seed = Number(e.target.value); resetInput(); render(); } })),
+      h('label', { class: 'small', title: 'Genera el partido con conocimiento explícito (historia sintética SEM18) en una copia; no cambia la preparación' }, h('input', { type: 'checkbox', id: 'sim-learn-copy', checked: st.useCopy, onchange: (e) => { st.useCopy = e.target.checked; render(); } }), ' copia de aprendizaje sintética'),
       h('button', { class: 'btn', id: 'sim-generate', type: 'button', onclick: generate }, st.result ? 'Repetir con la misma entrada' : 'Generar partido'),
       h('button', { class: 'btn secondary', id: 'sim-reset-plans', type: 'button', onclick: () => { resetInput(); render(); } }, 'Restaurar planes naturales')),
     h('p', { class: 'small' }, `Perfil SIM ${st.ctx.sp.id} (huella ${st.ctx.sp.fingerprint}${st.overrides.length ? `, candidata con ${st.overrides.length} fila(s) editada(s)` : ', base'}) · referencia detallada ${st.ctx.sp.detailedProfileId.split('+').slice(-1)[0]}. Equipos con identidades de instancia distintas (${st.input.teams[0].id} y ${st.input.teams[1].id}).`),
@@ -172,10 +156,10 @@ function batchView(root) {
 
 // ------------------------------------------------------------------------------------------------------------------------------ montaje
 let rootEl = null;
-export const SIM_TABS = [['match', 'Partido'], ['params', 'Parámetros'], ['batch', 'Lote']];
+export const SIM_TABS = [['match', 'Partido'], ['params', 'Parámetros'], ['batch', 'Lote'], ['pbatch', 'Lotes persistentes'], ['day', 'Jornada'], ['season', 'Temporadas']];
 export function renderSim(root) {
   rootEl = root; clear(root);
-  try { if (st.sub === 'match') matchView(root); else if (st.sub === 'params') paramsView(root); else batchView(root); const pb = document.getElementById('profile-badge'); if (pb) pb.textContent = `perfil SIM ${st.ctx.sp.id}${st.overrides.length ? ' (candidata)' : ''} · huella ${st.ctx.sp.fingerprint} · datos ${detailed().population.version}`; } catch (e) { root.append(h('div', { class: 'card' }, h('p', { style: 'color:var(--bad)' }, `Error del motor ultrarrápido: ${e.message ?? e}`))); }
+  try { if (st.sub === 'match') matchView(root); else if (st.sub === 'params') paramsView(root); else if (st.sub === 'batch') batchView(root); else if (st.sub === 'pbatch') pbatchView(root, { st, detailed, ensure, render }); else if (st.sub === 'day') dayView(root, { st, detailed, ensure, render, store, resultCards }); else seasonView(root, { st, detailed, ensure, render, store }); const pb = document.getElementById('profile-badge'); if (pb) pb.textContent = `perfil SIM ${st.ctx.sp.id}${st.overrides.length ? ' (candidata)' : ''} · huella ${st.ctx.sp.fingerprint} · datos ${detailed().population.version}`; } catch (e) { root.append(h('div', { class: 'card' }, h('p', { style: 'color:var(--bad)' }, `Error del motor ultrarrápido: ${e.message ?? e}`))); }
 }
 // El repintado se difiere un turno: un `change` disparado por el desenfoque de un campo no debe reentrar en la limpieza del contenedor.
 let pending = false;

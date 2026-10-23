@@ -39,7 +39,7 @@ test('S02-06 la jornada terminada: final solo con encuentros válidos, resolutor
   const f3 = sc.fixtures.find((f) => f.id === 'F3'); const solo = new SimMatch(f3.input, ctx, { matchId: 'F3', attemptId: 1 }); playWithBarriers(solo, { every: 120, policy: true }); assert.equal(buildSimResult(solo, { events: false }).sportFingerprint, a.results.F3.essential.identity.sportFingerprint);
   // el detallado conserva su observación: nada por delante del reloj local, nunca interpolado y con el instante de observación declarado
   for (const l of a.log) { const p = l.packets.find((x) => x.id === 'F1'); assert.ok(p.published <= p.local + 1e-9); assert.equal(p.observedAt, p.published); }
-  const f1 = a.packets.get('F1'); assert.equal(f1.status, 'finished'); assert.deepEqual(f1.score, a.detailed.get('F1').enc.match.score);
+  const f1 = a.packets.get('F1'); assert.equal(f1.status, 'finished'); assert.deepEqual(f1.score, a.detailed.get('F1').match.score);
 });
 
 test('S02-07 guardar y recuperar la jornada de verdad (JSON, otro objeto), rechazo de un archivo alterado y pausa sin publicar lo calculado', () => {

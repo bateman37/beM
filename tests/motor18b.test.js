@@ -267,7 +267,7 @@ test('L18B-12 la estimación comparte el contexto conocido de la operación; lo 
 
 // ----------------------------------------------------------------------------------------------------------------------------------- identidades y unidades
 test('identidades de MOTOR-18B y unidades de la exposición (décimas de segundo de juego vivo)', () => {
-  assert.equal(ENGINE_VERSION, 'beM-motor-0.18.1-MOTOR18B'); assert.equal(APP_VERSION, 'SIM-MOTOR-01'); assert.equal(EXPORT_SCHEMA, 'beM-match-export/10'); assert.equal(ESSENTIAL_VERSION, 'ESE-MOTOR18B-R1'); assert.equal(FAMILIARITY_VERSION, 'FAM-MOTOR18B-R1');
+  assert.equal(ENGINE_VERSION, 'beM-motor-0.18.1-MOTOR18B'); assert.equal(APP_VERSION, 'SIM-MOTOR-02'); assert.equal(EXPORT_SCHEMA, 'beM-match-export/10'); assert.equal(ESSENTIAL_VERSION, 'ESE-MOTOR18B-R1'); assert.equal(FAMILIARITY_VERSION, 'FAM-MOTOR18B-R1');
   assert.deepEqual(profile.extensions.map((e) => e.id).slice(-2), ['SEM-MOTOR18-20261021', 'SEM-MOTOR18B-20261022']); assert.equal(profile.familiarity.knowledgeVersion, 'KNOW-MOTOR18-R1');
   const inp = inputFor(5); for (const t of inp.teams) for (const p of t.players) p.knowledge = K.allMastered(P, 0);
   const m = createMatch(inp, profile, { detail: 'minimal' }); m.init(); m.famTick(600); const x = m.famExposure(); assert.match(x.units.liveTenths, /décimas de segundo/); assert.match(x.units.liveTenths, /600 = 1 minuto/); assert.match(x.units.modules, /no son horas ni posesiones/);

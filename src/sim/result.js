@@ -100,6 +100,8 @@ export function buildSimResult(m, opts = {}) {
     exposureInfo: { unit: 'segundos de juego (los módulos en operaciones de finalización SIM ponderadas)', provenance: 'intervalos de presencia por tramo hasta el presente publicado; posición = puesto asignado en el quinteto del tramo; rol = rol vigente de la ficha del jugador; módulos desde las finalizaciones publicadas', familias: 'uso de familias y fichas en families[] con denominadores en familyDenominators[] (finalizaciones únicas: tiro, falta de tiro y serie ligada cuentan una vez)' },
     quintets: [...q.values()].map((e) => ({ ...e, sec: Math.round(e.sec * 1000) / 1000, min: r1(e.sec / 60) })), evolution,
   };
+  // decisiones de la política del entrenador y comandos recibidos (con su fuente): lo propio para quien autoriza; todo para diagnóstico; nada público
+  if (audience !== 'public') { const own = (x) => audience === 'diagnostic' || x.team === team; res.decisions = m.coach.log.filter(own); res.commands = m.commandLog.filter(own).map((c) => ({ id: c.id, source: c.source, team: c.team, at: c.at, effectiveAt: c.effectiveAt, change: Object.keys(c.plan), why: c.why?.reason ?? null })); }
   if (audience !== 'public') res.exposure = audience === 'own' ? Object.fromEntries(Object.entries(exposure).filter(([id]) => byId[id].team === team)) : exposure;
   if (audience === 'diagnostic' && includeSuffix) res.privateSuffix = { generatedUntil: r1(m.gt), seconds: r1(m.gt - T), segments: m.segments.length - segs.length, events: m.events.length - evs.length, generatedScore: m.score.slice(), note: 'sufijo generado por delante del presente publicado: privado y sin consecuencias' };
   if (withEvents) res.events = evs;

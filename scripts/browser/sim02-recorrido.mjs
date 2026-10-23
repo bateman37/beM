@@ -1,0 +1,76 @@
+// Recorrido de Chromium de SIM-MOTOR-02 (§12.3): selector → SIM → partido (roles/preparación) → análisis y audiencias → propuesta de aprendizaje → jornada mixta → pausa/guardado/recarga/continuación → temporada → lote
+// persistente recuperado → descargas por sus bytes. Registra consola y red, y conserva los pasos no ejecutados. Recarga REAL de la página donde se afirma recuperación.
+// Uso: node scripts/browser/sim02-recorrido.mjs [--out=out/sim-motor02/navegador] [--port=5198]
+import { createRequire } from 'node:module';
+import { writeFileSync, mkdirSync, readFileSync, mkdtempSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { createHash } from 'node:crypto';
+import { createLabServer } from '../dev-server.js';
+const require = createRequire('/opt/node22/lib/node_modules/'); const { chromium } = require('playwright');
+const arg = (k, d) => { const a = process.argv.find((x) => x.startsWith(`--${k}=`)); return a ? a.slice(k.length + 3) : d; };
+const OUT = arg('out', 'out/sim-motor02/navegador'); const PORT = Number(arg('port', 5198)); mkdirSync(OUT, { recursive: true });
+const scratch = mkdtempSync(join(tmpdir(), 'sim02-ui-')); for (const d of ['batches', 'saves', 'closure', 'simb', 'sims']) mkdirSync(join(scratch, d), { recursive: true });
+const server = createLabServer({ savesRoot: join(scratch, 'saves'), batchRoot: join(scratch, 'batches'), closureRoot: join(scratch, 'closure'), simBatchRoot: join(scratch, 'simb'), simSaveRoot: join(scratch, 'sims') }).listen(PORT, '127.0.0.1');
+const log = []; const step = (n, route, action, ok, obs) => { log.push({ n, route, action, ok: !!ok, obs: String(obs).replace(/\s+/g, ' ').slice(0, 300) }); console.log(`${ok ? 'OK   ' : 'FALLO'} [${n}] ${route} · ${action} · ${String(obs).replace(/\s+/g, ' ').slice(0, 140)}`); };
+const browser = await chromium.launch(); const bctx = await browser.newContext({ acceptDownloads: true }); const p = await bctx.newPage();
+const consoleErrors = []; const netErrors = [];
+p.on('console', (m) => m.type() === 'error' && consoleErrors.push(m.text())); p.on('pageerror', (e) => consoleErrors.push(String(e))); p.on('response', (r) => r.status() >= 400 && netErrors.push(`${r.status()} ${r.url()}`));
+const URL0 = `http://127.0.0.1:${PORT}/`; const text = async (sel = '#view') => p.locator(sel).innerText();
+const download = async (sel) => { const [dl] = await Promise.all([p.waitForEvent('download', { timeout: 60000 }), p.click(sel)]); const buf = readFileSync(await dl.path()); return { name: dl.suggestedFilename(), bytes: buf.length, sha: createHash('sha256').update(buf).digest('hex'), text: buf.toString('utf8') }; };
+const toSim = async () => { await p.waitForSelector('#engine-select, #change-engine'); if (await p.locator('#engine-sim').count()) await p.click('#engine-sim'); await p.waitForSelector('#simtab-match'); };
+let n = 0; const dls = []; const notRun = [];
+try {
+  await p.goto(URL0); await p.waitForSelector('#engine-select'); await p.click('#engine-sim'); await p.waitForSelector('#sim-generate');
+  const tabs = await p.locator('#tabs button').allInnerTexts(); step(++n, 'SIM', 'pestañas SIM-MOTOR-02 y cabecera con modelo y versión', ['Partido', 'Parámetros', 'Lote', 'Lotes persistentes', 'Jornada', 'Temporadas'].every((t) => tabs.includes(t)) && /0\.2\.0-SIMMOTOR02/.test(await text('#model-badge')), tabs.join(' | '));
+  // partido con copia de aprendizaje sintética (conocimiento explícito); roles y planes visibles
+  await p.selectOption('#sim-teamA', 'EQ03'); await p.selectOption('#sim-teamB', 'EQ04'); await p.fill('#sim-seed', '20261023'); await p.dispatchEvent('#sim-seed', 'change'); await p.waitForTimeout(150);
+  await p.check('#sim-learn-copy'); await p.click('#sim-generate'); await p.waitForSelector('#sim-dl-json, #simv-exportar'); await p.waitForTimeout(300);
+  const head = await text('#view'); step(++n, 'SIM · Partido', 'generar un partido completo con conciliación 23/23 y contrato beM-sim-match/2', /conciliación 23\/23/.test(head) && /beM-sim-match\/2/.test(head) && /estado finished/.test(head), head.match(/EQ03 \d+ – \d+ EQ04/)?.[0] ?? head.slice(0, 120));
+  for (const [id, expect] of [['resumen', /Puntos clave/], ['acta', /Acta · EQ03/], ['comparacion', /Comparación de equipos/], ['evolucion', /Diferencia de marcador/], ['tiro', /sin coordenadas ni lados/], ['ataque', /Uso táctico/], ['defensa', /Defensa efectiva/], ['rotaciones', /Quintetos/], ['informes', /Informe público/], ['diagnostico', /No representado/], ['exportar', /Exportar/]]) { await p.click(`#simv-${id}`); await p.waitForTimeout(120); const t = await text(); step(++n, 'SIM · vistas', `vista ${id} sobre hechos SIM`, expect.test(t), (t.match(expect) ?? ['—'])[0]); }
+  await p.click('#simv-diagnostico'); await p.waitForTimeout(100); const dg = await text(); step(++n, 'SIM · diagnóstico', 'ausencias tipadas (no representado) y 23 comprobaciones', /no_representado/.test(dg) && /R23_continuidad_tapon_fuera/.test(dg) && /Alternativas de pase descartadas/.test(dg), 'tipado');
+  // audiencias y horizonte
+  await p.selectOption('#sim-aud', 'public'); await p.waitForTimeout(250); await p.click('#simv-diagnostico'); await p.waitForTimeout(150); const pubDiag = await text(); step(++n, 'SIM · audiencia pública', 'el público no ve decisiones ni sufijo privado', /No visible para esta audiencia/.test(pubDiag) && !/privateSuffix/.test(pubDiag), 'audiencia pública');
+  await p.selectOption('#sim-at', '600'); await p.waitForTimeout(250); const at600 = await text(); step(++n, 'SIM · horizonte', 'leer el horizonte 600 s (vista histórica) no cambia la publicación', /horizonte 600/.test(at600) && /estado running/.test(at600), at600.match(/horizonte [\d.]+ s/)?.[0] ?? '');
+  await p.selectOption('#sim-at', 'end'); await p.selectOption('#sim-aud', 'diagnostic'); await p.waitForTimeout(250);
+  await p.click('#simv-exportar'); await p.waitForTimeout(100);
+  for (const [id, w, fn] of [['sim-dl-json', 'JSON', (t) => JSON.parse(t).result?.schema === 'beM-sim-match/2'], ['sim-dl-csv', 'CSV', (t) => t.split('\n').length > 20 && t.startsWith('equipo,jugador')], ['sim-dl-md', 'Markdown', (t) => /Puntos clave|Crónica/.test(t)], ['sim-dl-snap', 'guardado continuable', (t) => JSON.parse(t).schema === 'beM-sim-snapshot/1']]) { const d = await download(`#${id}`); dls.push({ what: w, name: d.name, bytes: d.bytes, sha256: d.sha }); let ok = false; try { ok = fn(d.text); } catch { /* no es JSON válido */ } step(++n, 'SIM · descargas', `descarga REAL ${w} por sus bytes`, d.bytes > 100 && ok, `${d.name} ${d.bytes} B`); }
+  // aprendizaje posterior en la copia
+  await p.click('#sim-learn-preview-0'); await p.waitForTimeout(200); const prv = await text('#sim-learn-msg'); step(++n, 'SIM · aprendizaje', 'vista previa con fuente exacta', /Vista previa EQ03/.test(prv), prv.slice(0, 120));
+  await p.click('#sim-learn-apply-0'); await p.waitForTimeout(200); const ap1 = await text('#sim-learn-msg'); step(++n, 'SIM · aprendizaje', 'aplicar a la copia con recibo', /Aplicado a EQ03/.test(ap1), ap1.slice(0, 120));
+  await p.click('#sim-learn-apply-0'); await p.waitForTimeout(200); const ap2 = await text('#sim-learn-msg'); step(++n, 'SIM · aprendizaje', 'segunda aplicación del mismo encuentro lógico rechazada', /ya se aplicó|ya constaba/.test(ap2), ap2.slice(0, 140));
+  await p.click('#sim-learn-undo-0'); await p.waitForTimeout(200); step(++n, 'SIM · aprendizaje', 'deshacer', /Deshecho/.test(await text('#sim-learn-msg')), (await text('#sim-learn-msg')).slice(0, 80));
+  // jornada mixta: pausa, guardado, recarga real, continuación
+  await p.click('#simtab-day'); await p.waitForSelector('#day-new'); await p.click('#day-new'); await p.waitForSelector('#day-step');
+  const fx = await text(); step(++n, 'Jornada', 'jornada mixta: resolutor identificado de cada encuentro', /DETALLADO \(sénior propio\)/.test(fx) && /SIM \(cantera propia\)/.test(fx) && /\+600 s/.test(fx) && /tabla hipotética de fixture \(artificial\)/.test(fx), 'F1 detallado; F4 +600 s; cantera SIM');
+  for (let i = 0; i < 4; i++) { await p.click('#day-step'); await p.waitForTimeout(150); }
+  step(++n, 'Jornada', 'cuatro barreras: reloj común T = 480 s', /T = 480 s/.test(await text()), (await text()).match(/T = [\d.]+ s/)?.[0]);
+  await p.click('#day-pause'); await p.waitForTimeout(100); step(++n, 'Jornada', 'en pausa no se puede avanzar', await p.locator('#day-step').isDisabled(), 'botón deshabilitado'); await p.click('#day-pause'); await p.waitForTimeout(100);
+  await p.click('#day-quarter'); await p.waitForTimeout(500); step(++n, 'Jornada', 'avanzar por cuartos recorre las mismas barreras (T = 600 s)', /T = 600 s/.test(await text()), (await text()).match(/T = [\d.]+ s/)?.[0]);
+  await p.click('#day-order-pace'); await p.waitForTimeout(150); step(++n, 'Jornada', 'orden manual sobre un encuentro', /Orden de ritmo 5/.test(await text('#day-msg')), (await text('#day-msg')).slice(0, 120));
+  await p.click('#day-save'); await p.waitForFunction(() => /Guardado en el servidor local/.test(document.getElementById('day-msg')?.innerText ?? '') || /No se guard/.test(document.getElementById('day-msg')?.innerText ?? ''), null, { timeout: 60000 }); const sv = await text('#day-msg'); step(++n, 'Jornada', 'guardar en el servidor local con suma de comprobación', /Guardado en el servidor local/.test(sv), sv.slice(0, 120));
+  await p.reload(); await p.waitForSelector('#engine-select'); await toSim(); await p.click('#simtab-day'); await p.waitForSelector('#day-load'); step(++n, 'Jornada', 'recarga REAL de la página: la sesión en memoria desaparece', /Preparar jornada mixta/.test(await text()), 'sin jornada en memoria');
+  await p.click('#day-load'); await p.waitForFunction(() => /Jornada recuperada/.test(document.getElementById('day-msg')?.innerText ?? '') || /No se pudo/.test(document.getElementById('day-msg')?.innerText ?? ''), null, { timeout: 60000 }); const rc = await text(); step(++n, 'Jornada', 'recuperada en T = 600 s y verificada', /Jornada recuperada en T = 600 s/.test(rc), rc.match(/Jornada recuperada[^.]*/)?.[0] ?? '');
+  await p.click('#day-auto'); await p.waitForFunction(() => /TERMINADA/.test(document.body.innerText), null, { timeout: 120000 }); const fin = await text(); step(++n, 'Jornada', 'completar: final con tabla definitiva de encuentros terminados', /TERMINADA/.test(fin) && /Final \(solo encuentros terminados válidos\)/.test(fin), 'tablas finales');
+  await p.click('#day-open-F2'); await p.waitForTimeout(300); step(++n, 'Jornada', 'abrir un encuentro SIM terminado conserva su acta esencial', /acta esencial individual/.test(await text()), 'Referencia');
+  const dd = await download('#day-dl'); dls.push({ what: 'jornada', name: dd.name, bytes: dd.bytes, sha256: dd.sha }); step(++n, 'Jornada', 'descarga REAL del guardado de la jornada', dd.bytes > 1000 && JSON.parse(dd.text).schema === 'beM-sim-matchday/1', `${dd.bytes} B`);
+  // temporada
+  await p.click('#simtab-season'); await p.waitForSelector('#season-new'); await p.click('#season-new'); await p.waitForSelector('#season-5'); await p.click('#season-5'); await p.waitForFunction(() => /ronda 5\/10/.test(document.body.innerText), null, { timeout: 60000 });
+  await p.click('#season-transfer'); await p.waitForTimeout(300); const tr = await text('#season-msg'); step(++n, 'Temporadas', 'movimiento administrativo con planes válidos', /Movimiento administrativo/.test(tr), tr.slice(0, 140));
+  await p.selectOption('#season-depth-SEN-B', 'analysis'); await p.click('#season-direct'); await p.click('#season-all'); await p.waitForFunction(() => /ronda 10\/10/.test(document.body.innerText), null, { timeout: 180000 });
+  const sn = await text(); step(++n, 'Temporadas', '72 encuentros: clasificación, líderes y tramos por club del jugador movido', /Clasificación SEN-A/.test(sn) && /Clasificación SUB20/.test(sn) && /Historia de EQ05-J/.test(sn) && /EQ05 → EQ02|EQ02/.test(sn), 'tablas + historia');
+  await p.click('#season-close'); await p.waitForTimeout(200); await p.click('#season-next'); await p.waitForTimeout(200); step(++n, 'Temporadas', 'cierre y apertura conservando el histórico', /Temporada T2 abierta/.test(await text('#season-msg')), (await text('#season-msg')).slice(0, 100));
+  // lote persistente
+  await p.click('#simtab-pbatch'); await p.waitForSelector('#pb-create'); await p.selectOption('#pb-kind', 'repeat'); await p.fill('#pb-count', '6'); await p.dispatchEvent('#pb-count', 'change'); await p.click('#pb-create'); await p.waitForFunction(() => /creado/.test(document.getElementById('pb-msg')?.innerText ?? ''), null, { timeout: 30000 });
+  await p.click('#pb-limit'); await p.waitForFunction(() => /\b2\/6 aceptados/.test(document.getElementById('pb-status')?.innerText ?? '') && !/EJECUTANDO/.test(document.getElementById('pb-status')?.innerText ?? ''), null, { timeout: 60000 }); step(++n, 'Lotes persistentes', 'ejecutar solo 2 de 6 y quedar parcial', /2\/6 aceptados/.test(await text('#pb-status')), await text('#pb-status'));
+  await p.click('#pb-recover'); await p.waitForTimeout(500); step(++n, 'Lotes persistentes', 'recuperar desde el índice durable', /Recuperado/.test(await text('#pb-msg')), (await text('#pb-msg')).slice(0, 100));
+  await p.click('#pb-run'); await p.waitForFunction(() => /\b6\/6 aceptados/.test(document.getElementById('pb-status')?.innerText ?? ''), null, { timeout: 90000 }); step(++n, 'Lotes persistentes', 'continuar hasta completar sin duplicar', /6\/6 aceptados/.test(await text('#pb-status')) && /duplicados descartados 0/.test(await text('#pb-status')), await text('#pb-status'));
+  await p.reload(); await p.waitForSelector('#engine-select'); await toSim(); await p.click('#simtab-pbatch'); await p.waitForFunction(() => /Lotes conservados en el servidor local/.test(document.body.innerText), null, { timeout: 30000 }); step(++n, 'Lotes persistentes', 'tras recargar, el lote sigue conservado en el servidor', /6/.test(await text()), 'lista de lotes');
+  await p.locator('button[id^="pb-pick-"]').first().click(); await p.waitForSelector('#pb-open-1'); await p.click('#pb-open-1'); await p.waitForSelector('#pb-analysis'); step(++n, 'Lotes persistentes', 'abrir el análisis de un resultado conservado', /Nivel «análisis»/.test(await text()), 'análisis conservado');
+  notRun.push('otros navegadores', 'Node 24', 'recorrido manual de Dennis (pendiente de Dennis)');
+} catch (e) { step(++n, 'EXCEPCIÓN', 'recorrido interrumpido', false, e.stack ?? e.message); }
+await browser.close(); await new Promise((r) => server.close(r));
+const failed = log.filter((l) => !l.ok).length;
+const summary = { pasos: log.length, fallidos: failed, consolaErrores: consoleErrors.length, redErrores: netErrors.length, descargas: dls, noEjecutado: notRun, consoleErrors: consoleErrors.slice(0, 10), netErrors: netErrors.slice(0, 10), log };
+writeFileSync(join(OUT, 'recorrido.json'), JSON.stringify(summary, null, 1));
+console.log(`\nRecorrido SIM-MOTOR-02: ${log.length} pasos, ${failed} fallidos, consola ${consoleErrors.length}, red ${netErrors.length}`); process.exitCode = failed || consoleErrors.length || netErrors.length ? 1 : 0;
