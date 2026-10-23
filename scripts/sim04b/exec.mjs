@@ -1,6 +1,6 @@
 // SIM-MOTOR-04B · ejecutor programado de la campaña acotada (§10). Fork de scripts/sim04/exec.mjs con las poblaciones, los bloques (CAL/VAL/STRESS/CONTRAST/DIAG/OPT/TECH) y las identidades de 04B. Una sola herramienta para TODAS las identidades (R0, R1, vectores candidatos, control/final, rutas TECH): lo que cambia es la RAÍZ DE CÓDIGO (`--root`,
 // un worktree aislado del mismo repositorio beM para R0 o el control preoptimización; no se introducen resolutores históricos en el producto) y el vector de parámetros (`--overrides`).
-//   plan : node scripts/sim04b/exec.mjs --phase=plan [--plan=docs/tecnico/evidencia-sim-motor04bb/plan]     escribe agendas, entradas y plan (para Git, ANTES de ejecutar CAL)
+//   plan : node scripts/sim04b/exec.mjs --phase=plan [--plan=docs/tecnico/evidencia-sim-motor04b/plan]     escribe agendas, entradas y plan (para Git, ANTES de ejecutar CAL)
 //   run  : node scripts/sim04b/exec.mjs --phase=run --block=CAL|VAL|STRESS|CONTRAST|DIAG|OPT|TECH --identity=R04|R04B-N|C04B-Z1|… [--root=<código>] [--overrides=<archivo.json>] [--resolver=sim|detailed]
 //          [--cases=a,b,c] [--route=steps|recover] [--out=out/sim-motor04b/campaign]
 // Cada caso se regenera desde la ENTRADA CONGELADA del plan (entries.jsonl.gz + semilla) y se comprueba su `input_hash`: una entrada distinta aborta el caso. Persistencia progresiva y reanudación por (identidad, bloque, caso).
@@ -101,7 +101,7 @@ export async function run(opts) {
 
 // ---------------------------------------------------------------------------------------------------------------------------------- CLI
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  const phase = arg('phase', 'run'); const planDir = arg('plan', join(SELF, 'docs/tecnico/evidencia-sim-motor04bb/plan')); const out = arg('out', join(SELF, 'out/sim-motor04b/campaign'));
+  const phase = arg('phase', 'run'); const planDir = arg('plan', join(SELF, 'docs/tecnico/evidencia-sim-motor04b/plan')); const out = arg('out', join(SELF, 'out/sim-motor04b/campaign'));
   if (phase === 'plan') { const { bad } = await plan({ planDir }); process.exit(bad.length ? 1 : 0); }
   const ov = arg('overrides'); const ovRaw = ov ? JSON.parse(readFileSync(ov, 'utf8')) : []; const overrides = Array.isArray(ovRaw) ? ovRaw : ovRaw.overrides; if (!Array.isArray(overrides)) throw new Error('--overrides debe ser una lista [{path,value}] o un vector {overrides:[…]}');
   const routes = arg('routes') ? JSON.parse(readFileSync(arg('routes'), 'utf8')) : undefined;

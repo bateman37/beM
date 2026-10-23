@@ -1,5 +1,5 @@
 // SIM-MOTOR-04 (§5.3; adaptado de SIM-MOTOR-03 §8.1 y §8.2): matriz de las 32 capacidades por situación y cobertura de controles, con magnitudes PURAS (sin azar: solo lo previo al sorteo, vía src/sim/probe.js) y reglas de exposición
-// para el registro de campaña. No añade cálculo deportivo ni toca el generador: solo lee. CLI: node scripts/sim04/probes.js --out=<dir> → 09a-capacidades.csv, 09b-controles.csv, 09-capacidades-y-controles.json.
+// para el registro de campaña. No añade cálculo deportivo ni toca el generador: solo lee. CLI: node scripts/sim04b/probes.js --out=<dir> → 09a-capacidades.csv, 09b-controles.csv, 09-capacidades-y-controles.json.
 import { createHash } from 'node:crypto';
 import { readFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -13,7 +13,7 @@ import { CONTROL_ROWS, controlContrasts } from '../../src/sim/controls.js';
 import { ZONES, shotProbs, ftProb, reboundModel, recipe, ea } from '../../src/sim/model.js';
 import { consistencySigmaAt, enduranceFactorAt, pressureLossLogit } from '../../src/match/formulas.js';
 
-export const PROBES_SCHEMA = 'beM-sim04-probes/1';
+export const PROBES_SCHEMA = 'beM-sim04b-probes/1';
 const DELTAS = [1, 3, 5];
 const sig = (x) => (typeof x === 'number' && Number.isFinite(x) ? +x.toPrecision(12) : x); // 12 cifras: un delta pequeño pero real no debe redondearse a «sin cambio»
 const clone = (x) => JSON.parse(JSON.stringify(x));
