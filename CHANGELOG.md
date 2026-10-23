@@ -2,6 +2,14 @@
 
 Registro breve de entregas. Una entrada por entrega; las más recientes primero.
 
+## SIM-MOTOR-04B — Fatiga y cierre corregidos, convergencia acotada y paquete reproducible — 2026-10-23
+
+- **Correcciones**: la rotación decide con la fatiga actual (un 20 con energía 5 ya sale; el referente 30 con energía 30 sigue); cierre, consulta y liberación idempotentes; suficiencia de exposición con cero esperado (T03); lectura de libres y unidades de coste; paquete reproducible con `scripts/sim03/lib.js`. SIM `0.3.1-SIMMOTOR04B`; los guardados de 04 se rechazan con explicación.
+- **Convergencia** (solo CAL, reglas `SEL-SIM04B-R1` congeladas antes; ≤ 7 vectores Z→Q→A→E): **ningún vector admisible**; `C04B-FINAL-PROVISIONAL` = base neutral (volumen 19,5 · triples 0,70 · entrega final 0,90 · gasto 3), no activada. Z2 y Q2 mejoran eZ/eQ/eR y solo quedan fuera por la guarda acumulada de asistencias (DECISIÓN REQUERIDA).
+- **Optimizaciones exactas** con igualdad probada (OPT 12/12, TECH 12/12, 1.000/1.000): F0 7,95 s frente a 9,38 s del control (**objetivo 5 s no cumplido**), publicación de barrera 1,36 s frente a 3,18 s (**objetivo 1 s no cumplido**), RSS de la jornada de mil 1,29 GiB.
+- **Campaña**: 360 SIM + 64 detallados válidos (CAL, VAL, STRESS, CONTRAST, DIAG, OPT, TECH); jornada mixta (cuatro rutas), historia/aprendizaje, capacidades y auditorías sin fallos de conciliación. Chromium 60 pasos (consola 0, red 0). Detallado intacto (83–98, 6.684 sorteos).
+- Pendiente de Dennis: [recorrido manual](docs/prompts/SIM-MOTOR-04B-recorrido-manual.md). Ver [`docs/tecnico/sim-motor04b.md`](docs/tecnico/sim-motor04b.md).
+
 ## SIM-MOTOR-04 — Correcciones verificables, convergencia estadística, rendimiento y auditoría final — 2026-10-23
 
 - **Correcciones C04-01…06**: rebote ofensivo colectivo ponderado, lectores de zona con la regla común de intento de campo (la canasta con falta cuenta), bloqueador pertinente por rol de jugada, familiaridad de presión sobre la pérdida extra, prioridades 1/5 con cobertura del instrumento y denominadores de asistencia; conciliaciones R24–R26 (26 en total). Perfil `SEM-SIM04-20261023`, resultado `beM-sim-match/3`, guardado `/2` (los de 02/03 se rechazan con explicación).

@@ -1,6 +1,6 @@
 # Estado del proyecto
 
-Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANGELOG.md)). Última actualización: 2026-10-23, entrega SIM-MOTOR-04 (cuarta y última de SIM-MOTOR; incluye 03, 02B, 02 y 01).
+Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANGELOG.md)). Última actualización: 2026-10-23, entrega SIM-MOTOR-04B (cierre de 04; incluye 04, 03, 02B, 02 y 01).
 
 ## Qué hay realmente en el repositorio
 
@@ -8,6 +8,15 @@ Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANG
 - **Diseño funcional del motor y del primer laboratorio**, organizado por temas en [`motor/`](motor/README.md) (34 capítulos). Es **especificación**: está *definida*, no implementada.
 - **Copia original congelada** del funcional unificado y **exportado completo vigente** generado: ver [`historico/`](historico/README.md) y [`exportados/`](exportados/README.md).
 - **Utilidades documentales** en `scripts/docs/` (Python 3, librería estándar).
+
+## SIM-MOTOR-04B (ejecutado; fatiga y cierre corregidos, convergencia acotada sin vector admisible y paquete reproducible; pendiente de Dennis)
+
+- **Qué es**: cierre de 04. Corrige la fatiga de la rotación y el cierre idempotente, la suficiencia de T03, la lectura de libres/unidades de coste y el paquete reproducible; intenta acercar SIM al detallado con ≤ 7 vectores (Z→Q→A→E) elegidos solo con CAL bajo reglas congeladas; optimiza de forma exacta; ejecuta una campaña acotada (360 SIM + 64 detallados) y entrega dos ZIP, un índice y un recibo offline.
+- **Versiones**: SIM `0.3.1-SIMMOTOR04B`, resultado `beM-sim-match/3`, guardado `beM-sim-snapshot/2` (los de 04 se rechazan con explicación), perfil `SEM-SIM01+SEM-SIM02+SEM-SIM04+SEM-SIM04B-20261023`; `APP_VERSION` sigue en `SIM-MOTOR-04`. Detallado **sin cambio** (83–98, 6.684 sorteos).
+- **Candidata** `C04B-FINAL-PROVISIONAL` = base neutral (19,5 / 0,70 / 0,90 / 3): ningún vector adicional fue admisible; no se activa por defecto. **DECISIÓN REQUERIDA**: reformular la guarda acumulada de asistencias para admitir Z2/Q2 (ver [`tecnico/sim-motor04b.md`](tecnico/sim-motor04b.md)).
+- **Rendimiento**: F0 7,95 s (objetivo 5 s, **no cumplido**; control 9,38 s); publicación de barrera 1,36 s (objetivo 1 s, **no cumplido**; control 3,18 s); RSS de la jornada de mil 1,29 GiB (cumple 1,5 GiB). Igualdad exacta frente al control.
+- **Comprobado por Claude**: suite, `data:check`, comprobador documental, Chromium (60 pasos, consola 0, red 0) y comprobador offline de la entrega; ver la respuesta final y el recibo para las cifras exactas.
+- **No cerrado**: aceptación deportiva y manual (Dennis), validación externa integral, objetivos de rendimiento, subproducción de puntos frente al detallado. Guía: [`prompts/SIM-MOTOR-04B-recorrido-manual.md`](prompts/SIM-MOTOR-04B-recorrido-manual.md).
 
 ## SIM-MOTOR-04 (ejecutado; correcciones verificables, candidata provisional, rendimiento exacto y auditoría final; pendiente de Dennis)
 
