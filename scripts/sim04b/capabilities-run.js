@@ -1,6 +1,6 @@
-// SIM-MOTOR-04 · matriz de las 32 capacidades × 8 contextos × +1/+3/+5 (cálculo puro, sin azar) y cobertura de controles, con el mapa de consumidores y exposición (§5.3): atributo consumido por operación pura,
+// SIM-MOTOR-04B · matriz de las 32 capacidades × 8 contextos × +1/+3/+5 (cálculo puro, sin azar) y cobertura de controles, con el mapa de consumidores y exposición (§5.3): atributo consumido por operación pura,
 // operación expuesta en la campaña, registro suficiente / proxy declarado / no instrumentado, salida que cambia y saturación. La ausencia de exposición NO se convierte en un cero causal.
-//   node scripts/sim04/capabilities-run.js [--out=out/sim-motor04/capacidades]
+//   node scripts/sim04b/capabilities-run.js [--out=out/sim-motor04b/capacidades]
 import { mkdirSync, writeFileSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { buildCapabilityMatrix, buildControlCoverage, capabilityCsvRows, controlCsvRows, toCsv, exposureRules, exposureMeta } from './probes.js';
@@ -8,9 +8,9 @@ import { csvText, readJsonl } from './tables.js';
 import * as L from './lib.js';
 
 const arg = (k, d = null) => { const a = process.argv.find((x) => x.startsWith(`--${k}=`)); return a ? a.slice(k.length + 3) : d; };
-const root = new URL('../..', import.meta.url).pathname; const OUT = arg('out', join(root, 'out/sim-motor04/capacidades')); mkdirSync(OUT, { recursive: true }); const CAMP = join(root, 'out/sim-motor04/campaign');
+const root = new URL('../..', import.meta.url).pathname; const OUT = arg('out', join(root, 'out/sim-motor04b/capacidades')); mkdirSync(OUT, { recursive: true }); const CAMP = join(root, 'out/sim-motor04b/campaign');
 const env = L.loadEnv(); const cap = buildCapabilityMatrix({ ctx: env.ctx, profile: env.profile, players: env.players }); const ctl = buildControlCoverage({ ctx: env.ctx, profile: env.profile, players: env.players });
-const recs = []; for (const f of readdirSync(CAMP).sort()) if (f.startsWith('records-sim-FINAL.jsonl')) recs.push(...readJsonl(join(CAMP, f)));
+const recs = []; for (const f of readdirSync(CAMP).sort()) if (f.startsWith('records-sim-R04B-N.jsonl')) recs.push(...readJsonl(join(CAMP, f)));
 const by = (b) => recs.filter((r) => r.block === b && r.status === 'finished'); const sets = { VAL: by('VAL'), CONTRAST: by('CONTRAST'), STRESS: by('STRESS') };
 const expo = (id) => { const out = { n: {} }; for (const [b, rs] of Object.entries(sets)) { let tot = null; let n = 0; for (const r of rs) { let v = null; try { v = exposureRules[id]?.(r) ?? null; } catch { v = null; } if (v != null) { tot = (tot ?? 0) + v; n += 1; } } out[b] = tot == null ? 'no_instrumentado' : Math.round(tot * 1000) / 1000; out.n[b] = n; } return out; };
 // detalle por capacidad × situación × cambio (768 filas) con la exposición de la capacidad en las tres poblaciones
