@@ -5,7 +5,7 @@ import { SimMatch } from './engine.js';
 import './materialize.js';
 import { contextToJSON, contextFromJSON } from './context.js';
 import { sha256Hex, canonical } from './fp.js';
-import { SIM_SNAPSHOT_SCHEMA, SIM_MODEL, SIM_VERSION, SIM_RESULT_SCHEMA, SIM_SNAPSHOT_COMPAT } from './version.js';
+import { SIM_SNAPSHOT_SCHEMA, SIM_SNAPSHOT_SCHEMA_V1, SIM_MODEL, SIM_VERSION, SIM_RESULT_SCHEMA, SIM_SNAPSHOT_COMPAT, SIM_SNAPSHOT_REJECTED } from './version.js';
 
 const deep = (x) => JSON.parse(JSON.stringify(x));
 const PLAYER_STATE = ['energy', 'form', 'available', 'fouls', 'out', 'onCourt', 'slot', 'courtSince', 'benchSince', 'minutes', 'sev', 'lastMoment'];
@@ -39,14 +39,15 @@ export function snapshotSim(m, { embedContext = true, label = null } = {}) {
 export function validateSimSnapshot(snap) {
   const errs = []; const add = (path, message) => errs.push({ path, message });
   if (!snap || typeof snap !== 'object') { add('snapshot', 'guardado ausente o no es un objeto'); return errs; }
-  if (!SIM_SNAPSHOT_COMPAT.schemas.includes(snap.schema)) { add('schema', `versión incompatible (${snap.schema}); este motor lee ${SIM_SNAPSHOT_SCHEMA}`); return errs; }
+  if (!SIM_SNAPSHOT_COMPAT.schemas.includes(snap.schema)) { add('schema', snap.schema === SIM_SNAPSHOT_SCHEMA_V1 ? `guardado de SIM-MOTOR-02/03 (${snap.schema}) no continuable: ${SIM_SNAPSHOT_REJECTED.reason}` : `versión incompatible (${snap.schema}); este motor lee ${SIM_SNAPSHOT_SCHEMA}`); return errs; }
   if (snap.model !== SIM_MODEL) add('model', `el guardado es de otro modelo (${snap.model})`);
   for (const k of ['input', 'context', 'state', 'integrity', 'rootInputFingerprint']) if (snap[k] == null) add(k, 'sección ausente: guardado incompleto');
   if (errs.length) return errs;
   for (const k of ['rng', 'events', 'segments', 'teams', 'orders', 'score', 'periodScore', 'teamFouls']) if (snap.state[k] == null) add(`state.${k}`, 'dato de estado ausente: guardado incompleto');
   if (errs.length) return errs;
   // compatibilidad semántica (C03-03), distinta de la integridad: un archivo coherente de una revisión o formato desconocido no se continúa
-  if (!SIM_SNAPSHOT_COMPAT.simVersions.includes(snap.simVersion)) add('simVersion', `revisión SIM incompatible (${snap.simVersion ?? 'ausente'}); este lector continúa ${SIM_SNAPSHOT_COMPAT.simVersions.join(', ')}`);
+  if (SIM_SNAPSHOT_REJECTED.simVersions.includes(snap.simVersion)) add('simVersion', `revisión SIM ${snap.simVersion} no continuable: ${SIM_SNAPSHOT_REJECTED.reason}`);
+  else if (!SIM_SNAPSHOT_COMPAT.simVersions.includes(snap.simVersion)) add('simVersion', `revisión SIM incompatible (${snap.simVersion ?? 'ausente'}); este lector continúa ${SIM_SNAPSHOT_COMPAT.simVersions.join(', ')}`);
   if (!SIM_SNAPSHOT_COMPAT.resultSchemas.includes(snap.resultSchema)) add('resultSchema', `formato de resultado incompatible (${snap.resultSchema ?? 'ausente'}); este lector continúa ${SIM_SNAPSHOT_COMPAT.resultSchemas.join(', ')}`);
   const { integrity, ...rest } = snap; const body = canonical(rest);
   if (integrity.algorithm !== 'sha256' || sha256Hex(body) !== integrity.digest || body.length !== integrity.bytes) add('integrity', 'el contenido no coincide con su suma de comprobación: el guardado está alterado o dañado');

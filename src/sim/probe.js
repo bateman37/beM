@@ -36,7 +36,8 @@ export function probeVector(ctx, input, over = {}) {
     v[`pFT.${k}`] = mean(lu.map((p) => ftProb(S, p, M, o))); v[`pOrb.field.${k}`] = s.reb.pField; v[`pOrb.ft.${k}`] = s.reb.pFt; v[`assist.p.${k}`] = s.assist.p;
     v[`energy.cost.${k}`] = mean(lu.map((p) => S.energy.costPerLiveMinute * enduranceFactorAt(S, p.ab.FIS06))); v[`moment.sigma.${k}`] = mean(lu.map((p) => consistencySigmaAt(S, p.ab.MEN06)));
     v[`pressure.lossShot.${k}`] = mean(lu.map((p) => pressureLossLogit(S, 'shot', M.pressure, ea(S, p, 'MEN07', 0))));
-    v[`pressure.level.${k}`] = M.pressure; v[`pHelp.${k}`] = M.pHelp;
+    v[`pressure.level.${k}`] = M.pressure; v[`pHelp.${k}`] = M.pHelp; v[`fam.press.${k}`] = M.pressFam ? M.pressFam.delta : 0;
+    { const R = s.reb; v[`pOrb.RA.${k}`] = R.RA; v[`pOrb.RD.${k}`] = R.RD; v[`pOrb.sent.${k}`] = R.offP.length; }
   }
   return { vector: v, models, match: m };
 }

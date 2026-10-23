@@ -6,7 +6,7 @@ import { ATTR_ORDER } from './profile.js';
 import { SIM_MODEL, SIM_RESULT_SCHEMA, SIM_VERSION } from './version.js';
 import { normalizeInput, validateOrder, chainFingerprint } from './adapt.js';
 import { foulRule, newCoachState } from './coachsim.js';
-import { lineupView, defenseAssignment, attackModel, finishPace, shotCells, finisherWeights, shotProbs, blockProb, reboundModel, assistModel, passAbility, ftProb, severity, ea, recipe, offRoleBias, rolePoolOf } from './model.js';
+import { lineupView, defenseAssignment, attackModel, finishPace, shotCells, finisherWeights, shotProbs, blockProb, reboundModel, assistModel, passAbility, ftProb, severity, ea, recipe, offRoleBias, rolePoolOf, screenRoleOf } from './model.js';
 import { consistencySigmaAt, enduranceFactorAt } from '../match/formulas.js';
 import { clamp } from '../match/mathx.js';
 
@@ -32,7 +32,7 @@ export class SimMatch {
     this.rules = this.S.rules; this.periodStart = 0; this.periodLen = this.rules.quarterSeconds;
     this.teams = this.norm.teams.map((t, ti) => this._buildTeam(t, ti));
     this.sides = this.teams.map((t) => ({ idx: t.idx, plan: t.plan, onCourt: [], view: null, assign: null }));
-    this.fam = this.teams.some((t) => t.players.some((p) => p.kn && p.kn.mode === 'explicit'));
+    this.fam = this.S.familiarity?.activation?.enabled !== false && this.teams.some((t) => t.players.some((p) => p.kn && p.kn.mode === 'explicit'));
     for (const o of this.norm.orders) this._queueOrder(o, true);
     this._startLineups(); this.status = 'running';
   }
@@ -187,6 +187,8 @@ export class SimMatch {
     seg.org = null; this.segments.push(seg);
     seg.org = this.sides.map((x) => x.assign.orgId); seg.slots = this.teams.map((t) => Object.fromEntries(this.sides[t.idx].onCourt.map((en) => [en.pl.id, en.slot]))); seg.plans = this.teams.map((t) => ({ disposition: t.plan.disposition, defense: t.plan.defense, coverage: t.plan.coverage, pressureHeight: t.plan.pressureHeight, styles: { ...t.plan.styles }, defStyles: { ...t.plan.defStyles }, midrange: t.plan.midrange }));
     const models = this._compile(start);
+    // C04-04: presión adelantada del tramo por equipo atacante (la presión es del rival): altura, director que organiza el avance, organización defensiva efectiva y ajuste de familiaridad. La exposición se deriva de los controles PUBLICADOS.
+    seg.press = [0, 1].map((k) => { const h = this.sides[1 - k].plan.pressureHeight; if (h === 'normal') return null; const M = models[k]; return { height: h, director: this.sides[k].view.director.id, org: this.sides[1 - k].assign.orgId, delta: M.pressFam ? Math.round(M.pressFam.delta * 1e9) / 1e9 : 0, explicit: !!M.pressFam }; });
     const common = S.volume.commonRhythmFactorBounds[0] + this.rng.next() * (S.volume.commonRhythmFactorBounds[1] - S.volume.commonRhythmFactorBounds[0]);
     const E = d / (models[0].secPerControl + models[1].secPerControl) * common;
     const N = this.rng.roundUnbiased(2 * E);
@@ -242,9 +244,12 @@ export class SimMatch {
     const src = putback ? 'putback' : cell.kind === 'play' ? c.family : cell.kind === 'trans' ? 'transition' : 'spontaneous';
     const zone = c.zone; const fin = ++this.finSeq;
     // participantes compactos de la finalización (exposición de familias/módulos): director, bloqueador pertinente y defensores de la zona; solo en contextos con módulo propio
-    const ctxName = putback ? 'putback' : cell.kind === 'play' ? 'organized' : cell.kind === 'trans' ? 'transition' : 'spontaneous'; let dir = null; let scr = null; let dfn = null;
-    if (ctxName !== 'putback') { dfn = s.zoneDefIds(zone); if (ctxName === 'organized') { dir = s.view.director.id; if (play?.screen?.role) { const pool = rolePoolOf(S, T, s.view, play, play.screen.role).filter((x) => x.pl !== shooter && x.pl.id !== dir); const bi = rng.weighted(pool.map((x) => x.w)); scr = bi >= 0 ? pool[bi].pl.id : null; } } }
-    const base = { ty: 'shot', tm: k, pl: shooter.id, zone, q, src, play: c.playId ?? null, moved, passer, blk: null, made: false, and1: false, pts: 0, end: null, fin, ctx: ctxName, dir, scr, dfn, cont };
+    const ctxName = putback ? 'putback' : cell.kind === 'play' ? 'organized' : cell.kind === 'trans' ? 'transition' : 'spontaneous'; let dir = null; let scr = null; let dfn = null; let scrSrc = null;
+    // C04-03: bloqueador pertinente de la ficha (función `screener` del catálogo). Si el ejecutante YA ocupa esa función, él es el participante (un solo crédito); si no, se sortea entre el pool compatible (peso por plaza favorecida y rol,
+    // sin filtrar por posición nominal) con otro jugador distinto del ejecutante y del director. Sin candidato: `scrSrc` 0 (ausencia explícita); una continuación/putback no hereda el bloqueo anterior.
+    if (ctxName !== 'putback') { dfn = s.zoneDefIds(zone); if (ctxName === 'organized') { dir = s.view.director.id; const sr = screenRoleOf(play); if (sr) { if (c.role === sr) { scr = shooter.id; scrSrc = 1; } else { const pool = rolePoolOf(S, T, s.view, play, sr).filter((x) => x.pl !== shooter && x.pl.id !== dir); const bi = rng.weighted(pool.map((x) => x.w)); scr = bi >= 0 ? pool[bi].pl.id : null; scrSrc = bi >= 0 ? 2 : 0; } } } }
+    const elig = passable ? 1 : 0; // C04-06: la finalización admite una entrega final (denominador de asistencias)
+    const base = { ty: 'shot', tm: k, pl: shooter.id, zone, q, src, play: c.playId ?? null, moved, passer, blk: null, made: false, and1: false, pts: 0, end: null, fin, ctx: ctxName, dir, scr, scrSrc, elig, dfn, cont };
     const info = { cell: { ...c, moved }, kind: cell.kind };
     const sp = shotProbs(S, T, this.sides, k, M, info, shooter, q);
     const origin = { src, play: c.playId ?? null, zone, fin };
@@ -252,9 +257,9 @@ export class SimMatch {
       const made = rng.bernoulli(sp.p); const nFt = zone === 'three' ? 3 : 2;
       if (made) { // canasta con falta: el tiro cuenta y se añade un libre ligado; sigue siendo UNA finalización
         base.made = true; base.and1 = true; base.pts = S.shots[zone].points; const sh = this._pushShotRec(rec, base);
-        rec.chain.push({ foul: { ty: 'shootfoul', tm: 1 - k, zone, victim: shooter.id, src, play: c.playId ?? null, and1: true, fin, cont, ctx: ctxName, dir, scr, dfn, passer } }); this._ftSeries(rec, k, shooter, 1, 'and1', sh, passer, s, putback, origin);
+        rec.chain.push({ foul: { ty: 'shootfoul', tm: 1 - k, zone, victim: shooter.id, src, play: c.playId ?? null, and1: true, fin, cont, ctx: ctxName, dir, scr, scrSrc, elig, dfn, passer } }); this._ftSeries(rec, k, shooter, 1, 'and1', sh, passer, s, putback, origin);
       } else { // fallo con falta de tiro: sin intento de campo (política EST-SIM02), libres del tirador; una finalización
-        const f = { ty: 'shootfoul', tm: 1 - k, zone, victim: shooter.id, src, play: c.playId ?? null, fin, cont, ctx: ctxName, dir, scr, dfn, passer }; rec.chain.push({ foul: f }); this._ftSeries(rec, k, shooter, nFt, 'shooting', f, passer, s, putback, origin);
+        const f = { ty: 'shootfoul', tm: 1 - k, zone, victim: shooter.id, src, play: c.playId ?? null, fin, cont, ctx: ctxName, dir, scr, scrSrc, elig, dfn, passer }; rec.chain.push({ foul: f }); this._ftSeries(rec, k, shooter, nFt, 'shooting', f, passer, s, putback, origin);
       }
       return;
     }

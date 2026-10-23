@@ -11,6 +11,14 @@ export function offRoleBias(S, T, pl, tags) { const r = T.offensiveRoles?.[pl.of
 export function defRoleBias(S, T, pl, tags) { const r = T.defensiveRoles?.[pl.defRole]; const a = S.defense.assignment; if (!r) return a.otherRoleFitWeight; for (let i = 0; i < tags.length; i++) if (r.tags.includes(tags[i])) return a.roleFitWeight; return a.otherRoleFitWeight; }
 
 export const ZONES = ['rim', 'inside', 'midrange', 'three'];
+// C04-03: función de bloqueador que la ficha representa (derivada del catálogo vigente, no de `play.screen`, que no existe): el rol cuyo nombre o etiquetas son «screener». POS01–POS04 y POS07–POS08 la tienen; POS05–POS06
+// conservan `hub` como función de entrega y no la tienen. Devuelve el nombre del rol o null.
+const screenRoleCache = new WeakMap();
+export function screenRoleOf(play) {
+  if (!play || !play.roles) return null; if (screenRoleCache.has(play)) return screenRoleCache.get(play);
+  let out = null; for (const [name, d] of Object.entries(play.roles)) if (name === 'screener' || (d.tags ?? []).includes('screener')) { out = name; break; }
+  screenRoleCache.set(play, out); return out;
+}
 const QUALS = ['comfortable', 'normal', 'forced'];
 export const QUAL_KEYS = QUALS;
 const lvl = (m, key) => { const e = m?.[key]; return e && typeof e.level === 'number' ? e.level : null; };
@@ -184,7 +192,13 @@ export function attackModel(S, T, sides, k, ctx) {
   const pFoulStyle = 1 + (pAtt - p0s) + (pClose - p0c); // riesgo de robo y presión cercana aumentan también las faltas defensivas
   let wDn = base.defensiveNonShootingFoul * Math.exp(zFoulD) * pFoulStyle; let wSf = base.shootingFoul * Math.exp(zFoulD) * pFoulStyle;
   wTo *= 1 + (pClose - p0c); // presión al balón: más pérdidas, compensada por más faltas defensivas y mejor calidad cuando el avance se supera
-  if (pressFx) { const pw = S.defense.pressure.newAdvancedInteractionBaseWeights; wTo += pw.turnover * closeOR; wDn += pw.contact; M.flags.pressed = true; }
+  if (pressFx) {
+    const pw = S.defense.pressure.newAdvancedInteractionBaseWeights; let wPress = pw.turnover * closeOR; M.flags.pressed = true;
+    // C04-04: familiaridad de la presión adelantada (FAM:press_break en ataque; PRESS y organización en defensa). Un único ajuste sobre el peso ADICIONAL de pérdida que crea la presión; la pérdida ordinaria no se toca
+    // y el mismo delta no se suma a puntería, calidad ni duración. Neutral con conocimiento no explícito (sides.fam falso) o dominios plenos.
+    if (sides.fam) { const f = famPressDelta(S, A, D); M.pressFam = f; wPress *= Math.exp(-f.delta); }
+    wTo += wPress; wDn += pw.contact;
+  }
   const contest = mean(av.players.map((p) => taskFor(S, 'TAR17', 'attack', 'contender', p))); const contestD = mean(dv.players.map((p) => taskFor(S, 'TAR17', 'attack', 'contender', p)));
   const pLooseKeep = looseControlP(S, contest, contestD); const wLb = base.looseBall * (1 - pLooseKeep);
   const wOf = base.offensiveFoul * Math.exp(zFoulO); const wBv = base.ballViolation; const wFs = base.fieldShot;
@@ -280,6 +294,9 @@ export function shotCells(S, T, sides, k, M, ctx) {
   const tz = S.derived.transition.zoneWeights; const trq = transitionQuality(S, T, sides, k, M); const spz = spontaneousZones(S, T, av, plan, M); const spq = spontaneousQuality(S, T, sides, k, M);
   for (const o of comp.trans) { o.w = M.tau * tz[o.cell.zone]; o.q = trq; o.cell.passShare = S.derived.transition.passShare; o.cell.movedShare = S.derived.transition.movedShare; }
   for (const o of comp.spont) { o.w = M.sigma * spz[o.cell.zone]; o.q = spq; o.cell.passShare = S.derived.spontaneous.passShare; o.cell.movedShare = S.derived.spontaneous.movedShare; }
+  // §7.2: ajuste de MEZCLA (no de acierto). Una vez por contexto representado (organizado, transición, espontáneo): multiplica el peso de las celdas de triple y renormaliza dentro del contexto conservando su masa previa. Con 1, identidad exacta.
+  const f3 = S.shotMix?.threeWeightFactor ?? 1;
+  if (f3 !== 1) for (const grp of [cells, comp.trans, comp.spont]) { let m0 = 0; let m1 = 0; for (const o of grp) { m0 += o.w; if (o.cell.zone === 'three') o.w *= f3; m1 += o.w; } if (m1 > 0 && m0 > 0) { const r = m0 / m1; for (const o of grp) o.w *= r; } }
   const all = comp.all; let tw = 0; for (let i = 0; i < all.length; i++) tw += all[i].w; if (tw > 0) for (let i = 0; i < all.length; i++) all[i].w /= tw;
   // protección del tiro rival: desplaza la mezcla entre interior y exterior (peso de elección ↑ ⇒ menos intentos en esa zona)
   tw = 0; for (let i = 0; i < all.length; i++) { const z = all[i].cell.zone; all[i].w *= (z === 'rim' || z === 'inside') ? 1 / M.protect.inside : z === 'three' ? 1 / M.protect.outside : 1; tw += all[i].w; }
@@ -360,11 +377,20 @@ export function famModules(S, play, family, plan, D) {
 }
 function famPlayQuality(S, T, A, D, p, plan, defRolePlayers) {
   const fam = S.familiarity; const play = p.play; const mods = famModules(S, play, p.family, plan, D);
-  const roles = [...new Set([...play.qualityAttack.map((e) => e[0]), ...(play.screen?.role ? [play.screen.role] : [])])];
+  const sr = screenRoleOf(play); const roles = [...new Set([...play.qualityAttack.map((e) => e[0]), ...(sr ? [sr] : [])])];
   const atkDs = roles.map((r) => weightedD(rolePool(S, T, A.view, play, r), (pl) => actorD(fam, pl, 'a', mods.attack)));
   const defRoles = [...new Set(play.qualityDefense.map((e) => e[0]))];
   const defDs = defRoles.map((r) => weightedD(defRolePlayers(r), (pl) => actorD(fam, pl, 'd', mods.defense)));
   return familiarityDelta(fam, 'quality', familiaritySide(atkDs), familiaritySide(defDs)).delta;
+}
+// Presión adelantada (C04-04): participante ofensivo de referencia = director efectivo que organiza el avance; defensivos = los cinco del quinteto defensor en pista (grupo que SIM usa para la presión colectiva).
+// Pesos de los módulos: tacticContextWeights.pressBreak (ataque FAM:press_break; defensa PRESS y organización efectiva). Función pura, sin azar ni exposición. `delta` está orientado a favor del ataque.
+export function famPressDelta(S, A, D) {
+  const fam = S.familiarity; const w = fam.tacticContextWeights.pressBreak;
+  const atk = normMods([{ id: 'FAM:press_break', w: w.attack.press_break }]); const dfn = normMods([{ id: 'PRESS', w: w.defense.press }, { id: D.assign.orgId, w: w.defense.organization }]);
+  const DA = familiaritySide([actorD(fam, A.view.director, 'a', atk)]); const DD = familiaritySide(D.view.players.map((pl) => actorD(fam, pl, 'd', dfn)));
+  const r = familiarityDelta(fam, 'pressedAdvance', DA, DD);
+  return { delta: r.delta, DA, DD, UA: r.UA, UD: r.UD, atk, dfn };
 }
 // Contextos sin ficha (transición y decisión espontánea): su propio contexto de la tabla, sin heredar los módulos del ataque organizado. Se aplica una vez por cálculo.
 function famContextDelta(S, T, A, D, ctx) {
@@ -415,13 +441,19 @@ export function blockProb(S, T, sides, k, M, shooter, zone, rng) {
   const Z = clamp(0.5 * blk.M.DEF - 0.5 * shooter.M.TIR, -1, 1);
   return { p: blockResolution(S, sh, { blk: bl, resist, delta: 0, Z, alpha: S.moment.probabilityAlphaByTask.shot }).p, blocker: blk };
 }
+// SEM04-REB (C04-01): contribución COLECTIVA al rebote ofensivo de campo con rendimientos decrecientes. `strengths` ya viene de la fuerza efectiva individual (receta, cuerpo y fatiga); se ordenan de mayor a menor (desempate estable:
+// el orden de entrada), se toma max(0, fuerza) y RA = Σ peso[j]·fuerza[j] / Σ peso[0..N−1] con N = referenceParticipants. Añadir un participante pertinente nunca reduce RA (todos los términos son ≥ 0). Índice colectivo: no se trunca a 30.
+export function collectiveRA(S, strengths) {
+  const c = S.rebound.collective; const w = c.weights; const ordered = strengths.map((v, i) => [Math.max(0, v), i]).sort((a, b) => b[0] - a[0] || a[1] - b[1]); let num = 0; for (let j = 0; j < ordered.length && j < w.length; j++) num += w[j] * ordered[j][0];
+  let den = 0; for (let j = 0; j < c.referenceParticipants; j++) den += w[j]; return num / den;
+}
 export function reboundModel(S, T, sides, k, M) {
   const A = sides[k]; const D = sides[1 - k]; const rb = S.rebound; const cap = rb.maxEnergyPenalty;
   const strength = (pl) => recipe(S, pl, rb.strength, cap) + S.body.reboundStrengthSensitivity * (reachOf(S, pl) - S.body.reboundReachReference);
   const capt = (pl) => recipe(S, pl, rb.captor, cap);
   const pick = (view, slots) => view.lu.filter((e) => slots.includes(e.slot)).map((e) => e.pl);
   const tgt = rb.offensiveReboundAssignmentTarget[A.plan.styles.afterShot - 1]; const offP = A.view.players.slice().sort((a, b) => strength(b) - strength(a)).slice(0, tgt); const defP = pick(D.view, rb.defenseParticipantSlots);
-  const RA = offP.length ? mean(offP.map(strength)) : S.neutralAbility; const RD = defP.length ? mean(defP.map(strength)) : S.neutralAbility;
+  const RA = offP.length ? collectiveRA(S, offP.map(strength)) : S.neutralAbility; const RD = defP.length ? mean(defP.map(strength)) : S.neutralAbility;
   const lastOff = pick(A.view, rb.liveLastFreeThrowOffenseSlots); const lastDef = pick(D.view, rb.liveLastFreeThrowDefenseSlots);
   const RAl = lastOff.length ? mean(lastOff.map(strength)) : S.neutralAbility; const RDl = lastDef.length ? mean(lastDef.map(strength)) : S.neutralAbility;
   return {

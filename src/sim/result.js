@@ -4,7 +4,7 @@
 import { SIM_MODEL, SIM_RESULT_SCHEMA, SIM_VERSION, SIM_COVERAGE_ID, SIM_STATS_POLICY_ID } from './version.js';
 import { fpString } from './fp.js';
 import { reconcileResult } from './reconcile.js';
-import { moduleExposure } from './exposure.js';
+import { moduleExposure, pressExposure, assistDenominators } from './exposure.js';
 import { buildAnalysis } from './analysis.js';
 
 const ZONES = ['rim', 'inside', 'midrange', 'three'];
@@ -19,7 +19,9 @@ export function sportDigest(m) {
   const ids = new Map(); const ix = (id) => { if (id == null) return 0; let v = ids.get(id); if (v === undefined) { v = ids.size + 1; ids.set(id, v); } return v; };
   const str = (s) => { if (s == null) return 0; let x = 0; for (let i = 0; i < s.length; i++) x = Math.imul(x ^ s.charCodeAt(i), 16777619); return x; };
   put(m.norm.seed); put(m.score[0]); put(m.score[1]);
-  for (const e of m.events) { if (e.t > m.published + 1e-9) break; put(TYPES[e.ty] ?? 0); put(e.tm ?? -1); put(ix(e.pl)); put(str(e.zone)); put(e.q ?? -1); put(e.made === true ? 1 : e.made === false ? 0 : -1); put(ix(e.blk)); put(ix(e.passer)); put(ix(e.stl)); put(str(e.kind)); put(str(e.cause)); put(e.off === true ? 1 : 0); put(e.k ?? 0); put(ix(e.drawn)); put(ix(e.victim)); put(Math.round(e.t * 10)); put(e.p); put(str(e.src)); put(str(e.play)); put(e.and1 ? 1 : 0); put(e.bonus ? 1 : 0); put(e.fin ?? 0); put(e.pfN ?? 0); put(ix(e.dir)); put(ix(e.scr)); put(str(e.cont)); }
+  for (const e of m.events) { if (e.t > m.published + 1e-9) break; put(TYPES[e.ty] ?? 0); put(e.tm ?? -1); put(ix(e.pl)); put(str(e.zone)); put(e.q ?? -1); put(e.made === true ? 1 : e.made === false ? 0 : -1); put(ix(e.blk)); put(ix(e.passer)); put(ix(e.stl)); put(str(e.kind)); put(str(e.cause)); put(e.off === true ? 1 : 0); put(e.k ?? 0); put(ix(e.drawn)); put(ix(e.victim)); put(Math.round(e.t * 10)); put(e.p); put(str(e.src)); put(str(e.play)); put(e.and1 ? 1 : 0); put(e.bonus ? 1 : 0); put(e.fin ?? 0); put(e.pfN ?? 0); put(ix(e.dir)); put(ix(e.scr)); put(e.scrSrc ?? -1); put(e.elig ?? -1); put(str(e.cont)); }
+  // C04-04: la presión adelantada del tramo (altura, ajuste de familiaridad y controles alcanzados) forma parte de la huella deportiva
+  for (const sg of m.segments ?? []) { if (sg.start > m.published + 1e-9) break; if (sg.press) for (const k of [0, 1]) { const p = sg.press[k]; if (p) { put(k); put(str(p.height)); put(Math.round(p.delta * 1e6)); put(ix(p.director)); } } }
   h1 = Math.imul(h1 ^ (h2 >>> 16), 0x85ebca6b); h2 = Math.imul(h2 ^ (h1 >>> 13), 0xc2b2ae35);
   return (h1 >>> 0).toString(16).padStart(8, '0') + (h2 >>> 0).toString(16).padStart(8, '0');
 }
@@ -81,7 +83,11 @@ export function buildSimResult(m, opts = {}) {
   for (const r of players) { r.min = r1(r.sec / 60); r.fg = r.fg2m + r.fg3m; r.fga = r.fg2a + r.fg3a; r.ast = r.astC + r.astL; r.reb = r.oreb + r.dreb; r.val = r.pts + r.reb + r.ast + r.stl + r.blk + r.pfd - (r.fga - r.fg) - (r.fta - r.ftm) - r.tov - r.blkAgainst - r.pf; }
   const totals = m.teams.map((t) => { const tl = { ...zeroLine(), teamReb: teamLine[t.idx].teamReb, teamTov: teamLine[t.idx].teamTov }; for (const r of players) if (r.team === t.idx) for (const k of ['sec', 'pts', 'fgPts', 'ftPts', 'fg2m', 'fg2a', 'fg3m', 'fg3a', 'ftm', 'fta', 'oreb', 'dreb', 'astC', 'astL', 'tov', 'stl', 'blk', 'blkAgainst', 'pf', 'pfd']) tl[k] += r[k]; tl.min = r1(tl.sec / 60); tl.fga = tl.fg2a + tl.fg3a; tl.fgm = tl.fg2m + tl.fg3m; tl.ast = tl.astC + tl.astL; tl.reb = tl.oreb + tl.dreb + tl.teamReb[0] + tl.teamReb[1]; return tl; });
   const exposure = {}; for (const s of segs) { const d = clip(s); if (d <= 0) continue; for (const k of [0, 1]) for (const [id, slot] of Object.entries(s.slots[k])) { const e = (exposure[id] ??= { slotSec: {}, roleSec: {}, defRoleSec: {} }); e.slotSec[slot] = Math.round(((e.slotSec[slot] ?? 0) + d) * 1000) / 1000; const role = m.teams[k].byId[id].offRole; if (role) e.roleSec[role] = Math.round(((e.roleSec[role] ?? 0) + d) * 1000) / 1000; const dr = m.teams[k].byId[id].defRole; if (dr) e.defRoleSec[dr] = Math.round(((e.defRoleSec[dr] ?? 0) + d) * 1000) / 1000; } }
-  const modules = moduleExposure(m, evs); for (const [id, mods] of Object.entries(modules)) if (exposure[id]) exposure[id].modules = mods;
+  // La exposición de módulos distingue DOS operaciones: la finalización (módulos organizados/transición/espontáneo) y el avance presionado (C04-04: FAM:press_break, PRESS y organización). `modules` es la suma que consume el
+  // aprendizaje y `moduleOps` conserva la identidad de cada operación para que ninguna se observe dos veces como una sola.
+  const modules = moduleExposure(m, evs); const press = pressExposure(m, segs, T, controlsReached);
+  for (const id of Object.keys(exposure)) { const a = modules[id] ?? {}; const b = press.byPlayer[id] ?? {}; const sum = { ...a }; for (const [k, v] of Object.entries(b)) sum[k] = Math.round(((sum[k] ?? 0) + v) * 1e6) / 1e6; if (Object.keys(sum).length) { exposure[id].modules = sum; exposure[id].moduleOps = { finalization: a, press: b }; } }
+  const assistDen = assistDenominators(evs);
   const periodsReached = periodPts.length; const finished = reachedEnd; const status = m.status === 'error' ? 'error' : finished ? 'finished' : T > 0 || m.segments.length ? 'running' : 'ready';
   // estado observable en el presente: alineación en pista, faltas y bonus desde los hechos; la energía solo para quien tiene autorización (se proyecta a la frontera, no es la del núcleo adelantado)
   const observable = observableAt(m, T, evs, audience, team);
@@ -98,6 +104,7 @@ export function buildSimResult(m, opts = {}) {
     zones: ZONES.map((z) => ({ zone: z, teams: [0, 1].map((k) => { let a = 0; let mk = 0; for (const r of players) if (r.team === k) { a += r.zones[z].a; mk += r.zones[z].m; } return { a, m: mk }; }) })),
     families: famMap.map((f) => Object.values(f)),
     familyDenominators: [0, 1].map((k) => ({ controls: controls[k], finalizations: finTeam[k], ...fdn[k] })),
+    assistDenominators: assistDen, pressOps: { opportunities: press.opportunities, byHeight: press.byHeight, sumDelta: press.sumDelta, explicitOpportunities: press.explicitOpportunities, unit: press.unit },
     exposureInfo: { unit: 'segundos de juego (los módulos en operaciones de finalización SIM ponderadas)', provenance: 'intervalos de presencia por tramo hasta el presente publicado; posición = puesto asignado en el quinteto del tramo; rol = rol vigente de la ficha del jugador; módulos desde las finalizaciones publicadas', familias: 'uso de familias y fichas en families[] con denominadores en familyDenominators[] (finalizaciones únicas: tiro, falta de tiro y serie ligada cuentan una vez)' },
     quintets: [...q.values()].map((e) => ({ ...e, sec: Math.round(e.sec * 1000) / 1000, min: r1(e.sec / 60) })), evolution,
   };

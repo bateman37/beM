@@ -1,0 +1,420 @@
+{
+ "schema": "beM-sim04-plan/1",
+ "campaign": "SIM04-CAMPANA-20261023",
+ "master": 20261023,
+ "namespaces": [
+  "SIM04|CAL",
+  "SIM04|VAL",
+  "SIM04|STRESS",
+  "SIM04|CONTRAST",
+  "SIM04|TECH",
+  "SIM04|BENCH"
+ ],
+ "seedFunction": "SHA-256 de «<maestra>|<espacio>|<clave>|<etiqueta>» (+ «#n» ante colisión), primeros 32 bits sin signo (0 → 1)",
+ "collisions": [],
+ "duplicateSeedsInPlan": 0,
+ "mainTeams": [
+  "EQ01",
+  "EQ02",
+  "EQ03",
+  "EQ04",
+  "EQ05",
+  "EQ08",
+  "EQ09",
+  "EQ12"
+ ],
+ "stressTeams": [
+  "EQ06",
+  "EQ07",
+  "EQ10",
+  "EQ11"
+ ],
+ "counts": {
+  "CAL": 56,
+  "VAL": 56,
+  "STRESS": 24,
+  "CONTRAST": 88,
+  "anchorsCAL": 16,
+  "anchorsVAL": 16
+ },
+ "contrast": [
+  {
+   "id": "T01",
+   "factor": "Rebote/balance (después del tiro 1/5)",
+   "pair": [
+    "EQ05",
+    "EQ06"
+   ],
+   "note": "niveles 1 y 2 envían el mismo número de participantes según offensiveReboundAssignmentTarget [1,1,2,3,4]",
+   "variants": [
+    {
+     "id": "V0",
+     "label": "afterShot = 1"
+    },
+    {
+     "id": "V1",
+     "label": "afterShot = 5"
+    }
+   ]
+  },
+  {
+   "id": "T02",
+   "factor": "Finalización (interior/exterior, niveles 1/5)",
+   "pair": [
+    "EQ03",
+    "EQ04"
+   ],
+   "note": null,
+   "variants": [
+    {
+     "id": "V0",
+     "label": "finishPreference = 1 (interior)"
+    },
+    {
+     "id": "V1",
+     "label": "finishPreference = 5 (exterior)"
+    }
+   ]
+  },
+  {
+   "id": "T03",
+   "factor": "Altura de presión (normal/total)",
+   "pair": [
+    "EQ06",
+    "EQ07"
+   ],
+   "note": null,
+   "variants": [
+    {
+     "id": "V0",
+     "label": "pressureHeight = normal"
+    },
+    {
+     "id": "V1",
+     "label": "pressureHeight = full"
+    }
+   ]
+  },
+  {
+   "id": "T04",
+   "factor": "Cobertura (COB01/COB03)",
+   "pair": [
+    "EQ12",
+    "EQ01"
+   ],
+   "note": "el rival ataca con prioridad 1 (máxima) en las fichas compatibles con COB01 y COB03 (POS01,POS02,POS03,POS04) y 5 (mínima) en el resto, igual en ambas variantes",
+   "variants": [
+    {
+     "id": "V0",
+     "label": "coverage = COB01"
+    },
+    {
+     "id": "V1",
+     "label": "coverage = COB03"
+    }
+   ]
+  },
+  {
+   "id": "T05",
+   "factor": "Director (MEN02 y MEN03 del director 8/24)",
+   "pair": [
+    "EQ09",
+    "EQ10"
+   ],
+   "note": "el director es el titular de mayor lectura, primero en la prioridad de director; el resto de la ficha no cambia",
+   "variants": [
+    {
+     "id": "V0",
+     "label": "director efectivo con MEN02 = MEN03 = 8"
+    },
+    {
+     "id": "V1",
+     "label": "director efectivo con MEN02 = MEN03 = 24"
+    }
+   ]
+  },
+  {
+   "id": "T06",
+   "factor": "Libertad (1/5)",
+   "pair": [
+    "EQ09",
+    "EQ10"
+   ],
+   "note": "mismo director de lectura alta en ambas variantes",
+   "variants": [
+    {
+     "id": "V0",
+     "label": "freedom = 1"
+    },
+    {
+     "id": "V1",
+     "label": "freedom = 5"
+    }
+   ]
+  },
+  {
+   "id": "T07",
+   "factor": "Familiaridad organizada (K8/K28 de módulos pertinentes)",
+   "pair": [
+    "EQ01",
+    "EQ07"
+   ],
+   "note": null,
+   "variants": [
+    {
+     "id": "V0",
+     "label": "módulos pertinentes del equipo sometido K8 (resto de componentes 30)"
+    },
+    {
+     "id": "V1",
+     "label": "módulos pertinentes del equipo sometido K28 (resto de componentes 30)"
+    }
+   ]
+  },
+  {
+   "id": "T08",
+   "factor": "Familiaridad de presión (K8/K28 de PRESS en defensa)",
+   "pair": [
+    "EQ10",
+    "EQ08"
+   ],
+   "note": null,
+   "variants": [
+    {
+     "id": "V0",
+     "label": "PRESS K8 en el equipo que presiona a pista completa (resto 30; ataque rival constante)"
+    },
+    {
+     "id": "V1",
+     "label": "PRESS K28 en el equipo que presiona a pista completa (resto 30; ataque rival constante)"
+    }
+   ]
+  },
+  {
+   "id": "T09",
+   "factor": "Energía inicial (100/30)",
+   "pair": [
+    "EQ03",
+    "EQ09"
+   ],
+   "note": null,
+   "variants": [
+    {
+     "id": "V0",
+     "label": "energía inicial 100 (todo el equipo)"
+    },
+    {
+     "id": "V1",
+     "label": "energía inicial 30 (todo el equipo)"
+    }
+   ]
+  },
+  {
+   "id": "T10",
+   "factor": "Forma (−0,5/+0,5)",
+   "pair": [
+    "EQ05",
+    "EQ11"
+   ],
+   "note": null,
+   "variants": [
+    {
+     "id": "V0",
+     "label": "forma −0,5 (todo el equipo)"
+    },
+    {
+     "id": "V1",
+     "label": "forma +0,5 (todo el equipo)"
+    }
+   ]
+  },
+  {
+   "id": "T11",
+   "factor": "Consistencia (MEN06 8/24)",
+   "pair": [
+    "EQ02",
+    "EQ08"
+   ],
+   "note": null,
+   "variants": [
+    {
+     "id": "V0",
+     "label": "MEN06 = 8 (todo el equipo)"
+    },
+    {
+     "id": "V1",
+     "label": "MEN06 = 24 (todo el equipo)"
+    }
+   ]
+  }
+ ],
+ "diagSim": [
+  "VAL-EQ01-EQ04",
+  "VAL-EQ04-EQ01",
+  "VAL-EQ02-EQ05",
+  "VAL-EQ09-EQ02",
+  "CONTRAST-T03-V1-O1-R1",
+  "CONTRAST-T08-V0-O2-R1",
+  "CONTRAST-T07-V1-O1-R2",
+  "CONTRAST-T04-V1-O1-R1",
+  "CONTRAST-T01-V1-O2-R1",
+  "CONTRAST-T09-V1-O1-R1",
+  "CONTRAST-T10-V0-O1-R2",
+  "CONTRAST-T05-V1-O1-R1"
+ ],
+ "diagDetailed": [
+  "VAL-EQ01-EQ04",
+  "VAL-EQ04-EQ01",
+  "VAL-EQ02-EQ05",
+  "VAL-EQ09-EQ02"
+ ],
+ "techCases": [
+  "VAL-EQ01-EQ12",
+  "VAL-EQ12-EQ04",
+  "VAL-EQ05-EQ01",
+  "VAL-EQ08-EQ05",
+  "VAL-EQ02-EQ09",
+  "VAL-EQ09-EQ03",
+  "VAL-EQ04-EQ08",
+  "VAL-EQ03-EQ12"
+ ],
+ "techRoutes": {
+  "VAL-EQ01-EQ12": {
+   "steps": [
+    600,
+    1200,
+    1800,
+    2400
+   ],
+   "cuts": [
+    125
+   ]
+  },
+  "VAL-EQ12-EQ04": {
+   "steps": [
+    120,
+    240,
+    360,
+    480,
+    600,
+    1200,
+    2400
+   ],
+   "cuts": [
+    1190,
+    2000
+   ]
+  },
+  "VAL-EQ05-EQ01": {
+   "steps": [
+    37,
+    500,
+    501,
+    1999
+   ],
+   "cuts": [
+    600
+   ]
+  },
+  "VAL-EQ08-EQ05": {
+   "steps": [
+    300,
+    900,
+    1500,
+    2100
+   ],
+   "cuts": [
+    30,
+    1800
+   ]
+  },
+  "VAL-EQ02-EQ09": {
+   "steps": [
+    1,
+    2,
+    3,
+    119,
+    121,
+    1700
+   ],
+   "cuts": [
+    2399
+   ]
+  },
+  "VAL-EQ09-EQ03": {
+   "steps": [
+    1200
+   ],
+   "cuts": [
+    120,
+    121,
+    2380
+   ]
+  },
+  "VAL-EQ04-EQ08": {
+   "steps": [
+    450,
+    1350,
+    2250
+   ],
+   "cuts": [
+    1500
+   ]
+  },
+  "VAL-EQ03-EQ12": {
+   "steps": [
+    60,
+    600,
+    1380,
+    2400
+   ],
+   "cuts": [
+    1000,
+    1001
+   ]
+  }
+ },
+ "learningPairs": [
+  {
+   "pair": "L1",
+   "sim": "VAL-EQ01-EQ04",
+   "detailed": "VAL-EQ01-EQ04"
+  },
+  {
+   "pair": "L2",
+   "sim": "VAL-EQ04-EQ01",
+   "detailed": "VAL-EQ04-EQ01"
+  },
+  {
+   "pair": "L3",
+   "sim": "VAL-EQ02-EQ05",
+   "detailed": "VAL-EQ02-EQ05"
+  },
+  {
+   "pair": "L4",
+   "sim": "VAL-EQ09-EQ02",
+   "detailed": "VAL-EQ09-EQ02"
+  },
+  {
+   "pair": "L5",
+   "sim": "VAL-EQ03-EQ08",
+   "detailed": "VAL-EQ03-EQ08"
+  },
+  {
+   "pair": "L6",
+   "sim": "VAL-EQ12-EQ03",
+   "detailed": "VAL-EQ12-EQ03"
+  }
+ ],
+ "historyMixedAnchors": [
+  "VAL-EQ01-EQ04",
+  "VAL-EQ02-EQ05",
+  "VAL-EQ03-EQ08",
+  "VAL-EQ04-EQ09",
+  "VAL-EQ05-EQ12",
+  "VAL-EQ08-EQ01",
+  "VAL-EQ09-EQ02",
+  "VAL-EQ12-EQ03"
+ ],
+ "unplannedInvalid": []
+}

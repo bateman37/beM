@@ -1,7 +1,7 @@
 // Perfil SIM (SEM-SIM01-20261022): todas las decisiones numéricas deportivas del generador viven aquí, como filas con ruta, valor, unidad, procedencia y efecto.
 // Procedencia (SIM-MOTOR-01 §4.3): «heredada» (copia de una fila del perfil efectivo detallado), «derivada» (transformación explícita de filas existentes) o «SEM-SIM01»
 // (semilla nueva autorizada por el encargo, pendiente de auditoría/calibración). El código lee `profile.v.<ruta>`; nunca constantes deportivas sueltas.
-import { SIM_PROFILE_ID, SIM_EXTENSION_ID } from './version.js';
+import { SIM_PROFILE_ID, SIM_EXTENSION_ID, SIM04_EXTENSION_ID } from './version.js';
 import { fpString } from './fp.js';
 
 const deep = (x) => JSON.parse(JSON.stringify(x));
@@ -55,6 +55,12 @@ const SEM02_ROWS = [
   ['coachSim.maxPatterns', 2, 'patrones', 'Patrones conservados a la vez (exterior/interior).'],
   ['coachSim.maxLevelStepPerReview', 1, 'niveles', 'Paso máximo del control de protección o de ritmo por revisión.'],
 ];
+// Extensión SIM-MOTOR-04 (SEM-SIM04-20261023): filas nuevas. SEM04-REB (C04-01) y la mezcla de zonas (§7.2) son SEMILLAS de evaluación, no calibración empírica.
+const SEM04_ROWS = [
+  ['rebound.collective.weights', [1, 0.5, 0.25, 0.125, 0.0625], 'peso marginal por orden de fuerza', 'SEM04-REB: pesos marginales de la contribución colectiva al rebote ofensivo de campo (de mayor a menor fuerza); no crecientes y no negativos.'],
+  ['rebound.collective.referenceParticipants', 2, 'participantes (entero ≥ 1)', 'SEM04-REB: normaliza RA por la suma de los pesos de los N primeros puestos (con N neutrales enviados, RA = nivel neutral).'],
+  ['shotMix.threeWeightFactor', 1, 'factor multiplicativo', 'Mezcla de zonas (no de acierto): multiplica una vez el peso de las celdas de triple de cada contexto y renormaliza dentro del contexto; con 1, identidad exacta de la mezcla previa.'],
+];
 function flatten(prefix, src, out) {
   if (isLeaf(src)) { out.push([prefix, src]); return; }
   for (const [k, v] of Object.entries(src)) flatten(`${prefix}.${k}`, v, out);
@@ -72,6 +78,7 @@ export function buildSimProfile(detailed) {
   // Hojas útiles que solo son cadenas/listas de catálogo se leen de las tablas declarativas del detallado (referencias, no filas numéricas).
   for (const [p, v, unit, effect] of SEM_ROWS) add(p, v, unit, 'SEM-SIM01', 'encargo SIM-MOTOR-01 §4.3 (semilla nueva, pendiente de auditoría/calibración)', effect);
   for (const [p, v, unit, effect] of SEM02_ROWS) add(p, v, unit, SIM_EXTENSION_ID.split('-').slice(0, 2).join('-'), 'encargo SIM-MOTOR-02 §5.1 (semilla nueva, no calibración)', effect);
+  for (const [p, v, unit, effect] of SEM04_ROWS) add(p, v, unit, SIM04_EXTENSION_ID.split('-').slice(0, 2).join('-'), 'encargo SIM-MOTOR-04 §4 C04-01 / §7.2 (semilla de evaluación SEM04, no calibración empírica)', effect);
   // Correspondencia de roles → créditos compatibles (tabla declarada; los pesos numéricos son los heredados selection.rolePreference y defense.assignment.roleFitWeight/otherRoleFitWeight).
   add('roles.creditTags.block', ['rimProtect', 'rimHelp'], 'etiquetas', 'SEM-SIM02', 'encargo SIM-MOTOR-02 §4.1: etiquetas de función defensiva que orientan el reparto del crédito de tapón', 'Un defensor cuyo rol defensivo favorece estas etiquetas pesa roleFitWeight (una vez) en el reparto del tapón.');
   add('roles.creditTags.steal', ['ballPressure', 'chaser'], 'etiquetas', 'SEM-SIM02', 'encargo SIM-MOTOR-02 §4.1: etiquetas de función defensiva que orientan el reparto del crédito de robo', 'Un defensor cuyo rol defensivo favorece estas etiquetas pesa roleFitWeight (una vez) en el reparto del robo.');
@@ -112,6 +119,16 @@ export function fpOf(rows) { return fpString(JSON.stringify(rows.map((r) => [r.p
 const deepNumeric = (x) => (Array.isArray(x) ? x.every(deepNumeric) : typeof x === 'number' && Number.isFinite(x));
 const sameShape = (a, b) => (Array.isArray(a) ? Array.isArray(b) && a.length === b.length && a.every((x, i) => sameShape(x, b[i])) : typeof b === 'number' && Number.isFinite(b));
 // Candidata: copia con filas sustituidas. Valida tipo, forma y límites; rechaza rutas desconocidas (nada se corrige en silencio).
+// Reglas de las filas SEM04 sobre los valores EFECTIVOS (base + sustituciones): se rechaza la candidata inválida con causa; nada se corrige en silencio.
+function validateSem04(base, map) {
+  const errs = []; const eff = (path) => (map.has(path) ? map.get(path) : base.index.get(path)?.value); const add = (path, message) => errs.push({ path, message });
+  const w = eff('rebound.collective.weights'); const n = eff('rebound.collective.referenceParticipants'); const f = eff('shotMix.threeWeightFactor');
+  if (Array.isArray(w)) { if (!w.length || !w.every((x) => typeof x === 'number' && Number.isFinite(x) && x >= 0)) add('rebound.collective.weights', 'pesos finitos y no negativos'); else if (w.some((x, i) => i > 0 && x > w[i - 1])) add('rebound.collective.weights', 'los pesos marginales no pueden crecer con el orden'); else if (!(w[0] > 0)) add('rebound.collective.weights', 'el primer peso debe ser positivo'); }
+  if (!Number.isInteger(n) || n < 1 || (Array.isArray(w) && n > w.length)) add('rebound.collective.referenceParticipants', 'entero positivo dentro del array de pesos');
+  if (!(typeof f === 'number' && Number.isFinite(f) && f > 0)) add('shotMix.threeWeightFactor', 'factor finito y positivo');
+  const g = eff('energy.costPerLiveMinute'); if (!(typeof g === 'number' && Number.isFinite(g) && g > 0)) add('energy.costPerLiveMinute', 'gasto finito y positivo');
+  return errs;
+}
 export function validateOverrides(base, overrides) {
   const errs = [];
   for (const o of overrides ?? []) {
@@ -123,6 +140,7 @@ export function validateOverrides(base, overrides) {
     if (typeof r.value === 'number' && typeof o.value === 'number' && /(^|\.)(p0|blockP0|P0)$|P0$/.test(o.path) && (o.value <= 0 || o.value >= 1)) errs.push({ path: o.path, message: 'una probabilidad base debe estar en (0, 1)' });
     if (/(^|\.)(normalSeconds|lateSeconds|lateWindowSeconds|neutralSecondsPerControl)$/.test(o.path) && !(o.value > 0)) errs.push({ path: o.path, message: 'debe ser positivo' });
   }
+  if (base.index.has('shotMix.threeWeightFactor')) errs.push(...validateSem04(base, new Map((overrides ?? []).map((o) => [o.path, o.value]))));
   return errs;
 }
 export function applyOverrides(base, overrides) {
