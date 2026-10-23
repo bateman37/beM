@@ -18,5 +18,12 @@ export class SimPool {
     await Promise.all(this.workers.map(async (w, wi) => { for (;;) { const from = next; if (from >= cases.length) break; next = Math.min(cases.length, from + chunk); const batch = cases.slice(from, next); const r = await this._send(w, { type: 'run', cases: batch }); workerMs[wi] += r.ms; perWorkerCases[wi] += batch.length; r.results.forEach((x, i) => { results[from + i] = x; }); } }));
     return { results, workerMs, perWorkerCases, wallMs: performance.now() - t0 };
   }
+  // Ejecución en flujo: cada trabajador toma un lote pequeño mientras `shouldStop()` sea falso (detener = no despachar más; los lotes en curso terminan) y `onChunk(cases, results)` confirma cada lote
+  // en el hilo coordinador, en orden de llegada. Devuelve cuántos casos se despacharon.
+  async runStream(cases, { chunk = 2, onChunk, onStart = null, shouldStop = () => false } = {}) {
+    let next = 0; let dispatched = 0;
+    await Promise.all(this.workers.map(async (w) => { for (;;) { if (shouldStop() || next >= cases.length) break; const from = next; next = Math.min(cases.length, from + chunk); const batch = cases.slice(from, next); dispatched += batch.length; if (onStart) onStart(batch); const r = await this._send(w, { type: 'run', cases: batch }); await onChunk(batch, r.results); } }));
+    return dispatched;
+  }
   async close() { await Promise.all(this.workers.map((w) => w.terminate())); this.workers = []; }
 }
