@@ -1,0 +1,482 @@
+{
+ "schema": "beM-sim04c-plan/1",
+ "campaign": "SIM04C-CAMPANA-20261024",
+ "seedKeyFormat": "<AAAAMMDD>|SIM04C|<bloque>|<caso>|R<réplica>",
+ "seedFunction": "SHA-256 de la clave UTF-8, primeros 32 bits big endian; 0 → 1; colisión → «#2», «#3»…",
+ "collisions": [],
+ "intentionalSeedPairs": [
+  {
+   "key": "20261024|SIM04C|CONTRAST|T01|O1|R1",
+   "seed": 3057287982
+  },
+  {
+   "key": "20261024|SIM04C|CONTRAST|T01|O2|R1",
+   "seed": 1044973224
+  },
+  {
+   "key": "20261024|SIM04C|CONTRAST|T02|O1|R1",
+   "seed": 1689127342
+  },
+  {
+   "key": "20261024|SIM04C|CONTRAST|T02|O2|R1",
+   "seed": 2130280633
+  },
+  {
+   "key": "20261024|SIM04C|CONTRAST|T05|O1|R1",
+   "seed": 1521060577
+  },
+  {
+   "key": "20261024|SIM04C|CONTRAST|T05|O2|R1",
+   "seed": 2804729797
+  },
+  {
+   "key": "20261024|SIM04C|CONTRAST|T07|O1|R1",
+   "seed": 1930672241
+  },
+  {
+   "key": "20261024|SIM04C|CONTRAST|T07|O2|R1",
+   "seed": 1050502833
+  }
+ ],
+ "counts": {
+  "CAL": 24,
+  "VAL": 48,
+  "CONTRAST": 16,
+  "anchorsCAL": 24,
+  "anchorsVAL": 48,
+  "anchorsCONTRAST": 8
+ },
+ "calReuse": {
+  "from": "SIM-MOTOR-04B",
+  "mismatchedInputHashes": []
+ },
+ "valPairs": [
+  [
+   1,
+   3
+  ],
+  [
+   3,
+   5
+  ],
+  [
+   5,
+   7
+  ],
+  [
+   7,
+   9
+  ],
+  [
+   9,
+   11
+  ],
+  [
+   11,
+   1
+  ],
+  [
+   2,
+   4
+  ],
+  [
+   4,
+   6
+  ],
+  [
+   6,
+   8
+  ],
+  [
+   8,
+   10
+  ],
+  [
+   10,
+   12
+  ],
+  [
+   12,
+   2
+  ]
+ ],
+ "diagCases": [
+  "VAL-EQ01-EQ03-R1",
+  "VAL-EQ01-EQ03-R2",
+  "VAL-EQ03-EQ01-R1",
+  "VAL-EQ03-EQ01-R2"
+ ],
+ "techCases": [
+  "CAL-EQ01-EQ02",
+  "CAL-EQ03-EQ04",
+  "CAL-EQ05-EQ08",
+  "CAL-EQ09-EQ12",
+  "CAL-EQ01-EQ05",
+  "CAL-EQ08-EQ02"
+ ],
+ "techRouteNames": [
+  "auto",
+  "steps",
+  "recover"
+ ],
+ "techRoutes": {
+  "CAL-EQ01-EQ02": {
+   "steps": [
+    600,
+    1200,
+    1800,
+    2400
+   ],
+   "cuts": [
+    1200
+   ]
+  },
+  "CAL-EQ03-EQ04": {
+   "steps": [
+    120,
+    240,
+    480,
+    1200,
+    2400
+   ],
+   "cuts": [
+    125,
+    2000
+   ]
+  },
+  "CAL-EQ05-EQ08": {
+   "steps": [
+    37,
+    500,
+    501,
+    1999
+   ],
+   "cuts": [
+    600
+   ]
+  },
+  "CAL-EQ09-EQ12": {
+   "steps": [
+    1,
+    2,
+    3,
+    119,
+    121,
+    1700
+   ],
+   "cuts": [
+    2399
+   ]
+  },
+  "CAL-EQ01-EQ05": {
+   "steps": [
+    300,
+    900,
+    1500,
+    2100
+   ],
+   "cuts": [
+    900,
+    1800
+   ]
+  },
+  "CAL-EQ08-EQ02": {
+   "steps": [
+    60,
+    61,
+    600,
+    1210
+   ],
+   "cuts": [
+    61
+   ]
+  }
+ },
+ "contrast": [
+  {
+   "id": "T01",
+   "factor": "Rebote/balance (después del tiro 1/5)",
+   "pair": [
+    "EQ05",
+    "EQ06"
+   ],
+   "note": "niveles 1 y 2 envían el mismo número de participantes según offensiveReboundAssignmentTarget [1,1,2,3,4]",
+   "variants": [
+    {
+     "id": "V0",
+     "label": "afterShot = 1"
+    },
+    {
+     "id": "V1",
+     "label": "afterShot = 5"
+    }
+   ]
+  },
+  {
+   "id": "T02",
+   "factor": "Finalización (interior/exterior, niveles 1/5)",
+   "pair": [
+    "EQ03",
+    "EQ04"
+   ],
+   "note": null,
+   "variants": [
+    {
+     "id": "V0",
+     "label": "finishPreference = 1 (interior)"
+    },
+    {
+     "id": "V1",
+     "label": "finishPreference = 5 (exterior)"
+    }
+   ]
+  },
+  {
+   "id": "T05",
+   "factor": "Director (MEN02 y MEN03 del director 8/24)",
+   "pair": [
+    "EQ09",
+    "EQ10"
+   ],
+   "note": "el director es el titular de mayor lectura, primero en la prioridad de director; el resto de la ficha no cambia",
+   "variants": [
+    {
+     "id": "V0",
+     "label": "director efectivo con MEN02 = MEN03 = 8"
+    },
+    {
+     "id": "V1",
+     "label": "director efectivo con MEN02 = MEN03 = 24"
+    }
+   ]
+  },
+  {
+   "id": "T07",
+   "factor": "Familiaridad organizada (K8/K28 de módulos pertinentes)",
+   "pair": [
+    "EQ01",
+    "EQ07"
+   ],
+   "note": null,
+   "variants": [
+    {
+     "id": "V0",
+     "label": "módulos pertinentes del equipo sometido K8 (resto de componentes 30)"
+    },
+    {
+     "id": "V1",
+     "label": "módulos pertinentes del equipo sometido K28 (resto de componentes 30)"
+    }
+   ]
+  }
+ ],
+ "contrastFactors": [
+  "T01",
+  "T02",
+  "T05",
+  "T07"
+ ],
+ "learningPairs": [
+  {
+   "pair": "L1",
+   "sim": "VAL-EQ01-EQ03-R1",
+   "detailed": "VAL-EQ01-EQ03-R1"
+  },
+  {
+   "pair": "L2",
+   "sim": "VAL-EQ04-EQ02-R1",
+   "detailed": "VAL-EQ04-EQ02-R1"
+  },
+  {
+   "pair": "L3",
+   "sim": "VAL-EQ05-EQ07-R2",
+   "detailed": "VAL-EQ05-EQ07-R2"
+  },
+  {
+   "pair": "L4",
+   "sim": "VAL-EQ10-EQ08-R1",
+   "detailed": "VAL-EQ10-EQ08-R1"
+  },
+  {
+   "pair": "L5",
+   "sim": "VAL-EQ11-EQ09-R2",
+   "detailed": "VAL-EQ11-EQ09-R2"
+  },
+  {
+   "pair": "L6",
+   "sim": "VAL-EQ12-EQ02-R1",
+   "detailed": "VAL-EQ12-EQ02-R1"
+  }
+ ],
+ "history": [
+  {
+   "round": 1,
+   "case_id": "VAL-EQ01-EQ03-R1",
+   "home": "EQ01",
+   "away": "EQ03",
+   "artificialCalendar": true
+  },
+  {
+   "round": 1,
+   "case_id": "VAL-EQ03-EQ01-R1",
+   "home": "EQ03",
+   "away": "EQ01",
+   "artificialCalendar": true
+  },
+  {
+   "round": 1,
+   "case_id": "VAL-EQ03-EQ05-R1",
+   "home": "EQ03",
+   "away": "EQ05",
+   "artificialCalendar": true
+  },
+  {
+   "round": 1,
+   "case_id": "VAL-EQ05-EQ03-R1",
+   "home": "EQ05",
+   "away": "EQ03",
+   "artificialCalendar": true
+  },
+  {
+   "round": 2,
+   "case_id": "VAL-EQ05-EQ07-R1",
+   "home": "EQ05",
+   "away": "EQ07",
+   "artificialCalendar": true
+  },
+  {
+   "round": 2,
+   "case_id": "VAL-EQ07-EQ05-R1",
+   "home": "EQ07",
+   "away": "EQ05",
+   "artificialCalendar": true
+  },
+  {
+   "round": 2,
+   "case_id": "VAL-EQ07-EQ09-R1",
+   "home": "EQ07",
+   "away": "EQ09",
+   "artificialCalendar": true
+  },
+  {
+   "round": 2,
+   "case_id": "VAL-EQ09-EQ07-R1",
+   "home": "EQ09",
+   "away": "EQ07",
+   "artificialCalendar": true
+  },
+  {
+   "round": 3,
+   "case_id": "VAL-EQ09-EQ11-R1",
+   "home": "EQ09",
+   "away": "EQ11",
+   "artificialCalendar": true
+  },
+  {
+   "round": 3,
+   "case_id": "VAL-EQ11-EQ09-R1",
+   "home": "EQ11",
+   "away": "EQ09",
+   "artificialCalendar": true
+  },
+  {
+   "round": 3,
+   "case_id": "VAL-EQ11-EQ01-R1",
+   "home": "EQ11",
+   "away": "EQ01",
+   "artificialCalendar": true
+  },
+  {
+   "round": 3,
+   "case_id": "VAL-EQ01-EQ11-R1",
+   "home": "EQ01",
+   "away": "EQ11",
+   "artificialCalendar": true
+  },
+  {
+   "round": 4,
+   "case_id": "VAL-EQ02-EQ04-R1",
+   "home": "EQ02",
+   "away": "EQ04",
+   "artificialCalendar": true
+  },
+  {
+   "round": 4,
+   "case_id": "VAL-EQ04-EQ02-R1",
+   "home": "EQ04",
+   "away": "EQ02",
+   "artificialCalendar": true
+  },
+  {
+   "round": 4,
+   "case_id": "VAL-EQ04-EQ06-R1",
+   "home": "EQ04",
+   "away": "EQ06",
+   "artificialCalendar": true
+  },
+  {
+   "round": 4,
+   "case_id": "VAL-EQ06-EQ04-R1",
+   "home": "EQ06",
+   "away": "EQ04",
+   "artificialCalendar": true
+  },
+  {
+   "round": 5,
+   "case_id": "VAL-EQ06-EQ08-R1",
+   "home": "EQ06",
+   "away": "EQ08",
+   "artificialCalendar": true
+  },
+  {
+   "round": 5,
+   "case_id": "VAL-EQ08-EQ06-R1",
+   "home": "EQ08",
+   "away": "EQ06",
+   "artificialCalendar": true
+  },
+  {
+   "round": 5,
+   "case_id": "VAL-EQ08-EQ10-R1",
+   "home": "EQ08",
+   "away": "EQ10",
+   "artificialCalendar": true
+  },
+  {
+   "round": 5,
+   "case_id": "VAL-EQ10-EQ08-R1",
+   "home": "EQ10",
+   "away": "EQ08",
+   "artificialCalendar": true
+  },
+  {
+   "round": 6,
+   "case_id": "VAL-EQ10-EQ12-R1",
+   "home": "EQ10",
+   "away": "EQ12",
+   "artificialCalendar": true
+  },
+  {
+   "round": 6,
+   "case_id": "VAL-EQ12-EQ10-R1",
+   "home": "EQ12",
+   "away": "EQ10",
+   "artificialCalendar": true
+  },
+  {
+   "round": 6,
+   "case_id": "VAL-EQ12-EQ02-R1",
+   "home": "EQ12",
+   "away": "EQ02",
+   "artificialCalendar": true
+  },
+  {
+   "round": 6,
+   "case_id": "VAL-EQ02-EQ12-R1",
+   "home": "EQ02",
+   "away": "EQ12",
+   "artificialCalendar": true
+  }
+ ],
+ "unplannedInvalid": []
+}

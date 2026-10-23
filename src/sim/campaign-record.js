@@ -32,7 +32,8 @@ function directorIntervals(m, input) {
 function diag04b(m, detail) {
   const czq = {}; const foulMiss = {}; const subs = []; const shots = [];
   for (const e of m.events) {
-    if (e.ty === 'shot') { const k = `${e.tm}|${e.ctx}|${e.zone}|${e.q}`; const x = (czq[k] ??= [0, 0, 0, 0]); x[0]++; if (e.made) { x[1]++; if (e.passer) { x[2]++; x[3]++; } } // 04C §4.1: columnas distintas. En SIM el pasador representado ES el crédito causal de la canasta (el acta lo cuenta como AST_FG); se publican por separado para que el lector sea comparable con el detallado, donde NO coinciden if (detail && e.diag) shots.push([e.t, e.tm, e.ctx, e.zone, e.q, e.made ? 1 : 0, e.blk ? 1 : 0, e.diag.p, e.diag.pBase, e.diag.K, e.diag.blkP, ...e.diag.qp]); }
+    if (e.ty === 'shot') { const k = `${e.tm}|${e.ctx}|${e.zone}|${e.q}`; const x = (czq[k] ??= [0, 0, 0, 0]); x[0]++; if (e.made) { x[1]++; if (e.passer) { x[2]++; x[3]++; } } // 04C §4.1: columnas distintas; en SIM el pasador representado ES el crédito causal (AST_FG); el detallado los separa
+    if (detail && e.diag) shots.push([e.t, e.tm, e.ctx, e.zone, e.q, e.made ? 1 : 0, e.blk ? 1 : 0, e.diag.p, e.diag.pBase, e.diag.K, e.diag.blkP, ...e.diag.qp]); }
     else if (e.ty === 'shootfoul' && !e.and1) { const k = `${1 - e.tm}|${e.ctx}|${e.zone}`; foulMiss[k] = (foulMiss[k] ?? 0) + 1; }
     else if (e.ty === 'sub') subs.push([e.t, e.tm, (e.why ?? []).join('|'), e.out.length, e.in.length]);
   }
