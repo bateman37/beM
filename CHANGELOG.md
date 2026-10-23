@@ -2,6 +2,27 @@
 
 Registro breve de entregas. Una entrada por entrega; las más recientes primero.
 
+## SIM-MOTOR-03 (incluye 02B) — Correcciones, rendimiento exacto y campaña comparativa congelada — 2026-10-23
+
+- **Cierre de 02B (C03-01…11)**: recuperación de la jornada con encuentros ya terminados, guardados independientes y coherentes con matriz de compatibilidad explícita, registro histórico validado y atómico, consulta histórica sin detalle futuro, consecuencias revertidas, estadísticas derivadas con universos correctos (defensa con faltas de tiro, quintetos con controles observados, tapones recibidos), conservación de Análisis con ausencia tipada, movimiento administrativo en la ronda siguiente, identidad de las órdenes del pool y política del entrenador coherente entre rutas (`advanceAutomatic`/`playAutomatic`; `finish()` queda como primitiva). SIM `0.2.1-SIMMOTOR02B`; perfil numérico de 02 intacto; C03-11 cambia trayectorias (registrado). [Nota](docs/tecnico/sim-motor02b.md).
+- **Optimizaciones exactas**: plan compilado por identidad, pools de rol entre tramos y vista incremental del entrenador; huellas idénticas al control `ee14ec5` en 1.000/1.000 casos. Mejora ≈5–8 % en caliente; **objetivo de 5 s NO cumplido** (≈8,2–9,2 s caliente en esta máquina; control ≈8,4–9,7 s; RSS de la jornada de mil ≈2,66 GiB frente a ≈2,31 GiB).
+- **Campaña SIM-MOTOR-03** congelada y ejecutada: 1.632 SIM + 72 detallados (todos válidos), equivalencia técnica 16/16, historia (72 resultados, ledgers SIM y mixto), aprendizaje (seis pares, Polivalencia 8/16/24), matriz de 32 capacidades × 8 situaciones, cobertura de controles, AUD01–32 sobre la muestra diagnóstica y conciliaciones R01–R23. Paquetes y comprobador offline (28 comprobaciones) fuera de Git. [Plan](docs/tecnico/sim-motor03-plan.md) · [resultados](docs/tecnico/sim-motor03-campana.md).
+- Pruebas S03-01…12 y de sondas; suite completa 325/325; Chromium 46 pasos (consola 0, red 0). Detallado intacto (83–98, 6.684 sorteos; 0 archivos deportivos modificados). Pendiente de Dennis: [recorrido manual](docs/prompts/SIM-MOTOR-03-recorrido-manual.md). Sin calibración.
+
+## SIM-MOTOR-02 — Correcciones, integración, simultaneidad e historia — 2026-10-23
+
+- **Correcciones C02-01…05** de la revisión de SIM-MOTOR-01: prefijo público monótono (periodos, controles y estado desde hechos; sufijo privado), libres y finalizaciones únicas (`bonus_sin_familia`), gasto de presión al equipo que presiona, identidad canónica y validación estricta, tapón fuera como continuidad, receptor de falta ofensiva y contadores causales de faltas; 23 conciliaciones (R01–R23). Cambian trayectorias SIM (sin calibración).
+- **Roles, director y familiaridad pertinente** con efecto antes del sorteo; **política pequeña del entrenador** (semillas `SEM-SIM02`); 11 lectores SIM con audiencias y ausencias tipadas.
+- **Jornada simultánea** (`src/matchday/`, `beM-sim-matchday/1`): reloj virtual común, barreras, detallado + SIM, clasificación inicial/provisional/final, pool de trabajadores; **guardado real** (`beM-sim-snapshot/1`) y **lotes persistentes** recuperables tras SIGKILL; **historia de temporada** (72 encuentros, movimiento, profundidades, cierre) y **aprendizaje posterior** con guarda por encuentro lógico.
+- Medición: P02-F 8,30 s y calientes 5,15–5,91 s (objetivo de 5 s **no alcanzado**); esenciales individuales 15,4 MiB. Pruebas S02-01…14; suite 307/307; Chromium 43 pasos (consola 0, red 0). Detallado intacto. Aplicación `SIM-MOTOR-02`. **Pendiente de Dennis.** Ver [`docs/tecnico/sim-motor02.md`](docs/tecnico/sim-motor02.md).
+
+## SIM-MOTOR-01 — Generador estadístico por tramos y medición de 1.000 partidos — 2026-10-22
+
+- **Nuevo modelo de resolución** `beM-sim-segment` (`src/sim/`, resultado `beM-sim-match/1`, perfil `SEM-SIM01-20261022`): generador por tramos con flujos agregados y materialización cronológica (faltas, bonus, exclusión a mitad de tramo, prórrogas), 32 capacidades y controles tácticos que alteran magnitudes antes del sorteo, 18 conciliaciones SIM, perfil editable con procedencia (heredada · derivada · SEM-SIM01) y adaptador de la entrada del detallado. No llama al resolutor detallado.
+- **Laboratorio**: pantalla inicial con **Motor detallado** y **Motor ultrarrápido**, cabecera con modelo y versión, «Cambiar de motor», estado separado por modelo; pantalla SIM con Partido, Parámetros y Lote (agenda de 1.000 en Web Workers).
+- **Medición real** B01/B02/B03 (1.000 partidos, agenda congelada 132×7+76): B01 un worker 15.89 s; B02 cuatro workers en frío 6.50 s (objetivo de 5 s **NO alcanzado**); B03 cuatro workers calientes 4.21 s (alcanzado; 4/4 pasadas ≤ 5 s); 1.000/1.000 válidos y B01 = B02 = B03 por caso; RSS máx. 438 MiB. Paquetes y recibo fuera de Git en `out/sim-motor01/entrega-final/`.
+- Pruebas `S01-01…10`; suite completa 289/289; recorrido de Chromium 26/26 (consola 0, red 0). Referencia del detallado intacta (83–98, 6.684 sorteos; 176 archivos deportivos idénticos). Aplicación `SIM-MOTOR-01`; motor detallado, perfil y export sin cambio. **Pendiente de Dennis.** Ver [`docs/tecnico/sim-motor01.md`](docs/tecnico/sim-motor01.md).
+
 ## MOTOR-18C — Identidad del aprendizaje del laboratorio — 2026-10-22
 
 - **C18-01 (REV18B-01):** «ya aplicado» se decide por igualdad exacta de la fuente completa (`<copia>|M<n>|<equipo>`), equipo y recibo vigente; M10/M11/M100 ya no bloquean M1 (antes `startsWith`).

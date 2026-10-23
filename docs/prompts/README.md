@@ -34,6 +34,9 @@ Directorio de los encargos a Claude Code. **El texto original de un prompt ejecu
 | MOTOR-18 | Familiaridad táctica, roles, posiciones y aprendizaje: conocimiento por jugador (62 niveles), efecto limitado en calidad de la oportunidad y avance presionado, Polivalencia, aprendizaje/retención entre partidos, laboratorio de sesión, corrección de sensibilidad (SENS-01) y AUD11, y campaña de 36 ejecuciones | [MOTOR-18-familiaridad-tactica-roles-posiciones.md](MOTOR-18-familiaridad-tactica-roles-posiciones.md) · [recorrido manual](MOTOR-18-recorrido-manual.md) | **Ejecutado** (pendiente de Dennis) | 2026-10-21 (intento 1) | — |
 | MOTOR-18B | Cierre de familiaridad y mayor diferencia de Polivalencia: curva por tramos de cinco anclajes, Preparación sobre la copia activa, bloqueadores en los participantes, secuencias persistidas, exposición terminada, sesiones válidas, estimación coherente, unidades y campaña acotada de 36 ejecuciones | [`MOTOR-18B-cierre-y-polivalencia.md`](MOTOR-18B-cierre-y-polivalencia.md) · [recorrido manual](MOTOR-18B-recorrido-manual.md) | **Ejecutado** (pendiente de Dennis; amplía la PR #19 de MOTOR-18, sin fusionar) | 2026-10-22 · intento 1 | — |
 | MOTOR-18C | Dos correcciones de identidad del aprendizaje del laboratorio: identidad exacta del encuentro aplicado (M1 ≠ M10) y pertenencia a la copia activa (un resultado no se aplica a otra copia) | [`MOTOR-18C-identidad-aprendizaje.md`](MOTOR-18C-identidad-aprendizaje.md) · [recorrido manual](MOTOR-18C-recorrido-manual.md) | **Ejecutado** (pendiente de Dennis; la PR #19 ya estaba fusionada: PR independiente) | 2026-10-22 · intento 1 | — |
+| SIM-MOTOR-01 | Primera de cuatro entregas de SIM-MOTOR: generador estadístico por tramos (motor ultrarrápido), selector de motor del laboratorio, perfil SIM editable, 32 capacidades y controles causales, conciliaciones y medición real de 1.000 partidos (B01/B02/B03) con paquetes para ChatGPT | [`SIM-MOTOR-01-generador-y-rendimiento.md`](SIM-MOTOR-01-generador-y-rendimiento.md) · [recorrido manual](SIM-MOTOR-01-recorrido-manual.md) | **Ejecutado** (pendiente de Dennis; la PR #20 de 18C ya estaba fusionada: PR independiente) | 2026-10-22 · intento 1 | — |
+| SIM-MOTOR-02 | Segunda de cuatro entregas de SIM-MOTOR: correcciones C02-01…05, roles/director/familiaridad pertinente, política pequeña del entrenador, lectores SIM, jornada simultánea con el detallado, guardado y lotes persistentes, historia individual de temporada y aprendizaje posterior | [`SIM-MOTOR-02-correcciones-integracion-simultaneidad-historia.md`](SIM-MOTOR-02-correcciones-integracion-simultaneidad-historia.md) · [recorrido manual](SIM-MOTOR-02-recorrido-manual.md) | **Ejecutado** (pendiente de Dennis) | 2026-10-23 · intento 1 | — |
+| SIM-MOTOR-03 | Tercera de cuatro entregas de SIM-MOTOR (incorpora 02B): cierre de C03-01…11, rendimiento exacto y campaña comparativa congelada con paquetes para ChatGPT | [`SIM-MOTOR-03-correcciones-02B-y-campana.md`](SIM-MOTOR-03-correcciones-02B-y-campana.md) | [recorrido manual](SIM-MOTOR-03-recorrido-manual.md) | ejecutado (ver ficha) |
 
 ## Fichas de ejecución
 
@@ -347,3 +350,40 @@ Comprobación local de enlaces: hecha por Claude. Presentación en GitHub: no co
 | Rama | `claude/busy-edison-b1fmnc`, reiniciada desde `main` (`d744e23`) porque la PR de MOTOR-18/18B (`bateman37/beM#19`) ya estaba fusionada: PR independiente. |
 | Resultado breve | Ver [`../tecnico/motor18c.md`](../tecnico/motor18c.md). Paquete `MOTOR-18C-revision-rapida.zip` y recibo `MOTOR-18C-verificacion-final.json` fuera de Git (`out/motor18c/entrega-final/`). |
 | Pendientes | Validación de Dennis ([recorrido manual](MOTOR-18C-recorrido-manual.md)); ninguna calibración. |
+
+### SIM-MOTOR-01
+
+| Campo | Valor |
+|---|---|
+| Objetivo | Implementar el generador estadístico por tramos (SIM-MOTOR), los dos accesos del laboratorio y la medición real de 1.000 partidos con cuatro workers, con archivos revisables por ChatGPT. |
+| Medio de entrada del texto | Archivo `.md` adjunto (`beM-PROMPT-SIM-MOTOR-01-GENERADOR-Y-RENDIMIENTO.md`); la copia archivada es byte a byte idéntica. |
+| Fecha real de ejecución | 2026-10-22 · intento 1 |
+| Rama | `claude/busy-edison-b1fmnc`, reiniciada desde `main` (`606c33b`) porque la PR de MOTOR-18C (`bateman37/beM#20`) ya estaba fusionada: sin dependencia de 18C. |
+| Resultado breve | Ver [`../tecnico/sim-motor01.md`](../tecnico/sim-motor01.md). Paquetes `SIM-MOTOR-01-revision-rapida.zip`, `SIM-MOTOR-01-evidencia-detallada.zip`, índice y recibo fuera de Git (`out/sim-motor01/entrega-final/`). |
+| Pendientes | Validación de Dennis ([recorrido manual](SIM-MOTOR-01-recorrido-manual.md)); calibración y comparación con el detallado (03/04); alcance de SIM-MOTOR-02 en la nota técnica. |
+
+### SIM-MOTOR-02
+
+| Campo | Valor |
+|---|---|
+| Objetivo | Corregir SIM-MOTOR-01 y completar SIM-MOTOR-02 del roadmap de cuatro entregas: prefijos públicos, libres/finalizaciones, energía, identidad, roles/director/familiaridad, política del entrenador, lectores, jornada simultánea, persistencia, historia y aprendizaje. |
+| Medio de entrada del texto | Archivo `.md` adjunto (`cd9becc4-beM-PROMPT-SIM-MOTOR-02-INTEGRACION-Y-CORRECCIONES.md`; prefijo añadido por la subida). La copia archivada es byte a byte idéntica. |
+| Fecha real de ejecución | 2026-10-23 · intento 1 |
+| Revisión de partida | `0b2b43a` (cabeza de SIM-MOTOR-01 en la PR #21, base `606c33b`). |
+| Rama / PR | `claude/busy-edison-b1fmnc` · [bateman37/beM#21](https://github.com/bateman37/beM/pull/21) (abierta contra `main`, sin fusionar; título y descripción reflejan SIM-MOTOR-01 + SIM-MOTOR-02). |
+| Resultado breve | Correcciones C02-01…05, jornada mixta con detallado, guardado/continuación, lotes recuperables, historia de temporada, aprendizaje posterior y paquetes de evidencia. |
+| Comprobaciones realizadas | Suite 307/307, `data:check`, comprobador documental, recorrido Chromium (43 pasos), SIGKILL real, verificación de paquetes (integridad 11/11, contenido 39/39). |
+| Limitaciones | Objetivo de 5 s no alcanzado; calidad deportiva sin validar; ZIP históricos de 01 no disponibles (`out/` no se versiona). |
+| Pendientes | Recorrido manual de Dennis ([guía](SIM-MOTOR-02-recorrido-manual.md)) y decisión de fusión; SIM-MOTOR-03. |
+
+### SIM-MOTOR-03
+
+| Campo | Valor |
+|---|---|
+| Objetivo | Cerrar las correcciones de SIM-MOTOR-02B (C03-01…11), medir con honestidad el rendimiento y ejecutar una campaña comparativa congelada (1.632 SIM + 72 detallados) con paquetes descargables para ChatGPT. |
+| Medio de entrada del texto | Archivo `.md` adjunto (`02c299a7-beM-PROMPT-SIM-MOTOR-02B-03-CORRECCIONES-Y-AUDITORIA.md`; prefijo añadido por la subida). La copia archivada es byte a byte idéntica. |
+| Fecha real de ejecución | 2026-10-23 · intento 1 |
+| Revisión de partida | `4194158` (cabeza de SIM-MOTOR-02 en la PR #21; la PR seguía abierta y contiene 01 + 02). |
+| Rama / PR | `claude/busy-edison-b1fmnc` · [bateman37/beM#21](https://github.com/bateman37/beM/pull/21) (abierta contra `main`, sin fusionar; título y descripción reflejan 01 + 02 + 02B + 03). |
+| Resultado breve | Ver [`../tecnico/sim-motor02b.md`](../tecnico/sim-motor02b.md), [`../tecnico/sim-motor03-plan.md`](../tecnico/sim-motor03-plan.md) y [`../tecnico/sim-motor03-campana.md`](../tecnico/sim-motor03-campana.md). Paquetes fuera de Git en `out/sim-motor03/entrega-final/`. |
+| Pendientes | Recorrido manual de Dennis ([guía](SIM-MOTOR-03-recorrido-manual.md)); análisis de ChatGPT y SIM-MOTOR-04. |

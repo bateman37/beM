@@ -1,0 +1,1029 @@
+{
+ "schema": "beM-sim03-plan/1",
+ "campaign": "SIM03-CAMPANA-20261023",
+ "master": 20261023,
+ "seedFunction": "deriveSeed(master, seed_key) = FNV-1a de 32 bits sobre «master|seed_key» (src/sim/rng.js)",
+ "seedKeyContract": "bloque|enfrentamiento_o_escenario|orientación|réplica; excluye variante, resolutor, intento, worker, lote y ruta",
+ "budget": {
+  "sim": {
+   "A": 1056,
+   "B": 512,
+   "C": 64,
+   "comparison": 1632,
+   "E": 16,
+   "F": 5000
+  },
+  "detailed": {
+   "A": 48,
+   "B": 24,
+   "C": 0,
+   "comparison": 72
+  },
+  "plannedExplicitSim": 6648,
+  "plannedExplicitDetailed": 72,
+  "note": "las pasadas de F repiten sus mil casos; E no son observaciones nuevas; pruebas, navegador, controles y perfilado se cuentan aparte"
+ },
+ "blocks": {
+  "A": {
+   "pairs": "EQ01–EQ12 orientados distintos (132) × 8 réplicas",
+   "note": "planes naturales; sin localía modelada; sin acumulación de aprendizaje ni cansancio entre casos"
+  },
+  "B": {
+   "scenarios": [
+    {
+     "id": "B01",
+     "factor": "Ritmo organizado",
+     "pair": [
+      "EQ01",
+      "EQ02"
+     ],
+     "testTeam": "EQ01",
+     "detailed": true,
+     "note": null,
+     "variants": [
+      {
+       "id": "V0",
+       "label": "organizedPace = 1"
+      },
+      {
+       "id": "V1",
+       "label": "organizedPace = 5"
+      }
+     ]
+    },
+    {
+     "id": "B02",
+     "factor": "Preferencia de finalización",
+     "pair": [
+      "EQ03",
+      "EQ04"
+     ],
+     "testTeam": "EQ03",
+     "detailed": true,
+     "note": null,
+     "variants": [
+      {
+       "id": "V0",
+       "label": "finishPreference = 1 (extremo interior del catálogo)"
+      },
+      {
+       "id": "V1",
+       "label": "finishPreference = 5 (extremo exterior del catálogo)"
+      }
+     ]
+    },
+    {
+     "id": "B03",
+     "factor": "Después del tiro",
+     "pair": [
+      "EQ05",
+      "EQ06"
+     ],
+     "testTeam": "EQ05",
+     "detailed": false,
+     "note": null,
+     "variants": [
+      {
+       "id": "V0",
+       "label": "afterShot = 1 (menor carga al rebote ofensivo)"
+      },
+      {
+       "id": "V1",
+       "label": "afterShot = 5 (mayor carga al rebote ofensivo)"
+      }
+     ]
+    },
+    {
+     "id": "B04",
+     "factor": "Riesgo ofensivo",
+     "pair": [
+      "EQ07",
+      "EQ08"
+     ],
+     "testTeam": "EQ07",
+     "detailed": false,
+     "note": null,
+     "variants": [
+      {
+       "id": "V0",
+       "label": "offensiveRisk = 1"
+      },
+      {
+       "id": "V1",
+       "label": "offensiveRisk = 5"
+      }
+     ]
+    },
+    {
+     "id": "B05",
+     "factor": "Libertad",
+     "pair": [
+      "EQ09",
+      "EQ10"
+     ],
+     "testTeam": "EQ09",
+     "detailed": false,
+     "note": "mismo director de lectura alta (el titular de mayor MEN02+MEN03) y libro común en ambas variantes",
+     "variants": [
+      {
+       "id": "V0",
+       "label": "freedom = 1"
+      },
+      {
+       "id": "V1",
+       "label": "freedom = 5"
+      }
+     ]
+    },
+    {
+     "id": "B06",
+     "factor": "Director (prioridad)",
+     "pair": [
+      "EQ11",
+      "EQ12"
+     ],
+     "testTeam": "EQ11",
+     "detailed": true,
+     "note": "fichas idénticas entre variantes; solo cambia quién tiene la prioridad de director",
+     "variants": [
+      {
+       "id": "V0",
+       "label": "director = candidato de lectura baja (PG, MEN02=MEN03=6) con prioridad"
+      },
+      {
+       "id": "V1",
+       "label": "director = candidato de lectura alta (SG, MEN02=MEN03=26) con prioridad"
+      }
+     ]
+    },
+    {
+     "id": "B07",
+     "factor": "Rol ofensivo (anotación frente a creación)",
+     "pair": [
+      "EQ02",
+      "EQ03"
+     ],
+     "testTeam": "EQ02",
+     "detailed": false,
+     "note": null,
+     "variants": [
+      {
+       "id": "V0",
+       "label": "jugador SG titular con O02 (manejador/finalizador: anotación)"
+      },
+      {
+       "id": "V1",
+       "label": "jugador SG titular con O12 (director/pasador: creación)"
+      }
+     ]
+    },
+    {
+     "id": "B08",
+     "factor": "Rol defensivo (protección interior frente a función perimetral)",
+     "pair": [
+      "EQ04",
+      "EQ05"
+     ],
+     "testTeam": "EQ04",
+     "detailed": false,
+     "note": null,
+     "variants": [
+      {
+       "id": "V0",
+       "label": "jugador C titular con D12 (rimProtect: protección interior)"
+      },
+      {
+       "id": "V1",
+       "label": "jugador C titular con D11 (ballPressure: función perimetral)"
+      }
+     ]
+    },
+    {
+     "id": "B09",
+     "factor": "Altura de presión",
+     "pair": [
+      "EQ06",
+      "EQ07"
+     ],
+     "testTeam": "EQ06",
+     "detailed": true,
+     "note": null,
+     "variants": [
+      {
+       "id": "V0",
+       "label": "pressureHeight = normal"
+      },
+      {
+       "id": "V1",
+       "label": "pressureHeight = full (total)"
+      }
+     ]
+    },
+    {
+     "id": "B10",
+     "factor": "Tendencia al robo",
+     "pair": [
+      "EQ08",
+      "EQ09"
+     ],
+     "testTeam": "EQ08",
+     "detailed": false,
+     "note": null,
+     "variants": [
+      {
+       "id": "V0",
+       "label": "defStyles.steal = 1"
+      },
+      {
+       "id": "V1",
+       "label": "defStyles.steal = 5"
+      }
+     ]
+    },
+    {
+     "id": "B11",
+     "factor": "Organización defensiva",
+     "pair": [
+      "EQ10",
+      "EQ11"
+     ],
+     "testTeam": "EQ10",
+     "detailed": false,
+     "note": "conocimiento neutral (legacy-neutral) y plan rival natural en ambas variantes",
+     "variants": [
+      {
+       "id": "V0",
+       "label": "defense = ORG01 (individual)"
+      },
+      {
+       "id": "V1",
+       "label": "defense = ORG02 (zona 2–3)"
+      }
+     ]
+    },
+    {
+     "id": "B12",
+     "factor": "Cobertura de bloqueos",
+     "pair": [
+      "EQ12",
+      "EQ01"
+     ],
+     "testTeam": "EQ12",
+     "detailed": false,
+     "note": "el rival ataca con prioridad 5 en las 8 fichas con bloqueo/cobertura (POS01,POS02,POS03,POS04,POS05,POS06,POS07,POS08) y 2 en el resto, igual en ambas variantes",
+     "variants": [
+      {
+       "id": "V0",
+       "label": "coverage = COB01"
+      },
+      {
+       "id": "V1",
+       "label": "coverage = COB03"
+      }
+     ]
+    },
+    {
+     "id": "B13",
+     "factor": "Familiaridad (módulos tácticos)",
+     "pair": [
+      "EQ01",
+      "EQ07"
+     ],
+     "testTeam": "EQ01",
+     "detailed": true,
+     "note": null,
+     "variants": [
+      {
+       "id": "V0",
+       "label": "módulos tácticos del equipo sometido al nivel 8 (resto 16, Polivalencia 16)"
+      },
+      {
+       "id": "V1",
+       "label": "módulos tácticos del equipo sometido al nivel 28 (resto 16, Polivalencia 16)"
+      }
+     ]
+    },
+    {
+     "id": "B14",
+     "factor": "Energía inicial",
+     "pair": [
+      "EQ03",
+      "EQ09"
+     ],
+     "testTeam": "EQ03",
+     "detailed": true,
+     "note": null,
+     "variants": [
+      {
+       "id": "V0",
+       "label": "energía inicial 100 (todo el equipo)"
+      },
+      {
+       "id": "V1",
+       "label": "energía inicial 30 (todo el equipo)"
+      }
+     ]
+    },
+    {
+     "id": "B15",
+     "factor": "Forma",
+     "pair": [
+      "EQ05",
+      "EQ11"
+     ],
+     "testTeam": "EQ05",
+     "detailed": false,
+     "note": null,
+     "variants": [
+      {
+       "id": "V0",
+       "label": "forma −0,5 (todo el equipo)"
+      },
+      {
+       "id": "V1",
+       "label": "forma +0,5 (todo el equipo)"
+      }
+     ]
+    },
+    {
+     "id": "B16",
+     "factor": "Consistencia (MEN06)",
+     "pair": [
+      "EQ02",
+      "EQ08"
+     ],
+     "testTeam": "EQ02",
+     "detailed": false,
+     "note": null,
+     "variants": [
+      {
+       "id": "V0",
+       "label": "MEN06 = 8 (todo el equipo)"
+      },
+      {
+       "id": "V1",
+       "label": "MEN06 = 24 (todo el equipo)"
+      }
+     ]
+    }
+   ],
+   "detailedScenarios": [
+    "B01",
+    "B02",
+    "B06",
+    "B09",
+    "B13",
+    "B14"
+   ],
+   "orientation": "O1: equipo sometido al factor = equipo 0 de la entrada; O2: equipo 1"
+  },
+  "C": {
+   "base": [
+    "EQ05",
+    "EQ06"
+   ],
+   "scenarios": [
+    "C01",
+    "C02",
+    "C03",
+    "C04",
+    "C05",
+    "C06",
+    "C07",
+    "C08"
+   ]
+  }
+ },
+ "detailedA": [
+  [
+   "A-D01",
+   "EQ01",
+   "EQ02"
+  ],
+  [
+   "A-D02",
+   "EQ03",
+   "EQ09"
+  ],
+  [
+   "A-D03",
+   "EQ07",
+   "EQ08"
+  ],
+  [
+   "A-D04",
+   "EQ11",
+   "EQ12"
+  ],
+  [
+   "A-D05",
+   "EQ04",
+   "EQ10"
+  ],
+  [
+   "A-D06",
+   "EQ05",
+   "EQ06"
+  ],
+  [
+   "A-D07",
+   "EQ01",
+   "EQ06"
+  ],
+  [
+   "A-D08",
+   "EQ02",
+   "EQ07"
+  ],
+  [
+   "A-D09",
+   "EQ03",
+   "EQ08"
+  ],
+  [
+   "A-D10",
+   "EQ04",
+   "EQ09"
+  ],
+  [
+   "A-D11",
+   "EQ05",
+   "EQ12"
+  ],
+  [
+   "A-D12",
+   "EQ10",
+   "EQ11"
+  ]
+ ],
+ "diagnosticSim": [
+  "A-EQ01-EQ02-R1",
+  "A-EQ03-EQ09-R1",
+  "A-EQ07-EQ08-R1",
+  "A-EQ11-EQ12-R1",
+  "B-B01-V0-O1-R1",
+  "B-B06-V1-O1-R1",
+  "B-B13-V1-O1-R1",
+  "C-C01-R1"
+ ],
+ "diagnosticDetailed": [
+  "A-EQ01-EQ02-R1@DET",
+  "A-EQ03-EQ09-R1@DET",
+  "B-B01-V0-O1-R1@DET",
+  "B-B13-V1-O1-R1@DET"
+ ],
+ "eCases": [
+  "A-EQ01-EQ02-R1",
+  "A-EQ07-EQ08-R1",
+  "B-B01-V0-O1-R1",
+  "B-B01-V1-O1-R1",
+  "B-B14-V1-O1-R1",
+  "B-B15-V0-O1-R1",
+  "B-B12-V1-O1-R1",
+  "C-C01-R1"
+ ],
+ "history72": [
+  {
+   "round": 1,
+   "case_id": "A-EQ01-EQ12-R1",
+   "home": "EQ01",
+   "away": "EQ12",
+   "artificialCalendar": true
+  },
+  {
+   "round": 1,
+   "case_id": "A-EQ02-EQ11-R1",
+   "home": "EQ02",
+   "away": "EQ11",
+   "artificialCalendar": true
+  },
+  {
+   "round": 1,
+   "case_id": "A-EQ03-EQ10-R1",
+   "home": "EQ03",
+   "away": "EQ10",
+   "artificialCalendar": true
+  },
+  {
+   "round": 1,
+   "case_id": "A-EQ04-EQ09-R1",
+   "home": "EQ04",
+   "away": "EQ09",
+   "artificialCalendar": true
+  },
+  {
+   "round": 1,
+   "case_id": "A-EQ05-EQ08-R1",
+   "home": "EQ05",
+   "away": "EQ08",
+   "artificialCalendar": true
+  },
+  {
+   "round": 1,
+   "case_id": "A-EQ06-EQ07-R1",
+   "home": "EQ06",
+   "away": "EQ07",
+   "artificialCalendar": true
+  },
+  {
+   "round": 2,
+   "case_id": "A-EQ11-EQ01-R1",
+   "home": "EQ11",
+   "away": "EQ01",
+   "artificialCalendar": true
+  },
+  {
+   "round": 2,
+   "case_id": "A-EQ10-EQ12-R1",
+   "home": "EQ10",
+   "away": "EQ12",
+   "artificialCalendar": true
+  },
+  {
+   "round": 2,
+   "case_id": "A-EQ09-EQ02-R1",
+   "home": "EQ09",
+   "away": "EQ02",
+   "artificialCalendar": true
+  },
+  {
+   "round": 2,
+   "case_id": "A-EQ08-EQ03-R1",
+   "home": "EQ08",
+   "away": "EQ03",
+   "artificialCalendar": true
+  },
+  {
+   "round": 2,
+   "case_id": "A-EQ07-EQ04-R1",
+   "home": "EQ07",
+   "away": "EQ04",
+   "artificialCalendar": true
+  },
+  {
+   "round": 2,
+   "case_id": "A-EQ06-EQ05-R1",
+   "home": "EQ06",
+   "away": "EQ05",
+   "artificialCalendar": true
+  },
+  {
+   "round": 3,
+   "case_id": "A-EQ01-EQ10-R1",
+   "home": "EQ01",
+   "away": "EQ10",
+   "artificialCalendar": true
+  },
+  {
+   "round": 3,
+   "case_id": "A-EQ11-EQ09-R1",
+   "home": "EQ11",
+   "away": "EQ09",
+   "artificialCalendar": true
+  },
+  {
+   "round": 3,
+   "case_id": "A-EQ12-EQ08-R1",
+   "home": "EQ12",
+   "away": "EQ08",
+   "artificialCalendar": true
+  },
+  {
+   "round": 3,
+   "case_id": "A-EQ02-EQ07-R1",
+   "home": "EQ02",
+   "away": "EQ07",
+   "artificialCalendar": true
+  },
+  {
+   "round": 3,
+   "case_id": "A-EQ03-EQ06-R1",
+   "home": "EQ03",
+   "away": "EQ06",
+   "artificialCalendar": true
+  },
+  {
+   "round": 3,
+   "case_id": "A-EQ04-EQ05-R1",
+   "home": "EQ04",
+   "away": "EQ05",
+   "artificialCalendar": true
+  },
+  {
+   "round": 4,
+   "case_id": "A-EQ09-EQ01-R1",
+   "home": "EQ09",
+   "away": "EQ01",
+   "artificialCalendar": true
+  },
+  {
+   "round": 4,
+   "case_id": "A-EQ08-EQ10-R1",
+   "home": "EQ08",
+   "away": "EQ10",
+   "artificialCalendar": true
+  },
+  {
+   "round": 4,
+   "case_id": "A-EQ07-EQ11-R1",
+   "home": "EQ07",
+   "away": "EQ11",
+   "artificialCalendar": true
+  },
+  {
+   "round": 4,
+   "case_id": "A-EQ06-EQ12-R1",
+   "home": "EQ06",
+   "away": "EQ12",
+   "artificialCalendar": true
+  },
+  {
+   "round": 4,
+   "case_id": "A-EQ05-EQ02-R1",
+   "home": "EQ05",
+   "away": "EQ02",
+   "artificialCalendar": true
+  },
+  {
+   "round": 4,
+   "case_id": "A-EQ04-EQ03-R1",
+   "home": "EQ04",
+   "away": "EQ03",
+   "artificialCalendar": true
+  },
+  {
+   "round": 5,
+   "case_id": "A-EQ01-EQ08-R1",
+   "home": "EQ01",
+   "away": "EQ08",
+   "artificialCalendar": true
+  },
+  {
+   "round": 5,
+   "case_id": "A-EQ09-EQ07-R1",
+   "home": "EQ09",
+   "away": "EQ07",
+   "artificialCalendar": true
+  },
+  {
+   "round": 5,
+   "case_id": "A-EQ10-EQ06-R1",
+   "home": "EQ10",
+   "away": "EQ06",
+   "artificialCalendar": true
+  },
+  {
+   "round": 5,
+   "case_id": "A-EQ11-EQ05-R1",
+   "home": "EQ11",
+   "away": "EQ05",
+   "artificialCalendar": true
+  },
+  {
+   "round": 5,
+   "case_id": "A-EQ12-EQ04-R1",
+   "home": "EQ12",
+   "away": "EQ04",
+   "artificialCalendar": true
+  },
+  {
+   "round": 5,
+   "case_id": "A-EQ02-EQ03-R1",
+   "home": "EQ02",
+   "away": "EQ03",
+   "artificialCalendar": true
+  },
+  {
+   "round": 6,
+   "case_id": "A-EQ07-EQ01-R1",
+   "home": "EQ07",
+   "away": "EQ01",
+   "artificialCalendar": true
+  },
+  {
+   "round": 6,
+   "case_id": "A-EQ06-EQ08-R1",
+   "home": "EQ06",
+   "away": "EQ08",
+   "artificialCalendar": true
+  },
+  {
+   "round": 6,
+   "case_id": "A-EQ05-EQ09-R1",
+   "home": "EQ05",
+   "away": "EQ09",
+   "artificialCalendar": true
+  },
+  {
+   "round": 6,
+   "case_id": "A-EQ04-EQ10-R1",
+   "home": "EQ04",
+   "away": "EQ10",
+   "artificialCalendar": true
+  },
+  {
+   "round": 6,
+   "case_id": "A-EQ03-EQ11-R1",
+   "home": "EQ03",
+   "away": "EQ11",
+   "artificialCalendar": true
+  },
+  {
+   "round": 6,
+   "case_id": "A-EQ02-EQ12-R1",
+   "home": "EQ02",
+   "away": "EQ12",
+   "artificialCalendar": true
+  },
+  {
+   "round": 7,
+   "case_id": "A-EQ01-EQ06-R1",
+   "home": "EQ01",
+   "away": "EQ06",
+   "artificialCalendar": true
+  },
+  {
+   "round": 7,
+   "case_id": "A-EQ07-EQ05-R1",
+   "home": "EQ07",
+   "away": "EQ05",
+   "artificialCalendar": true
+  },
+  {
+   "round": 7,
+   "case_id": "A-EQ08-EQ04-R1",
+   "home": "EQ08",
+   "away": "EQ04",
+   "artificialCalendar": true
+  },
+  {
+   "round": 7,
+   "case_id": "A-EQ09-EQ03-R1",
+   "home": "EQ09",
+   "away": "EQ03",
+   "artificialCalendar": true
+  },
+  {
+   "round": 7,
+   "case_id": "A-EQ10-EQ02-R1",
+   "home": "EQ10",
+   "away": "EQ02",
+   "artificialCalendar": true
+  },
+  {
+   "round": 7,
+   "case_id": "A-EQ11-EQ12-R1",
+   "home": "EQ11",
+   "away": "EQ12",
+   "artificialCalendar": true
+  },
+  {
+   "round": 8,
+   "case_id": "A-EQ05-EQ01-R1",
+   "home": "EQ05",
+   "away": "EQ01",
+   "artificialCalendar": true
+  },
+  {
+   "round": 8,
+   "case_id": "A-EQ04-EQ06-R1",
+   "home": "EQ04",
+   "away": "EQ06",
+   "artificialCalendar": true
+  },
+  {
+   "round": 8,
+   "case_id": "A-EQ03-EQ07-R1",
+   "home": "EQ03",
+   "away": "EQ07",
+   "artificialCalendar": true
+  },
+  {
+   "round": 8,
+   "case_id": "A-EQ02-EQ08-R1",
+   "home": "EQ02",
+   "away": "EQ08",
+   "artificialCalendar": true
+  },
+  {
+   "round": 8,
+   "case_id": "A-EQ12-EQ09-R1",
+   "home": "EQ12",
+   "away": "EQ09",
+   "artificialCalendar": true
+  },
+  {
+   "round": 8,
+   "case_id": "A-EQ11-EQ10-R1",
+   "home": "EQ11",
+   "away": "EQ10",
+   "artificialCalendar": true
+  },
+  {
+   "round": 9,
+   "case_id": "A-EQ01-EQ04-R1",
+   "home": "EQ01",
+   "away": "EQ04",
+   "artificialCalendar": true
+  },
+  {
+   "round": 9,
+   "case_id": "A-EQ05-EQ03-R1",
+   "home": "EQ05",
+   "away": "EQ03",
+   "artificialCalendar": true
+  },
+  {
+   "round": 9,
+   "case_id": "A-EQ06-EQ02-R1",
+   "home": "EQ06",
+   "away": "EQ02",
+   "artificialCalendar": true
+  },
+  {
+   "round": 9,
+   "case_id": "A-EQ07-EQ12-R1",
+   "home": "EQ07",
+   "away": "EQ12",
+   "artificialCalendar": true
+  },
+  {
+   "round": 9,
+   "case_id": "A-EQ08-EQ11-R1",
+   "home": "EQ08",
+   "away": "EQ11",
+   "artificialCalendar": true
+  },
+  {
+   "round": 9,
+   "case_id": "A-EQ09-EQ10-R1",
+   "home": "EQ09",
+   "away": "EQ10",
+   "artificialCalendar": true
+  },
+  {
+   "round": 10,
+   "case_id": "A-EQ03-EQ01-R1",
+   "home": "EQ03",
+   "away": "EQ01",
+   "artificialCalendar": true
+  },
+  {
+   "round": 10,
+   "case_id": "A-EQ02-EQ04-R1",
+   "home": "EQ02",
+   "away": "EQ04",
+   "artificialCalendar": true
+  },
+  {
+   "round": 10,
+   "case_id": "A-EQ12-EQ05-R1",
+   "home": "EQ12",
+   "away": "EQ05",
+   "artificialCalendar": true
+  },
+  {
+   "round": 10,
+   "case_id": "A-EQ11-EQ06-R1",
+   "home": "EQ11",
+   "away": "EQ06",
+   "artificialCalendar": true
+  },
+  {
+   "round": 10,
+   "case_id": "A-EQ10-EQ07-R1",
+   "home": "EQ10",
+   "away": "EQ07",
+   "artificialCalendar": true
+  },
+  {
+   "round": 10,
+   "case_id": "A-EQ09-EQ08-R1",
+   "home": "EQ09",
+   "away": "EQ08",
+   "artificialCalendar": true
+  },
+  {
+   "round": 11,
+   "case_id": "A-EQ01-EQ02-R1",
+   "home": "EQ01",
+   "away": "EQ02",
+   "artificialCalendar": true
+  },
+  {
+   "round": 11,
+   "case_id": "A-EQ03-EQ12-R1",
+   "home": "EQ03",
+   "away": "EQ12",
+   "artificialCalendar": true
+  },
+  {
+   "round": 11,
+   "case_id": "A-EQ04-EQ11-R1",
+   "home": "EQ04",
+   "away": "EQ11",
+   "artificialCalendar": true
+  },
+  {
+   "round": 11,
+   "case_id": "A-EQ05-EQ10-R1",
+   "home": "EQ05",
+   "away": "EQ10",
+   "artificialCalendar": true
+  },
+  {
+   "round": 11,
+   "case_id": "A-EQ06-EQ09-R1",
+   "home": "EQ06",
+   "away": "EQ09",
+   "artificialCalendar": true
+  },
+  {
+   "round": 11,
+   "case_id": "A-EQ07-EQ08-R1",
+   "home": "EQ07",
+   "away": "EQ08",
+   "artificialCalendar": true
+  },
+  {
+   "round": 12,
+   "case_id": "A-EQ12-EQ01-R1",
+   "home": "EQ12",
+   "away": "EQ01",
+   "artificialCalendar": true
+  },
+  {
+   "round": 12,
+   "case_id": "A-EQ11-EQ02-R1",
+   "home": "EQ11",
+   "away": "EQ02",
+   "artificialCalendar": true
+  },
+  {
+   "round": 12,
+   "case_id": "A-EQ10-EQ03-R1",
+   "home": "EQ10",
+   "away": "EQ03",
+   "artificialCalendar": true
+  },
+  {
+   "round": 12,
+   "case_id": "A-EQ09-EQ04-R1",
+   "home": "EQ09",
+   "away": "EQ04",
+   "artificialCalendar": true
+  },
+  {
+   "round": 12,
+   "case_id": "A-EQ08-EQ05-R1",
+   "home": "EQ08",
+   "away": "EQ05",
+   "artificialCalendar": true
+  },
+  {
+   "round": 12,
+   "case_id": "A-EQ07-EQ06-R1",
+   "home": "EQ07",
+   "away": "EQ06",
+   "artificialCalendar": true
+  }
+ ],
+ "learningPairs": [
+  {
+   "pair": "A-D01",
+   "sim": "A-EQ01-EQ02-R1",
+   "detailed": "A-EQ01-EQ02-R1@DET"
+  },
+  {
+   "pair": "A-D02",
+   "sim": "A-EQ03-EQ09-R1",
+   "detailed": "A-EQ03-EQ09-R1@DET"
+  },
+  {
+   "pair": "A-D03",
+   "sim": "A-EQ07-EQ08-R1",
+   "detailed": "A-EQ07-EQ08-R1@DET"
+  },
+  {
+   "pair": "A-D04",
+   "sim": "A-EQ11-EQ12-R1",
+   "detailed": "A-EQ11-EQ12-R1@DET"
+  },
+  {
+   "pair": "A-D05",
+   "sim": "A-EQ04-EQ10-R1",
+   "detailed": "A-EQ04-EQ10-R1@DET"
+  },
+  {
+   "pair": "A-D06",
+   "sim": "A-EQ05-EQ06-R1",
+   "detailed": "A-EQ05-EQ06-R1@DET"
+  }
+ ],
+ "benchmarkAgenda": {
+  "master": 20261022,
+  "composition": "132 cruces × 7 vueltas + 76 de una octava (agenda de 01/02, recuperable por buildAgenda)",
+  "reuse": "agenda de benchmark de 02 reutilizada; sus entradas son recuperables e identificadas"
+ },
+ "unplannedInvalid": []
+}
