@@ -92,3 +92,20 @@ export function playWithBarriers(m, { every = 120, policy = true, context = null
   }
   m.advance({ until: 'end' }); return m;
 }
+
+// Ruta de PRODUCTO de dirección automática (C03-11): la misma configuración de entrenador, órdenes y noticias usa el mismo calendario deportivo de revisiones (cada 120 s de juego publicado, ambos entrenadores) en
+// partido completo, lotes, temporada y jornada, aunque la interfaz avance de golpe. `SimMatch.finish()` queda como PRIMITIVA de generación sin política (control técnico identificado, no producto).
+export const REVIEW_EVERY = 120;
+// Avanza con dirección automática hasta `until` (segundos publicados; 'end' = hasta terminar) revisando a ambos entrenadores en CADA múltiplo de `every` que se cruza: da igual que la interfaz avance de golpe,
+// por cuartos o por barreras, el calendario deportivo de revisiones es el mismo. Una llamada que termina en un instante no múltiplo no revisa en él; la siguiente continúa en el múltiplo pendiente.
+export function advanceAutomatic(m, { until = 'end', every = REVIEW_EVERY, context = null, onBarrier = null } = {}) {
+  const lim = until === 'end' ? Infinity : until;
+  for (let T = (Math.floor(m.published / every + 1e-9) + 1) * every; m.status === 'running' && T <= lim + 1e-9; T += every) {
+    m.advance({ until: T }); if (m.status !== 'running') break;
+    if (context) context(m, T); for (const team of [0, 1]) coachReview(m, team, T);
+    if (onBarrier) onBarrier(m, T);
+  }
+  if (until === 'end' || lim >= m.published) m.advance({ until });
+  return m;
+}
+export const playAutomatic = (m, opts = {}) => advanceAutomatic(m, { ...opts, until: 'end' });

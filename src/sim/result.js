@@ -5,6 +5,7 @@ import { SIM_MODEL, SIM_RESULT_SCHEMA, SIM_VERSION, SIM_COVERAGE_ID, SIM_STATS_P
 import { fpString } from './fp.js';
 import { reconcileResult } from './reconcile.js';
 import { moduleExposure } from './exposure.js';
+import { buildAnalysis } from './analysis.js';
 
 const ZONES = ['rim', 'inside', 'midrange', 'three'];
 export const FAMILY_BONUS = 'bonus_sin_familia';
@@ -30,7 +31,7 @@ export function controlsReached(seg, T) { const c = [0, 0]; for (let i = 0; i < 
 // `audience`: 'public' (hechos observables), 'own' (+ información autorizada del equipo `team`) o 'diagnostic' (laboratorio: privados y, solo con `includeSuffix`, el sufijo no publicado).
 // `events=false` omite el registro temporal (resumen compacto de lote).
 export function buildSimResult(m, opts = {}) {
-  const { events: withEvents = true, reconcile = true, audience = 'diagnostic', team = 0, at = null, includeSuffix = false } = opts; m._buildDraws = m.rng.draws;
+  const { events: withEvents = true, reconcile = true, audience = 'diagnostic', team = 0, at = null, includeSuffix = false, analysis = false } = opts; m._buildDraws = m.rng.draws;
   const T = at == null ? m.published : Math.min(Math.max(0, at), m.published); const reachedEnd = m.status === 'finished' && T >= m.gt - 1e-9;
   const evs = m.events.filter((e) => e.t <= T + 1e-9);
   const segs = m.segments.filter((s) => s.start < T - 1e-9 || (reachedEnd && s.end > s.start));
@@ -39,11 +40,12 @@ export function buildSimResult(m, opts = {}) {
   m.teams.forEach((t) => { for (const s of ['PG', 'SG', 'SF', 'PF', 'C']) byId[t.plan.starters[s]].starter = true; });
   const teamLine = [{ ...zeroLine(), teamReb: [0, 0], teamTov: 0 }, { ...zeroLine(), teamReb: [0, 0], teamTov: 0 }];
   const clip = (s) => Math.max(0, Math.min(s.end, T) - s.start);
+  const controls = [0, 0]; const segControls = new Map(); for (const s of segs) { const c = controlsReached(s, T); segControls.set(s.n, c); controls[0] += c[0]; controls[1] += c[1]; }
   const q = new Map(); // quintetos: clave → acumulado
-  const quint = (k, s) => { const ids = s.lineups[k].slice().sort(); const key = `${m.teams[k].id}:${ids.join('|')}`; let e = q.get(key); if (!e) { e = { key, team: k, ids, sec: 0, intervals: [], pf: 0, pa: 0, fga: 0, fgm: 0, fg3a: 0, fg3m: 0, fta: 0, ftm: 0, tov: 0, oreb: 0, dreb: 0, ast: 0, stl: 0, blk: 0, pfCommitted: 0 }; q.set(key, e); } return e; };
+  const quint = (k, s) => { const ids = s.lineups[k].slice().sort(); const key = `${m.teams[k].id}:${ids.join('|')}`; let e = q.get(key); if (!e) { e = { key, team: k, ids, sec: 0, ctlFor: 0, ctlAgainst: 0, intervals: [], pf: 0, pa: 0, fga: 0, fgm: 0, fg3a: 0, fg3m: 0, fta: 0, ftm: 0, tov: 0, oreb: 0, dreb: 0, ast: 0, stl: 0, blk: 0, pfCommitted: 0 }; q.set(key, e); } return e; };
   for (const s of segs) {
     const d = clip(s); if (d <= 0) continue;
-    for (const k of [0, 1]) { for (const id of s.lineups[k]) { const r = byId[id]; r.sec += d; r.dnp = false; } const e = quint(k, s); e.sec += d; const last = e.intervals[e.intervals.length - 1]; if (last && Math.abs(last[1] - s.start) < 1e-6) last[1] = r1(s.start + d); else e.intervals.push([r1(s.start), r1(s.start + d)]); }
+    for (const k of [0, 1]) { for (const id of s.lineups[k]) { const r = byId[id]; r.sec += d; r.dnp = false; } const e = quint(k, s); e.sec += d; const sc2 = segControls.get(s.n); e.ctlFor += sc2[k]; e.ctlAgainst += sc2[1 - k]; /* controles ofensivos y defensivos realmente observados durante la presencia (C03-07B) */ const last = e.intervals[e.intervals.length - 1]; if (last && Math.abs(last[1] - s.start) < 1e-6) last[1] = r1(s.start + d); else e.intervals.push([r1(s.start), r1(s.start + d)]); }
   }
   const famMap = [{}, {}]; const evolution = []; let sc = [0, 0]; const finSeen = [new Set(), new Set()]; const finTeam = [0, 0]; const periodPts = [[0, 0]]; const fdn = [{ fga: 0, fgm: 0, fta: 0, ftm: 0, fgPts: 0, ftPts: 0, sf: 0, and1: 0, bonusFta: 0, bonusFtm: 0 }, { fga: 0, fgm: 0, fta: 0, ftm: 0, fgPts: 0, ftPts: 0, sf: 0, and1: 0, bonusFta: 0, bonusFtm: 0 }];
   const famRow = (k, src, play) => { const key = play ?? src; const m2 = famMap[k]; return (m2[key] ??= { key, family: src, play: play ?? null, fga: 0, fgm: 0, fgPts: 0, ftPts: 0, pts: 0, fta: 0, ftm: 0, fin: 0, sf: 0, and1: 0, ast: 0, moved: 0, q: [0, 0, 0] }); };
@@ -80,7 +82,6 @@ export function buildSimResult(m, opts = {}) {
   const totals = m.teams.map((t) => { const tl = { ...zeroLine(), teamReb: teamLine[t.idx].teamReb, teamTov: teamLine[t.idx].teamTov }; for (const r of players) if (r.team === t.idx) for (const k of ['sec', 'pts', 'fgPts', 'ftPts', 'fg2m', 'fg2a', 'fg3m', 'fg3a', 'ftm', 'fta', 'oreb', 'dreb', 'astC', 'astL', 'tov', 'stl', 'blk', 'blkAgainst', 'pf', 'pfd']) tl[k] += r[k]; tl.min = r1(tl.sec / 60); tl.fga = tl.fg2a + tl.fg3a; tl.fgm = tl.fg2m + tl.fg3m; tl.ast = tl.astC + tl.astL; tl.reb = tl.oreb + tl.dreb + tl.teamReb[0] + tl.teamReb[1]; return tl; });
   const exposure = {}; for (const s of segs) { const d = clip(s); if (d <= 0) continue; for (const k of [0, 1]) for (const [id, slot] of Object.entries(s.slots[k])) { const e = (exposure[id] ??= { slotSec: {}, roleSec: {}, defRoleSec: {} }); e.slotSec[slot] = Math.round(((e.slotSec[slot] ?? 0) + d) * 1000) / 1000; const role = m.teams[k].byId[id].offRole; if (role) e.roleSec[role] = Math.round(((e.roleSec[role] ?? 0) + d) * 1000) / 1000; const dr = m.teams[k].byId[id].defRole; if (dr) e.defRoleSec[dr] = Math.round(((e.defRoleSec[dr] ?? 0) + d) * 1000) / 1000; } }
   const modules = moduleExposure(m, evs); for (const [id, mods] of Object.entries(modules)) if (exposure[id]) exposure[id].modules = mods;
-  const controls = [0, 0]; const segControls = new Map(); for (const s of segs) { const c = controlsReached(s, T); segControls.set(s.n, c); controls[0] += c[0]; controls[1] += c[1]; }
   const periodsReached = periodPts.length; const finished = reachedEnd; const status = m.status === 'error' ? 'error' : finished ? 'finished' : T > 0 || m.segments.length ? 'running' : 'ready';
   // estado observable en el presente: alineación en pista, faltas y bonus desde los hechos; la energía solo para quien tiene autorización (se proyecta a la frontera, no es la del núcleo adelantado)
   const observable = observableAt(m, T, evs, audience, team);
@@ -104,6 +105,7 @@ export function buildSimResult(m, opts = {}) {
   if (audience !== 'public') { const own = (x) => audience === 'diagnostic' || x.team === team; res.decisions = m.coach.log.filter(own); res.commands = m.commandLog.filter(own).map((c) => ({ id: c.id, source: c.source, team: c.team, at: c.at, effectiveAt: c.effectiveAt, change: Object.keys(c.plan), why: c.why?.reason ?? null })); }
   if (audience !== 'public') res.exposure = audience === 'own' ? Object.fromEntries(Object.entries(exposure).filter(([id]) => byId[id].team === team)) : exposure;
   if (audience === 'diagnostic' && includeSuffix) res.privateSuffix = { generatedUntil: r1(m.gt), seconds: r1(m.gt - T), segments: m.segments.length - segs.length, events: m.events.length - evs.length, generatedScore: m.score.slice(), note: 'sufijo generado por delante del presente publicado: privado y sin consecuencias' };
+  if (analysis) res.analysis = buildAnalysis({ segs, evs, T, audience, team });
   if (withEvents) res.events = evs;
   res.sportFingerprint = sportDigest({ norm: m.norm, score: sc, events: m.events, published: T });
   if (reconcile) res.reconciliation = reconcileResult(m, res, evs);

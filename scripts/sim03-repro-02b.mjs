@@ -1,0 +1,22 @@
+const R = process.argv[2];
+const { data } = await import(`${R}/tests/helpers.js`);
+const { makeContext, buildReferenceInput, SimMatch, contextToJSON } = await import(`${R}/src/sim/index.js`);
+const { snapshotSim, validateSimSnapshot } = await import(`${R}/src/sim/snapshot.js`);
+const { buildSimEssential } = await import(`${R}/src/sim/essential.js`);
+const { SeasonLedger } = await import(`${R}/src/season/ledger.js`);
+const { ConsequenceLedger } = await import(`${R}/src/sim/consequences.js`);
+const { sha256Hex, canonical } = await import(`${R}/src/sim/fp.js`);
+const { MatchdayPool } = await import(`${R}/src/matchday/pool.js`);
+const { referenceTeamMap } = await import(`${R}/src/sim/teams.js`);
+const { profile, players } = data; const ctx = makeContext(profile);
+const inp = (s) => buildReferenceInput(profile, players, 'EQ03', 'EQ04', { seed: s });
+const out = {};
+let m = new SimMatch(inp(424242), ctx); m.advance({ until: 125 }); const snap = snapshotSim(m); m.finish(); out.C03_02_snapshotStillValidAfterContinuing = validateSimSnapshot(snap).length === 0;
+m = new SimMatch(inp(5), ctx); m.advance({ until: 130 }); const g = snapshotSim(m, { embedContext: false }); const { integrity, ...rest } = { ...JSON.parse(JSON.stringify(g)), simVersion: '99.0.0-INCOMPATIBLE', resultSchema: 'beM-sim-match/999' }; const body = canonical(rest);
+out.C03_03_incompatibleAccepted = validateSimSnapshot({ ...rest, integrity: { algorithm: 'sha256', digest: sha256Hex(body), bytes: body.length } }).length === 0;
+const part = new SimMatch(inp(31), ctx, { matchId: 'H' }); part.advance({ until: 125 }); const led = new SeasonLedger(); let acc; try { acc = led.record(buildSimEssential(part), { season: 'T', competition: 'L', round: 1, clubs: ['A', 'B'], model: 'sim', matchId: 'H' }).ok; } catch (e) { acc = 'error:' + e.message; } out.C03_04_partialAccepted = acc;
+const c = new ConsequenceLedger(); c.apply({ kind: 'k', matchId: 'm', scope: 's' }); c.revert('k', 'm', 's'); out.C03_06_hasAfterRebuild = ConsequenceLedger.from(JSON.parse(JSON.stringify(c.toJSON()))).has('k', 'm', 's');
+const pool = new MatchdayPool({ workers: 1 }); await pool.start(contextToJSON(ctx), referenceTeamMap(profile, players)); await pool.add([{ id: 'ORDER-FIXTURE', input: inp(5), start: 0 }]); await pool.advance(120);
+try { const r = await Promise.race([pool.order('ORDER-FIXTURE', { team: 0, plan: { styles: { ...inp(5).teams[0].plan.styles, organizedPace: 5 } }, at: 120 }), new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 3000))]); out.C03_10_order = JSON.stringify(r).slice(0, 80); } catch (e) { out.C03_10_order = 'ERROR: ' + String(e.message).split('\n')[0].slice(0, 100); }
+await pool.close();
+console.log(JSON.stringify(out, null, 1)); process.exit(0);

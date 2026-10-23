@@ -8,6 +8,7 @@ import { snapshotSim } from '../sim/snapshot.js';
 import { analysisCards, learningCard, rebuildFrom, dl as dlx } from './sim-analysis-ui.js';
 import { makeLearningCopy, teamStatesOf, nextMatchId, newLedgers } from './learning-model.js';
 import { ConsequenceLedger } from '../sim/consequences.js';
+import { playAutomatic } from '../sim/coachsim.js';
 import { dayView } from './sim-day-ui.js';
 import { seasonView } from './sim-season-ui.js';
 import { pbatchView } from './sim-pbatch-ui.js';
@@ -60,7 +61,7 @@ function generate() {
     ensure(); let input = st.input; let matchId = `LABSIM-${input.teams[0].id}-${input.teams[1].id}-${input.seed}`;
     // copia de aprendizaje sintética (opcional): conocimiento explícito y rasgos de aprendizaje en una COPIA; la entrada de preparación no se toca
     if (st.useCopy) { const P = detailed().familiarity; if (!st.learn || st.learn.baseKey !== JSON.stringify([input.teams.map((t) => t.id), input.seed])) { const copy = makeLearningCopy(input, detailed(), { mode: 'synthetic', day: 0, id: `LEARN18-S-${input.teams.map((t) => t.id).join('-')}-d0-I${(st.learn?.instanceSeq ?? 0) + 1}`, instanceSeq: (st.learn?.instanceSeq ?? 0) + 1 }); const { states } = teamStatesOf(copy.input, P, 0); st.learn = { copy, states, ledgers: newLedgers(copy.input), cons: new ConsequenceLedger(), matchSeq: 0, instanceSeq: copy.instanceSeq, baseKey: JSON.stringify([input.teams.map((t) => t.id), input.seed]) }; } matchId = nextMatchId(st.learn); st.learn.copy.input.labMatchId = matchId; input = st.learn.copy.input; } else st.learn = null;
-    const m = new SimMatch(input, st.ctx, { matchId, attemptId: 1 }); m.finish(); st.match = m; st.matchInput = JSON.stringify(input);
+    const m = new SimMatch(input, st.ctx, { matchId, attemptId: 1 }); playAutomatic(m); st.match = m; st.matchInput = JSON.stringify(input);
     const res = rebuildFrom(m, st);
     st.repeatNote = st.firstFp && st.resultInput === JSON.stringify(input) ? (st.firstFp === res.sportFingerprint ? { ok: true, text: `Repetición con la misma entrada: huella idéntica (${res.sportFingerprint}).` } : { ok: false, text: `HUELLA DISTINTA: ${st.firstFp} → ${res.sportFingerprint}` }) : null;
     st.firstFp = res.sportFingerprint; st.resultInput = JSON.stringify(input); st.result = res; st.error = null;

@@ -2,7 +2,8 @@
 // cada consecuencia se identifica por (clase, encuentro lógico, ámbito) y se aplica UNA vez, con el intento aceptado como trazabilidad. Esta guarda es adicional a la fuente exacta del núcleo de aprendizaje
 // (copia|M<n>|equipo, con lote e intento): no la debilita; añade la unicidad por encuentro lógico que un reintento técnico (intento distinto) no puede eludir.
 export class ConsequenceLedger {
-  constructor(records = []) { this.records = records.slice(); this.index = new Map(records.map((r) => [this.key(r.kind, r.matchId, r.scope), r])); }
+  // C03-06: el índice de aplicaciones VIGENTES se reconstruye solo con las anotaciones no revertidas (las revertidas se conservan como historial); la última vigente de una clave prevalece.
+  constructor(records = []) { this.records = records.map((r) => ({ ...r })); this.index = new Map(); for (const r of this.records) if (!r.reverted) this.index.set(this.key(r.kind, r.matchId, r.scope), r); }
   key(kind, matchId, scope = '*') { return `${kind}|${matchId}|${scope}`; }
   has(kind, matchId, scope = '*') { return this.index.has(this.key(kind, matchId, scope)); }
   get(kind, matchId, scope = '*') { return this.index.get(this.key(kind, matchId, scope)) ?? null; }

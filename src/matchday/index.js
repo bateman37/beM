@@ -4,9 +4,9 @@
 // para la siguiente frontera admitida y (5) el siguiente horizonte se genera al avanzar. El orden de llegada de los trabajadores no altera esta secuencia; la velocidad de visionado solo cambia cuánto se tarda.
 import { ShardRunner } from '../sim/shard.js';
 import { contextToJSON, contextFromJSON } from '../sim/context.js';
-import { snapshotSim, restoreSim } from '../sim/snapshot.js';
+import { snapshotSim, restoreSim, validateSimSnapshot } from '../sim/snapshot.js';
 import { sha256Hex, canonical } from '../sim/fp.js';
-import { SIM_MATCHDAY_SCHEMA } from '../sim/version.js';
+import { SIM_MATCHDAY_SCHEMA, SIM_VERSION, SIM_RESULT_SCHEMA, SIM_SNAPSHOT_COMPAT } from '../sim/version.js';
 import { DetailedFixture } from './detailed.js';
 import { computeTable, needFromTable, rankOf } from './standings.js';
 
@@ -34,8 +34,16 @@ export class Matchday {
     const out = new Map();
     for (const p of this.shard.advanceAll(T)) out.set(p.id, p);
     for (const [id, d] of [...this.detailed.entries()].sort((a, b) => (a[0] < b[0] ? -1 : 1))) out.set(id, d.advanceTo(Math.max(0, T - d.start)));
+    // C03-01: un encuentro terminado y aceptado (p. ej. recuperado de un guardado) ya no tiene resolutor activo; su paquete sale de lo conservado, una sola vez y sin regenerarlo.
+    for (const id of this.ids) if (!out.has(id) && this.results[id]) out.set(id, this._packetOfResult(id, T));
     for (const [id, p] of out) { const m = this.meta.get(id); p.competition = m.competition; p.teams = m.teams; p.youth = m.youth; p.valid = p.finished ? this._validOf(id, p) : null; }
-    this.packets = out; return out;
+    const ordered = new Map(this.ids.filter((id) => out.has(id)).map((id) => [id, out.get(id)])); // orden estable por identificador (igual con o sin recuperación)
+    this.packets = ordered; return ordered;
+  }
+  // Paquete de un encuentro terminado: el publicado al aceptarlo (identidad, estado, marcador, periodos e instante observado); si el guardado es anterior, se reconstruye desde el esencial conservado.
+  _packetOfResult(id, T) {
+    const res = this.results[id]; const m = this.meta.get(id); if (res.packet) return deep(res.packet);
+    const r = res.essential; return { id, resolver: m.resolver, start: m.start, local: Math.max(0, T - m.start), started: true, status: 'finished', published: r.durationSeconds ?? null, score: (r.score?.final ?? r.score ?? [0, 0]).slice(), periods: r.score?.periods ?? null, finished: true, observedAt: r.durationSeconds ?? null };
   }
   _validOf(id, p) { if (p.status === 'error') return false; if (this.results[id]) return this.results[id].valid !== false; return true; }
   // Tabla de una competición: 'initial' (de partida, artificial), 'provisional' (marcadores publicados) o 'final' (solo terminados válidos).
@@ -71,21 +79,28 @@ export class Matchday {
     const id = p.id; const meta = this.meta.get(id);
     if (meta.resolver === 'sim') { const e = this.shard.essential(id); this.results[id] = { model: 'sim', matchId: id, attemptId: meta.attemptId, acceptedAt: this.T, essential: e, valid: e.validity?.valid !== false }; }
     else { const d = this.detailed.get(id); const e = d.essential(); this.results[id] = { model: 'detailed', matchId: id, attemptId: meta.attemptId, acceptedAt: this.T, essential: e, valid: e.validity.valid }; }
-    p.valid = this.results[id].valid;
+    this.results[id].packet = { ...deep(p), valid: undefined }; p.valid = this.results[id].valid;
   }
   // Orden manual del usuario sobre un encuentro. En el detallado entra en su ventana atómica; en SIM, en la siguiente frontera canónica (source «manual»: la política no la sobrescribe).
   order(id, spec) {
     if (this.resolverOf(id) === 'detailed') return this.detailed.get(id).order(spec, this.packets.get(id).published);
     return this.shard.order(id, { ...spec, source: 'manual', at: spec.at ?? this.packets.get(id).published });
   }
-  result(id, opts = {}) { if (this.resolverOf(id) === 'sim') return this.shard.result(id, opts); return this.detailed.get(id).result(); }
+  // Un encuentro terminado y recuperado (o liberado tras terminar) devuelve lo CONSERVADO con su cobertura; nunca se regenera ni se busca un motor que ya no existe.
+  result(id, opts = {}) {
+    const res = this.results[id];
+    if (this.resolverOf(id) === 'sim') { if (res && (!this.shard.has(id) || this.shard.released(id))) return { conserved: true, coverage: 'essential', matchId: id, attemptId: res.attemptId, acceptedAt: res.acceptedAt, valid: res.valid, essential: res.essential }; return this.shard.result(id, opts); }
+    if (res && !this.detailed.has(id)) return { conserved: true, coverage: 'essential', matchId: id, attemptId: res.attemptId, acceptedAt: res.acceptedAt, valid: res.valid, essential: res.essential };
+    return this.detailed.get(id).result();
+  }
   view() { return { id: this.id, T: this.T, barrier: this.barrier, paused: this.paused, done: this.done, fixtures: this.ids.map((id) => ({ ...this.packets.get(id), label: this.meta.get(id).label })), tables: Object.fromEntries(this.competitions().map((c) => [c, { initial: this.table(c, 'initial'), provisional: this.table(c, 'provisional'), final: this.done ? this.table(c, 'final') : null }])) }; }
   rank(comp, team, mode = 'provisional') { return rankOf(this.table(comp, mode), team); }
 
   // ---- guardado y recuperación (el estado SIM vive en el fragmento; el detallado, en su adaptador)
+  // C03-02: instante independiente. Resultados, registro y decisiones se copian por valor; solo el contexto (perfil y tablas inmutables) se referencia. La suma se calcula sobre lo que se guarda.
   snapshot() {
-    const fixtures = this.ids.map((id) => { const m = this.meta.get(id); const res = this.results[id] ?? null; const live = !res; return { meta: deep(m), result: res, state: !live ? null : m.resolver === 'sim' ? snapshotSim(this.shard.matches.get(id).m, { embedContext: false }) : this.detailed.get(id).snapshot(`${this.id}:${id}`) }; });
-    const payload = { schema: SIM_MATCHDAY_SCHEMA, id: this.id, date: this.date, T: this.T, barrier: this.barrier, paused: this.paused, barrierSeconds: this.barrierSeconds, policy: this.policy, ctx: contextToJSON(this.ctx), standings0: deep(this.standings0), objectives: deep(this.objectives), fixtures, log: this.log, decisions: this.decisions };
+    const fixtures = this.ids.map((id) => { const m = this.meta.get(id); const res = this.results[id] ?? null; const live = !res; return { meta: deep(m), result: res ? deep(res) : null, state: !live ? null : m.resolver === 'sim' ? snapshotSim(this.shard.matches.get(id).m, { embedContext: false }) : deep(this.detailed.get(id).snapshot(`${this.id}:${id}`)) }; });
+    const payload = { schema: SIM_MATCHDAY_SCHEMA, simVersion: SIM_VERSION, resultSchema: SIM_RESULT_SCHEMA, id: this.id, date: this.date, T: this.T, barrier: this.barrier, paused: this.paused, barrierSeconds: this.barrierSeconds, policy: this.policy, ctx: contextToJSON(this.ctx), standings0: deep(this.standings0), objectives: deep(this.objectives), fixtures, log: deep(this.log), decisions: deep(this.decisions) };
     const body = canonical(payload); return { ...payload, integrity: { algorithm: 'sha256', digest: sha256Hex(body), bytes: body.length } };
   }
   static validate(snap) {
@@ -94,6 +109,10 @@ export class Matchday {
     if (snap.schema !== SIM_MATCHDAY_SCHEMA) { add('schema', `versión incompatible (${snap.schema}); se lee ${SIM_MATCHDAY_SCHEMA}`); return errs; }
     for (const k of ['ctx', 'fixtures', 'integrity', 'T', 'log']) if (snap[k] == null) add(k, 'sección ausente: guardado incompleto');
     if (errs.length) return errs;
+    // compatibilidad semántica (C03-03): el guardado de jornada de SIM-MOTOR-02 no declaraba revisión (se comprueba la de cada encuentro SIM que contiene); si la declara, debe figurar en la matriz
+    if (snap.simVersion !== undefined && !SIM_SNAPSHOT_COMPAT.simVersions.includes(snap.simVersion)) add('simVersion', `revisión SIM incompatible (${snap.simVersion}); se continúa ${SIM_SNAPSHOT_COMPAT.simVersions.join(', ')}`);
+    if (snap.resultSchema !== undefined && !SIM_SNAPSHOT_COMPAT.resultSchemas.includes(snap.resultSchema)) add('resultSchema', `formato de resultado incompatible (${snap.resultSchema}); se continúa ${SIM_SNAPSHOT_COMPAT.resultSchemas.join(', ')}`);
+    for (const f of snap.fixtures) if (!f.result && f.meta?.resolver === 'sim') for (const e of validateSimSnapshot(f.state)) add(`fixtures.${f.meta.id}.${e.path}`, e.message);
     const { integrity, ...rest } = snap; const body = canonical(rest); if (sha256Hex(body) !== integrity.digest || body.length !== integrity.bytes) add('integrity', 'el contenido no coincide con su suma de comprobación: guardado alterado o dañado');
     return errs;
   }
@@ -109,7 +128,7 @@ export class Matchday {
   // Reconstruye los paquetes del presente SIN avanzar ni publicar nada nuevo (tras restaurar).
   _republish() {
     const out = new Map();
-    for (const id of this.ids) { const m = this.meta.get(id); let p; if (this.results[id]) { const r = this.results[id].essential; p = { id, resolver: m.resolver, start: m.start, local: Math.max(0, this.T - m.start), started: true, status: 'finished', published: r.durationSeconds ?? null, score: r.score?.final ?? r.score ?? [0, 0], periods: null, finished: true, observedAt: r.durationSeconds ?? null }; } else if (m.resolver === 'sim') p = this.shard.progressOf(this.shard.matches.get(id), this.T); else p = this.detailed.get(id).published(Math.max(0, this.T - m.start)); p.competition = m.competition; p.teams = m.teams; p.youth = m.youth; p.valid = p.finished ? (this.results[id]?.valid ?? true) : null; out.set(id, p); }
+    for (const id of this.ids) { const m = this.meta.get(id); let p; if (this.results[id]) p = this._packetOfResult(id, this.T); else if (m.resolver === 'sim') p = this.shard.progressOf(this.shard.matches.get(id), this.T); else p = this.detailed.get(id).published(Math.max(0, this.T - m.start)); p.competition = m.competition; p.teams = m.teams; p.youth = m.youth; p.valid = p.finished ? (this.results[id]?.valid ?? true) : null; out.set(id, p); }
     this.packets = out;
   }
 }

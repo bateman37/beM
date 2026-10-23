@@ -6,6 +6,7 @@ import { SimMatch } from '../sim/engine.js';
 import '../sim/materialize.js';
 import { buildSimResult } from '../sim/result.js';
 import { buildSimEssential } from '../sim/essential.js';
+import { playAutomatic } from '../sim/coachsim.js';
 import { deriveSeed } from '../sim/rng.js';
 import { referenceTeamMap } from '../sim/teams.js';
 import { validateSimInput } from '../sim/adapt.js';
@@ -48,7 +49,8 @@ export class SeasonWorld {
   validateRosters() { const errs = []; for (const [id, t] of this.teams) { const other = [...this.teams.values()].find((x) => x.id !== id && x.id[0] !== undefined); const input = buildTeamsInput(t, other.id === id ? [...this.teams.values()][1] : other, { seed: 1 }); const e = validateSimInput(input, this.ctx.sp, this.ctx.T).filter((x) => x.path.startsWith('teams[0]')); if (e.length) errs.push({ team: id, errors: e.slice(0, 5) }); } return errs; }
   // Traspaso ADMINISTRATIVO (sin negociación): la persona conserva su identidad; el club de origen conserva un plan válido (titular sustituido por un suplente, parejas y referencias retiradas) y el de destino lo incorpora al banquillo.
   transfer(playerId, toClub, atRound) {
-    if (atRound <= this.round) return { ok: false, reason: `el movimiento debe regir desde una ronda posterior a la ya jugada (${this.round})` };
+    // C03-09: en este laboratorio un movimiento solo rige desde la ronda SIGUIENTE a la ya jugada (la plantilla cambia ahora y la siguiente entrada ya la refleja); no hay movimientos diferidos a varias rondas.
+    if (atRound !== this.round + 1) return { ok: false, reason: `el movimiento solo puede regir desde la ronda siguiente (${this.round + 1}); se pidió la ${atRound}` };
     const fromId = [...this.teams.values()].find((t) => t.players.some((p) => p.id === playerId))?.id; if (!fromId) return { ok: false, reason: 'jugador desconocido' }; if (!this.teams.has(toClub) || toClub === fromId) return { ok: false, reason: 'club de destino no válido' };
     if (this.directedFrom != null && (fromId === this.own || toClub === this.own)) return { ok: false, reason: 'el sénior dirigido no admite movimientos de prueba' };
     const A = deep(this.teams.get(fromId)); const B = deep(this.teams.get(toClub)); const idx = A.players.findIndex((p) => p.id === playerId); const [pl] = A.players.splice(idx, 1);
@@ -62,12 +64,21 @@ export class SeasonWorld {
     this.membership.get(playerId).push({ club: toClub, competition: compOf(toClub), fromRound: atRound, season: this.season }); changes.push({ club: toClub, cambio: `${playerId} se incorpora desde la ronda ${atRound} (banquillo)` });
     return { ok: true, playerId, from: fromId, to: toClub, atRound, changes };
   }
+  // Intercambio ATÓMICO de prueba: todos los movimientos se validan y aplican sobre el estado actual; si cualquiera falla (o un club cambia de tamaño y `keepSize`), no se confirma ninguno (plantillas, planes y pertenencia
+  // vuelven a su estado anterior). Conserva la identidad de las personas y las doce fichas por equipo, que exige el detallado.
+  transferAll(moves, { keepSize = true } = {}) {
+    const saved = { teams: new Map(this.teams), membership: new Map([...this.membership].map(([k, v]) => [k, v.slice()])) }; const sizes = new Map([...this.teams].map(([k, t]) => [k, t.players.length])); const done = [];
+    const rollback = (reason, failed) => { this.teams = saved.teams; this.membership = saved.membership; return { ok: false, reason, failed, applied: [], rolledBack: done.length }; };
+    for (const mv of moves) { const r = this.transfer(mv.playerId, mv.toClub, mv.atRound); if (!r.ok) return rollback(r.reason, mv); done.push(r); }
+    if (keepSize) for (const [k, n] of sizes) if (this.teams.get(k).players.length !== n) return rollback(`el club ${k} cambiaría de ${n} a ${this.teams.get(k).players.length} fichas: el intercambio debe conservar el tamaño de las plantillas`, null);
+    return { ok: true, moves: done };
+  }
   _play(comp, round, home, away) {
     const matchId = this.matchIdOf(comp, round, home, away); const input = this.inputOf(comp, round, home, away); const depth = this.depths[comp];
     const ownIdx = comp === 'SEN-A' ? [home, away].indexOf(this.own) : -1; const directed = this.directedFrom != null && round > this.directedFrom && ownIdx >= 0 && !this.comps[comp].youth;
     let model; let ess; let analysis = null;
     if (directed) { void ownIdx; ess = playDetailed(input, this.profile); model = 'detailed'; }
-    else { const m = new SimMatch(input, this.ctx, { matchId, attemptId: 1 }); m.finish(); if (depth === 'analysis') analysis = buildSimResult(m, { events: false, reconcile: false }); ess = buildSimEssential(m); model = 'sim'; if (ess.validity?.valid === false) throw new Error(`encuentro ${matchId} no válido: ${ess.validity.failedIds}`); }
+    else { const m = new SimMatch(input, this.ctx, { matchId, attemptId: 1 }); playAutomatic(m); if (depth === 'analysis') analysis = buildSimResult(m, { events: false, reconcile: false, analysis: true }); ess = buildSimEssential(m); model = 'sim'; if (ess.validity?.valid === false) throw new Error(`encuentro ${matchId} no válido: ${ess.validity.failedIds}`); }
     const score = ess.score.final;
     const rec = { matchId, comp, round, home, away, model, depth: directed ? 'directed' : depth, score, essential: ess, analysis }; this.results.set(matchId, rec);
     const clubs = [home, away]; const r = this.ledger.record(ess, { season: this.season, competition: comp, round, clubs: clubs.map((c, i) => this._clubOf(c, round, i)), model, matchId, attemptId: 1 }); rec.recorded = r.ok; return rec;

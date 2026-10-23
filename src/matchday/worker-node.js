@@ -10,8 +10,8 @@ parentPort.on('message', (msg) => {
     else if (msg.type === 'advance') out = { packets: shard.advanceAll(msg.T) };
     else if (msg.type === 'review') out = { decisions: shard.review(msg.T, msg.needs ?? {}, { policy: msg.policy !== false }) };
     else if (msg.type === 'essentials') out = { essentials: msg.ids.map((id) => [id, shard.essential(id)]) };
-    else if (msg.type === 'order') out = shard.order(msg.id, msg.spec);
+    else if (msg.type === 'order') out = { result: shard.order(msg.id, msg.spec) };
     else throw new Error(`mensaje desconocido ${msg.type}`);
-    parentPort.postMessage({ type: 'ok', id: msg.id, ...out });
-  } catch (e) { parentPort.postMessage({ type: 'error', id: msg.id, error: String(e.stack ?? e) }); }
+    parentPort.postMessage({ ...out, type: 'ok', rid: msg.rid });
+  } catch (e) { parentPort.postMessage({ type: 'error', rid: msg.rid, error: String(e.stack ?? e) }); }
 });

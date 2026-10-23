@@ -5,6 +5,7 @@ import { buildSimResult } from './result.js';
 import { reconcileResult } from './reconcile.js';
 import { buildPairInput } from './teams.js';
 import { essentialFromResult } from './essential.js';
+import { playAutomatic } from './coachsim.js';
 
 const now = () => performance.now();
 // `c.patch` (variantes con diferencias visibles): { 0: {styles…}, 1: {…} } sustituye campos del plan del equipo A/B antes de crear el encuentro. `c.essential`: devuelve además el registro esencial individual.
@@ -12,14 +13,14 @@ export function runCase(ctx, teamMap, c, { retries = 0 } = {}) {
   const t0 = now(); const input = buildPairInput(teamMap, c.a, c.b, { seed: c.seed, importance: c.importance ?? 'ordinary' }); for (const [ti, patch] of Object.entries(c.patch ?? {})) Object.assign(input.teams[Number(ti)].plan, JSON.parse(JSON.stringify(patch))); const tIn = now();
   let m; let res; let tGen; let tBuild; let tRec; let rec;
   try {
-    m = new SimMatch(input, ctx); m.finish(); tGen = now();
-    res = buildSimResult(m, { events: false, reconcile: false }); tBuild = now();
+    m = new SimMatch(input, ctx); if (c.policy === false) m.finish(); else playAutomatic(m); tGen = now(); // `policy:false` = control técnico sin entrenador automático (identificado en el resumen); el producto usa la política
+    res = buildSimResult(m, { events: false, reconcile: false, analysis: !!c.analysis }); tBuild = now();
     rec = reconcileResult(m, res, m.events); tRec = now();
   } catch (e) { return { n: c.n, id: c.id, a: c.a, b: c.b, seed: c.seed, status: 'failed', error: String(e.message ?? e).slice(0, 300), valid: false, ms: { input: tIn - t0, gen: now() - tIn, build: 0, recon: 0 } }; }
   return {
     n: c.n, id: c.id, a: c.a, b: c.b, seed: c.seed, status: m.status, error: m.error?.cause ?? null, score: m.status === 'finished' ? res.score.current : null, periods: res.score.periods, overtimes: res.score.overtimes,
     fp: res.sportFingerprint, inputFp: res.identity.inputFingerprint, valid: m.status === 'finished' && rec.valid, failedChecks: rec.checks.filter((x) => !x.ok).map((x) => x.id), checks: rec.checks.length, universe: rec.checks.map((x) => x.universe), failures: rec.checks.map((x) => x.failureCount),
-    events: m.events.length, draws: m.rng.draws, segments: m.segments.length, controls: res.controls, attempts: retries + 1,
+    policy: c.policy !== false, decisions: m.coach.log.length, events: m.events.length, draws: m.rng.draws, segments: m.segments.length, controls: res.controls, attempts: retries + 1,
     ms: { input: tIn - t0, gen: tGen - tIn, build: tBuild - tGen, recon: tRec - tBuild },
     ...(c.essential ? { ess: essentialFromResult(res, { reconcile: rec }) } : {}), ...(c.analysis ? { ana: res } : {}),
   };
