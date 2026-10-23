@@ -44,7 +44,7 @@ export class SimMatch {
       id: p.id, team: ti, name: p.name ?? p.id, ab: mkAb(p.abilities), abv: Float64Array.from(ATTR_ORDER, (a) => p.abilities[a]), age: p.age ?? null, height: p.heightCm, wingspan: p.wingspanCm, init: p.initiative, voc: p.finishingVocation, zp: p.zonePreference,
       kn: p.knowledge ?? null, offRole: p.offensiveRole?.code ?? null, defRole: p.defensiveRole?.code ?? null, positions: p.positions,
       energy: p.state.energy, form: p.state.form ?? 0, M: { TIR: p.state.M_TIR ?? 0, OFE: p.state.M_OFE ?? 0, DEF: p.state.M_DEF ?? 0 }, available: p.state.available !== false,
-      fouls: 0, out: false, onCourt: false, slot: null, courtSince: 0, benchSince: 0, minutes: 0, sev: severity(S, p.state.energy), lastMoment: 0, slotMin: {}, roleMin: {},
+      fouls: 0, out: false, onCourt: false, slot: null, courtSince: 0, benchSince: 0, minutes: 0, sev: severity(S, p.state.energy), eaSev: NaN, eaT: new Float64Array(32), lastMoment: 0, slotMin: {}, roleMin: {},
     }));
     return { idx: ti, id: t.id, name: t.name, plan, players, byId: Object.fromEntries(players.map((p) => [p.id, p])), T0: plan.initialTeamMoment ?? 0, tLast: 0 };
   }

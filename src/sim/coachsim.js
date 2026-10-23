@@ -37,8 +37,9 @@ export function observationFor(m, team, T) {
   const sc = c.sc.slice(); const period = c.period; const periodStart = c.periodStart;
   margin.v = sc[team] - sc[1 - team]; const len = period <= m.rules.quarters ? m.rules.quarterSeconds : m.rules.overtimeSeconds; const left = Math.max(0, periodStart + len - T);
   const external = m.contextLog.filter((c) => c.receivedAtPublished <= T + 1e-9);
-  const view = { observedAt: Math.round(T * 10) / 10, team, period, secondsLeft: Math.round(left * 10) / 10, margin: margin.v, score: sc.slice(), rivalShots: { ...rival, window: win.map((s) => s.n) }, external };
-  view.fingerprint = fpCanonical({ ...view, window: win.map((s) => s.n) });
+  const base = { observedAt: Math.round(T * 10) / 10, team, period, secondsLeft: Math.round(left * 10) / 10, margin: margin.v, score: sc.slice(), rivalShots: { ...rival, window: win.map((s) => s.n) }, external };
+  // La huella de la vista se calcula la PRIMERA vez que se lee (decisión tomada o publicación de la revisión) y se memoiza: mismo valor que antes, sin pagar un texto canónico por revisión cuando nadie la consulta.
+  const view = { ...base }; let fp; Object.defineProperty(view, 'fingerprint', { enumerable: true, configurable: true, get() { return fp ??= fpCanonical({ ...base, window: win.map((s) => s.n) }); }, set(v) { fp = v; } });
   return view;
 }
 

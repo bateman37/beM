@@ -58,7 +58,7 @@ const inputOf = (a, entries) => { const e = entries.get(a.entry_id); if (!e) thr
 // ---------------------------------------------------------------------------------------------------------------------------------- fase run
 // `root`: raíz de código (por defecto, este repositorio). `overrides`: filas [{path, value}] aplicadas sobre el perfil SIM de esa raíz.
 export async function run(opts) {
-  const { block, identity, root = SELF, overrides = [], resolver = 'sim', only = null, route = null, out, planDir, diagSet = null, workers = 4, detWorkers = 2 } = opts;
+  const { block, identity, root = SELF, overrides = [], resolver = 'sim', only = null, route = null, out, planDir, diagSet = null, workers = 4, detWorkers = 2, vectorId = null } = opts;
   const { agenda, entries } = loadAgenda(planDir); mkdirSync(join(out, 'diag'), { recursive: true });
   const idxPath = join(out, 'index.jsonl'); const recPath = join(out, `records-${resolver}-${identity}.jsonl`); const incPath = join(out, 'incidents.jsonl');
   const done = new Map(); if (existsSync(idxPath)) for (const l of readFileSync(idxPath, 'utf8').split('\n').filter(Boolean)) { const x = JSON.parse(l); if (x.identity === identity && x.block === block && x.resolver === resolver && ['finished', 'failed'].includes(x.status)) done.set(x.case_id, x); }
@@ -71,7 +71,7 @@ export async function run(opts) {
   const meta = { identity, block, resolver, startedAt: new Date().toISOString(), root: resolve(root), node: process.version, platform: platform(), arch: arch(), kernel: release(), cpu: cpus()[0]?.model, logicalCpus: cpus().length, ramMiB: Math.round(totalmem() / 2 ** 20), commit: sh('git rev-parse HEAD', root), dirty: (sh('git status --porcelain -- src data scripts', root) ?? '').length > 0, overrides, route };
   writeFileSync(join(out, `run-meta-${identity}-${block}-${resolver}-${Date.now()}.json`), JSON.stringify(meta, null, 1));
   const t0 = performance.now(); let n = 0;
-  const writeRec = (a, rec, diag) => { const m = { ...rec, campaign: 'SIM04B-CAMPANA-20261023', run: identity, block, scenario: a.scenario, variant: a.variant, orientation: a.orientation, replicate: a.replicate, seed: a.seed, seed_key: a.seed_key, entry_id: a.entry_id, input_hash: a.input_hash, testTeam: a.test_team || null, teams: [a.team0, a.team1] };
+  const writeRec = (a, rec, diag) => { const m = { ...rec, campaign: 'SIM04B-CAMPANA-20261023', run: identity, vectorId, block, scenario: a.scenario, variant: a.variant, orientation: a.orientation, replicate: a.replicate, seed: a.seed, seed_key: a.seed_key, entry_id: a.entry_id, input_hash: a.input_hash, testTeam: a.test_team || null, teams: [a.team0, a.team1] };
     appendFileSync(recPath, `${JSON.stringify(m)}\n`); if (diag) writeFileSync(join(out, 'diag', `${identity}__${resolver}__${a.case_id}.json.gz`), gzipSync(typeof diag === 'string' ? diag : JSON.stringify(diag)));
     appendFileSync(idxPath, `${JSON.stringify({ identity, block, resolver, case_id: a.case_id, attempt: rec.attempt ?? 1, status: rec.status === 'finished' ? 'finished' : 'failed', valid: !!rec.valid, error: rec.error ?? null, at: Date.now() })}\n`); n++; };
   const url = (rel) => pathToFileURL(join(root, rel)).href;
@@ -105,6 +105,6 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   if (phase === 'plan') { const { bad } = await plan({ planDir }); process.exit(bad.length ? 1 : 0); }
   const ov = arg('overrides'); const ovRaw = ov ? JSON.parse(readFileSync(ov, 'utf8')) : []; const overrides = Array.isArray(ovRaw) ? ovRaw : ovRaw.overrides; if (!Array.isArray(overrides)) throw new Error('--overrides debe ser una lista [{path,value}] o un vector {overrides:[…]}');
   const routes = arg('routes') ? JSON.parse(readFileSync(arg('routes'), 'utf8')) : undefined;
-  const r = await run({ block: arg('block'), identity: arg('identity'), root: arg('root', SELF), overrides, resolver: arg('resolver', 'sim'), only: arg('cases') ? arg('cases').split(',') : null, route: arg('route'), routes, out, planDir, workers: Number(arg('workers', 4)), detWorkers: Number(arg('det-workers', 2)) });
+  const r = await run({ block: arg('block'), identity: arg('identity'), vectorId: arg('vector-id'), root: arg('root', SELF), overrides, resolver: arg('resolver', 'sim'), only: arg('cases') ? arg('cases').split(',') : null, route: arg('route'), routes, out, planDir, workers: Number(arg('workers', 4)), detWorkers: Number(arg('det-workers', 2)) });
   console.log(JSON.stringify(r)); process.exit(0);
 }

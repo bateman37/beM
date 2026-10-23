@@ -13,8 +13,15 @@ import { ATTR_ORDER } from '../src/sim/profile.js';
 import { ELC, classifyExit, eligibilityCatalog } from '../src/sim/assist-table.js';
 import { assistFunnel } from '../src/sim/exposure.js';
 import { severity } from '../src/sim/model.js';
-import { canonical } from '../src/sim/fp.js';
+import { Matchday } from '../src/matchday/index.js';
+import { buildMixedScenario } from '../src/matchday/scenario.js';
 import { rotationChecks } from '../scripts/sim04b/rotation-checks.js';
+import * as SEL from '../scripts/sim04b/select.js';
+import { caseStatus, sufficiencyOf, expectationOf } from '../scripts/sim04b/sufficiency.js';
+import { jsonClone } from '../src/sim/clone.js';
+import { canonical, canonicalReference } from '../src/sim/fp.js';
+import { observationFor, coachReview } from '../src/sim/coachsim.js';
+import { readFileSync as readTxt } from 'node:fs';
 
 const { profile, players } = data; const ctx = makeContext(profile); const S = ctx.sp.v; const T = ctx.T; const teamMap = referenceTeamMap(profile, players);
 const env = { profile, players, ctx, teamMap, T, S };
@@ -65,6 +72,25 @@ test('S04B-02 cierre idempotente: terminar→sellar→consultar = terminar→con
   const z = newShard(31); runToFinish(z, 'M1'); z.seal(); runToFinish(y, 'M1'); y.seal(); assert.equal(canonical(y.essential('M1')), canonical(z.essential('M1')), 'recuperar antes del cierre y continuar = no parar');
   // el orden consulta/sellado no cambia deporte: azar, huella y exposición
   assert.equal(essA.identity.sportFingerprint, essB.identity.sportFingerprint); assert.equal(canonical(essA.exposure), canonical(essB.exposure));
+});
+
+// ---------------------------------------------------------------------------------------------------------------------------------- 3 · jornada: publicar antes de sellar
+const mixed = buildMixedScenario(profile, players);
+const mkDay = (over = {}) => new Matchday({ id: 'J-MIXTA', fixtures: mixed.fixtures, standings0: mixed.standings0, objectives: mixed.objectives, ctx, profile, ...over });
+test('S04B-03 jornada con cierre diferido: el marcador y la clasificación provisional se publican ANTES de sellar; el sellado cede el control en grupos; el resultado es el de un cierre inmediato; la final solo cuenta actas selladas; guardar/recuperar con sellado pendiente', async () => {
+  const imm = mkDay(); imm.runToEnd(); const def = mkDay({ deferClose: true }); def.runToEnd();
+  assert.equal(def.done, true); assert.equal(def.sealedAll, false, 'terminada la jornada pública, los SIM siguen pendientes de sellado'); const simIds = def.ids.filter((id) => def.resolverOf(id) === 'sim'); assert.deepEqual([...def.pendingSeal].sort(), simIds);
+  for (const id of simIds) { const p = def.packets.get(id); assert.equal(p.finished, true); assert.equal(p.sealed, false); assert.equal(p.valid, null, 'pendiente de sellado: no se presenta como acta válida'); assert.deepEqual(p.score, imm.packets.get(id).score, 'el marcador publicado ya es el definitivo'); assert.equal(def.results[id], undefined); }
+  const prov = def.table('SEN-A', 'provisional'); assert.ok(prov.rows.length > 0); const fin0 = def.table('SEN-A', 'final'); const finImm = imm.table('SEN-A', 'final'); assert.ok(fin0.rows.reduce((s, r) => s + r.played, 0) < finImm.rows.reduce((s, r) => s + r.played, 0), 'la final aún no cuenta las actas pendientes');
+  // guardado con sellado pendiente y recuperación real: pendiente se recupera y se sella igual
+  const snap = JSON.parse(JSON.stringify(def.snapshot())); assert.equal(snap.deferClose, true); const rec = Matchday.restore(snap, { profile }); assert.deepEqual([...rec.pendingSeal].sort(), simIds); assert.equal(rec.packets.get(simIds[0]).sealed, false);
+  // sellado: grupos de uno, cediendo el control (el evento intermedio es observable)
+  let yields = 0; const seen = []; const r = await def.sealPending({ group: 1, yieldFn: async () => { yields++; seen.push(def.pendingSeal.size); await Promise.resolve(); } }); assert.equal(r.pending, 0); assert.equal(r.sealed, simIds.length); assert.equal(yields, simIds.length, 'cede el control tras cada grupo'); assert.deepEqual(seen, simIds.map((_, i) => simIds.length - 1 - i), 'estado intermedio visible: 2, 1, 0 pendientes');
+  assert.equal(def.sealedAll, true); const rec2 = await rec.sealPending({ group: 16 }); assert.equal(rec2.pending, 0);
+  for (const id of def.ids) { assert.equal(canonical(def.results[id].essential), canonical(imm.results[id].essential), `${id}: mismo esencial que con cierre inmediato`); assert.equal(canonical(rec.results[id].essential), canonical(imm.results[id].essential), `${id}: recuperado = ininterrumpido`); }
+  const finDef = def.table('SEN-A', 'final'); assert.equal(canonical(finDef.rows), canonical(finImm.rows), 'sellada la jornada, la final coincide con la del cierre inmediato'); for (const id of simIds) assert.equal(def.packets.get(id).sealed, true);
+  // sin cierre diferido nada cambia: los paquetes no llevan el campo y el cierre es inmediato
+  assert.equal(imm.pendingSeal.size, 0); for (const id of imm.ids) assert.equal('sealed' in imm.packets.get(id), false);
 });
 
 // ---------------------------------------------------------------------------------------------------------------------------------- 4 · mezcla y calidad al aro
@@ -144,4 +170,73 @@ test('S04B-08 compatibilidad: el guardado REAL de 04 (0.3.0-SIMMOTOR04) se recha
   const ctl = new SimMatch(inputOf(5), ctx); ctl.finish(); const r = restoreSim(deep(snap), ctx); r.finish(); assert.equal(r.rng.draws, ctl.rng.draws); assert.equal(buildSimResult(r, { events: false }).sportFingerprint, buildSimResult(ctl, { events: false }).sportFingerprint);
   assert.equal(ctx.sp.index.get('shotMix.rimWeightFactor').value, 1, 'la base conserva las filas nuevas neutrales: nada se activa al abrir'); assert.equal(ctx.sp.index.get('assist.receivedAdvantageP0').value, 0); assert.equal(ctx.sp.index.get('opportunity.simRimQualityLogit').value, 0);
   for (const path of ['shotMix.rimWeightFactor', 'opportunity.simRimQualityLogit', 'assist.receivedAdvantageP0']) { const row = ctx.sp.index.get(path); assert.ok(row.unit && row.effect && row.origin === 'SEM-SIM04B', `${path} declara unidad, origen y efecto`); }
+});
+
+// ---------------------------------------------------------------------------------------------------------------------------------- 3b · exposición de contrastes (T03: cero esperado)
+test('S04B-03b suficiencia de exposición: el control con cero esperado y denominador es suficiente; el tratamiento exige exposición positiva; no conservado ≠ cero; sin denominador = no evaluado', () => {
+  assert.equal(expectationOf('T03', 'V0'), 'zero'); assert.equal(expectationOf('T03', 'V1'), 'positive'); assert.equal(expectationOf('T01', 'V0'), 'positive');
+  const t03 = (n0, d0, n1, d1) => ['V0', 'V1'].flatMap((v) => [1, 2].map((o) => ({ case_id: `T03-${v}-O${o}`, factor: 'T03', variant: v, numerator: v === 'V0' ? n0 : n1, denominator: v === 'V0' ? d0 : d1 })));
+  // el caso real de 04: cuatro controles normales con cero presión adelantada y cuatro tratamientos con exposición positiva
+  const real = sufficiencyOf(t03(0, 900, 410, 900), ['T03'])[0]; assert.match(real.verdict, /^suficiente/); assert.equal(real.ok, 4); assert.deepEqual(real.expectation, { V0: 'zero', V1: 'positive' });
+  // la regla anterior (exposición positiva en ambos lados) calificaba esto como insuficiente: se reproduce como control
+  const old04 = (rows) => rows.filter((r) => r.numerator > 0).length >= rows.length; assert.equal(old04(t03(0, 900, 410, 900)), false, 'control: la regla de 04 lo calificaba insuficiente');
+  assert.equal(caseStatus({ factor: 'T03', variant: 'V0', numerator: 3, denominator: 900 }).status, 'exposicion_inesperada', 'un control que SÍ registra presión es un fallo del contraste');
+  assert.equal(caseStatus({ factor: 'T03', variant: 'V0', numerator: 0, denominator: 0 }).status, 'no_evaluado', 'cero sin controles rivales no se puede interpretar');
+  assert.equal(caseStatus({ factor: 'T03', variant: 'V0', numerator: null, denominator: 900 }).status, 'no_conservado', 'no instrumentado: null con causa, no un cero');
+  assert.equal(caseStatus({ factor: 'T03', variant: 'V1', numerator: 0, denominator: 900 }).status, 'sin_exposicion', 'el tratamiento sin exposición es insuficiente'); assert.match(sufficiencyOf(t03(0, 900, 0, 900), ['T03'])[0].verdict, /^insuficiente/);
+  assert.equal(caseStatus({ factor: 'T01', variant: 'V0', numerator: 0, denominator: 100 }).status, 'sin_exposicion', 'los demás factores conservan su expectativa positiva');
+});
+
+// ---------------------------------------------------------------------------------------------------------------------------------- 6 · optimizaciones exactas
+test('S04B-06 optimizaciones exactas: copia = JSON, canónico = referencia, huella de vista perezosa = inmediata, estructura compartida sin estado ajeno, cachés acotadas, formaciones repetidas sin cambio de resultado', () => {
+  // copia por texto vs copia directa: mismos valores y mismas peculiaridades de JSON
+  const nasty = { a: 1, b: [1, undefined, () => 1, NaN, -0, Infinity, { c: undefined, d: 'x' }], e: { f: -0, g: Number.NaN, h: null, i: true, j: '😀', k: [] }, l: undefined, m: () => 2, n: 1e21, o: 0.1 + 0.2 };
+  assert.equal(canonical(jsonClone(nasty)), canonical(JSON.parse(JSON.stringify(nasty)))); assert.deepEqual(jsonClone(nasty), JSON.parse(JSON.stringify(nasty))); assert.ok(Object.is(jsonClone(-0), 0), '-0 pasa a 0 como en JSON');
+  const proto = JSON.parse('{"__proto__": {"x": 1}, "y": 2}'); assert.deepEqual(jsonClone(proto), JSON.parse(JSON.stringify(proto)), 'clave __proto__: camino de texto'); assert.deepEqual(jsonClone({ d: new Date(0), m: new Map([[1, 2]]) }), JSON.parse(JSON.stringify({ d: new Date(0), m: new Map([[1, 2]]) })), 'valores no planos: camino de texto');
+  assert.throws(() => jsonClone(undefined)); assert.throws(() => jsonClone({ b: 10n }), TypeError);
+  const input = inputOf(5); const c1 = jsonClone(input); assert.deepEqual(c1, JSON.parse(JSON.stringify(input))); assert.notEqual(c1.teams[0].players[0], input.teams[0].players[0], 'copia independiente');
+  // el texto canónico no cambió: la implementación rápida produce el de la referencia sobre estructuras de todo tipo
+  let seed = 12345; const rnd = () => { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; };
+  const gen = (d) => { const r = rnd(); if (d > 3 || r < 0.2) { const t = rnd(); return t < 0.2 ? null : t < 0.4 ? Math.round(rnd() * 1e6) / 1e3 : t < 0.6 ? `s${Math.floor(rnd() * 99)}"\\n` : t < 0.8 ? rnd() < 0.5 : -0; } if (r < 0.6) return Array.from({ length: Math.floor(rnd() * 5) }, () => gen(d + 1)); const o = {}; for (let i = 0; i < Math.floor(rnd() * 6); i++) o[`k${Math.floor(rnd() * 9)}ñ`] = gen(d + 1); return o; };
+  for (let i = 0; i < 300; i++) { const x = gen(0); assert.equal(canonical(x), canonicalReference(x)); } assert.equal(canonical(input), canonicalReference(input));
+  // huella de la vista del entrenador: perezosa pero idéntica a la inmediata, memoizada, y sigue apareciendo al serializar la vista
+  const m = new SimMatch(inputOf(6), ctx); m.advance({ until: 360 }); const v = observationFor(m, 0, 360); assert.equal(typeof v.fingerprint, 'string'); const eager = JSON.parse(JSON.stringify(v)); assert.equal(eager.fingerprint, v.fingerprint); assert.ok(Object.keys(v).includes('fingerprint')); assert.equal(v.fingerprint, v.fingerprint);
+  // estructura compilada compartida por (perfil, tablas, libro, disposición) sin compartir el estado mutable del tramo
+  const a = new SimMatch(inputOf(7), ctx); const b = new SimMatch(inputOf(7), ctx); a._prepareSides(120); a._compile(0); b._prepareSides(120); b._compile(0); const ca = a.teams[0].plan._c; const cb = b.teams[0].plan._c;
+  assert.equal(ca.cells, cb.cells, 'celdas y fichas estáticas compartidas'); assert.notEqual(ca.cellObjs, cb.cellObjs, 'los objetos de tramo son de cada plan'); assert.notEqual(ca.buf.cc, cb.buf.cc); ca.cellObjs[0].w = 123; assert.notEqual(cb.cellObjs[0].w, 123);
+  assert.equal(a.norm.canonical, undefined, 'la estructura canónica no se retiene por partido'); assert.ok(typeof a.norm.fingerprint === 'string' && a.norm.canonicalLength > 1000);
+  // las cachés de formación y de finalizadores son un detalle de velocidad: un partido que las descarta en CADA tramo llega al mismo resultado
+  const ref = new SimMatch(inputOf(8, 'EQ01', 'EQ05'), ctx); playAutomatic(ref); let maxXc = 0;
+  const cold = new SimMatch(inputOf(8, 'EQ01', 'EQ05'), ctx); const step = cold.step.bind(cold); cold.step = function () { for (const t of cold.teams) { delete t.plan._c?.fwc; delete t.plan._c?.qpools; for (const s of cold.sides) s.xc?.clear(); } return step(); }; playAutomatic(cold);
+  assert.equal(buildSimResult(ref, { events: false }).sportFingerprint, buildSimResult(cold, { events: false }).sportFingerprint); assert.equal(ref.rng.draws, cold.rng.draws); for (const sd of ref.sides) maxXc = Math.max(maxXc, sd.xc?.size ?? 0); assert.ok(maxXc <= 6, `cachés de formación acotadas (${maxXc})`);
+  // el mismo partido por una ruta de lectura repetida (consultas y guardado) no cambia: la huella del esencial lean = completa en su intersección
+  const e1 = buildSimEssential(ref); const e2 = buildSimEssential(ref); assert.equal(canonical(e1), canonical(e2), 'leer dos veces no cambia nada'); assert.equal(canonical(e1.assistFunnel), canonical(buildSimResult(ref, { events: false }).assistFunnel));
+});
+
+// ---------------------------------------------------------------------------------------------------------------------------------- 7 · selector y guardas
+const E = (o) => Object.fromEntries(['eP', 'eF', 'eZ', 'e2', 'eR', 'eQ', 'eA'].map((k) => [k, { value: o[k] ?? 0.01, evaluated: true }]));
+test('S04B-07 selector: una mejora del objetivo no compensa una guarda incumplida (local o acumulada); empates y mejora < 5 %; no evaluado = se conserva; VAL no entra en la selección', () => {
+  const init = E({ eP: 0.06, eF: 0.055, eZ: 0.2, e2: 0.087, eR: 0.058, eQ: 0.1319, eA: 0.1643 }); const prev = { id: 'R04B-N', value: 1, e: init };
+  // mejora enorme de eZ pero eA 0,0003 por encima del error inicial (ya fuera de banda): inadmisible por la guarda ACUMULADA, sin compensación
+  const z2 = { id: 'Z2', value: 1.5, e: E({ eP: 0.069, eF: 0.044, eZ: 0.113, e2: 0.087, eR: 0.0565, eQ: 0.1306, eA: 0.1646 }) }; const d1 = SEL.chooseStage({ stage: 'Z', prev, cands: [z2], init });
+  assert.equal(d1.kept, true); assert.equal(d1.log[0].verdict, 'inadmisible'); assert.deepEqual(d1.log[0].fails.map((f) => f.guard), ['acumulada:eA'], 'la única guarda incumplida es la acumulada de eA');
+  const z2ok = { ...z2, e: E({ eP: 0.069, eF: 0.044, eZ: 0.113, e2: 0.087, eR: 0.0565, eQ: 0.1306, eA: 0.1642 }) }; const d2 = SEL.chooseStage({ stage: 'Z', prev, cands: [z2ok], init }); assert.equal(d2.kept, false); assert.equal(d2.chosenId, 'Z2'); assert.ok(d2.relativeReduction > 0.4);
+  // guarda LOCAL: eP sube 0,03 sobre el previo (límite max(0,08; previo+0,02) = 0,08)
+  const loc = SEL.guards(E({ eP: 0.09 }), E({ eP: 0.06 }), E({ eP: 0.09 })); assert.deepEqual(loc.map((f) => f.guard), ['local:eP']); assert.deepEqual(SEL.guards(E({ eP: 0.079 }), E({ eP: 0.06 }), E({ eP: 0.06 })), [], 'por debajo de la banda 0,08 no hay fallo aunque supere el previo + 0,02');
+  assert.deepEqual(SEL.guards(E({ eZ: 0.221 }), E({ eZ: 0.2 }), E({ eZ: 0.2 })).map((f) => f.guard).sort(), ['acumulada:eZ', 'local:eZ'], 'eZ nunca puede superar su valor inicial (acumulada) ni previo + 0,02 (local)');
+  // mejora relativa < 5 %: se conserva; objetivo previo 0: se conserva; empate: gana el valor menor; objetivo no evaluado: se conserva
+  const mini = { id: 'Z1', value: 1.25, e: E({ eP: 0.06, eF: 0.055, eZ: 0.1999, e2: 0.087, eR: 0.058, eQ: 0.1319, eA: 0.1643 }) }; assert.match(SEL.chooseStage({ stage: 'Z', prev, cands: [mini], init }).reason, /< 5 %/);
+  assert.equal(SEL.chooseStage({ stage: 'Z', prev: { ...prev, e: E({ eZ: 0 }) }, cands: [z2ok], init }).kept, true, 'objetivo previo cero');
+  const tie1 = { id: 'T1', value: 1.5, e: E({ eP: 0.06, eF: 0.055, eZ: 0.1, e2: 0.087, eR: 0.058, eQ: 0.1319, eA: 0.1643 }) }; const tie2 = { id: 'T2', value: 1.25, e: tie1.e }; assert.equal(SEL.chooseStage({ stage: 'Z', prev, cands: [tie1, tie2], init }).chosenId, 'T2', 'empate: el cambio menor (valor menor)');
+  const nul = { ...prev, e: { ...init, eZ: { value: null, evaluated: false, reason: 'denominador nulo' } } }; const dn = SEL.chooseStage({ stage: 'Z', prev: nul, cands: [z2ok], init }); assert.equal(dn.kept, true); assert.equal(dn.evaluated, false);
+  assert.equal(SEL.objectiveOf('Q', E({ eR: 0.0322, eQ: 0.0497, e2: 0.0773 })) > 1.9, true, 'Q usa el máximo normalizado: e2/0,04 = 1,93'); assert.equal(SEL.objectiveOf('A', E({ eA: 0.17 })), 0.17);
+  // etapa E: 3,5 solo con las tres condiciones; una reducción enorme de la frecuencia de 40 min no compensa una guarda incumplida
+  const eprev = { id: 'R04B-N', value: 3, e: init, freq40: 0.583 }; const e1c = { id: 'E1', value: 3.5, e: E({ eP: 0.0668, eF: 0.0375, eZ: 0.1961, e2: 0.0866, eR: 0.0511, eQ: 0.1585, eA: 0.1656 }), freq40: 0, checks: { superior30: true, relief: true } };
+  const de = SEL.chooseEnergy({ prev: eprev, cands: [e1c], init }); assert.equal(de.kept, true); assert.equal(de.log[0].cond1_reduccion20, true); assert.equal(de.log[0].cond2_guardas, false); assert.equal(de.log[0].cond3_rotacion, true);
+  assert.equal(SEL.chooseEnergy({ prev: eprev, cands: [{ ...e1c, e: init }], init }).kept, false, 'con guardas y rotación superadas sube a 3,5');
+  assert.equal(SEL.chooseEnergy({ prev: eprev, cands: [{ ...e1c, e: init, checks: { superior30: true, relief: false } }], init }).kept, true, 'sin los casos de rotación no sube');
+  // las reglas se guardan con su hash antes de CAL y VAL no interviene: ninguna función del selector ni del script de CAL lee el bloque de reserva
+  assert.match(SEL.rulesHash(), /^[0-9a-f]{64}$/); assert.equal(SEL.RULES.maxAdditionalVectors, 7); assert.equal(SEL.STAGES.reduce((n, st) => n + st.values.length, 0), 7); assert.match(SEL.RULES.valUse, /VAL no elige/);
+  const calSrc = readTxt(new URL('../scripts/sim04b/calibrate.js', import.meta.url), 'utf8'); assert.equal(/block\s*===\s*'VAL'|block:\s*'VAL'|'VAL'/.test(calSrc), false, 'el script de selección no menciona la reserva'); assert.match(calSrc, /r\.block !== 'CAL'/, 'solo lee registros CAL');
+  const selSrc = readTxt(new URL('../scripts/sim04b/select.js', import.meta.url), 'utf8'); assert.equal(/VAL-|'VAL'/.test(selSrc.replace(/valUse:[^\n]*\n/, '')), false);
 });

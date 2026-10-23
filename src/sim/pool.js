@@ -2,6 +2,7 @@
 import { Worker } from 'node:worker_threads';
 import { fileURLToPath } from 'node:url';
 import { cpus } from 'node:os';
+import { configureWorkerRuntime } from './runtime.js';
 
 const WORKER_URL = new URL('./worker-node.js', import.meta.url);
 // Tamaño de la generación joven de cada hilo (MiB): menos recolecciones menores sin cambiar nada del deporte. 48 por defecto (valor medido); SIM_YOUNG_MB solo para experimentos de medición.
@@ -10,7 +11,7 @@ export class SimPool {
   constructor({ workers = 4 } = {}) { this.size = Math.max(1, Math.min(workers, cpus().length)); this.requested = workers; this.workers = []; this.pending = new Map(); this.seq = 1; this.ready = false; void fileURLToPath; }
   _send(w, msg) { return new Promise((res, rej) => { const id = this.seq++; this.pending.set(id, { res, rej }); w.postMessage({ ...msg, id }); }); }
   async start(ctxJSON, key, teams, warm = []) {
-    const t0 = performance.now(); this.workers = Array.from({ length: this.size }, () => { const w = new Worker(WORKER_URL, { resourceLimits: { maxYoungGenerationSizeMb: YOUNG_MB } }); w.on('message', (m) => { const p = this.pending.get(m.id); if (!p) return; this.pending.delete(m.id); m.type === 'error' ? p.rej(new Error(m.error)) : p.res(m); }); w.on('error', (e) => { for (const p of this.pending.values()) p.rej(e); }); return w; });
+    const t0 = performance.now(); this.gcMode = configureWorkerRuntime(); this.workers = Array.from({ length: this.size }, () => { const w = new Worker(WORKER_URL, { resourceLimits: { maxYoungGenerationSizeMb: YOUNG_MB } }); w.on('message', (m) => { const p = this.pending.get(m.id); if (!p) return; this.pending.delete(m.id); m.type === 'error' ? p.rej(new Error(m.error)) : p.res(m); }); w.on('error', (e) => { for (const p of this.pending.values()) p.rej(e); }); return w; });
     this.startedAt = performance.now();
     this.readyInfo = await Promise.all(this.workers.map((w) => this._send(w, { type: 'init', key, ctx: ctxJSON, teams, warm }))); this.ready = true; this.startMs = performance.now() - t0; return this.startMs;
   }

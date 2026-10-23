@@ -2,12 +2,13 @@
 // Los errores son localizados (ruta + mensaje); lo que SIM no representa se declara en `ignored` (no se descarta en silencio).
 import { fpOf } from './profile.js';
 import { fpCanonical, canonical, fpString } from './fp.js';
+import { jsonClone } from './clone.js';
 
 const ATTRS = ['TEC01', 'TEC02', 'TEC03', 'TEC04', 'TEC05', 'TEC06', 'TEC07', 'TEC08', 'TEC09', 'TEC10', 'TEC11', 'TEC12', 'TEC13', 'TEC14', 'TEC15', 'TEC16', 'TEC17', 'TEC18',
   'FIS01', 'FIS02', 'FIS03', 'FIS04', 'FIS05', 'FIS06', 'FIS07', 'MEN01', 'MEN02', 'MEN03', 'MEN04', 'MEN05', 'MEN06', 'MEN07'];
 export const SIM_ATTRS = ATTRS;
 export const ACCEPTED_SCHEMAS = ['beM-match-input/6', 'beM-match-input/7'];
-const deep = (x) => JSON.parse(JSON.stringify(x));
+const deep = jsonClone; // misma semántica que la copia por texto, sin el viaje a cadena (§9.2 A)
 const PLAN_IGNORED = ['specials', 'throwInBook', 'throwInServers', 'throwInDefense', 'marks', 'navigation'];
 
 export function validateSimInput(input, sp, tables) {
@@ -102,7 +103,7 @@ export function normalizeInput(input, sp, tables) {
   }
   norm.ignored = [...ignored].sort();
   const parts = canonicalInput(norm, sp, tables);
-  norm.canonical = parts; const text = canonical(parts); norm.fingerprint = fpString(text); norm.canonicalLength = text.length; // un solo texto canónico (antes se construía dos veces por encuentro)
+  const text = canonical(parts); norm.fingerprint = fpString(text); norm.canonicalLength = text.length; // un solo texto canónico; la estructura canónica no se conserva en el encuentro (no se leía en ningún sitio y retenía una copia estructural por partido)
   return norm;
 }
 

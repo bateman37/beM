@@ -24,12 +24,22 @@ export function sha256Hex(text) {
 }
 // JSON canónico (claves ordenadas): la misma estructura produce el mismo texto, con independencia del orden de inserción.
 // Misma salida que `JSON.stringify` con claves ordenadas (las propiedades `undefined` se omiten y en listas figuran como `null`), sin crear objetos intermedios: se llama una vez por encuentro.
+// Las claves se citan una sola vez (texto JSON de cada clave memoizado) y los números finitos se escriben con `String` (idéntico a JSON.stringify para números finitos, incluido -0 → «0»).
+const quoted = new Map();
+const qk = (k) => { let q = quoted.get(k); if (q === undefined) { q = JSON.stringify(k); quoted.set(k, q); } return q; };
 export function canonical(x) {
-  if (x === null || typeof x !== 'object') return JSON.stringify(x) ?? 'null';
+  if (x === null) return 'null';
+  switch (typeof x) {
+    case 'number': return Number.isFinite(x) ? String(x) : 'null';
+    case 'string': return JSON.stringify(x);
+    case 'boolean': return x ? 'true' : 'false';
+    case 'object': break;
+    default: return JSON.stringify(x) ?? 'null';
+  }
   if (typeof x.toJSON === 'function') return canonical(x.toJSON());
   if (Array.isArray(x)) { let s = '['; for (let i = 0; i < x.length; i++) { if (i) s += ','; const v = x[i]; s += v === undefined || typeof v === 'function' ? 'null' : canonical(v); } return `${s}]`; }
   const ks = Object.keys(x).sort(); let s = '{'; let first = true;
-  for (const k of ks) { const v = x[k]; if (v === undefined || typeof v === 'function') continue; if (!first) s += ','; first = false; s += `${JSON.stringify(k)}:${canonical(v)}`; }
+  for (let i = 0; i < ks.length; i++) { const k = ks[i]; const v = x[k]; if (v === undefined || typeof v === 'function') continue; if (!first) s += ','; first = false; s += `${qk(k)}:${canonical(v)}`; }
   return `${s}}`;
 }
 const canonicalReference = (x) => JSON.stringify(x, (k, v) => (v && typeof v === 'object' && !Array.isArray(v) ? Object.fromEntries(Object.keys(v).sort().map((kk) => [kk, v[kk]])) : v));

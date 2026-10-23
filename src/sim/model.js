@@ -108,9 +108,13 @@ export function pressureLevel(S, importance, period, secondsLeft, margin) {
 
 // ------------------------------------------------------------------------------------------------------------------------------ plan: parte estática (por plan) y dinámica (por tramo)
 // Celdas de finalización de las fichas del libro: una por (ficha, salida, zona). Estática por plan: se cachea en `plan._c`.
-export function compilePlan(S, T, plan) {
-  // el plan de trabajo de un encuentro es propio (copia) y solo cambia sustituyendo `playbook`/`disposition` (órdenes), nunca por mutación interna: la identidad de ambos decide si la compilación sigue vigente (antes: JSON.stringify del libro en cada tramo)
-  if (plan._c && plan._c.pb === plan.playbook && plan._c.dis === plan.disposition) return plan._c;
+// La estructura inmutable (celdas por ficha/salida/zona y fichas disponibles con su peso de prioridad) depende SOLO de (perfil, tablas, libro, disposición): se calcula una vez y se comparte entre encuentros (04B §9.2 B). Los
+// objetos de celda mutables del tramo (`cellObjs`, `trans`, `spont`: peso y calidad que se reescriben en cada tramo) son propios de cada plan de trabajo, de modo que ningún encuentro lee el estado de otro.
+const planStaticCache = new WeakMap();
+function planStatic(S, T, plan) {
+  let byT = planStaticCache.get(S); if (!byT) { byT = new WeakMap(); planStaticCache.set(S, byT); } let byKey = byT.get(T); if (!byKey) { byKey = new Map(); byT.set(T, byKey); }
+  let key = plan.disposition; for (const e of plan.playbook) key += `|${e.playId}:${e.priority}`;
+  let hit = byKey.get(key); if (hit) return hit;
   const disFns = T.dispositions[plan.disposition].functions; const cells = []; const plays = []; const merged = new Map();
   for (const e of plan.playbook) {
     const pl = T.plays[e.playId]; let ok = true;
@@ -119,24 +123,33 @@ export function compilePlan(S, T, plan) {
     for (const ex of pl.exits) {
       const zs = ex.zones.filter((z) => ZONES.includes(z)); if (!zs.length) continue;
       for (const z of zs) {
-        const moved = !!ex.moved?.includes(z); const pullup = !!ex.pullupK?.includes(z); const roller = !!ex.rollerK; const key = `${pi}|${ex.role}|${z}|${ex.exec}|${moved}|${pullup}|${roller}`; const share = ex.weightShare / zs.length;
-        const prev = merged.get(key); if (prev) prev.share += share; else { const c = { pi, playId: pl.id, family: pl.family, role: ex.role, zone: z, exec: ex.exec, moved, defend: ex.defend, share, pullup, roller, label: ex.label ?? null, elc: classifyExit(pl, ex).cls }; merged.set(key, c); cells.push(c); }
+        const moved = !!ex.moved?.includes(z); const pullup = !!ex.pullupK?.includes(z); const roller = !!ex.rollerK; const k2 = `${pi}|${ex.role}|${z}|${ex.exec}|${moved}|${pullup}|${roller}`; const share = ex.weightShare / zs.length;
+        const prev = merged.get(k2); if (prev) prev.share += share; else { const c = { pi, playId: pl.id, family: pl.family, role: ex.role, zone: z, exec: ex.exec, moved, defend: ex.defend, share, pullup, roller, label: ex.label ?? null, elc: classifyExit(pl, ex).cls }; merged.set(k2, c); cells.push(c); }
       }
     }
   }
-  const gids = new Map(); for (const c of cells) { const k = `${c.pi}|${c.role}|${c.zone}`; if (!gids.has(k)) gids.set(k, gids.size); c.gid = gids.get(k); }
+  const gids = new Map(); for (const c of cells) { const k3 = `${c.pi}|${c.role}|${c.zone}`; if (!gids.has(k3)) gids.set(k3, gids.size); c.gid = gids.get(k3); }
+  plays.forEach((p) => { p.receiverFamily = ['handoff', 'off_ball_screen', 'give_and_go'].includes(p.family); });
+  // reutilizables por plan de trabajo: búferes de la mezcla (se reescriben por completo para las celdas de fichas disponibles, que son las únicas que se leen; el resto permanece a cero)
+  hit = { cells, plays }; byKey.set(key, hit); return hit;
+}
+export function compilePlan(S, T, plan) {
+  // el plan de trabajo de un encuentro es propio (copia) y solo cambia sustituyendo `playbook`/`disposition` (órdenes), nunca por mutación interna: la identidad de ambos decide si la compilación sigue vigente (antes: JSON.stringify del libro en cada tramo)
+  if (plan._c && plan._c.pb === plan.playbook && plan._c.dis === plan.disposition) return plan._c;
+  const { cells, plays } = planStatic(S, T, plan);
   // objetos de celda reutilizables (se reescriben en cada tramo); transición y espontáneo solo con zonas posibles
   const cellObjs = cells.map((c, ci) => ({ kind: 'play', ci, cell: c, w: 0, q: null }));
   const mkPseudo = (kind, family) => ZONES.map((z) => ({ kind, cell: { zone: z, family, role: 'handler', exec: 'auto', moved: false, passShare: 0, movedShare: 0 }, w: 0, q: null }));
-  const trans = mkPseudo('trans', 'transition'); const spont = mkPseudo('spont', 'spontaneous');
-  plays.forEach((p) => { p.receiverFamily = ['handoff', 'off_ball_screen', 'give_and_go'].includes(p.family); });
-  plan._c = { pb: plan.playbook, dis: plan.disposition, cells, plays, cellObjs, trans, spont, all: [...cellObjs, ...trans, ...spont] };
+  const trans = mkPseudo('trans', 'transition'); const spont = mkPseudo('spont', 'spontaneous'); const nc = cells.length;
+  plan._c = { pb: plan.playbook, dis: plan.disposition, cells, plays, cellObjs, trans, spont, all: [...cellObjs, ...trans, ...spont], buf: { cc: new Float64Array(nc), pp: new Float64Array(nc), aa: new Float64Array(nc), rr: new Float64Array(nc), md: new Float64Array(nc), hasMid: new Uint8Array(nc) } };
   return plan._c;
 }
 
 // Pools de rol de una ficha: devuelve [{pl, w}] con la plaza favorecida (rolePreference) frente al resto, sin prohibir por posición nominal. Memoizado por vista (tramo).
+// Pools de rol memoizados por formación: se conservan las últimas formaciones vistas (FIFO); recalcular una evicta es puro y barato frente a retener una entrada por cada formación de un partido de 40 minutos.
+const XC_MAX_LINEUPS = 6;
 function rolePool(S, T, view, play, role) {
-  let lineup = view.xc?.get(view.xk); if (!lineup) { lineup = new Map(); view.xc?.set(view.xk, lineup); } let byPlay = lineup.get(play.id); if (!byPlay) { byPlay = new Map(); lineup.set(play.id, byPlay); } const hit = byPlay.get(role); if (hit) return hit;
+  let lineup = view.xc?.get(view.xk); if (!lineup) { lineup = new Map(); const xc = view.xc; if (xc) { xc.set(view.xk, lineup); if (xc.size > XC_MAX_LINEUPS) xc.delete(xc.keys().next().value); } } let byPlay = lineup.get(play.id); if (!byPlay) { byPlay = new Map(); lineup.set(play.id, byPlay); } const hit = byPlay.get(role); if (hit) return hit;
   const d = play.roles[role]; let out;
   if (role === 'director') out = [{ pl: view.director, w: 1 }];
   else if (!d) out = view.players.map((pl) => ({ pl, w: 1 }));
@@ -154,9 +167,23 @@ function viewCache(S, view) {
 const attrOfZone = (S, z) => Object.keys(S.shots[z].attack)[0];
 const abilityFit = (S, x) => { const f = S.selection.abilityFit; return Math.min(f.max, Math.max(f.min, 1 + f.slope * (x - S.neutralAbility))); };
 
-const vcA = (S, view, zone) => { const vc = viewCache(S, view); if (!vc.Am) vc.Am = {}; if (!vc.Am[zone]) { const mp = new Map(); view.players.forEach((p, i) => mp.set(p, vc.A[zone][i])); vc.Am[zone] = mp; } return vc.Am[zone]; };
 // Valor de capacidad de un grupo de jugadores [{pl,w}] para una receta [[rol, atributo, peso]] filtrada por rol→grupo.
-function recipeByRoleGroups(S, rec, groupOf, cap) { let s = 0; for (const [r, a, w] of rec) { const g = groupOf(r); let t = 0; let ws = 0; for (const x of g) { t += x.w * ea(S, x.pl, a, cap); ws += x.w; } s += w * (ws > 0 ? t / ws : S.neutralAbility); } return s; }
+// Capacidad efectiva con el tope técnico por defecto, memoizada por jugador mientras su severidad no cambia (la severidad se recalcula una vez por tramo): mismo valor que `ea(S, pl, attr, tech)`.
+function eaTech(S, pl, a) {
+  if (pl.eaSev !== pl.sev) { const cap = S.energy.defaultTechnicalTaskMax; const t = pl.eaT; for (let i = 0; i < 32; i++) { const v = pl.abv[i] - pl.sev * cap; t[i] = v < 1 ? 1 : v; } pl.eaSev = pl.sev; }
+  return pl.eaT[IDX[a]];
+}
+// Misma aritmética que `recipeByRoleGroups` con los grupos de cada término ya resueltos (un arreglo de pools alineado con la receta).
+function recipeByPools(S, rec, pools, cap) {
+  let s = 0; const tech = cap === S.energy.defaultTechnicalTaskMax;
+  for (let i = 0; i < rec.length; i++) { const a = rec[i][1]; const w = rec[i][2]; const g = pools[i]; let t = 0; let ws = 0; for (const x of g) { t += x.w * (tech ? eaTech(S, x.pl, a) : ea(S, x.pl, a, cap)); ws += x.w; } s += w * (ws > 0 ? t / ws : S.neutralAbility); }
+  return s;
+}
+function recipeByRoleGroups(S, rec, groupOf, cap) {
+  let s = 0; const tech = cap === S.energy.defaultTechnicalTaskMax;
+  for (const [r, a, w] of rec) { const g = groupOf(r); let t = 0; let ws = 0; for (const x of g) { t += x.w * (tech ? eaTech(S, x.pl, a) : ea(S, x.pl, a, cap)); ws += x.w; } s += w * (ws > 0 ? t / ws : S.neutralAbility); }
+  return s;
+}
 
 // ------------------------------------------------------------------------------------------------------------------------------ modelo de un equipo que ataca en el tramo
 // st: estado de partido (S, T, jugadores, etc.); k: equipo atacante; ctx: { period, secondsLeft, margin, importance }.
@@ -261,9 +288,11 @@ export function shotCells(S, T, sides, k, M, ctx) {
   // 04B §7.3: desplazamiento de calidad SOLO en celdas de aro, dentro de la misma formación (antes de sortear). Se calcula un objeto de calidad PROPIO para el aro de cada ficha: nunca se muta el objeto compartido por las demás zonas.
   const dq = S.opportunity.simRimQualityLogit ?? 0;
   const nPlays = comp.plays.length; const qc = new Array(nPlays); const qcRim = dq !== 0 ? new Array(nPlays) : null;
+  let qp = comp.qpools; if (!qp || qp.xk !== av.xk) qp = comp.qpools = { xk: av.xk, attack: [] }; // pools de rol de la receta de calidad de ataque, por formación (no cambian entre tramos con la misma formación)
   for (let pi = 0; pi < nPlays; pi++) {
     const p = comp.plays[pi]; if (!p.available) continue;
-    const caRaw = recipeByRoleGroups(S, p.play.qualityAttack, (r) => rolePool(S, T, av, p.play, r), tech);
+    let ap = qp.attack[pi]; if (!ap) ap = qp.attack[pi] = p.play.qualityAttack.map((e) => rolePool(S, T, av, p.play, e[0]));
+    const caRaw = recipeByPools(S, p.play.qualityAttack, ap, tech);
     let cdRaw = recipeByRoleGroups(S, p.play.qualityDefense, defRolePlayers, tech);
     if (p.receiverFamily) cdRaw = N + (cdRaw - N) * 2 * M.pDeny; // negación de receptores: efecto proporcional a su elección (neutral en nivel 3)
     let extraZ = beaten; if (sides.fam) { const f = famPlayQuality(S, T, A, D, p, plan, defRolePlayers); extraZ += f; famCache[p.id] = f; }
@@ -275,12 +304,12 @@ export function shotCells(S, T, sides, k, M, ctx) {
   const orientIn = sel.orientationInside[styles.finishPreference - 1]; const orientOut = sel.orientationThree[styles.finishPreference - 1]; const tilt = sel.offensiveRiskPreferenceTilt[styles.offensiveRisk - 1];
   const mp = plan.midrange; const mpPol = sel.midrangePolicy; const seekMid = mp === 'seek' ? mean(av.players.map((pl) => mpPol.suitablePlayerBase + mpPol.suitablePlayerAbilitySlope * a01(ea(S, pl, 'TEC02', tech)))) : 0;
   let psum = 0; for (const p of comp.plays) if (p.available) psum += p.coach;
-  const nc = comp.cells.length; const cc = new Float64Array(nc); const pp = new Float64Array(nc); const aa = new Float64Array(nc); const rr = new Float64Array(nc); const md = new Float64Array(nc); const hasMid = new Uint8Array(nc);
+  const nc = comp.cells.length; const { cc, pp, aa, rr, md, hasMid } = comp.buf; // búferes del plan: solo se leen las celdas de fichas disponibles, que se reescriben por completo en cada llamada
   let sc = 0; let sp = 0; let sa = 0;
   for (let ci = 0; ci < nc; ci++) {
     const c = comp.cells[ci]; const p = comp.plays[c.pi]; if (!p.available) continue;
     const sh = S.shots[c.zone]; const qd = qc[c.pi];
-    const fw = finisherWeights(S, T, av, p.play, c, plan); if (fw.pref === undefined) { let pf = 0; for (let i = 0; i < fw.length; i++) pf += fw[i].w0; fw.pref = pf / Math.max(1, fw.length); fw.pEst = estP(S, sh, fw, N, false, vcA(S, av, c.zone)); }
+    const fw = finisherWeights(S, T, av, p.play, c, plan); if (fw.pref === undefined) { let pf = 0; for (let i = 0; i < fw.length; i++) pf += fw[i].w0; fw.pref = pf / Math.max(1, fw.length); fw.pEst = estP(S, sh, fw, N, false, viewCache(S, av).A[c.zone]); }
     if (c.zone === 'midrange') { hasMid[ci] = 1; md[ci] = mp === 'avoid' ? mpPol.avoidWeight : mp === 'openOnly' ? qd.comfortable * mpPol.openOnlyComfortableWeight + (1 - qd.comfortable) * mpPol.openOnlyOtherWeight : seekMid; }
     const orient = c.zone === 'three' ? orientOut : (c.zone === 'rim' || c.zone === 'inside') ? orientIn : 1; const risk = c.exec === 'none' ? 0 : c.exec === 'dribble' ? riskD : c.exec === 'pass' ? riskP : riskN;
     const V = Math.max(sel.candidateRead.minimumUtility, sh.points * fw.pEst - sel.candidateRead.expectedTurnoverCostPoints * risk);
@@ -331,13 +360,23 @@ function mixWeights(items, L, q, tilt) {
 // Peso de cada jugador como finalizador de una celda: favorecido por rol, adecuación de capacidad, vocación e iniciativa. Memoizado por (ficha, rol, zona) dentro del tramo.
 export function finisherWeights(S, T, view, play, c, plan) {
   const vc = viewCache(S, view);
-  if (c.gid !== undefined && play) { const hit = vc.fwG[c.gid]; if (hit) return hit; }
+  if (c.gid !== undefined && play) {
+    const hit = vc.fwG[c.gid]; if (hit) return hit;
+    // Con la MISMA formación y plan el conjunto de finalizadores (jugadores, pools de rol) no cambia entre tramos; solo cambian sus pesos (adecuación con la fatiga de ese tramo). La lista de objetos se conserva por (plan, formación, celda)
+    // y se REESCRIBE por completo en cada tramo (mismos valores que construirla de nuevo); `pref`/`pEst` se invalidan. Sin plan compilado (sondas aisladas) se construye de nuevo.
+    const comp = plan?._c; let out;
+    if (comp) { let fc = comp.fwc; if (!fc || fc.xk !== view.xk) fc = comp.fwc = { xk: view.xk, byGid: [] }; const byGid = fc.byGid; const prev = byGid[c.gid];
+      // misma formación (clave `xk`) ⇒ mismos jugadores, mismos pools de rol y mismo índice de cada jugador en la vista: solo se reescriben los pesos con la adecuación del tramo
+      if (prev) { const fit = vc.fit[c.zone]; const pool = prev.pool; for (let i = 0; i < pool.length; i++) { const x = prev[i]; const f = fit[x.ix]; x.w = pool[i].w * f; x.w0 = pool[i].b != null ? pool[i].w * f / pool[i].b : pool[i].w * f; } prev.pref = undefined; prev.pEst = undefined; out = prev; }
+      else { out = buildFw(S, T, view, vc, play, c); out.pool = rolePool(S, T, view, play, c.role); byGid[c.gid] = out; } }
+    else out = buildFw(S, T, view, vc, play, c);
+    vc.fwG[c.gid] = out; return out;
+  }
   else { const pid = play ? play.id : '*'; let byPlay = vc.fw.get(pid); if (!byPlay) { byPlay = new Map(); vc.fw.set(pid, byPlay); } const rz = c.rz ?? (c.rz = `${c.role}|${c.zone}`); const hit = byPlay.get(rz); if (hit) return hit; const out = buildFw(S, T, view, vc, play, c); byPlay.set(rz, out); return out; }
-  const out = buildFw(S, T, view, vc, play, c); vc.fwG[c.gid] = out; return out;
 }
 // `w` incluye el sesgo de rol (reparto del finalizador); `w0` es el peso SIN ese sesgo: la preferencia de celda (`pref`) usa `w0` para no aplicar la misma ventaja de rol dos veces (participación y mezcla de celdas).
-function buildFw(S, T, view, vc, play, c) { const pool = play ? rolePool(S, T, view, play, c.role) : view.players.map((pl) => ({ pl, w: offRoleBias(S, T, pl, S.roles.creditTags.spontaneous), b: offRoleBias(S, T, pl, S.roles.creditTags.spontaneous) })); const fit = vc.fit[c.zone]; const out = new Array(pool.length); for (let i = 0; i < pool.length; i++) { const f = fit[vc.idx.get(pool[i].pl)]; out[i] = { pl: pool[i].pl, w: pool[i].w * f, w0: pool[i].b != null ? pool[i].w * f / pool[i].b : pool[i].w * f }; } return out; }
-function estP(S, sh, fw, N, moved, A) { const b0 = logit(sh.p0) - sh.sD * (S.selection.candidateRead.opponentAbilityEstimate - N); let s = 0; let ws = 0; for (let i = 0; i < fw.length; i++) { const x = fw[i]; s += x.w * sigmoid(b0 + sh.sA * (A.get(x.pl) - N)); ws += x.w; } return ws > 0 ? s / ws : sh.p0; }
+function buildFw(S, T, view, vc, play, c) { const pool = play ? rolePool(S, T, view, play, c.role) : view.players.map((pl) => ({ pl, w: offRoleBias(S, T, pl, S.roles.creditTags.spontaneous), b: offRoleBias(S, T, pl, S.roles.creditTags.spontaneous) })); const fit = vc.fit[c.zone]; const out = new Array(pool.length); for (let i = 0; i < pool.length; i++) { const ix = vc.idx.get(pool[i].pl); const f = fit[ix]; out[i] = { pl: pool[i].pl, w: pool[i].w * f, w0: pool[i].b != null ? pool[i].w * f / pool[i].b : pool[i].w * f, ix }; } return out; }
+function estP(S, sh, fw, N, moved, A) { const b0 = logit(sh.p0) - sh.sD * (S.selection.candidateRead.opponentAbilityEstimate - N); let s = 0; let ws = 0; for (let i = 0; i < fw.length; i++) { const x = fw[i]; s += x.w * sigmoid(b0 + sh.sA * (A[x.ix] - N)); ws += x.w; } return ws > 0 ? s / ws : sh.p0; }
 
 // Calidad de la transición: parte sin oposición (llegada) y parte con oposición (llegada de defensores por FIS01/FIS02).
 function transitionQuality(S, T, sides, k, M, dq = 0) {
@@ -355,6 +394,14 @@ function spontaneousQuality(S, T, sides, k, M, dq = 0) {
   const cd = mean(D.view.players.map((p) => taskFor(S, 'TAR02', 'defense', 'primary', p))); void tech;
   return qualityDistributionPure(S, ca, cd, 0, true, false, (sides.fam ? famContextDelta(S, T, A, D, 'spontaneous') : 0) + dq).p;
 }
+// Disponibilidad relativa de funciones interiores/exteriores de una disposición frente a la media de todas (depende solo de las tablas y de la disposición: se calcula una vez por par).
+const dispAvail = new WeakMap();
+function dispositionAvailability(T, disposition) {
+  let m = dispAvail.get(T); if (!m) { m = new Map(); dispAvail.set(T, m); } let hit = m.get(disposition); if (hit) return hit;
+  const fns = T.dispositions[disposition].functions; const share = (pred) => fns.filter(pred).length / fns.length; const ref = (pred) => Object.values(T.dispositions).reduce((s, d) => s + d.functions.filter(pred).length / d.functions.length, 0) / Object.keys(T.dispositions).length;
+  const lowF = (f) => ['inside', 'lowInside', 'block', 'highInside'].includes(f); const perF = (f) => ['top', 'wing', 'corner'].includes(f);
+  hit = [share(lowF) / (ref(lowF) || 1), share(perF) / (ref(perF) || 1)]; m.set(disposition, hit); return hit;
+}
 function spontaneousZones(S, T, view, plan, M) {
   const out = { rim: 0, inside: 0, midrange: 0, three: 0 }; const sel = S.selection; let ws = 0;
   for (const pl of view.players) { const w = (sel.initiativeMix[0] + sel.initiativeMix[1] * pl.init) * (sel.finishingVocationMix[0] + sel.finishingVocationMix[1] * pl.voc); ws += w; out.rim += w * pl.zp.rim * 0.5; out.inside += w * pl.zp.rim * 0.5; out.midrange += w * pl.zp.midrange; out.three += w * pl.zp.three; }
@@ -362,9 +409,7 @@ function spontaneousZones(S, T, view, plan, M) {
   out.three *= sel.orientationThree[st.finishPreference - 1]; out.rim *= sel.orientationInside[st.finishPreference - 1]; out.inside *= sel.orientationInside[st.finishPreference - 1];
   out.midrange *= mp === 'avoid' ? mpPol.avoidWeight : mp === 'openOnly' ? (mpPol.openOnlyComfortableWeight * 0.5 + mpPol.openOnlyOtherWeight * 0.5) : 1;
   // disponibilidad de funciones de la disposición (no es un bonus plano de acierto)
-  const fns = T.dispositions[plan.disposition].functions; const share = (pred) => fns.filter(pred).length / fns.length; const ref = (pred) => Object.values(T.dispositions).reduce((s, d) => s + d.functions.filter(pred).length / d.functions.length, 0) / Object.keys(T.dispositions).length;
-  const lowF = (f) => ['inside', 'lowInside', 'block', 'highInside'].includes(f); const perF = (f) => ['top', 'wing', 'corner'].includes(f);
-  const mI = share(lowF) / (ref(lowF) || 1); const mO = share(perF) / (ref(perF) || 1);
+  const [mI, mO] = dispositionAvailability(T, plan.disposition);
   out.rim *= mI || 0.0001; out.inside *= mI || 0.0001; out.three *= mO || 0.0001;
   let t = 0; for (const z of ZONES) t += out[z]; for (const z of ZONES) out[z] = t > 0 ? out[z] / t : 0; void ws;
   return out;

@@ -4,7 +4,7 @@
 import { SIM_MODEL, SIM_RESULT_SCHEMA, SIM_VERSION, SIM_COVERAGE_ID, SIM_STATS_POLICY_ID } from './version.js';
 import { fpString } from './fp.js';
 import { reconcileResult } from './reconcile.js';
-import { moduleExposure, pressExposure, assistDenominators, assistFunnel } from './exposure.js';
+import { moduleExposure, pressExposure, assistTables } from './exposure.js';
 import { buildAnalysis } from './analysis.js';
 
 const ZONES = ['rim', 'inside', 'midrange', 'three'];
@@ -90,7 +90,7 @@ export function buildSimResult(m, opts = {}) {
   // aprendizaje y `moduleOps` conserva la identidad de cada operación para que ninguna se observe dos veces como una sola.
   const modules = moduleExposure(m, evs); const press = pressExposure(m, segs, T, controlsReached);
   for (const id of Object.keys(exposure)) { const a = modules[id] ?? {}; const b = press.byPlayer[id] ?? {}; const sum = { ...a }; for (const [k, v] of Object.entries(b)) sum[k] = Math.round(((sum[k] ?? 0) + v) * 1e6) / 1e6; if (Object.keys(sum).length) { exposure[id].modules = sum; exposure[id].moduleOps = { finalization: a, press: b }; } }
-  const assistDen = assistDenominators(evs); const assistFun = assistFunnel(evs);
+  const { den: assistDen, funnel: assistFun } = assistTables(evs);
   const periodsReached = periodPts.length; const finished = reachedEnd; const status = m.status === 'error' ? 'error' : finished ? 'finished' : T > 0 || m.segments.length ? 'running' : 'ready';
   // estado observable en el presente: alineación en pista, faltas y bonus desde los hechos; la energía solo para quien tiene autorización (se proyecta a la frontera, no es la del núcleo adelantado)
   const observable = lean ? null : observableAt(m, T, evs, audience, team);
