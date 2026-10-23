@@ -26,6 +26,7 @@ Cómo está **realmente implementado** el proyecto. Distingue lo documentado de 
 - **MOTOR-18B** (cierre de familiaridad y curva de Polivalencia: Preparación sobre la copia activa, bloqueadores en los participantes, secuencias persistidas, exposición terminada, sesiones válidas, estimación coherente, unidades y curva lineal por tramos de cinco anclajes): [`motor18b.md`](motor18b.md).
 - **MOTOR-18C** (identidad del aprendizaje del laboratorio: el encuentro aplicado se identifica por igualdad exacta de la fuente completa y un resultado solo se aplica a su propia copia): [`motor18c.md`](motor18c.md).
 - **SIM-MOTOR-01** (generador estadístico por tramos «motor ultrarrápido», selector de motor del laboratorio y medición de 1.000 partidos): [`sim-motor01.md`](sim-motor01.md) · [pendientes](sim-motor01-pendientes.md).
+- **SIM-MOTOR-02** (correcciones C02-01…05, roles/director/familiaridad pertinente, política pequeña del entrenador, lectores SIM, jornada simultánea con el detallado, guardado y lotes persistentes, historia individual de temporada y aprendizaje posterior): [`sim-motor02.md`](sim-motor02.md) · [pendientes](sim-motor02-pendientes.md) · [evidencia](evidencia-sim-motor02/RESUMEN.md).
 - **Utilidades documentales** (`scripts/docs/`): descritas en [`../exportados/README.md`](../exportados/README.md).
 
 ## Pendiente (no existe aún)

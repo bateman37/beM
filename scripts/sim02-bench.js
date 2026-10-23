@@ -49,7 +49,7 @@ async function pass(name, pool, fresh, startInfo) {
     startup: startInfo, throughputPerSecond: r1(res.length / ((tDone - tReq) / 1000)), workerBusyMs: r.workerMs.map(r1), casesPerWorker: r.perWorkerCases, latencyMs: { mean: r1(lat.reduce((a, b) => a + b, 0) / lat.length), p50: r1(pct(lat, 0.5)), p95: r1(pct(lat, 0.95)), max: r1(Math.max(...lat)) },
     phaseMeanInWorkerMs: Object.fromEntries(['input', 'gen', 'build', 'recon'].map((k) => [k, r1(res.reduce((a, x) => a + x.ms[k], 0) / res.length)])),
     counts: { finished: finished.length, valid: valid.length, failed: res.length - finished.length, overtimes: res.filter((x) => x.overtimes > 0).length, duplicatesOnFirstRecord: dup, duplicatesOnReplayOf50: dup2, replayOf50Accepted: again.matches.length },
-    bytes: { essentialsJsonl: bytes, essentialsGzip: gzBytes, perMatch: Math.round(bytes / res.length), file: statSync(file).size, playersRowsTotal: res.reduce((a, x) => a + x.ess.box.players.length, 0) }, fingerprints: res.map((x) => x.fp) };
+    bytes: { essentialsJsonl: bytes, essentialsGzip: gzBytes, perMatch: Math.round(bytes / res.length), file: statSync(file).size, playersRowsTotal: res.reduce((a, x) => a + x.ess.box.players.length, 0) }, fingerprints: res.map((x) => x.fp), cases_: res.map((x) => ({ n: x.n, id: x.id, a: x.a, b: x.b, seed: x.seed, status: x.status, score: x.score, overtimes: x.overtimes, valid: x.valid, failed: x.failedChecks, controls: x.controls, events: x.events, draws: x.draws, inputFp: x.inputFp, attempts: x.attempts })) };
   rmSync(file, { force: true }); return rec;
 }
 const rssMax = () => Math.max(...rss);
@@ -67,7 +67,9 @@ if (mode === 'F-C') {
   out.retention = { reference: meas({ essential: true }, 64), analysis: meas({ analysis: true }, 64), note: 'el nivel no cambia azar, producción ni consecuencias; solo lo que se conserva' };
   out.memory = { rssMaxMiB: mib(rssMax()), note: 'RSS del PROCESO (los workers son hilos del mismo proceso; no se suma por hilo)', samples: rss.length };
   out.verdict = { P02F_met: out.passes[0].objective.met, hot: out.passes.slice(1).map((p) => ({ run: p.run, ms: p.objective.measuredMs, met: p.objective.met })), independentObservations: 'cuatro pasadas son repeticiones de los mismos 1.000 casos, no 4.000 observaciones deportivas independientes' };
-  const slim = { ...out, passes: out.passes.map(({ fingerprints, ...r }) => r) }; writeFileSync(join(outDir, 'P02-F-C.json'), JSON.stringify(slim, null, 1)); writeFileSync(join(outDir, 'P02-fingerprints.json'), JSON.stringify(out.passes[0].fingerprints));
+  const rows = out.passes[0].fingerprints.map((fp, i) => { const c = agenda[i]; return [c.n, c.id, c.round, c.a, c.b, c.seed, fp]; });
+  writeFileSync(join(outDir, 'P02-cases-fp.csv'), ['n,id,round,a,b,seed,fingerprintF', ...rows.map((r) => r.join(','))].join('\n'));
+  const slim = { ...out, passes: out.passes.map(({ fingerprints, cases_, ...r }) => r) }; writeFileSync(join(outDir, 'P02-cases.json'), JSON.stringify(out.passes.map((p) => ({ run: p.run, cases: p.cases_.map((c, i) => ({ ...c, fp: p.fingerprints[i] })) })))); writeFileSync(join(outDir, 'P02-F-C.json'), JSON.stringify(slim, null, 1)); writeFileSync(join(outDir, 'P02-fingerprints.json'), JSON.stringify(out.passes[0].fingerprints));
 } else if (mode === 'DAY') {
   // jornada grande solo SIM: 1.000 encuentros a igual hora virtual; barreras comunes cada 120 s; política pequeña del entrenador activa; sin tarjetas ni mil workers
   const pool = new MatchdayPool({ workers: 4 }); const startMs = await pool.start(ctxJSON, teams); const tAdd0 = now();
