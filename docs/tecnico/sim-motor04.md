@@ -37,7 +37,7 @@ SHA-256 de `20261023|<espacio>|<clave>|<etiqueta>`, primeros 32 bits sin signo (
 
 Búsqueda secuencial V → Z → A → E con ≤ 9 vectores sobre R1: `volume.neutralSecondsPerControl` {17,5; 18,5; 19,5} · `shotMix.threeWeightFactor` {0,85; 0,70} · `assist.eligibleFinalPassP0` {0,75; 0,90} · `energy.costPerLiveMinute` {3; 3,5}. Definiciones de `L_V`, `L_Z`, `L_A`, admisibilidad y empates en [`evidencia-sim-motor04/DICCIONARIO.md`](evidencia-sim-motor04/DICCIONARIO.md) y `plan/selection-rules.json`.
 
-**Resultado en CAL (anclas, 16 partidos)**: V3 (19,5 s) reduce `L_V` 54 %; Z2 (0,70) 28,7 %; A2 (0,90) 35 %; E1 (coste 3) reduce la frecuencia de «algún jugador ≥ 40 min» de 0,907 a 0,594 (E2 la llevaba a 0 y se descarta por coste mínimo). `C04-FINAL-PROVISIONAL` = `C04-E1`.
+**Resultado en CAL (anclas, 16 partidos)**: V3 (19,5 s) reduce `L_V` 54 %; Z2 (0,70) 28,7 %; A2 (0,90) 35 %; E1 (coste 3) reduce la frecuencia de «algún jugador ≥ 40 min» (partidos sin prórroga) de 0,946 (ganador previo A2, coste 2) a 0,594; E2 (3,5) la llevaba a 0, pero la regla elige el menor gasto que cumple las tres condiciones (3). `C04-FINAL-PROVISIONAL` = `C04-E1`.
 
 | | R0 | R1 | FINAL |
 |---|---|---|---|

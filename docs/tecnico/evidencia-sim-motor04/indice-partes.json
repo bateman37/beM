@@ -1,0 +1,32 @@
+{
+ "schema": "beM-sim04-index/1",
+ "delivery": "SIM-MOTOR-04",
+ "codeFrozen": {
+  "cal": "84fe1b2c4164aaa56e24d60ccf4cfd2db36e25f5",
+  "val": "bce62df478d9a6b2a2b884bfb32ccc3446ca9ebd"
+ },
+ "head": "5a17252c5f239be3f144d3ed3ca3dcdfeb48123b",
+ "zips": [
+  {
+   "name": "SIM-MOTOR-04-revision-rapida.zip",
+   "bytes": 653731,
+   "sha256": "09a37562936f9814060f18a0c4b97f973204720239d829509d287838fec6e49e",
+   "entries": 34
+  },
+  {
+   "name": "SIM-MOTOR-04-evidencia-detallada.zip",
+   "bytes": 28890447,
+   "sha256": "d081a209d878c7420230a4077a5db3f5c2c74e4c4d3b623e0a0345c5048d8017",
+   "entries": 446
+  }
+ ],
+ "quickTargetBytes": 5242880,
+ "quickWithinTarget": true,
+ "detailedPartTargetBytes": 41943040,
+ "detailedWithinTarget": true,
+ "reconstruction": "el detallado es un único ZIP con cuatro carpetas por función; cada ZIP lleva su manifiesto",
+ "expectedAbsent": [
+  "ZIP históricos de SIM-MOTOR-01/02/03"
+ ],
+ "verifier": "node scripts/sim04/verify-delivery.js --dir=<carpeta>"
+}

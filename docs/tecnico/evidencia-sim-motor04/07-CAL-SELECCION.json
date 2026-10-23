@@ -1,0 +1,2150 @@
+{
+ "schema": "beM-sim04-cal-selection/1",
+ "rules": {
+  "id": "SEL-SIM04-R1",
+  "maxAdditionalVectors": 9,
+  "precision": 1e-9,
+  "minRelativeImprovement": 0.05,
+  "L_V": "abs(meanPTS_SIM/meanPTS_DET − 1) + abs(meanFGA_SIM/meanFGA_DET − 1); medias por equipo de equivalentes por 40 minutos (valor × 2400 / duración deportiva) en los casos CAL con ancla detallada",
+  "L_Z": "Σ_z abs(shareAttempts_SIM[z] − shareAttempts_DET[z]) (cuatro zonas; sumas de numeradores y denominadores); admisible si L_V no empeora más de max(0,02; 10 % del L_V previo)",
+  "L_A": "abs(ΣAST_FG_SIM/ΣFGM_SIM − ΣAST_FG_DET/ΣFGM_DET) en las anclas; las asistencias a libres se informan aparte",
+  "E": "menor gasto de {2, 3, 3,5} con: (1) frecuencia de actuaciones de equipo con algún jugador de ≥ 40 min (partidos sin prórroga, todos los CAL) reducida ≥ 20 % relativo frente al ganador previo con gasto 2; (2) L_V no empeora más de max(0,04; 20 % del L_V previo) ni L_A más de 0,05 absolutos; (3) comprobaciones de rotación superadas",
+  "ties": "se conserva el valor previo si la reducción de la pérdida es < 5 % relativo o si su pérdida es 0; entre valores con la misma pérdida (precisión 1e-9) se elige el más cercano al anterior y después el de menor cambio absoluto; denominador nulo o ancla no válida ⇒ métrica no evaluada y se conserva el valor previo"
+ },
+ "selectionRulesSha256": "45926ca0fc2bdd897021200971cee9f8604b6478cd104f739c80f8cd6f5782e3",
+ "populations": {
+  "calCases": 56,
+  "anchors": 16
+ },
+ "runs": {
+  "R0": {
+   "block": "CAL",
+   "identity": "R0",
+   "resolver": "sim",
+   "requested": 56,
+   "executed": 56,
+   "wallMs": 1843
+  },
+  "R1": {
+   "block": "CAL",
+   "identity": "R1",
+   "resolver": "sim",
+   "requested": 56,
+   "executed": 56,
+   "wallMs": 1835
+  },
+  "DET": {
+   "block": "CAL",
+   "identity": "DET",
+   "resolver": "detailed",
+   "requested": 16,
+   "executed": 16,
+   "wallMs": 22231
+  },
+  "C04-V1": {
+   "block": "CAL",
+   "identity": "C04-V1",
+   "resolver": "sim",
+   "requested": 56,
+   "executed": 56,
+   "wallMs": 1617
+  },
+  "C04-V2": {
+   "block": "CAL",
+   "identity": "C04-V2",
+   "resolver": "sim",
+   "requested": 56,
+   "executed": 56,
+   "wallMs": 1741
+  },
+  "C04-V3": {
+   "block": "CAL",
+   "identity": "C04-V3",
+   "resolver": "sim",
+   "requested": 56,
+   "executed": 56,
+   "wallMs": 1840
+  },
+  "C04-Z1": {
+   "block": "CAL",
+   "identity": "C04-Z1",
+   "resolver": "sim",
+   "requested": 56,
+   "executed": 56,
+   "wallMs": 1784
+  },
+  "C04-Z2": {
+   "block": "CAL",
+   "identity": "C04-Z2",
+   "resolver": "sim",
+   "requested": 56,
+   "executed": 56,
+   "wallMs": 1743
+  },
+  "C04-A1": {
+   "block": "CAL",
+   "identity": "C04-A1",
+   "resolver": "sim",
+   "requested": 56,
+   "executed": 56,
+   "wallMs": 1936
+  },
+  "C04-A2": {
+   "block": "CAL",
+   "identity": "C04-A2",
+   "resolver": "sim",
+   "requested": 56,
+   "executed": 56,
+   "wallMs": 1782
+  },
+  "C04-E1": {
+   "block": "CAL",
+   "identity": "C04-E1",
+   "resolver": "sim",
+   "requested": 56,
+   "executed": 56,
+   "wallMs": 1767
+  },
+  "C04-E2": {
+   "block": "CAL",
+   "identity": "C04-E2",
+   "resolver": "sim",
+   "requested": 56,
+   "executed": 56,
+   "wallMs": 1816
+  }
+ },
+ "baseline": {
+  "identity": "R1",
+  "comparableCases": 16,
+  "sim": {
+   "teamLines": 32,
+   "games": 16,
+   "meanPTS40": 90.92708333333333,
+   "meanFGA40": 72.81944444444444,
+   "meanPTSReal": 92.46875,
+   "meanFGAReal": 74.03125,
+   "meanPTSNoOT": 89.82142857142857,
+   "meanFGANoOT": 72.14285714285714,
+   "nNoOT": 28,
+   "durations": [
+    2400,
+    2400,
+    2400,
+    2400,
+    2400,
+    2400,
+    2400,
+    2400,
+    2400,
+    2400,
+    2700,
+    2400,
+    2700,
+    2400,
+    2400,
+    2400
+   ],
+   "zoneAttempts": {
+    "rim": 598,
+    "inside": 543,
+    "midrange": 239,
+    "three": 989
+   },
+   "zoneShare": {
+    "rim": 0.2524271844660194,
+    "inside": 0.22921063739974673,
+    "midrange": 0.10088644997889405,
+    "three": 0.4174757281553398
+   },
+   "zoneTotal": 2369,
+   "fgm": 1085,
+   "fga": 2369,
+   "astFg": 418,
+   "astPerFgm": 0.38525345622119817,
+   "ftAst": 49,
+   "fta": 506
+  },
+  "det": {
+   "teamLines": 32,
+   "games": 16,
+   "meanPTS40": 83.40625,
+   "meanFGA40": 57.47916666666667,
+   "meanPTSReal": 84.6875,
+   "meanFGAReal": 58.34375,
+   "meanPTSNoOT": 83.60714285714286,
+   "meanFGANoOT": 57.785714285714285,
+   "nNoOT": 28,
+   "durations": [
+    2400,
+    2400,
+    2400,
+    2400,
+    2400,
+    2400,
+    2400,
+    2700,
+    2400,
+    2700,
+    2400,
+    2400,
+    2400,
+    2400,
+    2400,
+    2400
+   ],
+   "zoneAttempts": {
+    "rim": 677,
+    "inside": 408,
+    "midrange": 136,
+    "three": 646
+   },
+   "zoneShare": {
+    "rim": 0.36261381896089984,
+    "inside": 0.2185324049276915,
+    "midrange": 0.07284413497589716,
+    "three": 0.3460096411355115
+   },
+   "zoneTotal": 1867,
+   "fgm": 1026,
+   "fga": 1867,
+   "astFg": 723,
+   "astPerFgm": 0.7046783625730995,
+   "ftAst": 63,
+   "fta": 447
+  },
+  "lossV": {
+   "value": 0.35705523705177655,
+   "evaluated": true,
+   "parts": {
+    "pts": 0.0901711002872485,
+    "fga": 0.26688413676452805
+   }
+  },
+  "lossZ": {
+   "value": 0.2203732689897608,
+   "evaluated": true,
+   "parts": {
+    "rim": -0.11018663449488042,
+    "inside": 0.010678232472055238,
+    "midrange": 0.028042315002996893,
+    "three": 0.07146608701982826
+   }
+  },
+  "lossA": {
+   "value": 0.3194249063519013,
+   "evaluated": true,
+   "parts": {
+    "sim": 0.38525345622119817,
+    "det": 0.7046783625730995
+   }
+  },
+  "freq40": {
+   "teamPerformances": 108,
+   "withFortyMinutes": 98,
+   "frequency": 0.9074074074074074
+  },
+  "excluded": {
+   "sim": [],
+   "detailed": []
+  }
+ },
+ "evaluations": {
+  "R1": {
+   "identity": "R1",
+   "comparableCases": 16,
+   "sim": {
+    "teamLines": 32,
+    "games": 16,
+    "meanPTS40": 90.92708333333333,
+    "meanFGA40": 72.81944444444444,
+    "meanPTSReal": 92.46875,
+    "meanFGAReal": 74.03125,
+    "meanPTSNoOT": 89.82142857142857,
+    "meanFGANoOT": 72.14285714285714,
+    "nNoOT": 28,
+    "durations": [
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2700,
+     2400,
+     2700,
+     2400,
+     2400,
+     2400
+    ],
+    "zoneAttempts": {
+     "rim": 598,
+     "inside": 543,
+     "midrange": 239,
+     "three": 989
+    },
+    "zoneShare": {
+     "rim": 0.2524271844660194,
+     "inside": 0.22921063739974673,
+     "midrange": 0.10088644997889405,
+     "three": 0.4174757281553398
+    },
+    "zoneTotal": 2369,
+    "fgm": 1085,
+    "fga": 2369,
+    "astFg": 418,
+    "astPerFgm": 0.38525345622119817,
+    "ftAst": 49,
+    "fta": 506
+   },
+   "det": {
+    "teamLines": 32,
+    "games": 16,
+    "meanPTS40": 83.40625,
+    "meanFGA40": 57.47916666666667,
+    "meanPTSReal": 84.6875,
+    "meanFGAReal": 58.34375,
+    "meanPTSNoOT": 83.60714285714286,
+    "meanFGANoOT": 57.785714285714285,
+    "nNoOT": 28,
+    "durations": [
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2700,
+     2400,
+     2700,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400
+    ],
+    "zoneAttempts": {
+     "rim": 677,
+     "inside": 408,
+     "midrange": 136,
+     "three": 646
+    },
+    "zoneShare": {
+     "rim": 0.36261381896089984,
+     "inside": 0.2185324049276915,
+     "midrange": 0.07284413497589716,
+     "three": 0.3460096411355115
+    },
+    "zoneTotal": 1867,
+    "fgm": 1026,
+    "fga": 1867,
+    "astFg": 723,
+    "astPerFgm": 0.7046783625730995,
+    "ftAst": 63,
+    "fta": 447
+   },
+   "lossV": {
+    "value": 0.35705523705177655,
+    "evaluated": true,
+    "parts": {
+     "pts": 0.0901711002872485,
+     "fga": 0.26688413676452805
+    }
+   },
+   "lossZ": {
+    "value": 0.2203732689897608,
+    "evaluated": true,
+    "parts": {
+     "rim": -0.11018663449488042,
+     "inside": 0.010678232472055238,
+     "midrange": 0.028042315002996893,
+     "three": 0.07146608701982826
+    }
+   },
+   "lossA": {
+    "value": 0.3194249063519013,
+    "evaluated": true,
+    "parts": {
+     "sim": 0.38525345622119817,
+     "det": 0.7046783625730995
+    }
+   },
+   "freq40": {
+    "teamPerformances": 108,
+    "withFortyMinutes": 98,
+    "frequency": 0.9074074074074074
+   },
+   "excluded": {
+    "sim": [],
+    "detailed": []
+   }
+  },
+  "C04-V1": {
+   "identity": "C04-V1",
+   "comparableCases": 16,
+   "sim": {
+    "teamLines": 32,
+    "games": 16,
+    "meanPTS40": 80.69444444444444,
+    "meanFGA40": 67.3125,
+    "meanPTSReal": 82,
+    "meanFGAReal": 68.3125,
+    "meanPTSNoOT": 80.28571428571429,
+    "meanFGANoOT": 67.78571428571429,
+    "nNoOT": 28,
+    "durations": [
+     2400,
+     2400,
+     2400,
+     2400,
+     2700,
+     2400,
+     2400,
+     2700,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400
+    ],
+    "zoneAttempts": {
+     "rim": 555,
+     "inside": 487,
+     "midrange": 199,
+     "three": 945
+    },
+    "zoneShare": {
+     "rim": 0.2538883806038426,
+     "inside": 0.22278133577310155,
+     "midrange": 0.09103385178408051,
+     "three": 0.4322964318389753
+    },
+    "zoneTotal": 2186,
+    "fgm": 955,
+    "fga": 2186,
+    "astFg": 359,
+    "astPerFgm": 0.37591623036649213,
+    "ftAst": 42,
+    "fta": 467
+   },
+   "det": {
+    "teamLines": 32,
+    "games": 16,
+    "meanPTS40": 83.40625,
+    "meanFGA40": 57.47916666666667,
+    "meanPTSReal": 84.6875,
+    "meanFGAReal": 58.34375,
+    "meanPTSNoOT": 83.60714285714286,
+    "meanFGANoOT": 57.785714285714285,
+    "nNoOT": 28,
+    "durations": [
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2700,
+     2400,
+     2700,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400
+    ],
+    "zoneAttempts": {
+     "rim": 677,
+     "inside": 408,
+     "midrange": 136,
+     "three": 646
+    },
+    "zoneShare": {
+     "rim": 0.36261381896089984,
+     "inside": 0.2185324049276915,
+     "midrange": 0.07284413497589716,
+     "three": 0.3460096411355115
+    },
+    "zoneTotal": 1867,
+    "fgm": 1026,
+    "fga": 1867,
+    "astFg": 723,
+    "astPerFgm": 0.7046783625730995,
+    "ftAst": 63,
+    "fta": 447
+   },
+   "lossV": {
+    "value": 0.20358969458568021,
+    "evaluated": true,
+    "parts": {
+     "pts": -0.032513217601265576,
+     "fga": 0.17107647698441464
+    }
+   },
+   "lossZ": {
+    "value": 0.21745087671411442,
+    "evaluated": true,
+    "parts": {
+     "rim": -0.10872543835705722,
+     "inside": 0.004248930845410059,
+     "midrange": 0.018189716808183348,
+     "three": 0.08628679070346379
+    }
+   },
+   "lossA": {
+    "value": 0.3287621322066073,
+    "evaluated": true,
+    "parts": {
+     "sim": 0.37591623036649213,
+     "det": 0.7046783625730995
+    }
+   },
+   "freq40": {
+    "teamPerformances": 108,
+    "withFortyMinutes": 102,
+    "frequency": 0.9444444444444444
+   },
+   "excluded": {
+    "sim": [],
+    "detailed": []
+   }
+  },
+  "C04-V2": {
+   "identity": "C04-V2",
+   "comparableCases": 16,
+   "sim": {
+    "teamLines": 32,
+    "games": 16,
+    "meanPTS40": 77.03125,
+    "meanFGA40": 65.28125,
+    "meanPTSReal": 77.03125,
+    "meanFGAReal": 65.28125,
+    "meanPTSNoOT": 77.03125,
+    "meanFGANoOT": 65.28125,
+    "nNoOT": 32,
+    "durations": [
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400
+    ],
+    "zoneAttempts": {
+     "rim": 534,
+     "inside": 506,
+     "midrange": 181,
+     "three": 868
+    },
+    "zoneShare": {
+     "rim": 0.2556247008137865,
+     "inside": 0.24222115844901868,
+     "midrange": 0.08664432742939206,
+     "three": 0.4155098133078028
+    },
+    "zoneTotal": 2089,
+    "fgm": 928,
+    "fga": 2089,
+    "astFg": 325,
+    "astPerFgm": 0.35021551724137934,
+    "ftAst": 40,
+    "fta": 374
+   },
+   "det": {
+    "teamLines": 32,
+    "games": 16,
+    "meanPTS40": 83.40625,
+    "meanFGA40": 57.47916666666667,
+    "meanPTSReal": 84.6875,
+    "meanFGAReal": 58.34375,
+    "meanPTSNoOT": 83.60714285714286,
+    "meanFGANoOT": 57.785714285714285,
+    "nNoOT": 28,
+    "durations": [
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2700,
+     2400,
+     2700,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400
+    ],
+    "zoneAttempts": {
+     "rim": 677,
+     "inside": 408,
+     "midrange": 136,
+     "three": 646
+    },
+    "zoneShare": {
+     "rim": 0.36261381896089984,
+     "inside": 0.2185324049276915,
+     "midrange": 0.07284413497589716,
+     "three": 0.3460096411355115
+    },
+    "zoneTotal": 1867,
+    "fgm": 1026,
+    "fga": 1867,
+    "astFg": 723,
+    "astPerFgm": 0.7046783625730995,
+    "ftAst": 63,
+    "fta": 447
+   },
+   "lossV": {
+    "value": 0.21217070710102193,
+    "evaluated": true,
+    "parts": {
+     "pts": -0.07643312101910826,
+     "fga": 0.13573758608191366
+    }
+   },
+   "lossZ": {
+    "value": 0.21397823629422666,
+    "evaluated": true,
+    "parts": {
+     "rim": -0.10698911814711332,
+     "inside": 0.023688753521327183,
+     "midrange": 0.013800192453494897,
+     "three": 0.06950017217229126
+    }
+   },
+   "lossA": {
+    "value": 0.3544628453317201,
+    "evaluated": true,
+    "parts": {
+     "sim": 0.35021551724137934,
+     "det": 0.7046783625730995
+    }
+   },
+   "freq40": {
+    "teamPerformances": 110,
+    "withFortyMinutes": 101,
+    "frequency": 0.9181818181818182
+   },
+   "excluded": {
+    "sim": [],
+    "detailed": []
+   }
+  },
+  "C04-V3": {
+   "identity": "C04-V3",
+   "comparableCases": 16,
+   "sim": {
+    "teamLines": 32,
+    "games": 16,
+    "meanPTS40": 72.88541666666667,
+    "meanFGA40": 59.65277777777778,
+    "meanPTSReal": 73.4375,
+    "meanFGAReal": 60.09375,
+    "meanPTSNoOT": 73.03333333333333,
+    "meanFGANoOT": 59.86666666666667,
+    "nNoOT": 30,
+    "durations": [
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2700,
+     2400
+    ],
+    "zoneAttempts": {
+     "rim": 467,
+     "inside": 440,
+     "midrange": 217,
+     "three": 799
+    },
+    "zoneShare": {
+     "rim": 0.24284971398855953,
+     "inside": 0.22880915236609464,
+     "midrange": 0.11284451378055123,
+     "three": 0.4154966198647946
+    },
+    "zoneTotal": 1923,
+    "fgm": 874,
+    "fga": 1923,
+    "astFg": 337,
+    "astPerFgm": 0.38558352402745993,
+    "ftAst": 45,
+    "fta": 368
+   },
+   "det": {
+    "teamLines": 32,
+    "games": 16,
+    "meanPTS40": 83.40625,
+    "meanFGA40": 57.47916666666667,
+    "meanPTSReal": 84.6875,
+    "meanFGAReal": 58.34375,
+    "meanPTSNoOT": 83.60714285714286,
+    "meanFGANoOT": 57.785714285714285,
+    "nNoOT": 28,
+    "durations": [
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2700,
+     2400,
+     2700,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400
+    ],
+    "zoneAttempts": {
+     "rim": 677,
+     "inside": 408,
+     "midrange": 136,
+     "three": 646
+    },
+    "zoneShare": {
+     "rim": 0.36261381896089984,
+     "inside": 0.2185324049276915,
+     "midrange": 0.07284413497589716,
+     "three": 0.3460096411355115
+    },
+    "zoneTotal": 1867,
+    "fgm": 1026,
+    "fga": 1867,
+    "astFg": 723,
+    "astPerFgm": 0.7046783625730995,
+    "ftAst": 63,
+    "fta": 447
+   },
+   "lossV": {
+    "value": 0.16395526150935413,
+    "evaluated": true,
+    "parts": {
+     "pts": -0.12613962782565247,
+     "fga": 0.037815633683701666
+    }
+   },
+   "lossZ": {
+    "value": 0.23952820994468058,
+    "evaluated": true,
+    "parts": {
+     "rim": -0.1197641049723403,
+     "inside": 0.01027674743840315,
+     "midrange": 0.04000037880465407,
+     "three": 0.06948697872928306
+    }
+   },
+   "lossA": {
+    "value": 0.3190948385456395,
+    "evaluated": true,
+    "parts": {
+     "sim": 0.38558352402745993,
+     "det": 0.7046783625730995
+    }
+   },
+   "freq40": {
+    "teamPerformances": 110,
+    "withFortyMinutes": 107,
+    "frequency": 0.9727272727272728
+   },
+   "excluded": {
+    "sim": [],
+    "detailed": []
+   }
+  },
+  "C04-Z1": {
+   "identity": "C04-Z1",
+   "comparableCases": 16,
+   "sim": {
+    "teamLines": 32,
+    "games": 16,
+    "meanPTS40": 72.875,
+    "meanFGA40": 61.71875,
+    "meanPTSReal": 72.875,
+    "meanFGAReal": 61.71875,
+    "meanPTSNoOT": 72.875,
+    "meanFGANoOT": 61.71875,
+    "nNoOT": 32,
+    "durations": [
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400
+    ],
+    "zoneAttempts": {
+     "rim": 528,
+     "inside": 423,
+     "midrange": 208,
+     "three": 816
+    },
+    "zoneShare": {
+     "rim": 0.26734177215189875,
+     "inside": 0.21417721518987343,
+     "midrange": 0.10531645569620253,
+     "three": 0.4131645569620253
+    },
+    "zoneTotal": 1975,
+    "fgm": 869,
+    "fga": 1975,
+    "astFg": 345,
+    "astPerFgm": 0.3970080552359033,
+    "ftAst": 49,
+    "fta": 371
+   },
+   "det": {
+    "teamLines": 32,
+    "games": 16,
+    "meanPTS40": 83.40625,
+    "meanFGA40": 57.47916666666667,
+    "meanPTSReal": 84.6875,
+    "meanFGAReal": 58.34375,
+    "meanPTSNoOT": 83.60714285714286,
+    "meanFGANoOT": 57.785714285714285,
+    "nNoOT": 28,
+    "durations": [
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2700,
+     2400,
+     2700,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400
+    ],
+    "zoneAttempts": {
+     "rim": 677,
+     "inside": 408,
+     "midrange": 136,
+     "three": 646
+    },
+    "zoneShare": {
+     "rim": 0.36261381896089984,
+     "inside": 0.2185324049276915,
+     "midrange": 0.07284413497589716,
+     "three": 0.3460096411355115
+    },
+    "zoneTotal": 1867,
+    "fgm": 1026,
+    "fga": 1867,
+    "astFg": 723,
+    "astPerFgm": 0.7046783625730995,
+    "ftAst": 63,
+    "fta": 447
+   },
+   "lossV": {
+    "value": 0.20002312673764566,
+    "evaluated": true,
+    "parts": {
+     "pts": -0.12626451854627196,
+     "fga": 0.0737586081913737
+    }
+   },
+   "lossZ": {
+    "value": 0.1992544730936383,
+    "evaluated": true,
+    "parts": {
+     "rim": -0.09527204680900109,
+     "inside": -0.004355189737818066,
+     "midrange": 0.03247232072030537,
+     "three": 0.06715491582651378
+    }
+   },
+   "lossA": {
+    "value": 0.30767030733719614,
+    "evaluated": true,
+    "parts": {
+     "sim": 0.3970080552359033,
+     "det": 0.7046783625730995
+    }
+   },
+   "freq40": {
+    "teamPerformances": 108,
+    "withFortyMinutes": 105,
+    "frequency": 0.9722222222222222
+   },
+   "excluded": {
+    "sim": [],
+    "detailed": []
+   }
+  },
+  "C04-Z2": {
+   "identity": "C04-Z2",
+   "comparableCases": 16,
+   "sim": {
+    "teamLines": 32,
+    "games": 16,
+    "meanPTS40": 73.03125,
+    "meanFGA40": 59.53125,
+    "meanPTSReal": 73.03125,
+    "meanFGAReal": 59.53125,
+    "meanPTSNoOT": 73.03125,
+    "meanFGANoOT": 59.53125,
+    "nNoOT": 32,
+    "durations": [
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400
+    ],
+    "zoneAttempts": {
+     "rim": 528,
+     "inside": 425,
+     "midrange": 218,
+     "three": 734
+    },
+    "zoneShare": {
+     "rim": 0.27716535433070866,
+     "inside": 0.2230971128608924,
+     "midrange": 0.11443569553805774,
+     "three": 0.38530183727034123
+    },
+    "zoneTotal": 1905,
+    "fgm": 869,
+    "fga": 1905,
+    "astFg": 336,
+    "astPerFgm": 0.3866513233601841,
+    "ftAst": 39,
+    "fta": 379
+   },
+   "det": {
+    "teamLines": 32,
+    "games": 16,
+    "meanPTS40": 83.40625,
+    "meanFGA40": 57.47916666666667,
+    "meanPTSReal": 84.6875,
+    "meanFGAReal": 58.34375,
+    "meanPTSNoOT": 83.60714285714286,
+    "meanFGANoOT": 57.785714285714285,
+    "nNoOT": 28,
+    "durations": [
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2700,
+     2400,
+     2700,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400
+    ],
+    "zoneAttempts": {
+     "rim": 677,
+     "inside": 408,
+     "midrange": 136,
+     "three": 646
+    },
+    "zoneShare": {
+     "rim": 0.36261381896089984,
+     "inside": 0.2185324049276915,
+     "midrange": 0.07284413497589716,
+     "three": 0.3460096411355115
+    },
+    "zoneTotal": 1867,
+    "fgm": 1026,
+    "fga": 1867,
+    "astFg": 723,
+    "astPerFgm": 0.7046783625730995,
+    "ftAst": 63,
+    "fta": 447
+   },
+   "lossV": {
+    "value": 0.16009249880258347,
+    "evaluated": true,
+    "parts": {
+     "pts": -0.12439115773698017,
+     "fga": 0.0357013410656033
+    }
+   },
+   "lossZ": {
+    "value": 0.17089692926038236,
+    "evaluated": true,
+    "parts": {
+     "rim": -0.08544846463019118,
+     "inside": 0.004564707933200907,
+     "midrange": 0.04159156056216058,
+     "three": 0.039292196134829704
+    }
+   },
+   "lossA": {
+    "value": 0.31802703921291536,
+    "evaluated": true,
+    "parts": {
+     "sim": 0.3866513233601841,
+     "det": 0.7046783625730995
+    }
+   },
+   "freq40": {
+    "teamPerformances": 110,
+    "withFortyMinutes": 110,
+    "frequency": 1
+   },
+   "excluded": {
+    "sim": [],
+    "detailed": []
+   }
+  },
+  "C04-A1": {
+   "identity": "C04-A1",
+   "comparableCases": 16,
+   "sim": {
+    "teamLines": 32,
+    "games": 16,
+    "meanPTS40": 74.1875,
+    "meanFGA40": 62.65625,
+    "meanPTSReal": 74.1875,
+    "meanFGAReal": 62.65625,
+    "meanPTSNoOT": 74.1875,
+    "meanFGANoOT": 62.65625,
+    "nNoOT": 32,
+    "durations": [
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400
+    ],
+    "zoneAttempts": {
+     "rim": 539,
+     "inside": 496,
+     "midrange": 225,
+     "three": 745
+    },
+    "zoneShare": {
+     "rim": 0.2688279301745636,
+     "inside": 0.24738154613466334,
+     "midrange": 0.11221945137157108,
+     "three": 0.371571072319202
+    },
+    "zoneTotal": 2005,
+    "fgm": 899,
+    "fga": 2005,
+    "astFg": 405,
+    "astPerFgm": 0.45050055617352613,
+    "ftAst": 48,
+    "fta": 381
+   },
+   "det": {
+    "teamLines": 32,
+    "games": 16,
+    "meanPTS40": 83.40625,
+    "meanFGA40": 57.47916666666667,
+    "meanPTSReal": 84.6875,
+    "meanFGAReal": 58.34375,
+    "meanPTSNoOT": 83.60714285714286,
+    "meanFGANoOT": 57.785714285714285,
+    "nNoOT": 28,
+    "durations": [
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2700,
+     2400,
+     2700,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400
+    ],
+    "zoneAttempts": {
+     "rim": 677,
+     "inside": 408,
+     "midrange": 136,
+     "three": 646
+    },
+    "zoneShare": {
+     "rim": 0.36261381896089984,
+     "inside": 0.2185324049276915,
+     "midrange": 0.07284413497589716,
+     "three": 0.3460096411355115
+    },
+    "zoneTotal": 1867,
+    "fgm": 1026,
+    "fga": 1867,
+    "astFg": 723,
+    "astPerFgm": 0.7046783625730995,
+    "ftAst": 63,
+    "fta": 447
+   },
+   "lossV": {
+    "value": 0.20059715327920968,
+    "evaluated": true,
+    "parts": {
+     "pts": -0.11052828774822032,
+     "fga": 0.09006886553098936
+    }
+   },
+   "lossZ": {
+    "value": 0.18757177757267252,
+    "evaluated": true,
+    "parts": {
+     "rim": -0.09378588878633626,
+     "inside": 0.02884914120697185,
+     "midrange": 0.03937531639567392,
+     "three": 0.025561431183690475
+    }
+   },
+   "lossA": {
+    "value": 0.2541778063995733,
+    "evaluated": true,
+    "parts": {
+     "sim": 0.45050055617352613,
+     "det": 0.7046783625730995
+    }
+   },
+   "freq40": {
+    "teamPerformances": 110,
+    "withFortyMinutes": 106,
+    "frequency": 0.9636363636363636
+   },
+   "excluded": {
+    "sim": [],
+    "detailed": []
+   }
+  },
+  "C04-A2": {
+   "identity": "C04-A2",
+   "comparableCases": 16,
+   "sim": {
+    "teamLines": 32,
+    "games": 16,
+    "meanPTS40": 74.8125,
+    "meanFGA40": 61.625,
+    "meanPTSReal": 74.8125,
+    "meanFGAReal": 61.625,
+    "meanPTSNoOT": 74.8125,
+    "meanFGANoOT": 61.625,
+    "nNoOT": 32,
+    "durations": [
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400
+    ],
+    "zoneAttempts": {
+     "rim": 504,
+     "inside": 486,
+     "midrange": 214,
+     "three": 768
+    },
+    "zoneShare": {
+     "rim": 0.25557809330628806,
+     "inside": 0.24645030425963488,
+     "midrange": 0.10851926977687627,
+     "three": 0.3894523326572008
+    },
+    "zoneTotal": 1972,
+    "fgm": 916,
+    "fga": 1972,
+    "astFg": 456,
+    "astPerFgm": 0.4978165938864629,
+    "ftAst": 48,
+    "fta": 350
+   },
+   "det": {
+    "teamLines": 32,
+    "games": 16,
+    "meanPTS40": 83.40625,
+    "meanFGA40": 57.47916666666667,
+    "meanPTSReal": 84.6875,
+    "meanFGAReal": 58.34375,
+    "meanPTSNoOT": 83.60714285714286,
+    "meanFGANoOT": 57.785714285714285,
+    "nNoOT": 28,
+    "durations": [
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2700,
+     2400,
+     2700,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400
+    ],
+    "zoneAttempts": {
+     "rim": 677,
+     "inside": 408,
+     "midrange": 136,
+     "three": 646
+    },
+    "zoneShare": {
+     "rim": 0.36261381896089984,
+     "inside": 0.2185324049276915,
+     "midrange": 0.07284413497589716,
+     "three": 0.3460096411355115
+    },
+    "zoneTotal": 1867,
+    "fgm": 1026,
+    "fga": 1867,
+    "astFg": 723,
+    "astPerFgm": 0.7046783625730995,
+    "ftAst": 63,
+    "fta": 447
+   },
+   "lossV": {
+    "value": 0.17516242696846474,
+    "evaluated": true,
+    "parts": {
+     "pts": -0.10303484451105283,
+     "fga": 0.07212758245741191
+    }
+   },
+   "lossZ": {
+    "value": 0.21407145130922356,
+    "evaluated": true,
+    "parts": {
+     "rim": -0.10703572565461178,
+     "inside": 0.027917899331943385,
+     "midrange": 0.035675134800979114,
+     "three": 0.04344269152168928
+    }
+   },
+   "lossA": {
+    "value": 0.20686176868663658,
+    "evaluated": true,
+    "parts": {
+     "sim": 0.4978165938864629,
+     "det": 0.7046783625730995
+    }
+   },
+   "freq40": {
+    "teamPerformances": 112,
+    "withFortyMinutes": 106,
+    "frequency": 0.9464285714285714
+   },
+   "excluded": {
+    "sim": [],
+    "detailed": []
+   }
+  },
+  "C04-E1": {
+   "identity": "C04-E1",
+   "comparableCases": 16,
+   "sim": {
+    "teamLines": 32,
+    "games": 16,
+    "meanPTS40": 75.79166666666666,
+    "meanFGA40": 60.96527777777778,
+    "meanPTSReal": 76.34375,
+    "meanFGAReal": 61.46875,
+    "meanPTSNoOT": 76.13333333333334,
+    "meanFGANoOT": 60.733333333333334,
+    "nNoOT": 30,
+    "durations": [
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2700,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400
+    ],
+    "zoneAttempts": {
+     "rim": 523,
+     "inside": 467,
+     "midrange": 228,
+     "three": 749
+    },
+    "zoneShare": {
+     "rim": 0.2658871377732588,
+     "inside": 0.23741738688357905,
+     "midrange": 0.11591255719369599,
+     "three": 0.3807829181494662
+    },
+    "zoneTotal": 1967,
+    "fgm": 913,
+    "fga": 1967,
+    "astFg": 471,
+    "astPerFgm": 0.515881708652793,
+    "ftAst": 68,
+    "fta": 413
+   },
+   "det": {
+    "teamLines": 32,
+    "games": 16,
+    "meanPTS40": 83.40625,
+    "meanFGA40": 57.47916666666667,
+    "meanPTSReal": 84.6875,
+    "meanFGAReal": 58.34375,
+    "meanPTSNoOT": 83.60714285714286,
+    "meanFGANoOT": 57.785714285714285,
+    "nNoOT": 28,
+    "durations": [
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2700,
+     2400,
+     2700,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400
+    ],
+    "zoneAttempts": {
+     "rim": 677,
+     "inside": 408,
+     "midrange": 136,
+     "three": 646
+    },
+    "zoneShare": {
+     "rim": 0.36261381896089984,
+     "inside": 0.2185324049276915,
+     "midrange": 0.07284413497589716,
+     "three": 0.3460096411355115
+    },
+    "zoneTotal": 1867,
+    "fgm": 1026,
+    "fga": 1867,
+    "astFg": 723,
+    "astPerFgm": 0.7046783625730995,
+    "ftAst": 63,
+    "fta": 447
+   },
+   "lossV": {
+    "value": 0.1519451107319877,
+    "evaluated": true,
+    "parts": {
+     "pts": -0.09129511677282387,
+     "fga": 0.06064999395916382
+    }
+   },
+   "lossZ": {
+    "value": 0.1934533623752821,
+    "evaluated": true,
+    "parts": {
+     "rim": -0.09672668118764105,
+     "inside": 0.01888498195588756,
+     "midrange": 0.04306842221779883,
+     "three": 0.03477327701395466
+    }
+   },
+   "lossA": {
+    "value": 0.18879665392030642,
+    "evaluated": true,
+    "parts": {
+     "sim": 0.515881708652793,
+     "det": 0.7046783625730995
+    }
+   },
+   "freq40": {
+    "teamPerformances": 106,
+    "withFortyMinutes": 63,
+    "frequency": 0.5943396226415094
+   },
+   "excluded": {
+    "sim": [],
+    "detailed": []
+   }
+  },
+  "C04-E2": {
+   "identity": "C04-E2",
+   "comparableCases": 16,
+   "sim": {
+    "teamLines": 32,
+    "games": 16,
+    "meanPTS40": 75.62152777777777,
+    "meanFGA40": 60.795138888888886,
+    "meanPTSReal": 76.3125,
+    "meanFGAReal": 61.25,
+    "meanPTSNoOT": 74.76666666666667,
+    "meanFGANoOT": 60.96666666666667,
+    "nNoOT": 30,
+    "durations": [
+     2400,
+     2700,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400
+    ],
+    "zoneAttempts": {
+     "rim": 523,
+     "inside": 472,
+     "midrange": 230,
+     "three": 735
+    },
+    "zoneShare": {
+     "rim": 0.26683673469387753,
+     "inside": 0.24081632653061225,
+     "midrange": 0.11734693877551021,
+     "three": 0.375
+    },
+    "zoneTotal": 1960,
+    "fgm": 932,
+    "fga": 1960,
+    "astFg": 482,
+    "astPerFgm": 0.5171673819742489,
+    "ftAst": 51,
+    "fta": 353
+   },
+   "det": {
+    "teamLines": 32,
+    "games": 16,
+    "meanPTS40": 83.40625,
+    "meanFGA40": 57.47916666666667,
+    "meanPTSReal": 84.6875,
+    "meanFGAReal": 58.34375,
+    "meanPTSNoOT": 83.60714285714286,
+    "meanFGANoOT": 57.785714285714285,
+    "nNoOT": 28,
+    "durations": [
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2700,
+     2400,
+     2700,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400,
+     2400
+    ],
+    "zoneAttempts": {
+     "rim": 677,
+     "inside": 408,
+     "midrange": 136,
+     "three": 646
+    },
+    "zoneShare": {
+     "rim": 0.36261381896089984,
+     "inside": 0.2185324049276915,
+     "midrange": 0.07284413497589716,
+     "three": 0.3460096411355115
+    },
+    "zoneTotal": 1867,
+    "fgm": 1026,
+    "fga": 1867,
+    "astFg": 723,
+    "astPerFgm": 0.7046783625730995,
+    "ftAst": 63,
+    "fta": 447
+   },
+   "lossV": {
+    "value": 0.1510249828367678,
+    "evaluated": true,
+    "parts": {
+     "pts": -0.0933349985429417,
+     "fga": 0.0576899842938261
+    }
+   },
+   "lossZ": {
+    "value": 0.19155416853404458,
+    "evaluated": true,
+    "parts": {
+     "rim": -0.0957770842670223,
+     "inside": 0.022283921602920753,
+     "midrange": 0.04450280379961305,
+     "three": 0.028990358864488475
+    }
+   },
+   "lossA": {
+    "value": 0.18751098059885052,
+    "evaluated": true,
+    "parts": {
+     "sim": 0.5171673819742489,
+     "det": 0.7046783625730995
+    }
+   },
+   "freq40": {
+    "teamPerformances": 110,
+    "withFortyMinutes": 0,
+    "frequency": 0
+   },
+   "excluded": {
+    "sim": [],
+    "detailed": []
+   }
+  }
+ },
+ "stages": [
+  {
+   "stage": "V",
+   "chosen": 19.5,
+   "chosenId": "C04-V3",
+   "kept": false,
+   "reason": "C04-V3 reduce la pérdida 54.0813 % ≥ 5 % relativo",
+   "relativeReduction": 0.5408126124597943,
+   "log": [
+    {
+     "id": "C04-V1",
+     "value": 17.5,
+     "loss": 0.20358969458568021,
+     "verdict": "admisible",
+     "relativeReduction": 0.42980896662731854
+    },
+    {
+     "id": "C04-V2",
+     "value": 18.5,
+     "loss": 0.21217070710102193,
+     "verdict": "admisible",
+     "relativeReduction": 0.405776235484105
+    },
+    {
+     "id": "C04-V3",
+     "value": 19.5,
+     "loss": 0.16395526150935413,
+     "verdict": "admisible",
+     "relativeReduction": 0.5408126124597943
+    }
+   ],
+   "evaluated": true,
+   "path": "volume.neutralSecondsPerControl",
+   "baseline": 16,
+   "previous": {
+    "id": "R1",
+    "value": 16,
+    "loss": 0.35705523705177655,
+    "lossV": 0.35705523705177655
+   },
+   "candidates": [
+    {
+     "id": "C04-V1",
+     "value": 17.5,
+     "lossV": {
+      "value": 0.20358969458568021,
+      "evaluated": true,
+      "parts": {
+       "pts": -0.032513217601265576,
+       "fga": 0.17107647698441464
+      }
+     },
+     "lossZ": {
+      "value": 0.21745087671411442,
+      "evaluated": true,
+      "parts": {
+       "rim": -0.10872543835705722,
+       "inside": 0.004248930845410059,
+       "midrange": 0.018189716808183348,
+       "three": 0.08628679070346379
+      }
+     },
+     "lossA": {
+      "value": 0.3287621322066073,
+      "evaluated": true,
+      "parts": {
+       "sim": 0.37591623036649213,
+       "det": 0.7046783625730995
+      }
+     },
+     "freq40": {
+      "teamPerformances": 108,
+      "withFortyMinutes": 102,
+      "frequency": 0.9444444444444444
+     }
+    },
+    {
+     "id": "C04-V2",
+     "value": 18.5,
+     "lossV": {
+      "value": 0.21217070710102193,
+      "evaluated": true,
+      "parts": {
+       "pts": -0.07643312101910826,
+       "fga": 0.13573758608191366
+      }
+     },
+     "lossZ": {
+      "value": 0.21397823629422666,
+      "evaluated": true,
+      "parts": {
+       "rim": -0.10698911814711332,
+       "inside": 0.023688753521327183,
+       "midrange": 0.013800192453494897,
+       "three": 0.06950017217229126
+      }
+     },
+     "lossA": {
+      "value": 0.3544628453317201,
+      "evaluated": true,
+      "parts": {
+       "sim": 0.35021551724137934,
+       "det": 0.7046783625730995
+      }
+     },
+     "freq40": {
+      "teamPerformances": 110,
+      "withFortyMinutes": 101,
+      "frequency": 0.9181818181818182
+     }
+    },
+    {
+     "id": "C04-V3",
+     "value": 19.5,
+     "lossV": {
+      "value": 0.16395526150935413,
+      "evaluated": true,
+      "parts": {
+       "pts": -0.12613962782565247,
+       "fga": 0.037815633683701666
+      }
+     },
+     "lossZ": {
+      "value": 0.23952820994468058,
+      "evaluated": true,
+      "parts": {
+       "rim": -0.1197641049723403,
+       "inside": 0.01027674743840315,
+       "midrange": 0.04000037880465407,
+       "three": 0.06948697872928306
+      }
+     },
+     "lossA": {
+      "value": 0.3190948385456395,
+      "evaluated": true,
+      "parts": {
+       "sim": 0.38558352402745993,
+       "det": 0.7046783625730995
+      }
+     },
+     "freq40": {
+      "teamPerformances": 110,
+      "withFortyMinutes": 107,
+      "frequency": 0.9727272727272728
+     }
+    }
+   ]
+  },
+  {
+   "stage": "Z",
+   "chosen": 0.7,
+   "chosenId": "C04-Z2",
+   "kept": false,
+   "reason": "C04-Z2 reduce la pérdida 28.6527 % ≥ 5 % relativo",
+   "relativeReduction": 0.28652692181914075,
+   "log": [
+    {
+     "id": "C04-Z1",
+     "value": 0.85,
+     "loss": 0.1992544730936383,
+     "verdict": "inadmisible: L_V empeora 0.03606786522829153 > 0.02"
+    },
+    {
+     "id": "C04-Z2",
+     "value": 0.7,
+     "loss": 0.17089692926038236,
+     "verdict": "admisible",
+     "relativeReduction": 0.28652692181914075
+    }
+   ],
+   "evaluated": true,
+   "path": "shotMix.threeWeightFactor",
+   "baseline": 1,
+   "previous": {
+    "id": "C04-V3",
+    "value": 1,
+    "loss": 0.23952820994468058,
+    "lossV": 0.16395526150935413
+   },
+   "candidates": [
+    {
+     "id": "C04-Z1",
+     "value": 0.85,
+     "lossV": {
+      "value": 0.20002312673764566,
+      "evaluated": true,
+      "parts": {
+       "pts": -0.12626451854627196,
+       "fga": 0.0737586081913737
+      }
+     },
+     "lossZ": {
+      "value": 0.1992544730936383,
+      "evaluated": true,
+      "parts": {
+       "rim": -0.09527204680900109,
+       "inside": -0.004355189737818066,
+       "midrange": 0.03247232072030537,
+       "three": 0.06715491582651378
+      }
+     },
+     "lossA": {
+      "value": 0.30767030733719614,
+      "evaluated": true,
+      "parts": {
+       "sim": 0.3970080552359033,
+       "det": 0.7046783625730995
+      }
+     },
+     "freq40": {
+      "teamPerformances": 108,
+      "withFortyMinutes": 105,
+      "frequency": 0.9722222222222222
+     }
+    },
+    {
+     "id": "C04-Z2",
+     "value": 0.7,
+     "lossV": {
+      "value": 0.16009249880258347,
+      "evaluated": true,
+      "parts": {
+       "pts": -0.12439115773698017,
+       "fga": 0.0357013410656033
+      }
+     },
+     "lossZ": {
+      "value": 0.17089692926038236,
+      "evaluated": true,
+      "parts": {
+       "rim": -0.08544846463019118,
+       "inside": 0.004564707933200907,
+       "midrange": 0.04159156056216058,
+       "three": 0.039292196134829704
+      }
+     },
+     "lossA": {
+      "value": 0.31802703921291536,
+      "evaluated": true,
+      "parts": {
+       "sim": 0.3866513233601841,
+       "det": 0.7046783625730995
+      }
+     },
+     "freq40": {
+      "teamPerformances": 110,
+      "withFortyMinutes": 110,
+      "frequency": 1
+     }
+    }
+   ]
+  },
+  {
+   "stage": "A",
+   "chosen": 0.9,
+   "chosenId": "C04-A2",
+   "kept": false,
+   "reason": "C04-A2 reduce la pérdida 34.9547 % ≥ 5 % relativo",
+   "relativeReduction": 0.34954660082174627,
+   "log": [
+    {
+     "id": "C04-A1",
+     "value": 0.75,
+     "loss": 0.2541778063995733,
+     "verdict": "admisible",
+     "relativeReduction": 0.20076668000105402
+    },
+    {
+     "id": "C04-A2",
+     "value": 0.9,
+     "loss": 0.20686176868663658,
+     "verdict": "admisible",
+     "relativeReduction": 0.34954660082174627
+    }
+   ],
+   "evaluated": true,
+   "path": "assist.eligibleFinalPassP0",
+   "baseline": 0.6,
+   "previous": {
+    "id": "C04-Z2",
+    "value": 0.6,
+    "loss": 0.31802703921291536,
+    "lossV": 0.16009249880258347
+   },
+   "candidates": [
+    {
+     "id": "C04-A1",
+     "value": 0.75,
+     "lossV": {
+      "value": 0.20059715327920968,
+      "evaluated": true,
+      "parts": {
+       "pts": -0.11052828774822032,
+       "fga": 0.09006886553098936
+      }
+     },
+     "lossZ": {
+      "value": 0.18757177757267252,
+      "evaluated": true,
+      "parts": {
+       "rim": -0.09378588878633626,
+       "inside": 0.02884914120697185,
+       "midrange": 0.03937531639567392,
+       "three": 0.025561431183690475
+      }
+     },
+     "lossA": {
+      "value": 0.2541778063995733,
+      "evaluated": true,
+      "parts": {
+       "sim": 0.45050055617352613,
+       "det": 0.7046783625730995
+      }
+     },
+     "freq40": {
+      "teamPerformances": 110,
+      "withFortyMinutes": 106,
+      "frequency": 0.9636363636363636
+     }
+    },
+    {
+     "id": "C04-A2",
+     "value": 0.9,
+     "lossV": {
+      "value": 0.17516242696846474,
+      "evaluated": true,
+      "parts": {
+       "pts": -0.10303484451105283,
+       "fga": 0.07212758245741191
+      }
+     },
+     "lossZ": {
+      "value": 0.21407145130922356,
+      "evaluated": true,
+      "parts": {
+       "rim": -0.10703572565461178,
+       "inside": 0.027917899331943385,
+       "midrange": 0.035675134800979114,
+       "three": 0.04344269152168928
+      }
+     },
+     "lossA": {
+      "value": 0.20686176868663658,
+      "evaluated": true,
+      "parts": {
+       "sim": 0.4978165938864629,
+       "det": 0.7046783625730995
+      }
+     },
+     "freq40": {
+      "teamPerformances": 112,
+      "withFortyMinutes": 106,
+      "frequency": 0.9464285714285714
+     }
+    }
+   ]
+  },
+  {
+   "stage": "E",
+   "chosen": 3,
+   "chosenId": "C04-E1",
+   "kept": false,
+   "reason": "C04-E1 es el menor gasto que cumple las tres condiciones",
+   "log": [
+    {
+     "id": "C04-E1",
+     "value": 3,
+     "freq40": 0.5943396226415094,
+     "baselineFreq40": 0.9464285714285714,
+     "relativeReduction": 0.3720185119259523,
+     "cond1_reduccion20": true,
+     "dLossV": -0.023217316236477048,
+     "allowLossV": 0.04,
+     "dLossA": -0.01806511476633016,
+     "allowLossA": 0.05,
+     "cond2_perdidas": true,
+     "cond3_rotacion": true,
+     "checks": {
+      "superior30": true,
+      "relief": true
+     },
+     "meets": true
+    },
+    {
+     "id": "C04-E2",
+     "value": 3.5,
+     "freq40": 0,
+     "baselineFreq40": 0.9464285714285714,
+     "relativeReduction": 1,
+     "cond1_reduccion20": true,
+     "dLossV": -0.02413744413169694,
+     "allowLossV": 0.04,
+     "dLossA": -0.019350788087786064,
+     "allowLossA": 0.05,
+     "cond2_perdidas": true,
+     "cond3_rotacion": true,
+     "checks": {
+      "superior30": true,
+      "relief": true
+     },
+     "meets": true
+    }
+   ],
+   "path": "energy.costPerLiveMinute",
+   "baseline": 2,
+   "previous": {
+    "id": "C04-A2",
+    "value": 2,
+    "lossV": 0.17516242696846474,
+    "lossA": 0.20686176868663658,
+    "freq40": 0.9464285714285714
+   },
+   "candidates": [
+    {
+     "id": "C04-E1",
+     "value": 3,
+     "lossV": {
+      "value": 0.1519451107319877,
+      "evaluated": true,
+      "parts": {
+       "pts": -0.09129511677282387,
+       "fga": 0.06064999395916382
+      }
+     },
+     "lossA": {
+      "value": 0.18879665392030642,
+      "evaluated": true,
+      "parts": {
+       "sim": 0.515881708652793,
+       "det": 0.7046783625730995
+      }
+     },
+     "freq40": {
+      "teamPerformances": 106,
+      "withFortyMinutes": 63,
+      "frequency": 0.5943396226415094
+     },
+     "rotation": {
+      "superior30": true,
+      "relief": true,
+      "detail": {
+       "superiorAt30": {
+        "stays": true
+       },
+       "betterBench": {
+        "subbed": true
+       }
+      },
+      "cost": 3
+     }
+    },
+    {
+     "id": "C04-E2",
+     "value": 3.5,
+     "lossV": {
+      "value": 0.1510249828367678,
+      "evaluated": true,
+      "parts": {
+       "pts": -0.0933349985429417,
+       "fga": 0.0576899842938261
+      }
+     },
+     "lossA": {
+      "value": 0.18751098059885052,
+      "evaluated": true,
+      "parts": {
+       "sim": 0.5171673819742489,
+       "det": 0.7046783625730995
+      }
+     },
+     "freq40": {
+      "teamPerformances": 110,
+      "withFortyMinutes": 0,
+      "frequency": 0
+     },
+     "rotation": {
+      "superior30": true,
+      "relief": true,
+      "detail": {
+       "superiorAt30": {
+        "stays": true
+       },
+       "betterBench": {
+        "subbed": true
+       }
+      },
+      "cost": 3.5
+     }
+    }
+   ]
+  }
+ ],
+ "finalProvisional": {
+  "id": "C04-FINAL-PROVISIONAL",
+  "basedOn": "C04-E1",
+  "overrides": [
+   {
+    "path": "volume.neutralSecondsPerControl",
+    "value": 19.5
+   },
+   {
+    "path": "shotMix.threeWeightFactor",
+    "value": 0.7
+   },
+   {
+    "path": "assist.eligibleFinalPassP0",
+    "value": 0.9
+   },
+   {
+    "path": "energy.costPerLiveMinute",
+    "value": 3
+   }
+  ],
+  "differencesVsR1": [
+   {
+    "path": "volume.neutralSecondsPerControl",
+    "before": 16,
+    "after": 19.5,
+    "unit": "s por control",
+    "origin": "SEM-SIM01"
+   },
+   {
+    "path": "shotMix.threeWeightFactor",
+    "before": 1,
+    "after": 0.7,
+    "unit": "factor multiplicativo",
+    "origin": "SEM-SIM04"
+   },
+   {
+    "path": "assist.eligibleFinalPassP0",
+    "before": 0.6,
+    "after": 0.9,
+    "unit": "probabilidad",
+    "origin": "SEM-SIM01"
+   },
+   {
+    "path": "energy.costPerLiveMinute",
+    "before": 2,
+    "after": 3,
+    "unit": "energía 0–100 / factor",
+    "origin": "heredada"
+   }
+  ],
+  "note": "candidata provisional; no es aceptación deportiva ni calibración"
+ },
+ "wallMs": 46082
+}

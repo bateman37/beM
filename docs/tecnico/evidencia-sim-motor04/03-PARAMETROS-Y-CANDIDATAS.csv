@@ -1,0 +1,28 @@
+vector,padre,etapa,parametro,antes,despues,unidad,origen,orden_en_presupuesto_9,L_V,L_Z,huella_perfil,L_A,frecuencia_40min,veredicto,elegida,nota
+R0,,"código de SIM-MOTOR-03 (a201354), perfil 03",,,,,,,,,850b7941470d25e1,,,,,referencia (no cuenta en el presupuesto de 9)
+R1,,"código de 04, perfil 03 (factor 1)",,,,,,,,,850b7941470d25e1,,,,,referencia (no cuenta en el presupuesto de 9)
+C04-V1,R1,V,volume.neutralSecondsPerControl,16,17.5,s por control,SEM-SIM01,1,0.204,0.217,b50fbd575ca5d39e,0.329,0.944,admisible,,
+C04-V2,R1,V,volume.neutralSecondsPerControl,16,18.5,s por control,SEM-SIM01,2,0.212,0.214,272372f03501c568,0.354,0.918,admisible,,
+C04-V3,R1,V,volume.neutralSecondsPerControl,16,19.5,s por control,SEM-SIM01,3,0.164,0.24,beaa6b541bb87ca7,0.319,0.973,admisible,ELEGIDA en su etapa,
+C04-Z1,C04-V3,Z,volume.neutralSecondsPerControl,16,19.5,s por control,SEM-SIM01,4,,,4623b28dcaa42e04,,,,,fila heredada del vector padre
+C04-Z1,C04-V3,Z,shotMix.threeWeightFactor,1,0.85,factor multiplicativo,SEM-SIM04,4,0.2,0.199,4623b28dcaa42e04,0.308,0.972,inadmisible: L_V empeora 0.03606786522829153 > 0.02,,
+C04-Z2,C04-V3,Z,volume.neutralSecondsPerControl,16,19.5,s por control,SEM-SIM01,5,,,d71a52eda6ec9b39,,,,,fila heredada del vector padre
+C04-Z2,C04-V3,Z,shotMix.threeWeightFactor,1,0.7,factor multiplicativo,SEM-SIM04,5,0.16,0.171,d71a52eda6ec9b39,0.318,1,admisible,ELEGIDA en su etapa,
+C04-A1,C04-Z2,A,volume.neutralSecondsPerControl,16,19.5,s por control,SEM-SIM01,6,,,71b3181c04151e26,,,,,fila heredada del vector padre
+C04-A1,C04-Z2,A,shotMix.threeWeightFactor,1,0.7,factor multiplicativo,SEM-SIM04,6,,,71b3181c04151e26,,,,,fila heredada del vector padre
+C04-A1,C04-Z2,A,assist.eligibleFinalPassP0,0.6,0.75,probabilidad,SEM-SIM01,6,0.201,0.188,71b3181c04151e26,0.254,0.964,admisible,,
+C04-A2,C04-Z2,A,volume.neutralSecondsPerControl,16,19.5,s por control,SEM-SIM01,7,,,65cfdbd22053c5bd,,,,,fila heredada del vector padre
+C04-A2,C04-Z2,A,shotMix.threeWeightFactor,1,0.7,factor multiplicativo,SEM-SIM04,7,,,65cfdbd22053c5bd,,,,,fila heredada del vector padre
+C04-A2,C04-Z2,A,assist.eligibleFinalPassP0,0.6,0.9,probabilidad,SEM-SIM01,7,0.175,0.214,65cfdbd22053c5bd,0.207,0.946,admisible,ELEGIDA en su etapa,
+C04-E1,C04-A2,E,volume.neutralSecondsPerControl,16,19.5,s por control,SEM-SIM01,8,,,2339a607814d1d95,,,,,fila heredada del vector padre
+C04-E1,C04-A2,E,shotMix.threeWeightFactor,1,0.7,factor multiplicativo,SEM-SIM04,8,,,2339a607814d1d95,,,,,fila heredada del vector padre
+C04-E1,C04-A2,E,assist.eligibleFinalPassP0,0.6,0.9,probabilidad,SEM-SIM01,8,,,2339a607814d1d95,,,,,fila heredada del vector padre
+C04-E1,C04-A2,E,energy.costPerLiveMinute,2,3,energía 0–100 / factor,heredada,8,0.152,,2339a607814d1d95,0.189,0.594,,ELEGIDA en su etapa,
+C04-E2,C04-A2,E,volume.neutralSecondsPerControl,16,19.5,s por control,SEM-SIM01,9,,,257868e7c7b2277b,,,,,fila heredada del vector padre
+C04-E2,C04-A2,E,shotMix.threeWeightFactor,1,0.7,factor multiplicativo,SEM-SIM04,9,,,257868e7c7b2277b,,,,,fila heredada del vector padre
+C04-E2,C04-A2,E,assist.eligibleFinalPassP0,0.6,0.9,probabilidad,SEM-SIM01,9,,,257868e7c7b2277b,,,,,fila heredada del vector padre
+C04-E2,C04-A2,E,energy.costPerLiveMinute,2,3.5,energía 0–100 / factor,heredada,9,0.151,,257868e7c7b2277b,0.188,0,,,
+C04-FINAL-PROVISIONAL,C04-E1,final,volume.neutralSecondsPerControl,16,19.5,s por control,SEM-SIM01,,,,2339a607814d1d95,,,provisional,"ELEGIDA (= C04-E1, antes de VAL)",no es aceptación deportiva
+C04-FINAL-PROVISIONAL,C04-E1,final,shotMix.threeWeightFactor,1,0.7,factor multiplicativo,SEM-SIM04,,,,2339a607814d1d95,,,provisional,"ELEGIDA (= C04-E1, antes de VAL)",no es aceptación deportiva
+C04-FINAL-PROVISIONAL,C04-E1,final,assist.eligibleFinalPassP0,0.6,0.9,probabilidad,SEM-SIM01,,,,2339a607814d1d95,,,provisional,"ELEGIDA (= C04-E1, antes de VAL)",no es aceptación deportiva
+C04-FINAL-PROVISIONAL,C04-E1,final,energy.costPerLiveMinute,2,3,energía 0–100 / factor,heredada,,,,2339a607814d1d95,,,provisional,"ELEGIDA (= C04-E1, antes de VAL)",no es aceptación deportiva

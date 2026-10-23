@@ -1,0 +1,414 @@
+{
+ "schema": "beM-sim04-performance/1",
+ "objective": "1.000 encuentros, cuatro workers, esencial individual validado en el coordinador; arranque y otros costes declarados aparte",
+ "targets": {
+  "batchMs": 5000,
+  "rssMiB": 1536,
+  "barrierPauseMs": 1000
+ },
+ "targetsAreProvisional": "los presupuestos son provisionales y no tenían que alcanzarse; se informan honestamente",
+ "environment": {
+  "identity": "O04-FINAL",
+  "node": "v22.22.0",
+  "platform": "linux",
+  "arch": "x64",
+  "kernel": "6.18.44-fc-v153",
+  "cpuModel": "Intel(R) Xeon(R) Processor @ 2.80GHz",
+  "logicalCpus": 4,
+  "availableParallelism": 4,
+  "ramMiB": 16091,
+  "commit": "c74208e039e6787f7fb793ffff6df9f9bc91bd99",
+  "workingTreeDirty": false,
+  "sim": "0.3.0-SIMMOTOR04",
+  "profile": "SEM-SIM01-20261022+SEM-SIM02-20261022+SEM-SIM04-20261023",
+  "overrides": [
+   {
+    "path": "volume.neutralSecondsPerControl",
+    "value": 19.5
+   },
+   {
+    "path": "shotMix.threeWeightFactor",
+    "value": 0.7
+   },
+   {
+    "path": "assist.eligibleFinalPassP0",
+    "value": 0.9
+   },
+   {
+    "path": "energy.costPerLiveMinute",
+    "value": 3
+   }
+  ],
+  "limit": null,
+  "scriptSha256": "b4d384996c5b1fc2640bd56945e4660a647ba424eea556bc101ee5da7e4fa7c0",
+  "startedAt": "2026-10-23T14:22:31.581Z"
+ },
+ "controlDefinition": "O04-CONTROL (2c5922d): mismo código tras las correcciones y SIN las optimizaciones exactas, misma sesión y máquina, orden ABBA",
+ "order": [
+  "2026-10-23T14:21:57Z start",
+  "2026-10-23T14:22:31Z 1 F-CONTROL done",
+  "2026-10-23T14:23:01Z 2 F-FINAL done",
+  "2026-10-23T14:23:22Z 3 DAY-FINAL done",
+  "2026-10-23T14:23:43Z 4 DAY-CONTROL done",
+  "finished"
+ ],
+ "batchPasses": [
+  {
+   "identity": "O04-CONTROL",
+   "run": "F0",
+   "process": "nuevo",
+   "workers": 4,
+   "measuredMs": 12190.6,
+   "targetMs": 5000,
+   "met": false,
+   "distanceMs": 7190.6,
+   "phasesMs": {
+    "processStartToWorkersReady": 1665.4,
+    "generateBuildValidateAndTransport": 12190.6,
+    "serialize": 126.3,
+    "persistFsync": 71.2,
+    "worldAvailability": 94,
+    "totalFromNewProcessToWorldData": 14148.1,
+    "totalFromRequestToWorldData": 12482.1
+   },
+   "startup": {
+    "workersStartMs": 1537.1,
+    "warmCases": 12,
+    "warmMsMax": 1411.6,
+    "warmMsPerWorker": [
+     1276.4,
+     1411.6,
+     1392.2,
+     1324.2
+    ],
+    "processToReady": 1665.3965449999998,
+    "importsToStartMs": 26.1,
+    "dataLoadMs": 25.1,
+    "contextMs": 76.2,
+    "poolStartAndWarmMs": 1537.7,
+    "note": "el arranque y el calentamiento (12 partidos por worker, identificados) se declaran aparte; no forman parte de la agenda ni del cronómetro objetivo"
+   },
+   "rssMaxMiB": 745.5
+  },
+  {
+   "identity": "O04-CONTROL",
+   "run": "F1",
+   "process": "reutilizado",
+   "workers": 4,
+   "measuredMs": 9994.5,
+   "targetMs": 5000,
+   "met": false,
+   "distanceMs": 4994.5,
+   "phasesMs": {
+    "processStartToWorkersReady": null,
+    "generateBuildValidateAndTransport": 9994.5,
+    "serialize": 140.8,
+    "persistFsync": 66.4,
+    "worldAvailability": 98.1,
+    "totalFromNewProcessToWorldData": null,
+    "totalFromRequestToWorldData": 10299.8
+   },
+   "startup": {
+    "workersStartMs": 0,
+    "warmCases": 0
+   },
+   "rssMaxMiB": 745.5
+  },
+  {
+   "identity": "O04-CONTROL",
+   "run": "F2",
+   "process": "reutilizado",
+   "workers": 4,
+   "measuredMs": 8230.5,
+   "targetMs": 5000,
+   "met": false,
+   "distanceMs": 3230.5,
+   "phasesMs": {
+    "processStartToWorkersReady": null,
+    "generateBuildValidateAndTransport": 8230.5,
+    "serialize": 126.7,
+    "persistFsync": 62.1,
+    "worldAvailability": 87.6,
+    "totalFromNewProcessToWorldData": null,
+    "totalFromRequestToWorldData": 8506.9
+   },
+   "startup": {
+    "workersStartMs": 0,
+    "warmCases": 0
+   },
+   "rssMaxMiB": 745.5
+  },
+  {
+   "identity": "O04-FINAL",
+   "run": "F0",
+   "process": "nuevo",
+   "workers": 4,
+   "measuredMs": 12014.1,
+   "targetMs": 5000,
+   "met": false,
+   "distanceMs": 7014.1,
+   "phasesMs": {
+    "processStartToWorkersReady": 1455.9,
+    "generateBuildValidateAndTransport": 12014.1,
+    "serialize": 178.7,
+    "persistFsync": 55.2,
+    "worldAvailability": 89.8,
+    "totalFromNewProcessToWorldData": 13794.2,
+    "totalFromRequestToWorldData": 12337.8
+   },
+   "startup": {
+    "workersStartMs": 1341.7,
+    "warmCases": 12,
+    "warmMsMax": 1237.5,
+    "warmMsPerWorker": [
+     1175.2,
+     1237.5,
+     1188.3,
+     1064.5
+    ],
+    "processToReady": 1455.932962,
+    "importsToStartMs": 22.7,
+    "dataLoadMs": 17.9,
+    "contextMs": 73,
+    "poolStartAndWarmMs": 1342.2,
+    "note": "el arranque y el calentamiento (12 partidos por worker, identificados) se declaran aparte; no forman parte de la agenda ni del cronómetro objetivo"
+   },
+   "rssMaxMiB": 693.5
+  },
+  {
+   "identity": "O04-FINAL",
+   "run": "F1",
+   "process": "reutilizado",
+   "workers": 4,
+   "measuredMs": 7810.2,
+   "targetMs": 5000,
+   "met": false,
+   "distanceMs": 2810.2,
+   "phasesMs": {
+    "processStartToWorkersReady": null,
+    "generateBuildValidateAndTransport": 7810.2,
+    "serialize": 131.2,
+    "persistFsync": 61,
+    "worldAvailability": 73.1,
+    "totalFromNewProcessToWorldData": null,
+    "totalFromRequestToWorldData": 8075.5
+   },
+   "startup": {
+    "workersStartMs": 0,
+    "warmCases": 0
+   },
+   "rssMaxMiB": 693.5
+  },
+  {
+   "identity": "O04-FINAL",
+   "run": "F2",
+   "process": "reutilizado",
+   "workers": 4,
+   "measuredMs": 7349.2,
+   "targetMs": 5000,
+   "met": false,
+   "distanceMs": 2349.2,
+   "phasesMs": {
+    "processStartToWorkersReady": null,
+    "generateBuildValidateAndTransport": 7349.2,
+    "serialize": 128.2,
+    "persistFsync": 58,
+    "worldAvailability": 75.5,
+    "totalFromNewProcessToWorldData": null,
+    "totalFromRequestToWorldData": 7610.9
+   },
+   "startup": {
+    "workersStartMs": 0,
+    "warmCases": 0
+   },
+   "rssMaxMiB": 693.5
+  }
+ ],
+ "batchVerdict": {
+  "control": {
+   "objectiveMs": 5000,
+   "passes": [
+    {
+     "run": "F0",
+     "ms": 12190.6,
+     "met": false
+    },
+    {
+     "run": "F1",
+     "ms": 9994.5,
+     "met": false
+    },
+    {
+     "run": "F2",
+     "ms": 8230.5,
+     "met": false
+    }
+   ],
+   "note": "tres pasadas son repeticiones de los mismos 1.000 casos, no 3.000 observaciones deportivas independientes"
+  },
+  "final": {
+   "objectiveMs": 5000,
+   "passes": [
+    {
+     "run": "F0",
+     "ms": 12014.1,
+     "met": false
+    },
+    {
+     "run": "F1",
+     "ms": 7810.2,
+     "met": false
+    },
+    {
+     "run": "F2",
+     "ms": 7349.2,
+     "met": false
+    }
+   ],
+   "note": "tres pasadas son repeticiones de los mismos 1.000 casos, no 3.000 observaciones deportivas independientes"
+  }
+ },
+ "day": [
+  {
+   "identity": "O04-CONTROL",
+   "fixtures": 1000,
+   "workers": 4,
+   "coordinatedRunMs": 18085.4,
+   "barrierMsMax": 5068.8,
+   "publicBarrierAdvanceMsMax": 5063.4,
+   "closureFrontier": {
+    "barriersWithMoreThan100Finishing": [
+     {
+      "T": 2400,
+      "newlyFinished": 967,
+      "advanceMs": 5063.4,
+      "reviewMs": 3.3,
+      "queryMs": 2.1,
+      "sealMs": 0,
+      "sealCpuMs": null,
+      "cpuMs": {
+       "generate": 7474.7,
+       "buildEssential": 7409.1,
+       "reconcile": 3894.3,
+       "assembleEssential": 750.8,
+       "progress": 59.7
+      },
+      "criticalWorkerMs": {
+       "generate": 2006.2,
+       "buildEssential": 1912.2,
+       "reconcile": 1020.7,
+       "assembleEssential": 208.5
+      }
+     }
+    ],
+    "updateMsMaxOfRest": 1616.8,
+    "restBarriers": 24,
+    "note": "frontera de cierre = barrera(s) donde terminan la mayoría de encuentros; el tiempo distribuido en tareas pequeñas sigue sumando CPU (cpuMs) aunque la pausa visible (criticalWorkerMs) sea menor"
+   },
+   "rssMaxMiB": 2556.4,
+   "targets": {
+    "barrierPauseMs": 1000,
+    "rssMiB": 1536
+   },
+   "raw": "evidencia detallada: coste/O04-*-DAY.json",
+   "notes": "el tiempo de visionado del sénior no es tiempo de CPU del mundo"
+  },
+  {
+   "identity": "O04-FINAL",
+   "fixtures": 1000,
+   "workers": 4,
+   "coordinatedRunMs": 17444,
+   "barrierMsMax": 1823.6,
+   "publicBarrierAdvanceMsMax": 1814.3,
+   "closureFrontier": {
+    "barriersWithMoreThan100Finishing": [
+     {
+      "T": 2400,
+      "newlyFinished": 967,
+      "advanceMs": 1814.3,
+      "reviewMs": 3.3,
+      "queryMs": 6,
+      "sealMs": 2839.3,
+      "sealCpuMs": {
+       "buildEssential": 5141.4,
+       "reconcile": 3618.9,
+       "assembleEssential": 733.2
+      },
+      "cpuMs": {
+       "generate": 6405.4,
+       "buildEssential": 0,
+       "reconcile": 0,
+       "assembleEssential": 0,
+       "progress": 28.8
+      },
+      "criticalWorkerMs": {
+       "generate": 1804.3,
+       "buildEssential": 0,
+       "reconcile": 0,
+       "assembleEssential": 0
+      }
+     }
+    ],
+    "updateMsMaxOfRest": 1610.7,
+    "restBarriers": 24,
+    "note": "frontera de cierre = barrera(s) donde terminan la mayoría de encuentros; el tiempo distribuido en tareas pequeñas sigue sumando CPU (cpuMs) aunque la pausa visible (criticalWorkerMs) sea menor"
+   },
+   "rssMaxMiB": 2188.5,
+   "targets": {
+    "barrierPauseMs": 1000,
+    "rssMiB": 1536
+   },
+   "raw": "evidencia detallada: coste/O04-*-DAY.json",
+   "notes": "el tiempo de visionado del sénior no es tiempo de CPU del mundo"
+  }
+ ],
+ "daySealMs": {
+  "barriersWithMoreThan100Finishing": [
+   {
+    "T": 2400,
+    "newlyFinished": 967,
+    "advanceMs": 1814.3,
+    "reviewMs": 3.3,
+    "queryMs": 6,
+    "sealMs": 2839.3,
+    "sealCpuMs": {
+     "buildEssential": 5141.4,
+     "reconcile": 3618.9,
+     "assembleEssential": 733.2
+    },
+    "cpuMs": {
+     "generate": 6405.4,
+     "buildEssential": 0,
+     "reconcile": 0,
+     "assembleEssential": 0,
+     "progress": 28.8
+    },
+    "criticalWorkerMs": {
+     "generate": 1804.3,
+     "buildEssential": 0,
+     "reconcile": 0,
+     "assembleEssential": 0
+    }
+   }
+  ],
+  "updateMsMaxOfRest": 1610.7,
+  "restBarriers": 24,
+  "note": "frontera de cierre = barrera(s) donde terminan la mayoría de encuentros; el tiempo distribuido en tareas pequeñas sigue sumando CPU (cpuMs) aunque la pausa visible (criticalWorkerMs) sea menor"
+ },
+ "perCaseEquality": {
+  "F": {
+   "F0_F1_F2_perCase": true
+  },
+  "control": {
+   "F0_F1_F2_perCase": true
+  }
+ },
+ "distancesToTargets": {
+  "fastestFinalMs": 7349.2,
+  "targetMs": 5000,
+  "rssFinalBatchMiB": 693.5,
+  "rssTargetMiB": 1536,
+  "rssFinalDayMiB": 2188.5
+ },
+ "note": "las pasadas son repeticiones de los mismos 1.000 casos; no son 3.000 observaciones deportivas independientes"
+}
