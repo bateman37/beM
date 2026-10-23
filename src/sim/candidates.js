@@ -1,8 +1,8 @@
-// Candidatas numéricas del generador estadístico (SIM-MOTOR-04). GENERADO por scripts/sim04/write-candidate.js desde el selector mecánico (SEL-SIM04-R1); no se edita a mano.
-// Una candidata NO es un perfil activo: la base sigue siendo SEM-SIM01-20261022+SEM-SIM02-20261022+SEM-SIM04-20261023; cargarla en el panel de parámetros es una acción explícita y se identifica como provisional. «Elegida por el selector» no es «calibrada» ni aceptada por Dennis.
+// Candidatas numéricas del generador estadístico (SIM-MOTOR-04B). GENERADO por scripts/sim04b/write-candidate.js desde el selector mecánico (SEL-SIM04B-R1); no se edita a mano.
+// Una candidata NO es un perfil activo: la base sigue siendo SEM-SIM01-20261022+SEM-SIM02-20261022+SEM-SIM04-20261023+SEM-SIM04B-20261023; cargarla en el panel de parámetros es una acción explícita y se identifica como provisional. «Elegida por el selector» no es «calibrada» ni aceptada por Dennis.
 export const SIM_CANDIDATES = Object.freeze([{
-  id: 'C04-FINAL-PROVISIONAL', version: 'CAND-SIM04-20261023-R1', status: 'provisional: elegida por el selector mecánico de convergencia funcional de laboratorio; pendiente de aceptación deportiva de Dennis',
-  baseProfile: "SEM-SIM01-20261022+SEM-SIM02-20261022+SEM-SIM04-20261023", baseFingerprint: "850b7941470d25e1", selectionRules: "SEL-SIM04-R1", selectionRulesSha256: "45926ca0fc2bdd897021200971cee9f8604b6478cd104f739c80f8cd6f5782e3", evidence: 'out/sim-motor04/07-CAL-SELECCION.json (fuera de Git); resumen en docs/tecnico/sim-motor04.md',
+  id: 'C04B-FINAL-PROVISIONAL', version: 'CAND-SIM04B-20261023-R1', status: "provisional: el selector mecánico NO encontró ninguna fila adicional admisible con las guardas congeladas; el vector coincide con los cuatro valores de la candidata de 04 (volumen 19,5 · triples 0,70 · entrega final 0,90 · gasto 3) con las filas nuevas de 04B neutrales; pendiente de aceptación deportiva de Dennis",
+  baseProfile: "SEM-SIM01-20261022+SEM-SIM02-20261022+SEM-SIM04-20261023+SEM-SIM04B-20261023", baseFingerprint: "24bc933db1b01b33", selectionRules: "SEL-SIM04B-R1", selectionRulesSha256: "15de5306da3976ac516aa1a99fd9a411f80a43ebe4d085e033e9dc4ecf2ba499", evidence: 'out/sim-motor04b/07-CAL-SELECCION.json (fuera de Git); resumen en docs/tecnico/sim-motor04.md',
   overrides: Object.freeze([{"path":"volume.neutralSecondsPerControl","value":19.5},{"path":"shotMix.threeWeightFactor","value":0.7},{"path":"assist.eligibleFinalPassP0","value":0.9},{"path":"energy.costPerLiveMinute","value":3}]),
   rows: Object.freeze([
     {
