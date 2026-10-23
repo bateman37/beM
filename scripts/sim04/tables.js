@@ -53,30 +53,38 @@ function usage(players, k) {
 
 // ---------------------------------------------------------------------------------------------------------------------------------- tablas
 export const COLS = {
-  team: ['case_id', 'block', 'scenario', 'variant', 'orientation', 'replicate', 'resolver', 'seed', 'team_index', 'team_id', 'opponent_id', 'is_test_team', 'status', 'valid', 'error',
+  team: ['case_id', 'block', 'scenario', 'variant', 'orientation', 'replicate', 'resolver', 'identity', 'seed', 'team_index', 'team_id', 'opponent_id', 'is_test_team', 'status', 'valid', 'error',
     'pts', 'opp_pts', 'diff', 'win', 'p1', 'p2', 'p3', 'p4', 'ot_pts', 'periods', 'overtimes', 'duration_s',
     'controls_sim', 'finalizations_sim', 'possessions_beM',
     'fg2m', 'fg2a', 'fg3m', 'fg3a', 'ftm', 'fta', 'fgm', 'fga', 'fg_pts', 'ft_pts', 'oreb_ind', 'dreb_ind', 'oreb_coll', 'dreb_coll', 'oreb_total', 'dreb_total', 'ast_fg', 'ast_ft', 'ast_total', 'tov_ind', 'tov_coll', 'tov_total', 'stl', 'blk', 'blk_against', 'pf', 'pfd', 'exclusions',
     'bonus_fta', 'bonus_ftm', 'shoot_fouls', 'and1',
     'fg_pct', 'fg3_pct', 'ft_pct', 'ts_pct', 'efg_pct', 'ft_rate', 'three_share', 'pts_per_control_sim', 'pts_per_finalization_sim', 'pts_per_possession_beM', 'tov_per100_controls_sim', 'tov_per100_possessions_beM', 'oreb_pct_own',
     'players_used', 'max_minutes', 'top3_minutes_share', 'top1_fga_share', 'top1_pts_share', 'hhi_fga', 'hhi_minutes', 'starters',
-    'rim_a', 'rim_m', 'inside_a', 'inside_m', 'midrange_a', 'midrange_m', 'three_a', 'three_m', 'energy_start_mean', 'energy_end_mean', 'form_start_mean', 'decisions', 'applied_orders', 'band'],
-  player: ['case_id', 'block', 'scenario', 'variant', 'orientation', 'replicate', 'resolver', 'team_index', 'team_id', 'player_id', 'starter', 'participation', 'minutes', 'seconds', 'pts', 'fg2m', 'fg2a', 'fg3m', 'fg3a', 'ftm', 'fta', 'oreb', 'dreb', 'ast_fg', 'ast_ft', 'tov', 'stl', 'blk', 'blk_against', 'pf', 'pfd', 'pm', 'finalizations_sim', 'closing_share', 'controls_on', 'controls_against_on', 'pts_per100_controls_sim', 'energy_start', 'energy_end', 'form_start'],
-  zone: ['case_id', 'block', 'scenario', 'variant', 'orientation', 'replicate', 'resolver', 'team_index', 'team_id', 'player_id', 'zone', 'attempts', 'makes', 'q_comfortable', 'q_normal', 'q_forced'],
-  family: ['case_id', 'block', 'scenario', 'variant', 'orientation', 'replicate', 'resolver', 'team_index', 'team_id', 'family_or_play', 'fga', 'fgm', 'pts', 'fta', 'ftm', 'finalizations_sim', 'shoot_fouls', 'and1', 'assists', 'moved', 'q_comfortable', 'q_normal', 'q_forced'],
-  quintet: ['case_id', 'block', 'scenario', 'variant', 'orientation', 'replicate', 'resolver', 'team_index', 'team_id', 'quintet', 'seconds', 'minutes', 'pf', 'pa', 'controls_for_sim', 'controls_against_sim', 'possessions_beM', 'off_prod_per100', 'conceded_prod_per100', 'balance_per100', 'diff_per100_own_controls', 'intervals'],
-  defense: ['case_id', 'block', 'scenario', 'variant', 'orientation', 'replicate', 'resolver', 'defender_index', 'defender_id', 'organization', 'coverage', 'pressure_height', 'seconds', 'opp_pts', 'opp_bonus_pts', 'opp_finalizations_sim', 'opp_bonus_series', 'opp_pts_per_finalization_sim'],
-  period: ['case_id', 'block', 'scenario', 'variant', 'orientation', 'replicate', 'resolver', 'period', 'team0_pts', 'team1_pts', 'cum0', 'cum1'],
-  decision: ['case_id', 'block', 'scenario', 'variant', 'orientation', 'replicate', 'resolver', 'team_index', 'at_s', 'effective_at_s', 'type', 'control', 'from', 'to', 'reason', 'source', 'sample_json'],
-  director: ['case_id', 'block', 'scenario', 'variant', 'orientation', 'replicate', 'resolver', 'team_index', 'team_id', 'director_id', 'start_s', 'end_s'],
+    'rim_a', 'rim_m', 'inside_a', 'inside_m', 'midrange_a', 'midrange_m', 'three_a', 'three_m', 'energy_start_mean', 'energy_end_mean', 'form_start_mean', 'decisions', 'applied_orders', 'band',
+    'ast_den_elig_fin', 'ast_den_delivered', 'ast_den_elig_baskets', 'ast_den_fg_assists', 'ast_den_elig_ft_series', 'ast_den_ft_assists', 'press_opps', 'press_explicit_opps', 'press_sum_delta', 'max_player_pts', 'players_40min', 'scr_recorded_fin'],
+  player: ['case_id', 'block', 'scenario', 'variant', 'orientation', 'replicate', 'resolver', 'identity', 'team_index', 'team_id', 'player_id', 'starter', 'participation', 'minutes', 'seconds', 'pts', 'fg2m', 'fg2a', 'fg3m', 'fg3a', 'ftm', 'fta', 'oreb', 'dreb', 'ast_fg', 'ast_ft', 'tov', 'stl', 'blk', 'blk_against', 'pf', 'pfd', 'pm', 'finalizations_sim', 'closing_share', 'controls_on', 'controls_against_on', 'pts_per100_controls_sim', 'energy_start', 'energy_end', 'form_start'],
+  zone: ['case_id', 'block', 'scenario', 'variant', 'orientation', 'replicate', 'resolver', 'identity', 'team_index', 'team_id', 'player_id', 'zone', 'attempts', 'makes', 'q_comfortable', 'q_normal', 'q_forced'],
+  family: ['case_id', 'block', 'scenario', 'variant', 'orientation', 'replicate', 'resolver', 'identity', 'team_index', 'team_id', 'family_or_play', 'fga', 'fgm', 'pts', 'fta', 'ftm', 'finalizations_sim', 'shoot_fouls', 'and1', 'assists', 'moved', 'q_comfortable', 'q_normal', 'q_forced'],
+  quintet: ['case_id', 'block', 'scenario', 'variant', 'orientation', 'replicate', 'resolver', 'identity', 'team_index', 'team_id', 'quintet', 'seconds', 'minutes', 'pf', 'pa', 'controls_for_sim', 'controls_against_sim', 'possessions_beM', 'off_prod_per100', 'conceded_prod_per100', 'balance_per100', 'diff_per100_own_controls', 'intervals'],
+  defense: ['case_id', 'block', 'scenario', 'variant', 'orientation', 'replicate', 'resolver', 'identity', 'defender_index', 'defender_id', 'organization', 'coverage', 'pressure_height', 'seconds', 'opp_pts', 'opp_bonus_pts', 'opp_finalizations_sim', 'opp_bonus_series', 'opp_pts_per_finalization_sim'],
+  period: ['case_id', 'block', 'scenario', 'variant', 'orientation', 'replicate', 'resolver', 'identity', 'period', 'team0_pts', 'team1_pts', 'cum0', 'cum1'],
+  decision: ['case_id', 'block', 'scenario', 'variant', 'orientation', 'replicate', 'resolver', 'identity', 'team_index', 'at_s', 'effective_at_s', 'type', 'control', 'from', 'to', 'reason', 'source', 'sample_json'],
+  director: ['case_id', 'block', 'scenario', 'variant', 'orientation', 'replicate', 'resolver', 'identity', 'team_index', 'team_id', 'director_id', 'start_s', 'end_s'],
 };
-const key = (rec) => [rec.case_id, rec.block, rec.scenario, rec.variant, rec.orientation, rec.replicate, rec.resolver];
+const key = (rec) => [rec.case_id, rec.block, rec.scenario, rec.variant, rec.orientation, rec.replicate, rec.resolver, rec.run ?? null];
 
+// Columnas añadidas por SIM-MOTOR-04: denominadores de asistencia por equipo (suma de contextos), presión adelantada, extremo individual y actuaciones de 40 minutos o más; `null` = no conservado (R0/detallado), nunca cero.
+function extraTeam(rec, v, k) {
+  const e = rec.essential; const ad = rec.resolver === 'sim' ? e.assistDenominators?.[k] : null; const po = rec.resolver === 'sim' ? e.pressOps : null; const ps = v.players.filter((p) => p.team === k);
+  const sumAd = (f) => (ad ? Object.values(ad).reduce((a, c) => a + c[f], 0) : null); const maxPts = ps.length ? Math.max(...ps.map((p) => p.pts)) : null; const f40 = ps.filter((p) => p.sec >= 2400 - 0.0005).length;
+  const scr = rec.resolver === 'sim' && rec.analysis?.participation?.[k] ? Object.values(rec.analysis.participation[k]).reduce((a, pl) => a + Object.values(pl.screeners ?? {}).reduce((x, n) => x + n, 0), 0) : null;
+  return [sumAd('eligible'), sumAd('delivered'), sumAd('eligibleBaskets'), sumAd('fgAssists'), sumAd('eligibleFtSeries'), sumAd('ftAssists'), po ? po.opportunities[k] : null, po ? po.explicitOpportunities[k] : null, po ? po.sumDelta[k] : null, maxPts, f40, scr];
+}
 export function buildTables(simRecs, detRecs) {
   const T = Object.fromEntries(Object.keys(COLS).map((k) => [k, []])); const perMatch = [];
   for (const rec of [...simRecs, ...detRecs]) {
     const base = key(rec);
-    if (rec.status !== 'finished' || !rec.essential) { for (const k of [0, 1]) T.team.push([...base, rec.seed, k, rec.identity?.teams?.[k] ?? null, rec.identity?.teams?.[1 - k] ?? null, null, rec.status, rec.valid ? 1 : 0, rec.error ?? null, ...Array(COLS.team.length - 15).fill(null)]); perMatch.push({ rec, view: null }); continue; }
+    if (rec.status !== 'finished' || !rec.essential) { for (const k of [0, 1]) T.team.push([...base, rec.seed, k, rec.identity?.teams?.[k] ?? null, rec.identity?.teams?.[1 - k] ?? null, null, rec.status, rec.valid ? 1 : 0, rec.error ?? null, ...Array(COLS.team.length - 16).fill(null)]); perMatch.push({ rec, view: null }); continue; }
     const v = viewOf(rec); perMatch.push({ rec, view: v });
     const testTeam = rec.testTeam ?? null; const st = rec.states ?? null; const mean = (a) => (a && a.length ? a.reduce((s, x) => s + x, 0) / a.length : null);
     for (const k of [0, 1]) {
@@ -91,7 +99,7 @@ export function buildTables(simRecs, detRecs) {
         d.fgPct, d.fg3Pct, d.ftPct, d.tsPct, d.efgPct, d.ftRate, d.threeShare, d.ptsPerControlSim, d.ptsPerFinalizationSim, d.ptsPerPossessionBeM, d.tovPer100ControlsSim, d.tovPer100PossessionsBeM, d.orebPctOwn,
         u.playersUsed, u.maxMinutes, u.top3MinutesShare, u.top1FgaShare, u.top1PtsShare, u.hhiFga, u.hhiMinutes, u.starters,
         zs.rim[0], zs.rim[1], zs.inside[0], zs.inside[1], zs.midrange[0], zs.midrange[1], zs.three[0], zs.three[1],
-        r2(mean(st?.start?.[k]?.map((p) => p.energy))), r2(mean(st?.end?.[k]?.map((p) => p.energy))), r2(mean(st?.start?.[k]?.map((p) => p.form))), rec.resolver === 'sim' ? ds : null, oa, bandOf(total)]);
+        r2(mean(st?.start?.[k]?.map((p) => p.energy))), r2(mean(st?.end?.[k]?.map((p) => p.energy))), r2(mean(st?.start?.[k]?.map((p) => p.form))), rec.resolver === 'sim' ? ds : null, oa, bandOf(total), ...extraTeam(rec, v, k)]);
     }
     // jugadores
     const stS = rec.states; const e0 = (k, id) => stS?.start?.[k]?.find((p) => p.id === id); const e1 = (k, id) => stS?.end?.[k]?.find((p) => p.id === id);
@@ -131,17 +139,17 @@ export function summaries(teamRows) {
   const ci = (n) => COLS.team.indexOf(n); const rows = teamRows.filter((r) => r[ci('status')] === 'finished'); const out = [];
   const groups = (keyFn) => { const m = new Map(); for (const r of rows) { const k = keyFn(r); if (k == null) continue; (m.get(k) ?? m.set(k, []).get(k)).push(r); } return m; };
   const emit = (dim, keyFn) => { for (const [k, rs] of groups(keyFn)) for (const ot of ['todos', 'sin_prorroga', 'con_prorroga']) { const sel = ot === 'todos' ? rs : rs.filter((r) => (ot === 'con_prorroga') === (r[ci('overtimes')] > 0)); if (!sel.length) continue; for (const mname of SUMMARY_METRICS) { const s = stats(sel.map((r) => r[ci(mname)])); if (s.n) out.push([dim, k, ot, mname, s.n, s.mean, s.sd, s.median, s.p10, s.p90, s.min, s.max]); } } };
-  emit('modelo|bloque', (r) => `${r[ci('resolver')]}|${r[ci('block')]}`); emit('modelo|bloque|escenario|variante|orientación', (r) => (r[ci('block')] === 'A' ? null : `${r[ci('resolver')]}|${r[ci('block')]}|${r[ci('scenario')]}|${r[ci('variant')]}|${r[ci('orientation')]}`));
-  emit('modelo|equipo (A)', (r) => (r[ci('block')] === 'A' ? `${r[ci('resolver')]}|${r[ci('team_id')]}` : null)); emit('modelo|enfrentamiento orientado (A)', (r) => (r[ci('block')] === 'A' && r[ci('team_index')] === 0 ? `${r[ci('resolver')]}|${r[ci('scenario')]}` : null));
+  const idn = (r) => `${r[ci('identity')]}`; emit('identidad|modelo|bloque', (r) => `${idn(r)}|${r[ci('resolver')]}|${r[ci('block')]}`); emit('identidad|modelo|bloque|escenario|variante|orientación', (r) => (['CAL', 'VAL', 'STRESS'].includes(r[ci('block')]) ? null : `${idn(r)}|${r[ci('resolver')]}|${r[ci('block')]}|${r[ci('scenario')]}|${r[ci('variant')]}|${r[ci('orientation')]}`));
+  emit('identidad|modelo|bloque|equipo', (r) => (['CAL', 'VAL', 'STRESS'].includes(r[ci('block')]) ? `${idn(r)}|${r[ci('resolver')]}|${r[ci('block')]}|${r[ci('team_id')]}` : null));
   // bandas de anotación por equipo
-  const bands = []; for (const [k, rs] of groups((r) => `${r[ci('resolver')]}|${r[ci('block')]}`)) for (const ot of ['todos', 'sin_prorroga', 'con_prorroga']) { const sel = ot === 'todos' ? rs : rs.filter((r) => (ot === 'con_prorroga') === (r[ci('overtimes')] > 0)); if (!sel.length) continue; const cnt = Object.fromEntries(BAND_NAMES.map((b) => [b, 0])); for (const r of sel) cnt[r[ci('band')]] += 1; bands.push([k, ot, sel.length, ...BAND_NAMES.map((b) => cnt[b])]); }
-  return { cols: ['dimension', 'grupo', 'prorroga', 'metrica', 'n_equipo_partido', 'media', 'desv_tipica_muestral', 'mediana', 'p10', 'p90', 'min', 'max'], rows: out, bands: { cols: ['modelo|bloque', 'prorroga', 'n_equipo_partido', ...BAND_NAMES], rows: bands }, percentileMethod: 'interpolación lineal entre rangos (tipo R-7); desviación típica muestral (n−1); cada equipo-partido cuenta una vez; las repeticiones técnicas y de benchmark no se suman' };
+  const bands = []; for (const [k, rs] of groups((r) => `${r[ci('identity')]}|${r[ci('resolver')]}|${r[ci('block')]}`)) for (const ot of ['todos', 'sin_prorroga', 'con_prorroga']) { const sel = ot === 'todos' ? rs : rs.filter((r) => (ot === 'con_prorroga') === (r[ci('overtimes')] > 0)); if (!sel.length) continue; const cnt = Object.fromEntries(BAND_NAMES.map((b) => [b, 0])); for (const r of sel) cnt[r[ci('band')]] += 1; bands.push([k, ot, sel.length, ...BAND_NAMES.map((b) => cnt[b])]); }
+  return { cols: ['dimension', 'grupo', 'prorroga', 'metrica', 'n_equipo_partido', 'media', 'desv_tipica_muestral', 'mediana', 'p10', 'p90', 'min', 'max'], rows: out, bands: { cols: ['identidad|modelo|bloque', 'prorroga', 'n_equipo_partido', ...BAND_NAMES], rows: bands }, percentileMethod: 'interpolación lineal entre rangos (tipo R-7); desviación típica muestral (n−1); cada equipo-partido cuenta una vez; las repeticiones técnicas y de benchmark no se suman' };
 }
 // Contrastes V0/V1 del bloque B: por escenario, orientación y réplica (misma semilla); diferencia de entrada y de métricas, con n.
 export function contrasts(teamRows) {
-  const ci = (n) => COLS.team.indexOf(n); const rows = teamRows.filter((r) => r[ci('block')] === 'B' && r[ci('status')] === 'finished' && r[ci('is_test_team')] === 1); const by = new Map();
+  const ci = (n) => COLS.team.indexOf(n); const rows = teamRows.filter((r) => r[ci('block')] === 'CONTRAST' && r[ci('status')] === 'finished' && r[ci('is_test_team')] === 1); const by = new Map();
   for (const r of rows) { const k = `${r[ci('resolver')]}|${r[ci('scenario')]}|${r[ci('orientation')]}|${r[ci('replicate')]}`; (by.get(k) ?? by.set(k, {}).get(k))[r[ci('variant')]] = r; }
-  const M = ['pts', 'opp_pts', 'diff', 'fga', 'fg3a', 'fta', 'ts_pct', 'oreb_total', 'dreb_total', 'ast_total', 'tov_total', 'stl', 'blk', 'pf', 'controls_sim', 'finalizations_sim', 'possessions_beM', 'duration_s', 'players_used', 'max_minutes', 'energy_end_mean'];
+  const M = ['pts', 'opp_pts', 'diff', 'fga', 'fg3a', 'three_share', 'fta', 'ts_pct', 'oreb_total', 'dreb_total', 'oreb_pct_own', 'ast_total', 'tov_total', 'stl', 'blk', 'pf', 'controls_sim', 'finalizations_sim', 'duration_s', 'players_used', 'max_minutes', 'energy_end_mean', 'press_opps', 'press_explicit_opps', 'ast_den_delivered'];
   const out = []; for (const [k, v] of by) { if (!v.V0 || !v.V1) continue; const [res, sc, or, rep] = k.split('|'); out.push([res, sc, or, rep, v.V0[ci('case_id')], v.V1[ci('case_id')], v.V0[ci('seed')], ...M.flatMap((m) => [v.V0[ci(m)], v.V1[ci(m)], v.V0[ci(m)] != null && v.V1[ci(m)] != null ? r3(v.V1[ci(m)] - v.V0[ci(m)]) : null])]); }
   const cols = ['resolver', 'scenario', 'orientation', 'replicate', 'case_V0', 'case_V1', 'seed', ...M.flatMap((m) => [`${m}_V0`, `${m}_V1`, `${m}_delta`])];
   const agg = new Map(); for (const r of out) { const g = `${r[0]}|${r[1]}|${r[2]}`; (agg.get(g) ?? agg.set(g, []).get(g)).push(r); }

@@ -18,7 +18,7 @@ export class ShardRunner {
   // `fx`: { id, input, opts, start } ; el encuentro empieza en el instante virtual `start` (desfase sobre la agenda).
   // `fx.spec` ({ a, b, seed, importance }) construye la entrada en el propio fragmento con las doce plantillas ya enviadas (no se viaja una entrada de cientos de KB por encuentro).
   add(fx) { if (!fx.input && fx.spec) fx = { ...fx, input: buildPairInput(this.teamMap, fx.spec.a, fx.spec.b, { seed: fx.spec.seed, importance: fx.spec.importance ?? 'ordinary' }) }; this.matches.set(fx.id, { id: fx.id, start: fx.start ?? 0, controlledTeams: fx.controlledTeams ?? null, m: new SimMatch(fx.input, this.ctx, { matchId: fx.id, attemptId: fx.attemptId ?? 1, ...(fx.opts ?? {}) }), essential: null }); return fx.id; }
-  restore(fx, snap) { this.matches.set(fx.id, { id: fx.id, start: fx.start ?? 0, m: restoreSim(snap, this.ctx, { matchId: fx.id }), essential: null }); }
+  restore(fx, snap) { this.matches.set(fx.id, { id: fx.id, start: fx.start ?? 0, controlledTeams: fx.controlledTeams ?? null, m: restoreSim(snap, this.ctx, { matchId: fx.id }), essential: null }); }
   has(id) { return this.matches.has(id); }
   // Tiempo local = tiempo disputado acumulado de periodos (virtual deportivo) menos el desfase de inicio; un partido no iniciado no publica nada.
   localTime(e, T) { return Math.max(0, T - e.start); }

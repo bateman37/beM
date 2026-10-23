@@ -23,7 +23,7 @@ export class Matchday {
       this.meta.set(f.id, meta);
       if (_restore) continue;
       if (meta.resolver === 'detailed') { if (!profile) throw new Error('la jornada necesita el perfil detallado para sus encuentros detallados'); this.detailed.set(f.id, new DetailedFixture({ id: f.id, input: f.input, profile, controlledTeams: meta.controlledTeams, start: meta.start })); }
-      else this.shard.add({ id: f.id, input: f.input, start: meta.start, attemptId: meta.attemptId });
+      else this.shard.add({ id: f.id, input: f.input, start: meta.start, attemptId: meta.attemptId, controlledTeams: meta.controlledTeams }); // C04: la autoridad sobre los equipos declarada llega al fragmento (antes solo la conocía el pool: la orden a un equipo sin autoridad no se rechazaba en la jornada en proceso)
     }
     this.packets = new Map(); this._publish(0);
   }
@@ -35,7 +35,9 @@ export class Matchday {
     for (const p of this.shard.advanceAll(T)) out.set(p.id, p);
     for (const [id, d] of [...this.detailed.entries()].sort((a, b) => (a[0] < b[0] ? -1 : 1))) out.set(id, d.advanceTo(Math.max(0, T - d.start)));
     // C03-01: un encuentro terminado y aceptado (p. ej. recuperado de un guardado) ya no tiene resolutor activo; su paquete sale de lo conservado, una sola vez y sin regenerarlo.
-    for (const id of this.ids) if (!out.has(id) && this.results[id]) out.set(id, this._packetOfResult(id, T));
+    // C04: un encuentro ya terminado y aceptado publica SIEMPRE su paquete congelado al aceptarlo (también el que sigue vivo en el fragmento): antes su `local` seguía creciendo por barrera y, tras recargar, quedaba congelado,
+    // de modo que la jornada recuperada no publicaba lo mismo que la ininterrumpida.
+    for (const id of this.ids) if (this.results[id]) out.set(id, this._packetOfResult(id, T));
     for (const [id, p] of out) { const m = this.meta.get(id); p.competition = m.competition; p.teams = m.teams; p.youth = m.youth; p.valid = p.finished ? this._validOf(id, p) : null; }
     const ordered = new Map(this.ids.filter((id) => out.has(id)).map((id) => [id, out.get(id)])); // orden estable por identificador (igual con o sin recuperación)
     this.packets = ordered; return ordered;
@@ -121,7 +123,7 @@ export class Matchday {
     const ctx = contextFromJSON(snap.ctx);
     const fixtures = snap.fixtures.map((f) => ({ id: f.meta.id, competition: f.meta.competition, resolver: f.meta.resolver, start: f.meta.start, controlledTeams: f.meta.controlledTeams, attemptId: f.meta.attemptId, label: f.meta.label, youth: f.meta.youth, input: { teams: f.meta.teams.map((id) => ({ id })) } }));
     const md = new Matchday({ id: snap.id, date: snap.date, fixtures, standings0: snap.standings0, objectives: snap.objectives, ctx, profile, barrierSeconds: snap.barrierSeconds, policy: snap.policy, _restore: true });
-    for (const f of snap.fixtures) { if (f.result) { md.results[f.meta.id] = f.result; continue; } if (f.meta.resolver === 'sim') md.shard.restore({ id: f.meta.id, start: f.meta.start }, f.state); else md.detailed.set(f.meta.id, DetailedFixture.restore(f.meta.id, f.state, profile)); }
+    for (const f of snap.fixtures) { if (f.result) { md.results[f.meta.id] = f.result; continue; } if (f.meta.resolver === 'sim') md.shard.restore({ id: f.meta.id, start: f.meta.start, controlledTeams: f.meta.controlledTeams }, f.state); else md.detailed.set(f.meta.id, DetailedFixture.restore(f.meta.id, f.state, profile)); }
     md.T = snap.T; md.barrier = snap.barrier; md.paused = snap.paused; md.log = snap.log; md.decisions = snap.decisions;
     md.packets = new Map(); for (const id of md.ids) { /* se reconstruye el presente publicado sin avanzar */ } md._republish(); return md;
   }

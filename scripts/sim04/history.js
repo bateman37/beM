@@ -1,4 +1,4 @@
-// SIM-MOTOR-03 · historia de prueba (§8.3) y aprendizaje posterior comparativo (§8.4), calculados SOLO desde resultados ya ejecutados (sin volver a simular): 72 resultados de A en ronds FICTICIAS identificadas,
+// SIM-MOTOR-04 · historia desde la reserva sin jugar otra temporada (§11.4) y aprendizaje comparado (§11.5), adaptado de SIM-MOTOR-03 (§8.3 y §8.4), calculados SOLO desde resultados ya ejecutados (sin volver a simular): los 56 resultados de VAL en un calendario estadístico de doble vuelta de ocho equipos (rondas FICTICIAS identificadas),
 // dos ledgers separados (SIM y comparación mixta), conciliación jugador → club/competición/temporada y esencial → ledger, y propuestas de aprendizaje con Polivalencia 8/16/24 sobre copias identificadas.
 // Nunca se aplica una propuesta al motor ni al dataset base; las aplicaciones y deshacer de comprobación se hacen sobre copias.
 import { SeasonLedger, commonLines, derived, COMMON_KEYS } from '../../src/season/ledger.js';
@@ -72,7 +72,7 @@ function learning(env, simBy, detBy, pairs) {
   const rows = [];
   for (const pr of pairs) {
     const sim = simBy.get(pr.sim); const det = detBy.get(pr.detailed); if (!sim || !det) { out.pairs.push({ pair: pr.pair, error: 'falta un resolutor' }); continue; }
-    const c = L.allCases(env); const caseDef = c.sim.find((x) => x.case_id === pr.sim); const base = caseDef.make(); const copy = makeLearningCopy(base, env.profile, { mode: 'synthetic', id: `LEARN03-${pr.pair}` });
+    const c = L.allCases(env); const caseDef = c.val.find((x) => x.case_id === pr.sim); const base = caseDef.make(); const copy = makeLearningCopy(base, env.profile, { mode: 'synthetic', id: `LEARN04-${pr.pair}` });
     const exps = { sim: exposureFromEssential(sim.essential, { source: pr.sim }), detailed: det.exposure?.players ? { ...det.exposure, match: { ...(det.exposure.match ?? {}), source_id: `${pr.detailed}` } } : null };
     const entry = { pair: pr.pair, sim: pr.sim, detailed: pr.detailed, copy: copy.id, exposure: {}, proposals: [] };
     for (const [model, ex] of Object.entries(exps)) {
@@ -100,7 +100,7 @@ function learning(env, simBy, detBy, pairs) {
   // propiedades exigidas
   add('nadie sin participación recibe dosis por estar en la plantilla', rows.every((r) => r.hadTime || r.targets === 0), { filas: rows.length, conTiempo: rows.filter((r) => r.hadTime).length });
   // misma exposición normalizada en ambos adaptadores → misma propuesta; más registros no conceden presupuesto
-  const pr0 = pairs[0]; const sim0 = simBy.get(pr0.sim); const base0 = L.allCases(env).sim.find((x) => x.case_id === pr0.sim).make(); const copy0 = makeLearningCopy(base0, env.profile, { mode: 'synthetic', id: `LEARN03-${pr0.pair}-eq` }); const { states: s0 } = teamStatesOf(copy0.input, P, 0); const tid = copy0.input.teams[0].id;
+  const pr0 = pairs[0]; const sim0 = simBy.get(pr0.sim); const base0 = L.allCases(env).val.find((x) => x.case_id === pr0.sim).make(); const copy0 = makeLearningCopy(base0, env.profile, { mode: 'synthetic', id: `LEARN04-${pr0.pair}-eq` }); const { states: s0 } = teamStatesOf(copy0.input, P, 0); const tid = copy0.input.teams[0].id;
   const stA = deep(s0[tid]); const exA = exposureFromEssential(sim0.essential, { source: pr0.sim }); const exB = deep(exA); exB.match.model = 'beM-detailed'; const rnd = (x) => JSON.stringify(x, (k, v) => (typeof v === 'number' ? Math.round(v * 1e9) / 1e9 : v));
   const pa = proposeFromMatch(stA, exA, P, { source_id: 'EQ|X' }); const pb = proposeFromMatch(stA, exB, P, { source_id: 'EQ|X' }); add('misma exposición normalizada ⇒ misma propuesta con las funciones comunes (sin importar el adaptador)', pa.ok && pb.ok && rnd(pa.nextState) === rnd(pb.nextState), { pair: pr0.pair });
   const exC = deep(exA); for (const x of Object.values(exC.players)) for (const k of Object.keys(x.modules)) x.modules[k] *= 7; const pc = proposeFromMatch(stA, exC, P, { source_id: 'EQ|X' }); add('más eventos (créditos ×7) no conceden más presupuesto ni dosis', pc.ok && rnd(pc.nextState) === rnd(pa.nextState), {});
@@ -115,11 +115,11 @@ function learning(env, simBy, detBy, pairs) {
 // ---------------------------------------------------------------------------------------------------------------------------------- orquestación
 export function buildHistoryAndLearning(env, simRecs, detRecs) {
   const simBy = new Map(simRecs.filter((r) => r.status === 'finished').map((r) => [r.case_id, r])); const detBy = new Map(detRecs.filter((r) => r.status === 'finished').map((r) => [r.case_id, r]));
-  const sched = L.history72(); const missing = sched.filter((s) => !simBy.has(s.case_id));
+  const sched = L.historyVal(); const missing = sched.filter((s) => !simBy.has(s.case_id));
   const itemsSim = sched.filter((s) => simBy.has(s.case_id)).map((s) => ({ ...s, model: 'sim', essential: simBy.get(s.case_id).essential }));
-  const itemsMixed = sched.filter((s) => simBy.has(s.case_id)).map((s) => { const twin = detBy.get(`${s.case_id}@DET`); return twin ? { ...s, model: 'detailed', essential: liteFromDetailedRecord(twin, s.case_id) } : { ...s, model: 'sim', essential: simBy.get(s.case_id).essential }; });
+  const itemsMixed = sched.filter((s) => simBy.has(s.case_id)).map((s) => { const twin = L.MIXED_HISTORY_ANCHORS.includes(s.case_id) ? detBy.get(s.case_id) : null; return twin ? { ...s, model: 'detailed', essential: liteFromDetailedRecord(twin, s.case_id) } : { ...s, model: 'sim', essential: simBy.get(s.case_id).essential }; });
   const A = recordAll('SIM', itemsSim); const B = recordAll('MIXTO', itemsMixed);
-  const out = { schema: 'beM-sim03-history/1', season: SEASON, competition: COMP, note: 'calendario ARTIFICIAL: 12 rondas ficticias de seis partidos (primeras rondas de la doble vuelta de círculo); resultados ya ejecutados de A (réplica 1), no vueltos a generar', scheduled: sched.length, missingResults: missing.map((m) => m.case_id),
+  const out = { schema: 'beM-sim04-history/1', season: SEASON, competition: COMP, note: 'calendario ARTIFICIAL de doble vuelta de ocho equipos (14 rondas ficticias de cuatro partidos); resultados de VAL ya ejecutados, no vueltos a generar ni evolucionados; no es una simulación de desarrollo estacional', scheduled: sched.length, missingResults: missing.map((m) => m.case_id),
     ledgers: {} };
   for (const [name, R, items] of [['sim', A, itemsSim], ['mixed', B, itemsMixed]]) {
     out.ledgers[name] = { label: R.label, accepted: R.accepted.length, rejected: R.rejected, resolvers: items.reduce((a, i) => { a[i.model] = (a[i.model] ?? 0) + 1; return a; }, {}), stints: R.led.stints.size, reconciliation: reconcileLedger(R.led, items), checks: historyChecks(R.led, items), ledgerFingerprint: L.sha(R.led.toJSON()).slice(0, 32), byRound: Object.fromEntries([...new Set(items.map((i) => i.round))].map((r) => [r, items.filter((i) => i.round === r).map((i) => [i.case_id, i.model])])) };
@@ -127,8 +127,8 @@ export function buildHistoryAndLearning(env, simRecs, detRecs) {
   // movimiento administrativo en una COPIA del escenario (sin jugar partidos): solo efecto en la ronda siguiente; no reasigna retroactivamente partidos ya ejecutados
   const w = new SeasonWorld({ profile: env.profile, players: env.players, ctx: env.ctx }); const mover = 'EQ05-J11'; const back = w.teams.get('EQ02').players.at(-1).id;
   const rej = w.transfer(mover, 'EQ02', 8); const ok = w.transferAll([{ playerId: mover, toClub: 'EQ02', atRound: 1 }, { playerId: back, toClub: 'EQ05', atRound: 1 }]);
-  out.administrativeMove = { copyOfLabScenario: true, farDateRejected: rej.ok === false ? rej.reason : 'ACEPTADO (defecto)', exchangeAccepted: ok.ok, clubAtRound0: w.clubAt(mover, 0)?.club ?? null, clubAtRound1: w.clubAt(mover, 1)?.club ?? null, rosters: [w.teams.get('EQ02').players.length, w.teams.get('EQ05').players.length], validRosters: w.validateRosters().length === 0, note: 'los 72 resultados ya ejecutados no se reasignan: su entrada no reflejaba el movimiento' };
-  out.learning = learning(env, simBy, detBy, L.learningPairs());
+  out.administrativeMove = { copyOfLabScenario: true, farDateRejected: rej.ok === false ? rej.reason : 'ACEPTADO (defecto)', exchangeAccepted: ok.ok, clubAtRound0: w.clubAt(mover, 0)?.club ?? null, clubAtRound1: w.clubAt(mover, 1)?.club ?? null, rosters: [w.teams.get('EQ02').players.length, w.teams.get('EQ05').players.length], validRosters: w.validateRosters().length === 0, note: 'los 56 resultados ya ejecutados no se reasignan: su entrada no reflejaba el movimiento' };
+  out.learning = learning(env, simBy, detBy, L.LEARNING_PAIRS);
   out.allChecksOk = [...out.ledgers.sim.reconciliation, ...out.ledgers.sim.checks, ...out.ledgers.mixed.reconciliation, ...out.ledgers.mixed.checks, ...out.learning.checks].every((c) => c.ok) && ok.ok && rej.ok === false;
   return out;
 }
