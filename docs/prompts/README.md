@@ -37,6 +37,7 @@ Directorio de los encargos a Claude Code. **El texto original de un prompt ejecu
 | SIM-MOTOR-01 | Primera de cuatro entregas de SIM-MOTOR: generador estadístico por tramos (motor ultrarrápido), selector de motor del laboratorio, perfil SIM editable, 32 capacidades y controles causales, conciliaciones y medición real de 1.000 partidos (B01/B02/B03) con paquetes para ChatGPT | [`SIM-MOTOR-01-generador-y-rendimiento.md`](SIM-MOTOR-01-generador-y-rendimiento.md) · [recorrido manual](SIM-MOTOR-01-recorrido-manual.md) | **Ejecutado** (pendiente de Dennis; la PR #20 de 18C ya estaba fusionada: PR independiente) | 2026-10-22 · intento 1 | — |
 | SIM-MOTOR-02 | Segunda de cuatro entregas de SIM-MOTOR: correcciones C02-01…05, roles/director/familiaridad pertinente, política pequeña del entrenador, lectores SIM, jornada simultánea con el detallado, guardado y lotes persistentes, historia individual de temporada y aprendizaje posterior | [`SIM-MOTOR-02-correcciones-integracion-simultaneidad-historia.md`](SIM-MOTOR-02-correcciones-integracion-simultaneidad-historia.md) · [recorrido manual](SIM-MOTOR-02-recorrido-manual.md) | **Ejecutado** (pendiente de Dennis) | 2026-10-23 · intento 1 | — |
 | SIM-MOTOR-03 | Tercera de cuatro entregas de SIM-MOTOR (incorpora 02B): cierre de C03-01…11, rendimiento exacto y campaña comparativa congelada con paquetes para ChatGPT | [`SIM-MOTOR-03-correcciones-02B-y-campana.md`](SIM-MOTOR-03-correcciones-02B-y-campana.md) | [recorrido manual](SIM-MOTOR-03-recorrido-manual.md) | ejecutado (ver ficha) |
+| SIM-MOTOR-04 | Cuarta y última entrega de SIM-MOTOR: correcciones C04-01…06, candidata numérica provisional por selección mecánica congelada, rendimiento exacto, reserva y auditoría final | [`SIM-MOTOR-04-correcciones-calibracion-y-cierre.md`](SIM-MOTOR-04-correcciones-calibracion-y-cierre.md) | [recorrido manual](SIM-MOTOR-04-recorrido-manual.md) | ejecutado (ver ficha) |
 
 ## Fichas de ejecución
 
@@ -387,3 +388,15 @@ Comprobación local de enlaces: hecha por Claude. Presentación en GitHub: no co
 | Rama / PR | `claude/busy-edison-b1fmnc` · [bateman37/beM#21](https://github.com/bateman37/beM/pull/21) (abierta contra `main`, sin fusionar; título y descripción reflejan 01 + 02 + 02B + 03). |
 | Resultado breve | Ver [`../tecnico/sim-motor02b.md`](../tecnico/sim-motor02b.md), [`../tecnico/sim-motor03-plan.md`](../tecnico/sim-motor03-plan.md) y [`../tecnico/sim-motor03-campana.md`](../tecnico/sim-motor03-campana.md). Paquetes fuera de Git en `out/sim-motor03/entrega-final/`. |
 | Pendientes | Recorrido manual de Dennis ([guía](SIM-MOTOR-03-recorrido-manual.md)); análisis de ChatGPT y SIM-MOTOR-04. |
+
+### SIM-MOTOR-04
+
+| Campo | Valor |
+|---|---|
+| Objetivo | Cerrar C04-01…06, buscar una candidata numérica provisional con un selector mecánico congelado (≤ 9 vectores), optimizar sin cambiar el deporte, ejecutar la reserva (VAL/STRESS/CONTRAST), equivalencia, jornada mixta, historia/aprendizaje y la medición de mil partidos, y entregar paquetes verificables. |
+| Medio de entrada del texto | Archivo `.md` adjunto (`beM-PROMPT-SIM-MOTOR-04-CORRECCIONES-CALIBRACION-Y-CIERRE.md`; prefijo añadido por la subida). |
+| Fecha real de ejecución | 2026-10-23 · intento 1 |
+| Revisión de partida | Cabeza de SIM-MOTOR-03 en la rama de la serie (base de la PR abierta contra `main`; sin fusionar). |
+| Rama / PR | `claude/busy-edison-b1fmnc` · PR contra `main`, abierta y sin fusionar (ver la respuesta final). |
+| Resultado breve | Ver [`../tecnico/sim-motor04.md`](../tecnico/sim-motor04.md). Candidata `C04-FINAL-PROVISIONAL` (provisional, no aceptación deportiva); objetivo de 5 s **no** cumplido. Paquetes fuera de Git en `out/sim-motor04/entrega-final/`. |
+| Pendientes | Recorrido manual de Dennis ([guía](SIM-MOTOR-04-recorrido-manual.md)); interpretación deportiva de ChatGPT y aceptación de Dennis. |

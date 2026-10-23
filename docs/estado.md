@@ -1,6 +1,6 @@
 # Estado del proyecto
 
-Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANGELOG.md)). Última actualización: 2026-10-23, entrega SIM-MOTOR-03 (incluye 02B; sobre SIM-MOTOR-01 y 02, PR #21).
+Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANGELOG.md)). Última actualización: 2026-10-23, entrega SIM-MOTOR-04 (cuarta y última de SIM-MOTOR; incluye 03, 02B, 02 y 01).
 
 ## Qué hay realmente en el repositorio
 
@@ -8,6 +8,15 @@ Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANG
 - **Diseño funcional del motor y del primer laboratorio**, organizado por temas en [`motor/`](motor/README.md) (34 capítulos). Es **especificación**: está *definida*, no implementada.
 - **Copia original congelada** del funcional unificado y **exportado completo vigente** generado: ver [`historico/`](historico/README.md) y [`exportados/`](exportados/README.md).
 - **Utilidades documentales** en `scripts/docs/` (Python 3, librería estándar).
+
+## SIM-MOTOR-04 (ejecutado; correcciones verificables, candidata provisional, rendimiento exacto y auditoría final; pendiente de Dennis)
+
+- **Qué es**: cuarta entrega del roadmap de cuatro. Cierra C04-01…06 (rebote ofensivo colectivo, lectores de zona y canastas con falta, bloqueador pertinente, familiaridad de presión, prioridades 1/5 con cobertura del instrumento y denominadores de asistencia), elige una candidata numérica **provisional** con un selector mecánico congelado antes de CAL (≤ 9 vectores), optimiza sin cambiar el deporte y ejecuta la reserva (VAL, STRESS, CONTRAST, diagnóstico), equivalencia, jornada mixta, historia y aprendizaje.
+- **Versiones**: aplicación `SIM-MOTOR-04` (incluye `SIM-MOTOR-03` y `02B`), SIM `0.3.0-SIMMOTOR04`, resultado `beM-sim-match/3`, guardado `beM-sim-snapshot/2` (los de 02/03 se rechazan con explicación), esencial `/2`, perfil `SEM-SIM01+SEM-SIM02+SEM-SIM04-20261023`. Detallado **sin cambio** (83–98, 6.684 sorteos; 0 archivos deportivos modificados).
+- **Candidata** `C04-FINAL-PROVISIONAL` (volumen 19,5 s/control, factor de triples 0,70, P0 de pase final 0,90, coste de energía 3): mejora observada en CAL y en VAL (8/8 estados descriptivos, sin contradicciones), pero **subproduce puntos** frente al detallado y no se activa por defecto. No es aceptación deportiva.
+- **Rendimiento**: objetivo de 5 s por mil **NO cumplido** (final 7,35–12,0 s frente a 8,2–12,2 s del control en la misma sesión); RSS del lote 694 MiB; jornada de mil 17,4 s, pausa pública máxima 1,82 s (+2,84 s de cierre diferido) y RSS 2,19 GiB (objetivos de 1 s y 1,5 GiB no cumplidos). Equivalencia exacta: OPT 56/56, TECH 16/16, huellas 1.000/1.000.
+- **Comprobado por Claude**: suite completa 335/335, `data:check`, comprobador documental (copia limpia), recorrido de Chromium (58 pasos, consola 0, red 0), comprobador offline de la entrega, jornada mixta (tres rutas iguales, autoridad de equipo) e historia/aprendizaje (seis pares, Polivalencia 8/16/24).
+- **No cerrado**: aceptación deportiva y manual (Dennis), validación externa integral, objetivos de rendimiento y memoria, 2P%/libres por debajo del detallado. Ver [`tecnico/sim-motor04.md`](tecnico/sim-motor04.md) y [`prompts/SIM-MOTOR-04-recorrido-manual.md`](prompts/SIM-MOTOR-04-recorrido-manual.md).
 
 ## SIM-MOTOR-03 (incluye 02B; ejecutado; correcciones, rendimiento exacto y campaña comparativa congelada; pendiente de Dennis)
 

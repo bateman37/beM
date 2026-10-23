@@ -2,6 +2,14 @@
 
 Registro breve de entregas. Una entrada por entrega; las más recientes primero.
 
+## SIM-MOTOR-04 — Correcciones verificables, convergencia estadística, rendimiento y auditoría final — 2026-10-23
+
+- **Correcciones C04-01…06**: rebote ofensivo colectivo ponderado, lectores de zona con la regla común de intento de campo (la canasta con falta cuenta), bloqueador pertinente por rol de jugada, familiaridad de presión sobre la pérdida extra, prioridades 1/5 con cobertura del instrumento y denominadores de asistencia; conciliaciones R24–R26 (26 en total). Perfil `SEM-SIM04-20261023`, resultado `beM-sim-match/3`, guardado `/2` (los de 02/03 se rechazan con explicación).
+- **Candidata provisional** `C04-FINAL-PROVISIONAL` por selección mecánica congelada (V→Z→A→E, 9 vectores): mejora observada en CAL y VAL (8/8 estados), subproduce puntos; no se activa por defecto ni equivale a aceptación deportiva.
+- **Optimizaciones exactas** (eventos sin `delete`, caché de quintetos, cierre diferido, generación joven del worker): equivalencia OPT 56/56 y huellas 1.000/1.000; **objetivo de 5 s NO cumplido** (7,35–12,0 s frente a 8,2–12,2 s del control); jornada de mil 17,4 s, pausa pública 1,82 s, RSS 2,19 GiB.
+- **Campaña**: 1.004 SIM válidas (CAL 616, VAL 168, STRESS 48, CONTRAST 88, DIAG 12, OPT 56, TECH 16) + 36 detallados; jornada mixta, historia desde VAL y aprendizaje con seis pares. Paquetes fuera de Git y comprobador offline `scripts/sim04/verify-delivery.js`.
+- Pruebas S04-01…10; suite 335/335; Chromium 58 pasos (consola 0, red 0). Detallado intacto (83–98, 6.684 sorteos). Pendiente de Dennis: [recorrido manual](docs/prompts/SIM-MOTOR-04-recorrido-manual.md). Ver [`docs/tecnico/sim-motor04.md`](docs/tecnico/sim-motor04.md).
+
 ## SIM-MOTOR-03 (incluye 02B) — Correcciones, rendimiento exacto y campaña comparativa congelada — 2026-10-23
 
 - **Cierre de 02B (C03-01…11)**: recuperación de la jornada con encuentros ya terminados, guardados independientes y coherentes con matriz de compatibilidad explícita, registro histórico validado y atómico, consulta histórica sin detalle futuro, consecuencias revertidas, estadísticas derivadas con universos correctos (defensa con faltas de tiro, quintetos con controles observados, tapones recibidos), conservación de Análisis con ausencia tipada, movimiento administrativo en la ronda siguiente, identidad de las órdenes del pool y política del entrenador coherente entre rutas (`advanceAutomatic`/`playAutomatic`; `finish()` queda como primitiva). SIM `0.2.1-SIMMOTOR02B`; perfil numérico de 02 intacto; C03-11 cambia trayectorias (registrado). [Nota](docs/tecnico/sim-motor02b.md).
