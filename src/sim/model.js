@@ -129,7 +129,7 @@ function rolePool(S, T, view, play, role) {
   if (role === 'director') out = [{ pl: view.director, w: 1 }];
   else if (!d) out = view.players.map((pl) => ({ pl, w: 1 }));
   else if (d.src === 'director') out = [{ pl: view.director, w: 1 }];
-  else { const fav = d.slotGroup ? T.participantSlots[d.slotGroup] ?? [] : []; const rp = S.selection.rolePreference; const tags = d.tags ?? []; out = view.lu.filter((e) => e.pl !== view.director || d.src !== 'pool' || role === 'handler').map((e) => ({ pl: e.pl, w: (fav.includes(e.slot) ? rp.favoredFunctionWeight : rp.otherFunctionWeight) * offRoleBias(S, T, e.pl, tags) })); }
+  else { const fav = d.slotGroup ? T.participantSlots[d.slotGroup] ?? [] : []; const rp = S.selection.rolePreference; const tags = d.tags ?? []; out = view.lu.filter((e) => e.pl !== view.director || d.src !== 'pool' || role === 'handler').map((e) => { const b = offRoleBias(S, T, e.pl, tags); return { pl: e.pl, w: (fav.includes(e.slot) ? rp.favoredFunctionWeight : rp.otherFunctionWeight) * b, b }; }); }
   byPlay.set(role, out); return out;
 }
 // Caché por tramo y equipo: capacidad de ataque por zona y adecuación de cada jugador como finalizador (receta + vocación + iniciativa).
@@ -260,7 +260,7 @@ export function shotCells(S, T, sides, k, M, ctx) {
   for (let ci = 0; ci < nc; ci++) {
     const c = comp.cells[ci]; const p = comp.plays[c.pi]; if (!p.available) continue;
     const sh = S.shots[c.zone]; const qd = qc[c.pi];
-    const fw = finisherWeights(S, T, av, p.play, c, plan); if (fw.pref === undefined) { let pf = 0; for (let i = 0; i < fw.length; i++) pf += fw[i].w; fw.pref = pf / Math.max(1, fw.length); fw.pEst = estP(S, sh, fw, N, false, vcA(S, av, c.zone)); }
+    const fw = finisherWeights(S, T, av, p.play, c, plan); if (fw.pref === undefined) { let pf = 0; for (let i = 0; i < fw.length; i++) pf += fw[i].w0; fw.pref = pf / Math.max(1, fw.length); fw.pEst = estP(S, sh, fw, N, false, vcA(S, av, c.zone)); }
     if (c.zone === 'midrange') { hasMid[ci] = 1; md[ci] = mp === 'avoid' ? mpPol.avoidWeight : mp === 'openOnly' ? qd.comfortable * mpPol.openOnlyComfortableWeight + (1 - qd.comfortable) * mpPol.openOnlyOtherWeight : seekMid; }
     const orient = c.zone === 'three' ? orientOut : (c.zone === 'rim' || c.zone === 'inside') ? orientIn : 1; const risk = c.exec === 'none' ? 0 : c.exec === 'dribble' ? riskD : c.exec === 'pass' ? riskP : riskN;
     const V = Math.max(sel.candidateRead.minimumUtility, sh.points * fw.pEst - sel.candidateRead.expectedTurnoverCostPoints * risk);
@@ -308,7 +308,8 @@ export function finisherWeights(S, T, view, play, c, plan) {
   else { const pid = play ? play.id : '*'; let byPlay = vc.fw.get(pid); if (!byPlay) { byPlay = new Map(); vc.fw.set(pid, byPlay); } const rz = c.rz ?? (c.rz = `${c.role}|${c.zone}`); const hit = byPlay.get(rz); if (hit) return hit; const out = buildFw(S, T, view, vc, play, c); byPlay.set(rz, out); return out; }
   const out = buildFw(S, T, view, vc, play, c); vc.fwG[c.gid] = out; return out;
 }
-function buildFw(S, T, view, vc, play, c) { const pool = play ? rolePool(S, T, view, play, c.role) : view.players.map((pl) => ({ pl, w: offRoleBias(S, T, pl, S.roles.creditTags.spontaneous) })); const fit = vc.fit[c.zone]; const out = new Array(pool.length); for (let i = 0; i < pool.length; i++) out[i] = { pl: pool[i].pl, w: pool[i].w * fit[vc.idx.get(pool[i].pl)] }; return out; }
+// `w` incluye el sesgo de rol (reparto del finalizador); `w0` es el peso SIN ese sesgo: la preferencia de celda (`pref`) usa `w0` para no aplicar la misma ventaja de rol dos veces (participación y mezcla de celdas).
+function buildFw(S, T, view, vc, play, c) { const pool = play ? rolePool(S, T, view, play, c.role) : view.players.map((pl) => ({ pl, w: offRoleBias(S, T, pl, S.roles.creditTags.spontaneous), b: offRoleBias(S, T, pl, S.roles.creditTags.spontaneous) })); const fit = vc.fit[c.zone]; const out = new Array(pool.length); for (let i = 0; i < pool.length; i++) { const f = fit[vc.idx.get(pool[i].pl)]; out[i] = { pl: pool[i].pl, w: pool[i].w * f, w0: pool[i].b != null ? pool[i].w * f / pool[i].b : pool[i].w * f }; } return out; }
 function estP(S, sh, fw, N, moved, A) { const b0 = logit(sh.p0) - sh.sD * (S.selection.candidateRead.opponentAbilityEstimate - N); let s = 0; let ws = 0; for (let i = 0; i < fw.length; i++) { const x = fw[i]; s += x.w * sigmoid(b0 + sh.sA * (A.get(x.pl) - N)); ws += x.w; } return ws > 0 ? s / ws : sh.p0; }
 
 // Calidad de la transición: parte sin oposición (llegada) y parte con oposición (llegada de defensores por FIS01/FIS02).

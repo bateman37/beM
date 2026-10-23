@@ -74,6 +74,12 @@ export class SimMatch {
   addContext(item) { this.contextLog.push({ ...JSON.parse(JSON.stringify(item)), receivedAtPublished: this.published, seq: this.contextLog.length + 1 }); return this.contextLog.length; }
   // Identidad reproducible: entrada raíz (incluye las órdenes programadas en la entrada), comandos recibidos y contexto externo. Una variante de comandos no es la misma entrada efectiva.
   chain() { const received = this.commandLog; return { root: this.norm.fingerprint, commands: fpOfLog(received), context: fpOfLog(this.contextLog), effective: chainFingerprint(this.norm.fingerprint, received, this.contextLog), nCommands: received.length, nContext: this.contextLog.length }; }
+  // Lectura incremental del presente publicado (marcador y periodos): avanza un puntero sobre los hechos ya publicados; no consume azar ni reconstruye el acta. Se reconstruye tras restaurar un guardado.
+  syncPub() {
+    const p = this.pub ??= { i: 0, score: [0, 0], periods: [[0, 0]], ended: false, ctl: [0, 0] }; const ev = this.events; const lim = this.published + 1e-9;
+    while (p.i < ev.length && ev[p.i].t <= lim) { const e = ev[p.i++]; if (e.ty === 'shot' && e.made) { p.score[e.tm] += e.pts; p.periods[e.p - 1][e.tm] += e.pts; } else if (e.ty === 'ft' && e.made) { p.score[e.tm] += 1; p.periods[e.p - 1][e.tm] += 1; } else if (e.ty === 'period') { while (p.periods.length < e.p) p.periods.push([0, 0]); } else if (e.ty === 'end') p.ended = true; }
+    return p;
+  }
   nextBoundaryAtOrAfter(at) { if (at <= this.gt) return this.gt; const open = this.segments.length ? this.segments[this.segments.length - 1] : null; return open && open.end >= at ? open.end : at; }
   _applyOrders() {
     for (const o of this.orders) {
