@@ -90,3 +90,5 @@ B01: un worker, proceso nuevo. B02: cuatro workers, proceso nuevo (frío). B03: 
 ## 9. Compromisos para SIM-MOTOR-02
 
 Los partidos simultáneos compartirán un reloj virtual y solo publicarán el presente alcanzado (`advance`/`query` ya lo respetan); los trabajadores físicos son limitados y reutilizables (`SimPool`); Referencia conservará identidades y estadísticas individuales sin regenerarlas; el aprendizaje será posterior al partido, único y reversible (el generador no cambia conocimiento ni consulta la Polivalencia). No se ha construido nada de 02.
+
+> **Actualización de SIM-MOTOR-02**: los roles ofensivos O01–O15 y defensivos D01–D12 **ya no son exclusivos del detallado** (efecto sencillo y real en SIM); las correcciones C02-01…05 sustituyen los defectos conocidos de esta entrega. Ver [`sim-motor02.md`](sim-motor02.md).

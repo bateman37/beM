@@ -1,6 +1,6 @@
 # Estado del proyecto
 
-Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANGELOG.md)). Última actualización: 2026-10-22, entrega SIM-MOTOR-01 (sobre MOTOR-18C, ya fusionada en `main` con la PR #20).
+Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANGELOG.md)). Última actualización: 2026-10-23, entrega SIM-MOTOR-02 (sobre SIM-MOTOR-01, PR #21).
 
 ## Qué hay realmente en el repositorio
 
@@ -8,6 +8,16 @@ Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANG
 - **Diseño funcional del motor y del primer laboratorio**, organizado por temas en [`motor/`](motor/README.md) (34 capítulos). Es **especificación**: está *definida*, no implementada.
 - **Copia original congelada** del funcional unificado y **exportado completo vigente** generado: ver [`historico/`](historico/README.md) y [`exportados/`](exportados/README.md).
 - **Utilidades documentales** en `scripts/docs/` (Python 3, librería estándar).
+
+## SIM-MOTOR-02 (ejecutado; correcciones, integración, simultaneidad e historia; pendiente de Dennis)
+
+- **Qué es**: segunda entrega del roadmap de cuatro. Cierra las correcciones de la revisión independiente de SIM-MOTOR-01 (C02-01…05: prefijo público monótono, libres y finalizaciones únicas, gasto de presión al ejecutante, identidad canónica y validación, continuidades y contadores causales) y añade roles/director/familiaridad pertinentes, política pequeña del entrenador, lectores SIM por audiencia, **jornada simultánea** con el detallado (reloj virtual común, barreras, clasificación inicial/provisional/final), **guardado y continuación reales**, **lotes persistentes** (recuperables tras SIGKILL), **historia individual de temporada** (dos ligas sénior, una Sub-20, movimiento de jugador, profundidades, cierre) y **aprendizaje posterior** con guarda por encuentro lógico. Detalle: [`tecnico/sim-motor02.md`](tecnico/sim-motor02.md) · [pendientes](tecnico/sim-motor02-pendientes.md) · [recorrido manual](prompts/SIM-MOTOR-02-recorrido-manual.md) · [evidencia](tecnico/evidencia-sim-motor02/RESUMEN.md).
+- **Git**: se continúa en la rama de la PR #21 (SIM-MOTOR-01 + SIM-MOTOR-02), base `606c33b`, sin fusionar.
+- **Versiones**: aplicación `SIM-MOTOR-02`, SIM `0.2.0-SIMMOTOR02`, resultado `beM-sim-match/2`, snapshot `beM-sim-snapshot/1`, jornada `beM-sim-matchday/1`, perfil base `SEM-SIM01-20261022` + extensión `SEM-SIM02-20261022` (semillas, **sin calibración**). Detallado **sin cambio** (83–98, 6.684 sorteos; ningún archivo deportivo detallado modificado).
+- **Cambia el deporte SIM** (explicado, no calibrado): sorteo nuevo del bloqueador y del receptor de falta ofensiva, continuación tras tapón fuera, energía de presión al ejecutante, roles/director/familiaridad con efecto, libro de faltas como datos. Los resultados de 01 no se reproducen con el motor nuevo.
+- **Rendimiento** (esenciales individuales en el coordinador, cuatro workers, 1.000 partidos): P02-F 8,30 s y calientes 5,15 / 5,52 / 5,91 s: el objetivo de 5 s **NO se alcanza**; 15,4 MiB de esenciales, RSS 851 MiB; jornada de 1.000 simultáneos 14,4 s y 2,3 GiB.
+- **Comprobado por Claude**: suite completa 307/307, `data:check`, comprobador documental, pruebas S02-01…14, recorrido de Chromium (43 pasos, consola 0, red 0, recargas reales, descargas por bytes), lote real interrumpido con SIGKILL y recuperado, verificación de los paquetes (integridad 11/11, contenido 39/39). **Pendiente de Dennis**: [recorrido manual](prompts/SIM-MOTOR-02-recorrido-manual.md). **No ejecutado**: otros navegadores, Node 24, comparación estadística con el detallado, calibración.
+- **No cerrado**: calidad deportiva, objetivo de rendimiento, alternativas de pase/ayudas/movimientos/saques tácticos (no representados). **Siguiente**: análisis de ChatGPT sobre los paquetes y decisión de Dennis; después SIM-MOTOR-03.
 
 ## SIM-MOTOR-01 (ejecutado; generador estadístico por tramos y medición de 1.000 partidos; pendiente de Dennis)
 

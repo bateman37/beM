@@ -2,6 +2,13 @@
 
 Registro breve de entregas. Una entrada por entrega; las más recientes primero.
 
+## SIM-MOTOR-02 — Correcciones, integración, simultaneidad e historia — 2026-10-23
+
+- **Correcciones C02-01…05** de la revisión de SIM-MOTOR-01: prefijo público monótono (periodos, controles y estado desde hechos; sufijo privado), libres y finalizaciones únicas (`bonus_sin_familia`), gasto de presión al equipo que presiona, identidad canónica y validación estricta, tapón fuera como continuidad, receptor de falta ofensiva y contadores causales de faltas; 23 conciliaciones (R01–R23). Cambian trayectorias SIM (sin calibración).
+- **Roles, director y familiaridad pertinente** con efecto antes del sorteo; **política pequeña del entrenador** (semillas `SEM-SIM02`); 11 lectores SIM con audiencias y ausencias tipadas.
+- **Jornada simultánea** (`src/matchday/`, `beM-sim-matchday/1`): reloj virtual común, barreras, detallado + SIM, clasificación inicial/provisional/final, pool de trabajadores; **guardado real** (`beM-sim-snapshot/1`) y **lotes persistentes** recuperables tras SIGKILL; **historia de temporada** (72 encuentros, movimiento, profundidades, cierre) y **aprendizaje posterior** con guarda por encuentro lógico.
+- Medición: P02-F 8,30 s y calientes 5,15–5,91 s (objetivo de 5 s **no alcanzado**); esenciales individuales 15,4 MiB. Pruebas S02-01…14; suite 307/307; Chromium 43 pasos (consola 0, red 0). Detallado intacto. Aplicación `SIM-MOTOR-02`. **Pendiente de Dennis.** Ver [`docs/tecnico/sim-motor02.md`](docs/tecnico/sim-motor02.md).
+
 ## SIM-MOTOR-01 — Generador estadístico por tramos y medición de 1.000 partidos — 2026-10-22
 
 - **Nuevo modelo de resolución** `beM-sim-segment` (`src/sim/`, resultado `beM-sim-match/1`, perfil `SEM-SIM01-20261022`): generador por tramos con flujos agregados y materialización cronológica (faltas, bonus, exclusión a mitad de tramo, prórrogas), 32 capacidades y controles tácticos que alteran magnitudes antes del sorteo, 18 conciliaciones SIM, perfil editable con procedencia (heredada · derivada · SEM-SIM01) y adaptador de la entrada del detallado. No llama al resolutor detallado.

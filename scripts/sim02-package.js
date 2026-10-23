@@ -5,7 +5,7 @@
 import { writeFileSync, mkdirSync, readFileSync, existsSync, rmSync, readdirSync, statSync, cpSync, mkdtempSync } from 'node:fs';
 import { execSync, spawn } from 'node:child_process';
 import { tmpdir } from 'node:os';
-import { join, dirname, relative } from 'node:path';
+import { join, dirname, relative, resolve } from 'node:path';
 import { createHash } from 'node:crypto';
 import { loadData } from './node-data.js';
 import { makeContext, buildReferenceInput, SimMatch, buildSimResult, SIM_VERSION, SIM_PROFILE_ID, SIM_RESULT_SCHEMA, SIM_SNAPSHOT_SCHEMA, SIM_MATCHDAY_SCHEMA } from '../src/sim/index.js';
@@ -30,7 +30,7 @@ import { buildMatchInput, runMatch } from '../src/match/index.js';
 import { uniformBlock } from '../tests/m18-helpers.js';
 
 const arg = (k, d = null) => { const a = process.argv.find((x) => x.startsWith(`--${k}=`)); return a ? a.slice(k.length + 3) : d; };
-const OUT = arg('out', 'out/sim-motor02/entrega-final'); const BENCH = arg('bench', 'out/sim-motor02/bench/final'); const TESTS = arg('tests', 'out/sim-motor02/pruebas.json'); const BROWSER = arg('browser', 'out/sim-motor02/navegador/recorrido.json');
+const OUT = resolve(arg('out', 'out/sim-motor02/entrega-final')); const BENCH = arg('bench', 'out/sim-motor02/bench/final'); const TESTS = arg('tests', 'out/sim-motor02/pruebas.json'); const BROWSER = arg('browser', 'out/sim-motor02/navegador/recorrido.json');
 const ROOT = new URL('..', import.meta.url).pathname; const FAST = join(OUT, 'revision-rapida'); const DET = join(OUT, 'evidencia-detallada');
 rmSync(OUT, { recursive: true, force: true }); for (const d of [FAST, join(FAST, 'ejemplo'), DET]) mkdirSync(d, { recursive: true });
 const w = (dir, name, body) => { const p = join(dir, name); mkdirSync(dirname(p), { recursive: true }); writeFileSync(p, typeof body === 'string' ? body : JSON.stringify(body, null, 1)); };
