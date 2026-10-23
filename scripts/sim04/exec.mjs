@@ -103,7 +103,7 @@ export async function run(opts) {
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const phase = arg('phase', 'run'); const planDir = arg('plan', join(SELF, 'docs/tecnico/evidencia-sim-motor04/plan')); const out = arg('out', join(SELF, 'out/sim-motor04/campaign'));
   if (phase === 'plan') { const { bad } = await plan({ planDir }); process.exit(bad.length ? 1 : 0); }
-  const ov = arg('overrides'); const overrides = ov ? JSON.parse(readFileSync(ov, 'utf8')) : [];
+  const ov = arg('overrides'); const ovRaw = ov ? JSON.parse(readFileSync(ov, 'utf8')) : []; const overrides = Array.isArray(ovRaw) ? ovRaw : ovRaw.overrides; if (!Array.isArray(overrides)) throw new Error('--overrides debe ser una lista [{path,value}] o un vector {overrides:[…]}');
   const routes = arg('routes') ? JSON.parse(readFileSync(arg('routes'), 'utf8')) : undefined;
   const r = await run({ block: arg('block'), identity: arg('identity'), root: arg('root', SELF), overrides, resolver: arg('resolver', 'sim'), only: arg('cases') ? arg('cases').split(',') : null, route: arg('route'), routes, out, planDir, workers: Number(arg('workers', 4)), detWorkers: Number(arg('det-workers', 2)) });
   console.log(JSON.stringify(r)); process.exit(0);
