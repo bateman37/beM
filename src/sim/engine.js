@@ -4,14 +4,17 @@
 import { Rng } from './rng.js';
 import { ATTR_ORDER } from './profile.js';
 import { SIM_MODEL, SIM_RESULT_SCHEMA, SIM_VERSION } from './version.js';
-import { normalizeInput } from './adapt.js';
-import { lineupView, defenseAssignment, attackModel, finishPace, shotCells, finisherWeights, shotProbs, blockProb, reboundModel, assistModel, passAbility, ftProb, severity, ea, recipe } from './model.js';
+import { normalizeInput, validateOrder, chainFingerprint } from './adapt.js';
+import { foulRule, newCoachState } from './coachsim.js';
+import { lineupView, defenseAssignment, attackModel, finishPace, shotCells, finisherWeights, shotProbs, blockProb, reboundModel, assistModel, passAbility, ftProb, severity, ea, recipe, offRoleBias, rolePoolOf } from './model.js';
 import { consistencySigmaAt, enduranceFactorAt } from '../match/formulas.js';
 import { clamp } from '../match/mathx.js';
 
 const SLOTS = ['PG', 'SG', 'SF', 'PF', 'C'];
 const r1 = (x) => Math.round(x * 10) / 10;
-const GUARD_CHAIN = 6;
+// Guard técnico de cadenas de rebote ofensivo y continuación: la cadena se resuelve sin tope práctico (la probabilidad de superar 6 es despreciable pero no nula); un tope alcanzado es un FALLO diagnosticado,
+// nunca un abandono de la posesión que entregue el siguiente control al rival.
+const GUARD_CHAIN = 64;
 // Capacidades en un objeto de forma fija (mismas 32 claves, mismo orden): lectura rápida y monomórfica en las recetas.
 const mkAb = (a) => ({ TEC01: a.TEC01, TEC02: a.TEC02, TEC03: a.TEC03, TEC04: a.TEC04, TEC05: a.TEC05, TEC06: a.TEC06, TEC07: a.TEC07, TEC08: a.TEC08, TEC09: a.TEC09, TEC10: a.TEC10, TEC11: a.TEC11, TEC12: a.TEC12, TEC13: a.TEC13, TEC14: a.TEC14, TEC15: a.TEC15, TEC16: a.TEC16, TEC17: a.TEC17, TEC18: a.TEC18, FIS01: a.FIS01, FIS02: a.FIS02, FIS03: a.FIS03, FIS04: a.FIS04, FIS05: a.FIS05, FIS06: a.FIS06, FIS07: a.FIS07, MEN01: a.MEN01, MEN02: a.MEN02, MEN03: a.MEN03, MEN04: a.MEN04, MEN05: a.MEN05, MEN06: a.MEN06, MEN07: a.MEN07 });
 
@@ -25,17 +28,17 @@ export class SimMatch {
     this.opts = opts; this.rng = new Rng(this.norm.seed);
     this.events = []; this.segments = []; this.seq = 0; this.gt = 0; this.period = 1; this.status = 'ready'; this.error = null;
     this.published = 0; this.publishedPeriods = 0; this.score = [0, 0]; this.periodScore = [[0, 0]]; this.teamFouls = [[0, 0]]; this.controlTeam = 0;
-    this.orders = []; this.appliedOrders = []; this.orderLog = []; this.pendingFrac = 0;
+    this.orders = []; this.appliedOrders = []; this.orderLog = []; this.pendingFrac = 0; this.finSeq = 0; this.commandLog = []; this.contextLog = []; this.coach = newCoachState();
     this.rules = this.S.rules; this.periodStart = 0; this.periodLen = this.rules.quarterSeconds;
     this.teams = this.norm.teams.map((t, ti) => this._buildTeam(t, ti));
     this.sides = this.teams.map((t) => ({ idx: t.idx, plan: t.plan, onCourt: [], view: null, assign: null }));
     this.fam = this.teams.some((t) => t.players.some((p) => p.kn && p.kn.mode === 'explicit'));
-    for (const o of input.orders ?? []) this._queueOrder(o, true);
+    for (const o of this.norm.orders) this._queueOrder(o, true);
     this._startLineups(); this.status = 'running';
   }
 
   _buildTeam(t, ti) {
-    const S = this.S; const plan = t.plan; plan.directorPriority ??= [];
+    const S = this.S; const plan = JSON.parse(JSON.stringify(t.plan)); plan.directorPriority ??= []; // el plan de trabajo es una copia: la entrada normalizada permanece intacta (huella y guardado)
     const players = t.players.map((p) => ({
       id: p.id, team: ti, name: p.name ?? p.id, ab: mkAb(p.abilities), abv: Float64Array.from(ATTR_ORDER, (a) => p.abilities[a]), age: p.age ?? null, height: p.heightCm, wingspan: p.wingspanCm, init: p.initiative, voc: p.finishingVocation, zp: p.zonePreference,
       kn: p.knowledge ?? null, offRole: p.offensiveRole?.code ?? null, defRole: p.defensiveRole?.code ?? null, positions: p.positions,
@@ -51,26 +54,33 @@ export class SimMatch {
   _lineupSnapshot() { for (const t of this.teams) this.sides[t.idx].onCourt = SLOTS.map((s) => ({ slot: s, pl: t.players.find((p) => p.onCourt && p.slot === s) })).filter((e) => e.pl); }
 
   // ------------------------------------------------------------------------------------------------------------------------ órdenes (plan) en fronteras canónicas
-  _queueOrder(o, fromInput = false) {
+  _queueOrder(o, fromInput = false, source = 'manual') {
+    const errs = validateOrder(o, this.teams.map((t) => t.id), this.T);
+    if (errs.length) { const e = new Error(`orden no válida: ${errs.map((x) => `${x.path}: ${x.message}`).join('; ')}`); e.validation = errs; throw e; }
     const team = typeof o.team === 'number' ? o.team : this.teams.findIndex((t) => t.id === o.team);
-    if (team < 0) throw new Error(`orden con equipo desconocido: ${o.team}`);
-    const allowed = ['styles', 'disposition', 'defense', 'coverage', 'pressureHeight', 'defStyles', 'playbook', 'midrange'];
-    for (const k of Object.keys(o.plan ?? {})) if (!allowed.includes(k)) throw new Error(`la orden SIM solo admite cambios de ${allowed.join(', ')} (no ${k})`);
-    this.orders.push({ at: o.at, team, plan: JSON.parse(JSON.stringify(o.plan)), id: this.orders.length + 1, fromInput });
+    this.orders.push({ at: o.at, team, plan: JSON.parse(JSON.stringify(o.plan)), id: this.orders.length + 1, fromInput, source });
   }
-  // Una orden futura entra en la siguiente frontera canónica admitida; devuelve su instante efectivo. No regenera el prefijo ni consume azar.
+  // Una orden futura entra en la siguiente frontera canónica admitida; devuelve su instante efectivo. No regenera el prefijo ni consume azar. Se valida por completo ANTES de tocar el estado:
+  // una orden rechazada no deja rastro. `source`: «manual» (usuario) o «coach» (política pequeña del entrenador; no sobrescribe una orden manual vigente).
   submit(o) {
     if (this.status === 'finished' || this.status === 'error') return { ok: false, error: 'el encuentro ya terminó' };
-    const at = Math.max(o.at ?? this.published, this.published, this.gt >= (o.at ?? 0) ? this.gt : 0);
-    this._queueOrder({ ...o, at }); const eff = this.nextBoundaryAtOrAfter(at); return { ok: true, effectiveAt: eff, requestedAt: o.at ?? this.published };
+    const errs = validateOrder({ ...o, at: o.at ?? this.published }, this.teams.map((t) => t.id), this.T); if (errs.length) return { ok: false, error: errs.map((x) => `${x.path}: ${x.message}`).join('; '), validation: errs };
+    const at = Math.max(o.at ?? this.published, this.published, this.gt >= (o.at ?? 0) ? this.gt : 0); const source = o.source ?? 'manual';
+    this._queueOrder({ ...o, at }, false, source); const eff = this.nextBoundaryAtOrAfter(at);
+    const ord = this.orders[this.orders.length - 1]; this.commandLog.push({ id: ord.id, source, team: ord.team, requestedAt: o.at ?? this.published, receivedAtPublished: this.published, at, effectiveAt: eff, plan: ord.plan, why: o.why ?? null });
+    return { ok: true, effectiveAt: eff, requestedAt: o.at ?? this.published, id: ord.id };
   }
+  // Contexto externo ya PUBLICADO (p. ej. una clasificación provisional) que llega al partido desde la jornada. Queda registrado para reproducir la política; no consume azar.
+  addContext(item) { this.contextLog.push({ ...JSON.parse(JSON.stringify(item)), receivedAtPublished: this.published, seq: this.contextLog.length + 1 }); return this.contextLog.length; }
+  // Identidad reproducible: entrada raíz (incluye las órdenes programadas en la entrada), comandos recibidos y contexto externo. Una variante de comandos no es la misma entrada efectiva.
+  chain() { const received = this.commandLog; return { root: this.norm.fingerprint, commands: fpOfLog(received), context: fpOfLog(this.contextLog), effective: chainFingerprint(this.norm.fingerprint, received, this.contextLog), nCommands: received.length, nContext: this.contextLog.length }; }
   nextBoundaryAtOrAfter(at) { if (at <= this.gt) return this.gt; const open = this.segments.length ? this.segments[this.segments.length - 1] : null; return open && open.end >= at ? open.end : at; }
   _applyOrders() {
     for (const o of this.orders) {
       if (o.applied || o.at > this.gt + 1e-9) continue;
-      const t = this.teams[o.team]; const before = {}; for (const k of Object.keys(o.plan)) { before[k] = JSON.parse(JSON.stringify(t.plan[k])); t.plan[k] = JSON.parse(JSON.stringify(o.plan[k])); }
+      const t = this.teams[o.team]; const before = {}; const changed = []; for (const k of Object.keys(o.plan)) { before[k] = JSON.parse(JSON.stringify(t.plan[k])); t.plan[k] = JSON.parse(JSON.stringify(o.plan[k])); if (k === 'styles' || k === 'defStyles') { for (const kk of Object.keys(o.plan[k])) if (before[k]?.[kk] !== o.plan[k][kk]) changed.push(`${k}.${kk}`); } else if (JSON.stringify(before[k]) !== JSON.stringify(o.plan[k])) changed.push(k); } o.changed = changed;
       delete t.plan._c; this.sides[o.team].plan = t.plan; o.applied = true; o.effective = this.gt;
-      this._push({ ty: 'plan', tm: o.team, change: Object.keys(o.plan), order: o.id });
+      this._push({ ty: 'plan', tm: o.team, change: Object.keys(o.plan), order: o.id, source: o.source });
     }
   }
 
@@ -94,9 +104,10 @@ export class SimMatch {
       else if (cur.out || !cur.available) reason = 'exclusion';
       else {
         const stint = this.gt - cur.courtSince;
-        const trouble = (this.period === 1 && cur.fouls >= 2) || (this.period === 2 && cur.fouls >= 3) || (this.period === 3 && cur.fouls >= 4) || (this.period === 4 && cur.fouls >= 4 && left > pol.closingWindow);
-        const closeKeep = this.period >= 4 && cur.fouls >= 4 && left <= pol.closingWindow;
-        if (trouble && !closeKeep) reason = 'faltas';
+        // protección por faltas: libro de faltas (FB070/FB060/FB080/FB075) leído como datos, con los umbrales de la política del entrenador
+        const fr = foulRule(fb, { period: this.period, quarters: this.rules.quarters, fouls: cur.fouls, left, closingWindow: pol.closingWindow, margin });
+        const closeKeep = this.period >= this.rules.quarters && cur.fouls >= 4 && left <= pol.closingWindow;
+        if (fr.protect && !closeKeep) reason = 'faltas';
         else if (cur.energy < pol.criticalEnergyReview) reason = 'energia_critica';
         else if (cur.energy < pol.energyReview && stint >= pol.minCourtStint) reason = 'energia';
         else if (stint >= pol.maxOrdinaryStintReview) reason = 'tramo_largo';
@@ -136,6 +147,8 @@ export class SimMatch {
     this._lineupSnapshot();
     for (const t of this.teams) { const s = this.sides[t.idx]; s.plan = t.plan; s.view = lineupView(S, T, s); s.teamT = t.T0 * Math.pow(0.5, this.gt / S.teamMoment.halfLifeSeconds); s.view.teamT = s.teamT; }
     for (const t of this.teams) { const s = this.sides[t.idx]; const r = this.sides[1 - t.idx]; s.assign = defenseAssignment(S, T, s, s.view, r.view, r.plan); }
+    // defensores de la zona (identificadores): participantes compactos que justifican la exposición defensiva de la finalización (el equipo DEFENSOR es el rival de quien ataca)
+    for (const t of this.teams) { const s = this.sides[t.idx]; const da = this.sides[1 - t.idx].assign; const memo = {}; s.zoneDefIds = (z) => (memo[z] ??= [...new Set(S.derived.zoneToAreas[z].flatMap((a) => da.areaDefs(a)))].map((p) => p.id)); }
     this.sides.fam = this.fam; void d;
   }
   _updateMoments(d) {
@@ -182,7 +195,10 @@ export class SimMatch {
     const cut = this._materialize(timeline, seg, start, d);
     const endT = cut != null ? cut : start + d; seg.end = endT; seg.cut = cut != null;
     this._finishSegment(seg, start, endT - start, models);
-    if (cut == null) this.controlTeam = (this.controlTeam + N) % 2; else { const done = timeline.filter((x) => x.t <= cut).length; this.controlTeam = (this.controlTeam + done) % 2; seg.controls = [0, 1].map((k) => timeline.filter((x) => x.t <= cut && x.k === k).length); }
+    const done = cut == null ? timeline : timeline.filter((x) => x.t <= cut);
+    if (cut == null) this.controlTeam = (this.controlTeam + N) % 2; else { this.controlTeam = (this.controlTeam + done.length) % 2; seg.controls = [0, 1].map((k) => done.filter((x) => x.k === k).length); }
+    // instantes de cada control comprendido (décimas): permiten leer los controles ALCANZADOS por un prefijo publicado sin tocar el tramo generado por delante
+    seg.ck = done.map((x) => x.k); seg.ct = done.map((x) => r1(x.t));
     this.gt = endT;
     return true;
   }
@@ -198,13 +214,14 @@ export class SimMatch {
     return recs;
   }
   _sampleCell(s, putback) { const cells = s.cells; if (!putback) return cells[this.rng.weightedBy(cells, 'w')]; const sub = s.putbackCells ??= cells.filter((c) => c.cell.zone === 'rim' || c.cell.zone === 'inside'); return sub[this.rng.weightedBy(sub, 'w')] ?? cells[0]; }
-  // Resuelve un registro terminal: pérdidas, faltas de tiro y tiros de campo con sus créditos, rebotes y continuaciones por rebote ofensivo.
+  // Resuelve un registro terminal: pérdidas, faltas de tiro y tiros de campo con sus créditos, rebotes y continuaciones por rebote ofensivo o tapón fuera.
+  // Cada finalización (tiro, falta de tiro y serie ligada) recibe una identidad compacta `fin` (§3 C02-02); los libres de bonus no tienen ficha y usan la categoría `bonus_sin_familia`.
   _resolve(rec, k, depth, putback) {
     const rng = this.rng; const S = this.S; const T = this.T; const s = this.sides[k]; const o = this.sides[1 - k]; const M = s.M; const A = s.view.players; const Dp = o.view.players;
-    const kind = rec.kind;
+    const kind = rec.kind; const cont = rec.cont ?? null;
     if (kind === 'to' || kind === 'lb' || kind === 'of' || kind === 'bv') {
       const who = A[rng.weighted(kind === 'of' ? M.ofW : M.toW)];
-      const t = { ty: 'tov', tm: k, pl: who.id, kind, stl: null, sub: null };
+      const t = { ty: 'tov', tm: k, pl: who.id, kind, stl: null, sub: null, cont };
       if (kind === 'to' || kind === 'lb') { if (rng.bernoulli(M.pSteal)) { t.sub = 'steal'; t.stl = Dp[rng.weighted(M.stealW)].id; } else t.sub = rng.bernoulli(M.pStealOob) ? 'out_of_bounds' : 'bad_pass'; }
       else if (kind === 'of') t.sub = 'offensive_foul'; else t.sub = 'violation';
       rec.ev = t; rec.chain.push({ t }); return;
@@ -215,18 +232,23 @@ export class SimMatch {
     const q = rng.weighted([cell.q.comfortable, cell.q.normal, cell.q.forced]);
     const moved = putback ? false : (cell.kind === 'play' ? c.moved : rng.bernoulli(c.movedShare));
     let passer = null; const passable = putback ? false : cell.kind === 'play' ? c.exec === 'pass' : rng.bernoulli(c.passShare);
-    if (passable && rng.bernoulli(s.assist.p)) { const others = A.filter((p) => p !== shooter); const ws = others.map((p) => Math.max(0.05, passAbility(S, p) / S.neutralAbility)); passer = others[rng.weighted(ws)]?.id ?? null; }
+    if (passable && rng.bernoulli(s.assist.p)) { const others = A.filter((p) => p !== shooter); const ct = S.roles.creditTags.passer; const ws = others.map((p) => Math.max(0.05, passAbility(S, p) / S.neutralAbility) * offRoleBias(S, T, p, ct)); passer = others[rng.weighted(ws)]?.id ?? null; }
     const src = putback ? 'putback' : cell.kind === 'play' ? c.family : cell.kind === 'trans' ? 'transition' : 'spontaneous';
-    const zone = c.zone; const base = { ty: 'shot', tm: k, pl: shooter.id, zone, q, src, play: c.playId ?? null, moved, passer, blk: null, made: false, and1: false, pts: 0, end: null };
+    const zone = c.zone; const fin = ++this.finSeq;
+    // participantes compactos de la finalización (exposición de familias/módulos): director, bloqueador pertinente y defensores de la zona; solo en contextos con módulo propio
+    const ctxName = putback ? 'putback' : cell.kind === 'play' ? 'organized' : cell.kind === 'trans' ? 'transition' : 'spontaneous'; let dir = null; let scr = null; let dfn = null;
+    if (ctxName !== 'putback') { dfn = s.zoneDefIds(zone); if (ctxName === 'organized') { dir = s.view.director.id; if (play?.screen?.role) { const pool = rolePoolOf(S, T, s.view, play, play.screen.role).filter((x) => x.pl !== shooter && x.pl.id !== dir); const bi = rng.weighted(pool.map((x) => x.w)); scr = bi >= 0 ? pool[bi].pl.id : null; } } }
+    const base = { ty: 'shot', tm: k, pl: shooter.id, zone, q, src, play: c.playId ?? null, moved, passer, blk: null, made: false, and1: false, pts: 0, end: null, fin, ctx: ctxName, dir, scr, dfn, cont };
     const info = { cell: { ...c, moved }, kind: cell.kind };
     const sp = shotProbs(S, T, this.sides, k, M, info, shooter, q);
+    const origin = { src, play: c.playId ?? null, zone, fin };
     if (kind === 'sf') {
       const made = rng.bernoulli(sp.p); const nFt = zone === 'three' ? 3 : 2;
-      if (made) { // canasta con falta: el tiro cuenta y se añade un libre ligado
+      if (made) { // canasta con falta: el tiro cuenta y se añade un libre ligado; sigue siendo UNA finalización
         base.made = true; base.and1 = true; base.pts = S.shots[zone].points; const sh = this._pushShotRec(rec, base);
-        rec.chain.push({ foul: { ty: 'shootfoul', tm: 1 - k, zone, victim: shooter.id, src, play: c.playId ?? null, and1: true } }); this._ftSeries(rec, k, shooter, 1, 'and1', sh, passer, s, putback);
-      } else { // fallo con falta de tiro: sin intento de campo, libres del tirador
-        const f = { ty: 'shootfoul', tm: 1 - k, zone, victim: shooter.id, src, play: c.playId ?? null }; rec.chain.push({ foul: f }); this._ftSeries(rec, k, shooter, nFt, 'shooting', f, passer, s, putback);
+        rec.chain.push({ foul: { ty: 'shootfoul', tm: 1 - k, zone, victim: shooter.id, src, play: c.playId ?? null, and1: true, fin, cont, ctx: ctxName, dir, scr, dfn, passer } }); this._ftSeries(rec, k, shooter, 1, 'and1', sh, passer, s, putback, origin);
+      } else { // fallo con falta de tiro: sin intento de campo (política EST-SIM02), libres del tirador; una finalización
+        const f = { ty: 'shootfoul', tm: 1 - k, zone, victim: shooter.id, src, play: c.playId ?? null, fin, cont, ctx: ctxName, dir, scr, dfn, passer }; rec.chain.push({ foul: f }); this._ftSeries(rec, k, shooter, nFt, 'shooting', f, passer, s, putback, origin);
       }
       return;
     }
@@ -237,13 +259,20 @@ export class SimMatch {
     const shot = this._pushShotRec(rec, base);
     if (made) return;
     // oportunidad de rebote o causa terminal explícita
-    if (base.blk != null && rng.bernoulli(S.block.outOfBoundsGivenBlock)) { shot.ev.end = 'block_out_of_bounds'; return; }
+    // Tapón fuera: el último toque es del defensor, de modo que el control NO pasa al rival; la misma continuidad se reanuda de forma compacta (sin saque táctico ni rebote inventado).
+    if (base.blk != null && rng.bernoulli(S.block.outOfBoundsGivenBlock)) { shot.ev.end = 'block_out_of_bounds'; this._continue(rec, k, depth, 'block_out_of_bounds', false); return; }
     this._rebound(rec, k, shooter, zone, shot, base.blk != null ? 'block' : 'field', depth);
   }
+  // Reanuda la misma continuidad ofensiva (rebote ofensivo, tapón fuera): un nuevo registro terminal del mismo equipo dentro del MISMO control.
+  _continue(rec, k, depth, why, putback) {
+    if (depth >= GUARD_CHAIN) throw new Error(`tope técnico de continuaciones (${GUARD_CHAIN}) alcanzado en una misma posesión (${why})`);
+    const kinds = this.sides[k].M.termOrder; const kind = kinds[this.rng.weighted(kinds.map((x) => this.sides[k].M.term[x]))]; const child = { kind, k, chain: [], dn: [], cont: why };
+    this._resolve(child, k, depth + 1, putback); rec.chain.push({ child });
+  }
   _pushShotRec(rec, base) { const sh = { ev: base }; rec.chain.push({ shot: sh }); return sh; }
-  _ftSeries(rec, k, shooter, n, cause, ref, passer, s, putback) {
+  _ftSeries(rec, k, shooter, n, cause, ref, passer, s, putback, origin) {
     const o = this.sides[1 - k]; const M = s.M; const p = ftProb(this.S, shooter, M, o); const ev = []; let anyMade = false;
-    for (let j = 0; j < n; j++) { const made = this.rng.bernoulli(p); anyMade ||= made; ev.push({ ty: 'ft', tm: k, pl: shooter.id, made, k: j + 1, n, cause, pts: made ? 1 : 0 }); }
+    for (let j = 0; j < n; j++) { const made = this.rng.bernoulli(p); anyMade ||= made; ev.push({ ty: 'ft', tm: k, pl: shooter.id, made, k: j + 1, n, cause, pts: made ? 1 : 0, fin: origin.fin, src: origin.src, play: origin.play, zone: origin.zone }); }
     const series = { ft: ev, ref, passer: cause === 'shooting' ? passer : null, anyMade, k }; rec.chain.push({ series });
     if (!ev[n - 1].made) this._rebound(rec, k, shooter, 'ft', series, 'ft', 1);
   }
@@ -255,8 +284,9 @@ export class SimMatch {
     if (part.length) { const capt = R.capt; const ws = part.map((x) => Math.max(0.05, capt(x))); pl = part[rng.weighted(ws)]; }
     const ev = { ty: 'reb', tm: off ? k : 1 - k, off, pl: pl?.id ?? null, cause };
     rec.chain.push({ reb: ev, parent });
-    if (off && depth < GUARD_CHAIN) { const kinds = s.M.termOrder; const kind = kinds[rng.weighted(kinds.map((x) => s.M.term[x]))]; const child = { kind, k, chain: [], dn: [] }; this._resolve(child, k, depth + 1, true); rec.chain.push({ child }); }
+    if (off) this._continue(rec, k, depth, 'offensive_rebound', true);
   }
 }
 
+const fpOfLog = (log) => chainFingerprint('log', log, []);
 function reboundBlocked(S, R) { const p = 1 - S.block.blockedLooseControlDefenseProbability; const sens = S.rebound.sensitivity; const z = Math.log(p / (1 - p)) + sens * (R.RA - R.RD); return 1 / (1 + Math.exp(-z)); }

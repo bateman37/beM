@@ -50,7 +50,7 @@ test('S01-01 determinismo e independencia: misma entrada ⇒ misma huella; dos e
 test('S01-02 conciliación completa y reconstrucción independiente del acta desde los registros (12 cruces)', () => {
   const pairs = [['EQ01', 'EQ02'], ['EQ03', 'EQ03'], ['EQ05', 'EQ09'], ['EQ10', 'EQ07'], ['EQ12', 'EQ04'], ['EQ08', 'EQ06'], ['EQ11', 'EQ02'], ['EQ04', 'EQ04'], ['EQ09', 'EQ01'], ['EQ06', 'EQ12'], ['EQ07', 'EQ03'], ['EQ02', 'EQ11']];
   pairs.forEach(([a, b], i) => {
-    const m = play(inputOf(a, b, 9000 + i)); const r = buildSimResult(m); assert.equal(m.status, 'finished'); assert.ok(r.reconciliation.valid, `${a}-${b}: ${r.reconciliation.checks.filter((c) => !c.ok).map((c) => c.id)}`); assert.equal(r.reconciliation.evaluated, 18); assert.deepEqual(r.reconciliation.notEvaluated, []);
+    const m = play(inputOf(a, b, 9000 + i)); const r = buildSimResult(m); assert.equal(m.status, 'finished'); assert.ok(r.reconciliation.valid, `${a}-${b}: ${r.reconciliation.checks.filter((c) => !c.ok).map((c) => c.id)}`); assert.equal(r.reconciliation.evaluated, 23); assert.deepEqual(r.reconciliation.notEvaluated, []);
     // reconstrucción desde los hechos sin usar el constructor del acta
     const pts = [0, 0]; let fga = [0, 0]; let reb = [0, 0]; let sec = [0, 0];
     for (const e of r.events) { if (e.ty === 'shot') { fga[e.tm]++; if (e.made) pts[e.tm] += e.pts; } if (e.ty === 'ft' && e.made) pts[e.tm] += 1; if (e.ty === 'reb') reb[e.tm]++; }
@@ -100,13 +100,16 @@ test('S01-05 las 32 capacidades alteran magnitudes (contraste +1/+3/+5 a context
   const base = buildSimProfile(profile); const cand = applyOverrides(base, [{ path: 'volume.neutralSecondsPerControl', value: 12 }]); assert.deepEqual(diffProfile(base, cand), [{ path: 'volume.neutralSecondsPerControl', base: 16, candidate: 12 }]); assert.equal(base.v.volume.neutralSecondsPerControl, 16);
   const pv = probeVector(makeContext(profile, [{ path: 'volume.neutralSecondsPerControl', value: 12 }]), inp).vector; assert.ok(pv['pace.sec.0'] < probeVector(ctx, inp).vector['pace.sec.0']);
   assert.ok(validateOverrides(base, [{ path: 'no.existe', value: 1 }, { path: 'segment.normalSeconds', value: -1 }, { path: 'shots.three.p0', value: 1.2 }, { path: 'volume.secondsPerControlBounds', value: [10] }]).length === 4, 'rutas desconocidas, valores no válidos y formas incorrectas se rechazan con causa');
-  assert.ok(base.rows.every((r) => ['heredada', 'derivada', 'SEM-SIM01'].includes(r.origin) && r.unit && r.effect), 'toda fila declara procedencia, unidad y efecto'); assert.equal(base.rows.filter((r) => r.origin === 'SEM-SIM01').length, 8);
+  assert.ok(base.rows.every((r) => ['heredada', 'derivada', 'SEM-SIM01', 'SEM-SIM02'].includes(r.origin) && r.unit && r.effect), 'toda fila declara procedencia, unidad y efecto'); assert.equal(base.rows.filter((r) => r.origin === 'SEM-SIM01').length, 8);
 });
 
 test('S01-06 familiaridad congelada y sin efecto inmediato de Polivalencia: conocimiento bajo/alto cambia la calidad antes del sorteo; sin conocimiento explícito o todo al máximo = neutral; el encuentro no cambia conocimiento', () => {
   const withK = (level, patch) => (i) => { for (const t of i.teams) for (const p of t.players) { p.knowledge = { mode: 'explicit', ...uniformBlock(level), ...(patch ?? {}) }; } };
   const neutral = probeVector(ctx, inputOf('EQ03', 'EQ04', 1)).vector; const max = probeVector(ctx, inputOf('EQ03', 'EQ04', 1, withK(30))).vector; const low = probeVector(ctx, inputOf('EQ03', 'EQ04', 1, withK(1))).vector;
-  assert.deepEqual(diffVectors(neutral, max, 1e-12), [], 'todos los niveles al máximo ⇒ el ajuste es exactamente 0'); assert.deepEqual(diffVectors(neutral, low, 1e-12), [], 'ignorancia simétrica de ambos lados: una sola vez por cálculo, se compensa (maxDefensa·U_D − maxAtaque·U_A)');
+  assert.deepEqual(diffVectors(neutral, max, 1e-12), [], 'todos los niveles al máximo ⇒ el ajuste es exactamente 0'); // SIM-MOTOR-02 (§4.3): ignorancia simétrica en las fichas organizadas y en la decisión espontánea se compensa una sola vez por cálculo (maxDefensa·U_D − maxAtaque·U_A); la TRANSICIÓN no tiene organización
+  // defensiva estable representada (como en el detallado) y por eso solo el ataque carece de módulo: es la única que cambia la calidad cómoda.
+  const lowV = probeVector(ctx, inputOf('EQ03', 'EQ04', 1, withK(1))); assert.ok(Object.entries(lowV.vector).filter(([k]) => k.startsWith('fam.play.') || k.startsWith('fam.spontaneous.')).every(([, x]) => Math.abs(x) < 1e-12), 'organizado y espontáneo: compensado'); assert.ok(lowV.vector['fam.transition.0'] < 0);
+  assert.deepEqual(diffVectors(neutral, low, 1e-12).map((d) => d.key).sort(), ['quality.comfortable.0', 'quality.comfortable.1'], 'solo la mezcla con transición cambia');
   const lowA = probeVector(ctx, inputOf('EQ03', 'EQ04', 1, (i) => { for (const p of i.teams[0].players) p.knowledge = { mode: 'explicit', ...uniformBlock(1) }; for (const p of i.teams[1].players) p.knowledge = { mode: 'explicit', ...uniformBlock(30) }; })).vector;
   assert.ok(lowA['quality.comfortable.0'] < neutral['quality.comfortable.0'] && lowA['quality.comfortable.1'] > neutral['quality.comfortable.1'], 'la carencia propia penaliza a quien ataca y favorece a su rival');
   const inp = inputOf('EQ03', 'EQ04', 3, withK(10)); const snapshot = JSON.stringify(inp.teams.map((t) => t.players.map((p) => p.knowledge))); const m = play(inp); assert.equal(JSON.stringify(inp.teams.map((t) => t.players.map((p) => p.knowledge))), snapshot, 'el encuentro no cambia el conocimiento de entrada');
@@ -131,7 +134,7 @@ test('S01-08 agenda congelada: 132 cruces × 7 vueltas + 76, semillas estables y
 });
 
 test('S01-09 lote: el resumen de un caso es el mismo en proceso y en trabajadores (tres cruces, dos hilos); el contexto se reutiliza', async () => {
-  const ag = buildAgenda().slice(0, 6); const direct = ag.map((c) => runCase(ctx, teamMap, c)); direct.forEach((r) => { assert.ok(r.valid); assert.equal(r.checks, 18); });
+  const ag = buildAgenda().slice(0, 6); const direct = ag.map((c) => runCase(ctx, teamMap, c)); direct.forEach((r) => { assert.ok(r.valid); assert.equal(r.checks, 23); });
   const pool = new SimPool({ workers: 2 }); await pool.start(contextToJSON(ctx), ctx.sp.fingerprint, teamMap, []);
   try { const a = await pool.run(ag, { chunk: 2 }); const b = await pool.run(ag, { chunk: 1 }); assert.deepEqual(a.results.map((r) => r.fp), direct.map((r) => r.fp)); assert.deepEqual(b.results.map((r) => r.fp), direct.map((r) => r.fp)); assert.deepEqual(a.results.map((r) => r.score), direct.map((r) => r.score)); assert.ok(pool.readyInfo.length === pool.size); } finally { await pool.close(); }
 });

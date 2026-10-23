@@ -31,7 +31,10 @@ export function extractTables(detailed) {
     midrangePolicies: ['avoid', 'openOnly', 'seek'], styleKeys: ['organizedPace', 'finishPreference', 'freedom', 'transition', 'elaboration', 'offensiveRisk', 'afterShot'],
     defStyleKeys: ['help', 'pressure', 'receivers', 'steal', 'protection'], slots: ['PG', 'SG', 'SF', 'PF', 'C'],
     attrs: detailed.attributeOrder, familiarity: deep(detailed.familiarity), teamNames: deep(detailed.fixtureContract?.teamNames ?? {}),
+    offensiveRoles: deep(rep.offensiveRoles), defensiveRoles: deep(def.roles), coachCatalog: deep({ rotation: detailed.coach.rotation, adjustments: detailed.coach.adjustments, endgame: detailed.coach.endgame, foulProtection: detailed.coach.foulProtection }),
   };
-  t.fingerprint = fpOf([[JSON.stringify(t.plays)], [JSON.stringify(t.organizations)], [JSON.stringify(t.coachPolicies)]].map((x, i) => ({ path: String(i), value: x })));
+  // La huella abarca TODOS los catálogos consumidos (no solo fichas, organizaciones y políticas): una caché no puede igualar dos contextos cuyas tablas efectivas cambian.
+  const { fingerprint: _f, ...consumed } = t; void _f;
+  t.fingerprint = fpOf(Object.entries(consumed).map(([k, v]) => ({ path: k, value: JSON.stringify(v) })));
   return t;
 }

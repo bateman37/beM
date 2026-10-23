@@ -10,6 +10,6 @@ export function makeContext(detailed, overrides = null) {
 export const contextToJSON = (ctx) => ({ rows: ctx.sp.rows, id: ctx.sp.id, detailedProfileId: ctx.sp.detailedProfileId, overrides: ctx.sp.overrides ?? [], T: ctx.T, baseRows: ctx.base.rows === ctx.sp.rows ? null : ctx.base.rows });
 export function contextFromJSON(j) {
   const sp = finalize({ id: j.id, detailedProfileId: j.detailedProfileId, rows: j.rows, overrides: j.overrides });
-  const base = j.baseRows ? finalize({ id: j.id.split('+')[0], detailedProfileId: j.detailedProfileId, rows: j.baseRows }) : sp;
+  const base = j.baseRows ? finalize({ id: j.id.replace(/\+candidata$/, ''), detailedProfileId: j.detailedProfileId, rows: j.baseRows }) : sp;
   return { sp, T: j.T, base };
 }

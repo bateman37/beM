@@ -2,10 +2,11 @@
 // y de las matrices de cobertura: un control o una capacidad cuenta como usado solo si cambia una magnitud de este vector.
 import { SimMatch } from './engine.js';
 import './materialize.js';
-import { shotProbs, blockProbExpected, ftProb, reboundModel, ZONES } from './model.js';
+import { shotProbs, blockProbExpected, ftProb, reboundModel, ZONES, finisherWeights, offRoleBias, defRoleBias, passAbility } from './model.js';
 import { consistencySigmaAt, enduranceFactorAt, pressureLossLogit } from '../match/formulas.js';
 import { ea } from './model.js';
 
+void defRoleBias;
 const mean = (xs) => xs.reduce((s, x) => s + x, 0) / (xs.length || 1);
 export function probeVector(ctx, input, over = {}) {
   const m = new SimMatch(input, ctx); m._prepareSides(120);
@@ -26,6 +27,12 @@ export function probeVector(ctx, input, over = {}) {
     v[`pMake.pullupThree.${k}`] = mean(lu.map((p) => shotProbs(S, T, m.sides, k, M, { kind: 'play', cell: { playId: 'POS01', zone: 'three', moved: false, role: 'handler', pullup: true } }, p, 1).p));
     v[`pMake.rollerRim.${k}`] = mean(lu.map((p) => shotProbs(S, T, m.sides, k, M, { kind: 'play', cell: { playId: 'POS01', zone: 'rim', moved: false, role: 'screener', roller: true } }, p, 1).p));
     v[`pMake.movedThree.${k}`] = mean(lu.map((p) => shotProbs(S, T, m.sides, k, M, { kind: 'trans', cell: { zone: 'three', moved: true, role: 'handler' } }, p, 1).p));
+    // reparto de participación y de créditos ANTES del sorteo (roles, director y familiaridad)
+    const fin = lu.map(() => 0); let finTot = 0; for (const c of s.cells) { if (!(c.w > 0)) continue; const fw = finisherWeights(S, T, s.view, c.kind === 'play' ? T.plays[c.cell.playId] : null, c.kind === 'play' ? { ...c.cell, kind: 'play' } : c.cell, s.plan); const tw = fw.reduce((a, x) => a + x.w, 0); if (!(tw > 0)) continue; for (const x of fw) fin[s.view.players.indexOf(x.pl)] += c.w * x.w / tw; finTot += c.w; }
+    lu.forEach((p, i) => { v[`part.finisher.${i}.${k}`] = finTot > 0 ? fin[i] / finTot : 0; });
+    const pw = lu.map((p) => Math.max(0.05, passAbility(S, p) / S.neutralAbility) * offRoleBias(S, T, p, S.roles.creditTags.passer)); const pt = pw.reduce((a, x) => a + x, 0); lu.forEach((p, i) => { v[`part.passer.${i}.${k}`] = pw[i] / pt; });
+    lu.forEach((p, i) => { v[`credit.steal.${i}.${k}`] = M.stealW[i] / M.stealW.reduce((a, x) => a + x, 0); v[`credit.offFoulRecv.${i}.${k}`] = M.ofRecvW[i] / M.ofRecvW.reduce((a, x) => a + x, 0); v[`def.rim.${i}.${k}`] = o.assign.rimDefs.includes(o.view.players[i]) ? 1 : 0; v[`def.interior.${i}.${k}`] = o.assign.interiorDefs.includes(o.view.players[i]) ? 1 : 0; });
+    for (const [pid, f] of Object.entries(M.famQuality ?? {})) v[`fam.play.${pid}.${k}`] = f; if (M.famCtx) { v[`fam.transition.${k}`] = M.famCtx.transition; v[`fam.spontaneous.${k}`] = M.famCtx.spontaneous; }
     v[`pFT.${k}`] = mean(lu.map((p) => ftProb(S, p, M, o))); v[`pOrb.field.${k}`] = s.reb.pField; v[`pOrb.ft.${k}`] = s.reb.pFt; v[`assist.p.${k}`] = s.assist.p;
     v[`energy.cost.${k}`] = mean(lu.map((p) => S.energy.costPerLiveMinute * enduranceFactorAt(S, p.ab.FIS06))); v[`moment.sigma.${k}`] = mean(lu.map((p) => consistencySigmaAt(S, p.ab.MEN06)));
     v[`pressure.lossShot.${k}`] = mean(lu.map((p) => pressureLossLogit(S, 'shot', M.pressure, ea(S, p, 'MEN07', 0))));

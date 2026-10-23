@@ -1,7 +1,7 @@
 // Perfil SIM (SEM-SIM01-20261022): todas las decisiones numéricas deportivas del generador viven aquí, como filas con ruta, valor, unidad, procedencia y efecto.
 // Procedencia (SIM-MOTOR-01 §4.3): «heredada» (copia de una fila del perfil efectivo detallado), «derivada» (transformación explícita de filas existentes) o «SEM-SIM01»
 // (semilla nueva autorizada por el encargo, pendiente de auditoría/calibración). El código lee `profile.v.<ruta>`; nunca constantes deportivas sueltas.
-import { SIM_PROFILE_ID } from './version.js';
+import { SIM_PROFILE_ID, SIM_EXTENSION_ID } from './version.js';
 import { fpString } from './fp.js';
 
 const deep = (x) => JSON.parse(JSON.stringify(x));
@@ -47,6 +47,14 @@ const SEM_ROWS = [
   ['assist.passAbilityLogitSlope', 0.04, 'logit por punto de capacidad', 'Sensibilidad a capacidad de pase/lectura menos el neutral.'],
 ];
 
+// Extensión SIM-MOTOR-02 (SEM-SIM02-20261022): semillas de la política pequeña del entrenador (§5.1 del encargo). No son calibración: se administran como cualquier fila y se identifican en el perfil.
+const SEM02_ROWS = [
+  ['coachSim.observationWindowSegments', 2, 'tramos publicados', 'Ventana de observación del rival: últimos tramos publicados que lee la política pequeña del entrenador.'],
+  ['coachSim.minShotAttempts', 6, 'tiros de campo', 'Intentos mínimos del rival en la ventana para reconocer un predominio exterior o interior.'],
+  ['coachSim.zoneShareMin', 0.6, 'proporción', 'Proporción mínima de la zona agrupada (exterior = triples; interior = aro + interior) para reconocer el predominio.'],
+  ['coachSim.maxPatterns', 2, 'patrones', 'Patrones conservados a la vez (exterior/interior).'],
+  ['coachSim.maxLevelStepPerReview', 1, 'niveles', 'Paso máximo del control de protección o de ritmo por revisión.'],
+];
 function flatten(prefix, src, out) {
   if (isLeaf(src)) { out.push([prefix, src]); return; }
   for (const [k, v] of Object.entries(src)) flatten(`${prefix}.${k}`, v, out);
@@ -63,6 +71,13 @@ export function buildSimProfile(detailed) {
   }
   // Hojas útiles que solo son cadenas/listas de catálogo se leen de las tablas declarativas del detallado (referencias, no filas numéricas).
   for (const [p, v, unit, effect] of SEM_ROWS) add(p, v, unit, 'SEM-SIM01', 'encargo SIM-MOTOR-01 §4.3 (semilla nueva, pendiente de auditoría/calibración)', effect);
+  for (const [p, v, unit, effect] of SEM02_ROWS) add(p, v, unit, SIM_EXTENSION_ID.split('-').slice(0, 2).join('-'), 'encargo SIM-MOTOR-02 §5.1 (semilla nueva, no calibración)', effect);
+  // Correspondencia de roles → créditos compatibles (tabla declarada; los pesos numéricos son los heredados selection.rolePreference y defense.assignment.roleFitWeight/otherRoleFitWeight).
+  add('roles.creditTags.block', ['rimProtect', 'rimHelp'], 'etiquetas', 'SEM-SIM02', 'encargo SIM-MOTOR-02 §4.1: etiquetas de función defensiva que orientan el reparto del crédito de tapón', 'Un defensor cuyo rol defensivo favorece estas etiquetas pesa roleFitWeight (una vez) en el reparto del tapón.');
+  add('roles.creditTags.steal', ['ballPressure', 'chaser'], 'etiquetas', 'SEM-SIM02', 'encargo SIM-MOTOR-02 §4.1: etiquetas de función defensiva que orientan el reparto del crédito de robo', 'Un defensor cuyo rol defensivo favorece estas etiquetas pesa roleFitWeight (una vez) en el reparto del robo.');
+  add('roles.creditTags.offensiveFoulReceiver', ['postDefense', 'ballContain'], 'etiquetas', 'SEM-SIM02', 'encargo SIM-MOTOR-02 §3 C02-05: receptor de la falta ofensiva entre los defensores en pista', 'Reparto del receptor de una falta ofensiva (defensor que la recibe) con el sesgo de rol defensivo.');
+  add('roles.creditTags.passer', ['passer'], 'etiquetas', 'SEM-SIM02', 'encargo SIM-MOTOR-02 §4.1: etiqueta de función ofensiva que orienta quién entrega el pase final', 'Un jugador cuyo rol ofensivo favorece «pasador» pesa favoredFunctionWeight (una vez) en el reparto de la entrega final.');
+  add('roles.creditTags.spontaneous', ['finisher'], 'etiquetas', 'SEM-SIM02', 'encargo SIM-MOTOR-02 §4.1: etiqueta de función ofensiva de las decisiones espontáneas y de transición', 'Reparto del finalizador cuando no hay ficha: sesgo de rol ofensivo con la etiqueta «finalizador».');
   const d = detailed.durationSeconds;
   add('derived.advanceShareOfControl', d.advance[1] / (d.advance[1] + d.organizedShot[1]), 'fracción', 'derivada', 'durationSeconds.advance[1] / (advance[1] + organizedShot[1])', 'Parte del ciclo de control ocupada por el avance (efecto de la altura de presión en el ritmo).');
   add('derived.transitionPaceFactor', (d.advance[1] + d.transition[1]) / (d.advance[1] + d.organizedShot[1]), 'factor', 'derivada', '(advance[1] + transition[1]) / (advance[1] + organizedShot[1])', 'Duración relativa de un control de transición frente a uno organizado.');

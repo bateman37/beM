@@ -4,6 +4,12 @@ import { sigmoid, logit, interpolate, a01, clamp } from '../match/mathx.js';
 import { ATTR_INDEX, compileRecipe } from './profile.js';
 import { perturbBinary, perturbCategories, qualityDistributionPure, pressureLossLogit, mixResolution, looseControlP, blockResolution, reboundTeamResolution, familiarityActor, familiaritySide, familiarityDelta } from '../match/formulas.js';
 
+// ------------------------------------------------------------------------------------------------------------------------------ roles (SIM-MOTOR-02 §4.1)
+// Efecto sencillo y real: coincidir con una función favorecida aplica el factor heredado UNA vez en el reparto correspondiente (participación o crédito); nunca una capacidad nueva ni un bonus de acierto.
+// Ofensivos O01–O15: `repertoire.offensiveRoles[rol].favors` frente a las etiquetas de la función (rol de la ficha); defensivos D01–D12: `defenseRepertoire.roles[rol].tags` frente a las etiquetas de la responsabilidad.
+export function offRoleBias(S, T, pl, tags) { const r = T.offensiveRoles?.[pl.offRole]; if (!r) return S.selection.newVariantPreference?.unknownRoleFunctionWeight ?? 1; const rp = S.selection.rolePreference; for (let i = 0; i < tags.length; i++) if (r.favors.includes(tags[i])) return rp.favoredFunctionWeight; return rp.otherFunctionWeight; }
+export function defRoleBias(S, T, pl, tags) { const r = T.defensiveRoles?.[pl.defRole]; const a = S.defense.assignment; if (!r) return a.otherRoleFitWeight; for (let i = 0; i < tags.length; i++) if (r.tags.includes(tags[i])) return a.roleFitWeight; return a.otherRoleFitWeight; }
+
 export const ZONES = ['rim', 'inside', 'midrange', 'three'];
 const QUALS = ['comfortable', 'normal', 'forced'];
 export const QUAL_KEYS = QUALS;
@@ -28,8 +34,17 @@ export function taskFor(S, tid, side, role, pl) { const t = S.tasks[tid]; const 
 const mean = (xs) => { let s = 0; for (const x of xs) s += x; return xs.length ? s / xs.length : 0; };
 const reachOf = (S, pl) => { const b = S.body; const hn = (pl.height - b.heightRangeCm[0]) / (b.heightRangeCm[1] - b.heightRangeCm[0]); const wn = (pl.wingspan - b.wingspanRangeCm[0]) / (b.wingspanRangeCm[1] - b.wingspanRangeCm[0]); return clamp(b.normalizedMix[0] * hn + b.normalizedMix[1] * wn, 0, 1); };
 
+// Carga de energía de un tramo para UN equipo (C02-03). La carga de EJECUTAR la presión defensiva (altura de presión y cobertura) pertenece al equipo que la ordena: se lee de su propio plan. El esfuerzo de atacar
+// una presión rival no se mezcla aquí: solo puede venir de su mecanismo representado (avance demorado y avance superado, que ya viven en el ritmo y la transición).
+export function energyLoad(S, M, ownPlan) {
+  const offLoad = (1 - M.tau) * S.energy.load.organized + M.tau * S.energy.load.transition;
+  const defLoad = S.defense.pressure.committedActorLoadByHeight[ownPlan.pressureHeight] * S.defense.coverage.committedActorLoad[ownPlan.coverage];
+  return { offLoad, defLoad, load: clamp((offLoad + defLoad) / 2, S.energy.loadBounds[0], S.energy.loadBounds[1]) };
+}
+
 // ------------------------------------------------------------------------------------------------------------------------------ vista del equipo en pista
 // `side`: { plan, onCourt: [{slot, pl}], cache }. Calcula director, pools por grupo de participantes y reparto defensivo por organización.
+export const rolePoolOf = (S, T, view, play, role) => rolePool(S, T, view, play, role);
 export function lineupView(S, T, side) {
   const lu = side.onCourt; const bySlot = {}; for (const e of lu) bySlot[e.slot] = e.pl;
   const ids = new Set(lu.map((e) => e.pl.id));
@@ -49,14 +64,14 @@ export function defenseAssignment(S, T, defSide, defView, attView, attPlan) {
   }
   const org = T.organizations[orgId]; const asg = S.defense.assignment; const players = defView.players.slice();
   const fits = { perimeterFit: asg.perimeterFit, interiorFit: asg.interiorFit, screenPursuitFit: asg.screenPursuitFit, helpRecoveryFit: asg.helpRecoveryFit };
-  const fitVal = (pl, f) => recipe(S, pl, fits[f], S.energy.defaultTechnicalTaskMax);
+  const fitVal = (pl, f, tags) => recipe(S, pl, fits[f], S.energy.defaultTechnicalTaskMax) * defRoleBias(S, T, pl, tags);
   let fnList; // [{name, fit, tags}]
   if (org.kind === 'individual' || !org.functions) { const dis = T.dispositions[attPlan.disposition].functions; fnList = dis.map((n, i) => ({ name: `${n}#${i}`, area: n, fit: T.attackerFunctions[n].fit, tags: T.attackerFunctions[n].tags })); }
   else fnList = Object.entries(org.functions).map(([n, f]) => ({ name: n, area: null, fit: f.fit, tags: f.tags }));
   const order = ['interiorFit', 'screenPursuitFit', 'helpRecoveryFit', 'perimeterFit']; const sorted = fnList.slice().sort((a, b) => order.indexOf(a.fit) - order.indexOf(b.fit));
   const free = players.slice(); const who = {};
   if (boxTarget) { /* box and one: el mejor defensor perimetral marca al objetivo; el resto se organiza como ORG02 */ }
-  for (const f of sorted) { let bi = 0; let bv = -1; for (let i = 0; i < free.length; i++) { const v = fitVal(free[i], f.fit); if (v > bv) { bv = v; bi = i; } } who[f.name] = free[bi]; free.splice(bi, 1); }
+  for (const f of sorted) { let bi = 0; let bv = -1; for (let i = 0; i < free.length; i++) { const v = fitVal(free[i], f.fit, f.tags); if (v > bv) { bv = v; bi = i; } } who[f.name] = free[bi]; free.splice(bi, 1); }
   const leftover = free; // jugadores sin función (lineup <5 solo en inferioridad: sobran funciones, no jugadores)
   const interior = (f) => f.fit === 'interiorFit';
   const byArea = {};
@@ -111,9 +126,10 @@ export function compilePlan(S, T, plan) {
 function rolePool(S, T, view, play, role) {
   const cache = viewCache(S, view); let byPlay = cache.pool.get(play.id); if (!byPlay) { byPlay = new Map(); cache.pool.set(play.id, byPlay); } const hit = byPlay.get(role); if (hit) return hit;
   const d = play.roles[role]; let out;
-  if (!d) out = view.players.map((pl) => ({ pl, w: 1 }));
+  if (role === 'director') out = [{ pl: view.director, w: 1 }];
+  else if (!d) out = view.players.map((pl) => ({ pl, w: 1 }));
   else if (d.src === 'director') out = [{ pl: view.director, w: 1 }];
-  else { const fav = d.slotGroup ? T.participantSlots[d.slotGroup] ?? [] : []; const rp = S.selection.rolePreference; out = view.lu.filter((e) => e.pl !== view.director || d.src !== 'pool' || role === 'handler').map((e) => ({ pl: e.pl, w: fav.includes(e.slot) ? rp.favoredFunctionWeight : rp.otherFunctionWeight })); }
+  else { const fav = d.slotGroup ? T.participantSlots[d.slotGroup] ?? [] : []; const rp = S.selection.rolePreference; const tags = d.tags ?? []; out = view.lu.filter((e) => e.pl !== view.director || d.src !== 'pool' || role === 'handler').map((e) => ({ pl: e.pl, w: (fav.includes(e.slot) ? rp.favoredFunctionWeight : rp.otherFunctionWeight) * offRoleBias(S, T, e.pl, tags) })); }
   byPlay.set(role, out); return out;
 }
 // Caché por tramo y equipo: capacidad de ataque por zona y adecuación de cada jugador como finalizador (receta + vocación + iniciativa).
@@ -180,12 +196,14 @@ export function attackModel(S, T, sides, k, ctx) {
   M.term = probs; M.termOrder = ['to', 'of', 'bv', 'sf', 'fs', 'lb']; M.dnRatio = wDn / tTot;
   // ---- robo dentro de pérdidas elegibles
   M.pSteal = sigmoid(logit(stealShare) + O.controlSensitivity * (DefSteal - N)); M.pStealOob = S.outcomes.turnoverOutOfBoundsIfNotSteal;
-  M.stealW = dv.players.map((p) => Math.max(0.01, taskFor(S, 'TAR07', 'defense', 'interceptor', p) / N));
+  const ct = S.roles.creditTags; M.stealW = dv.players.map((p) => Math.max(0.01, taskFor(S, 'TAR07', 'defense', 'interceptor', p) / N) * defRoleBias(S, T, p, ct.steal));
+  M.ofRecvW = dv.players.map((p) => Math.max(0.05, taskFor(S, 'TAR06', 'defense', 'primary', p) / N) * defRoleBias(S, T, p, ct.offensiveFoulReceiver));
   M.toW = av.players.map((p) => Math.max(0.05, 1 / Math.max(1, taskFor(S, 'TAR06', 'attack', 'handler', p)) * N) * (0.5 + p.init));
   M.ofW = av.players.map((p) => Math.exp(O.offensiveFoulSensitivity * (N - (lg.offensiveLegality.actionTechnique * ea(S, p, 'TEC07', 4) + lg.offensiveLegality.FIS04 * ea(S, p, 'FIS04', 4) + lg.offensiveLegality.FIS07 * ea(S, p, 'FIS07', 4)))));
   M.dnW = dv.players.map((p) => Math.exp(O.defensiveFoulSensitivity * (N - (lg.defensiveLegality.defenseTechnique * ea(S, p, da.interiorDefs.includes(p) ? 'TEC13' : 'TEC12', 4) + lg.defensiveLegality.MEN04 * ea(S, p, 'MEN04', 4) + lg.defensiveLegality.MEN05 * ea(S, p, 'MEN05', 4)))));
   // ---- ritmo: composición del ataque (organizado / transición / espontáneo) y tiempo esperado por control
-  const L = S.selection.freedom[lvlA('freedom')]; const q = clamp((S.selection.readingMix.MEN02 * mean(av.players.map((p) => ea(S, p, 'MEN02', S.energy.defaultTechnicalTaskMax))) + S.selection.readingMix.MEN03 * mean(av.players.map((p) => ea(S, p, 'MEN03', S.energy.defaultTechnicalTaskMax))) - 1) / 29, 0, 1);
+  // C02-DIR: la lectura (Visión de juego y Decisiones) es la del director EFECTIVO del tramo (prioridad vigente entre los presentes), no la media del quinteto; el resto conserva sus propias capacidades.
+  const dirP = av.director; const L = S.selection.freedom[lvlA('freedom')]; const q = clamp((S.selection.readingMix.MEN02 * ea(S, dirP, 'MEN02', S.energy.defaultTechnicalTaskMax) + S.selection.readingMix.MEN03 * ea(S, dirP, 'MEN03', S.energy.defaultTechnicalTaskMax) - 1) / 29, 0, 1);
   M.L = L; M.q = q;
   const dr = S.selection.direct; const accept = Math.min(1, Math.max(0, (dr.acceptanceFloor + L) * q));
   const crash = S.rebound.offensiveReboundAssignmentTarget; const unready = Math.pow(S.rebound.balance.unreadyReturnerOpportunityOddsRatio, crash[D.plan.styles.afterShot - 1] - crash[2]); // el rival que carga el rebote deja menos regresos: más oportunidad de transición
@@ -228,7 +246,7 @@ export function shotCells(S, T, sides, k, M, ctx) {
     const caRaw = recipeByRoleGroups(S, p.play.qualityAttack, (r) => rolePool(S, T, av, p.play, r), tech);
     let cdRaw = recipeByRoleGroups(S, p.play.qualityDefense, defRolePlayers, tech);
     if (p.receiverFamily) cdRaw = N + (cdRaw - N) * 2 * M.pDeny; // negación de receptores: efecto proporcional a su elección (neutral en nivel 3)
-    let extraZ = beaten; if (sides.fam) { const f = famQuality(S, T, A, D, p.family, comp, plan); extraZ += f; famCache[p.id] = f; }
+    let extraZ = beaten; if (sides.fam) { const f = famPlayQuality(S, T, A, D, p, plan, defRolePlayers); extraZ += f; famCache[p.id] = f; }
     qc[pi] = qualityFast(S, caRaw, cdRaw, 0, extraZ, Zq0);
   }
   // pesos de opción (mezcla de entrenador, adaptación y preferencias; misma fórmula que mixResolution)
@@ -263,7 +281,7 @@ export function shotCells(S, T, sides, k, M, ctx) {
   // protección del tiro rival: desplaza la mezcla entre interior y exterior (peso de elección ↑ ⇒ menos intentos en esa zona)
   tw = 0; for (let i = 0; i < all.length; i++) { const z = all[i].cell.zone; all[i].w *= (z === 'rim' || z === 'inside') ? 1 / M.protect.inside : z === 'three' ? 1 / M.protect.outside : 1; tw += all[i].w; }
   for (let i = 0; i < all.length; i++) all[i].w /= tw;
-  M.famQuality = famCache;
+  M.famQuality = famCache; if (sides.fam) M.famCtx = { transition: famContextDelta(S, T, A, D, 'transition'), spontaneous: famContextDelta(S, T, A, D, 'spontaneous') };
   return all;
 }
 const INTERIOR_DEF = new Set(['screenMarker', 'postMarker', 'lowMarker', 'shortMarker', 'hubMarker']);
@@ -290,7 +308,7 @@ export function finisherWeights(S, T, view, play, c, plan) {
   else { const pid = play ? play.id : '*'; let byPlay = vc.fw.get(pid); if (!byPlay) { byPlay = new Map(); vc.fw.set(pid, byPlay); } const rz = c.rz ?? (c.rz = `${c.role}|${c.zone}`); const hit = byPlay.get(rz); if (hit) return hit; const out = buildFw(S, T, view, vc, play, c); byPlay.set(rz, out); return out; }
   const out = buildFw(S, T, view, vc, play, c); vc.fwG[c.gid] = out; return out;
 }
-function buildFw(S, T, view, vc, play, c) { const pool = play ? rolePool(S, T, view, play, c.role) : view.players.map((pl) => ({ pl, w: 1 })); const fit = vc.fit[c.zone]; const out = new Array(pool.length); for (let i = 0; i < pool.length; i++) out[i] = { pl: pool[i].pl, w: pool[i].w * fit[vc.idx.get(pool[i].pl)] }; return out; }
+function buildFw(S, T, view, vc, play, c) { const pool = play ? rolePool(S, T, view, play, c.role) : view.players.map((pl) => ({ pl, w: offRoleBias(S, T, pl, S.roles.creditTags.spontaneous) })); const fit = vc.fit[c.zone]; const out = new Array(pool.length); for (let i = 0; i < pool.length; i++) out[i] = { pl: pool[i].pl, w: pool[i].w * fit[vc.idx.get(pool[i].pl)] }; return out; }
 function estP(S, sh, fw, N, moved, A) { const b0 = logit(sh.p0) - sh.sD * (S.selection.candidateRead.opponentAbilityEstimate - N); let s = 0; let ws = 0; for (let i = 0; i < fw.length; i++) { const x = fw[i]; s += x.w * sigmoid(b0 + sh.sA * (A.get(x.pl) - N)); ws += x.w; } return ws > 0 ? s / ws : sh.p0; }
 
 // Calidad de la transición: parte sin oposición (llegada) y parte con oposición (llegada de defensores por FIS01/FIS02).
@@ -299,7 +317,7 @@ function transitionQuality(S, T, sides, k, M) {
   const ca = mean(A.view.players.map((p) => taskFor(S, 'TAR02', 'attack', 'handler', p)));
   let w1 = 0; let w2 = 0; for (const e of Object.entries(dr.defenderArrival)) { w1 += e[1]; }
   const arrival = mean(D.view.players.map((p) => { let s = 0; for (const [a, w] of Object.entries(dr.defenderArrival)) s += w * ea(S, p, a, 0); return s / (w1 || 1); })); void w2;
-  const opp = qualityDistributionPure(S, ca, arrival, 0, true, false, 0).p; const free = qualityDistributionPure(S, ca, arrival, 0, false, true, 0).p;
+  const fz = sides.fam ? famContextDelta(S, T, A, D, 'transition') : 0; const opp = qualityDistributionPure(S, ca, arrival, 0, true, false, fz).p; const free = qualityDistributionPure(S, ca, arrival, 0, false, true, fz).p;
   const u = (dr.unopposedChanceAfterSteal + dr.unopposedChanceAfterRebound) / 2; const out = {}; for (const q of QUALS) out[q] = u * free[q] + (1 - u) * opp[q];
   return out;
 }
@@ -307,7 +325,7 @@ function spontaneousQuality(S, T, sides, k, M) {
   const A = sides[k]; const D = sides[1 - k]; const tech = S.energy.defaultTechnicalTaskMax;
   const ca = mean(A.view.players.map((p) => taskFor(S, 'TAR02', 'attack', 'handler', p)));
   const cd = mean(D.view.players.map((p) => taskFor(S, 'TAR02', 'defense', 'primary', p))); void tech;
-  return qualityDistributionPure(S, ca, cd, 0, true, false, 0).p;
+  return qualityDistributionPure(S, ca, cd, 0, true, false, sides.fam ? famContextDelta(S, T, A, D, 'spontaneous') : 0).p;
 }
 function spontaneousZones(S, T, view, plan, M) {
   const out = { rim: 0, inside: 0, midrange: 0, three: 0 }; const sel = S.selection; let ws = 0;
@@ -324,11 +342,33 @@ function spontaneousZones(S, T, view, plan, M) {
   return out;
 }
 
-// Familiaridad (FAM-MOTOR18B-R1): ajuste logit ÚNICO por operación de calidad; neutral con conocimiento no explícito o todos los niveles al máximo.
-function famQuality(S, T, A, D, family, comp, plan) {
-  const fam = S.familiarity; const tcw = fam.tacticContextWeights.organized;
-  const aw = (pl, side) => { const k = pl.kn; if (!explicit(k)) return null; const mods = side === 'a' ? [{ w: tcw.attack.disposition, K: lvl(k.tactics, plan.disposition) }, { w: tcw.attack.family, K: lvl(k.tactics, `FAM:${family}`) }] : [{ w: tcw.defense.organization, K: lvl(k.tactics, D.plan.defense) }, { w: tcw.defense.coverage, K: lvl(k.tactics, D.plan.coverage) }]; return familiarityActor(fam, { position: lvl(k.positions, pl.slot), role: lvl(side === 'a' ? k.offensiveRoles : k.defensiveRoles, side === 'a' ? pl.offRole : pl.defRole), modules: mods }).D; };
-  const DA = familiaritySide(A.view.players.map((p) => aw(p, 'a'))); const DD = familiaritySide(D.view.players.map((p) => aw(p, 'd')));
+// Familiaridad (FAM-MOTOR18B-R1, pertinencia de SIM-MOTOR-02 §4.3): ajuste logit ÚNICO por operación de calidad; neutral con conocimiento no explícito o todos los niveles al máximo.
+// Los módulos se derivan de la ficha/familia y de la cobertura REALMENTE aplicable (una cobertura inexistente o incompatible ni penaliza ni expone), y los participantes son los funcionales de la ficha
+// (director, bloqueador, receptores/continuadores y los defensores de sus responsabilidades), nunca el banquillo.
+export const coverageApplies = (play, coverage) => { const c = play?.coverage; if (c == null || c === false) return false; if (c === true) return true; return !c.allowed || c.allowed.includes(coverage); };
+const normMods = (mods) => { const t = mods.reduce((a, m) => a + m.w, 0); return t > 0 ? mods.map((m) => ({ id: m.id, w: m.w / t })) : []; };
+const actorD = (fam, pl, side, mods) => { const k = pl.kn; if (!explicit(k)) return null; return familiarityActor(fam, { position: lvl(k.positions, pl.slot), role: lvl(side === 'a' ? k.offensiveRoles : k.defensiveRoles, side === 'a' ? pl.offRole : pl.defRole), modules: mods.map((m) => ({ w: m.w, K: lvl(k.tactics, m.id) })) }).D; };
+const weightedD = (pool, dOf) => { let n = 0; let d = 0; for (const x of pool) { const v = dOf(x.pl); if (v != null) { n += x.w * v; d += x.w; } } return d > 0 ? n / d : null; };
+// Módulos pertinentes de una ficha organizada, para ambos lados (también los usa la exposición de aprendizaje).
+export function famModules(S, play, family, plan, D) {
+  const tcw = S.familiarity.tacticContextWeights.organized; const cov = D.plan.coverage; const apply = coverageApplies(play, cov);
+  return { attack: normMods([{ id: plan.disposition, w: tcw.attack.disposition }, { id: `FAM:${family}`, w: tcw.attack.family }]), defense: normMods([{ id: D.assign.orgId, w: tcw.defense.organization }, ...(apply ? [{ id: cov, w: tcw.defense.coverage }] : [])]), coverageApplies: apply };
+}
+function famPlayQuality(S, T, A, D, p, plan, defRolePlayers) {
+  const fam = S.familiarity; const play = p.play; const mods = famModules(S, play, p.family, plan, D);
+  const roles = [...new Set([...play.qualityAttack.map((e) => e[0]), ...(play.screen?.role ? [play.screen.role] : [])])];
+  const atkDs = roles.map((r) => weightedD(rolePool(S, T, A.view, play, r), (pl) => actorD(fam, pl, 'a', mods.attack)));
+  const defRoles = [...new Set(play.qualityDefense.map((e) => e[0]))];
+  const defDs = defRoles.map((r) => weightedD(defRolePlayers(r), (pl) => actorD(fam, pl, 'd', mods.defense)));
+  return familiarityDelta(fam, 'quality', familiaritySide(atkDs), familiaritySide(defDs)).delta;
+}
+// Contextos sin ficha (transición y decisión espontánea): su propio contexto de la tabla, sin heredar los módulos del ataque organizado. Se aplica una vez por cálculo.
+function famContextDelta(S, T, A, D, ctx) {
+  const fam = S.familiarity; const tcw = fam.tacticContextWeights[ctx];
+  const atk = ctx === 'transition' ? normMods([{ id: 'FAM:transition', w: tcw.attack.transition }]) : [];
+  const dfn = ctx === 'spontaneous' ? normMods([{ id: D.assign.orgId, w: tcw.defense.organization }]) : []; // la transición no tiene organización defensiva estable representada
+  const DA = familiaritySide(A.view.players.map((pl) => actorD(fam, pl, 'a', atk)));
+  const DD = dfn.length || ctx === 'spontaneous' ? familiaritySide(D.view.players.map((pl) => actorD(fam, pl, 'd', dfn))) : null;
   return familiarityDelta(fam, 'quality', DA, DD).delta;
 }
 
@@ -365,7 +405,7 @@ export function blockProb(S, T, sides, k, M, shooter, zone, rng) {
   const D = sides[1 - k]; const da = D.assign; const sh = S.shots[zone]; const b = S.block; const N = S.neutralAbility;
   const defs = (zone === 'rim' || zone === 'inside' ? da.rimDefs : da.perimeterDefs).concat(da.interiorDefs).filter((v, i, a) => a.indexOf(v) === i);
   if (!defs.length || sh.blockP0 <= 0) return { p: 0, blocker: null };
-  const ws = defs.map((p) => Math.max(0.01, recipe(S, p, b.attack, b.maximumEnergyPenalty))); const blk = defs[rng.weighted(ws)];
+  const ws = defs.map((p) => Math.max(0.01, recipe(S, p, b.attack, b.maximumEnergyPenalty)) * defRoleBias(S, T, p, S.roles.creditTags.block)); const blk = defs[rng.weighted(ws)];
   const resist = b.resistanceTechniqueWeight * ea(S, shooter, attrOfZone(S, zone), S.contact.maximumEnergyPenalty) + b.resistanceBalanceWeight * ea(S, shooter, 'FIS07', S.contact.maximumEnergyPenalty);
   const bl = recipe(S, blk, b.attack, b.maximumEnergyPenalty);
   const Z = clamp(0.5 * blk.M.DEF - 0.5 * shooter.M.TIR, -1, 1);
@@ -406,6 +446,6 @@ export function blockProbExpected(S, T, sides, k, M, shooter, zone) {
   const defs = (zone === 'rim' || zone === 'inside' ? da.rimDefs : da.perimeterDefs).concat(da.interiorDefs).filter((v, i, a) => a.indexOf(v) === i);
   if (!defs.length || sh.blockP0 <= 0) return 0;
   const resist = b.resistanceTechniqueWeight * ea(S, shooter, attrOfZone(S, zone), S.contact.maximumEnergyPenalty) + b.resistanceBalanceWeight * ea(S, shooter, 'FIS07', S.contact.maximumEnergyPenalty);
-  let tw = 0; let ts = 0; for (const p of defs) { const w = Math.max(0.01, recipe(S, p, b.attack, b.maximumEnergyPenalty)); const bl = recipe(S, p, b.attack, b.maximumEnergyPenalty); tw += w; ts += w * blockResolution(S, sh, { blk: bl, resist, delta: 0, Z: 0, alpha: 0 }).p; }
+  let tw = 0; let ts = 0; for (const p of defs) { const w = Math.max(0.01, recipe(S, p, b.attack, b.maximumEnergyPenalty)) * defRoleBias(S, T, p, S.roles.creditTags.block); const bl = recipe(S, p, b.attack, b.maximumEnergyPenalty); tw += w; ts += w * blockResolution(S, sh, { blk: bl, resist, delta: 0, Z: 0, alpha: 0 }).p; }
   return ts / tw;
 }

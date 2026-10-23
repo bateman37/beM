@@ -4,7 +4,7 @@
 import { SimMatch } from './engine.js';
 import { enduranceFactorAt } from '../match/formulas.js';
 import { clamp } from '../match/mathx.js';
-import { ftProb } from './model.js';
+import { ftProb, energyLoad } from './model.js';
 
 const P = SimMatch.prototype;
 function flatten(rec) {
@@ -26,19 +26,24 @@ P._materialize = function materialize(timeline, seg, start, d) {
     while (i < items.length) {
       const it = items[i];
       const attackers = s.view.players; const defenders = o.view.players;
-      const countFoul = (pl, team) => { pl.fouls += 1; tf[team] += 1; if (pl.fouls >= rules.foulOut) { pl.out = true; out.add(pl.id); fouledOut = true; } };
+      // contadores CAUSALES: cada falta guarda el número de falta personal y de equipo en su instante; la exclusión se marca solo en la falta que alcanza el límite (no en la primera falta del tramo)
+      const countFoul = (pl, team, f) => { pl.fouls += 1; tf[team] += 1; if (f) { f.pfN = pl.fouls; f.tfN = tf[team]; } if (pl.fouls >= rules.foulOut) { pl.out = true; out.add(pl.id); fouledOut = true; if (f) f.out = true; } };
       if (it.type === 'dn') {
         const defOk = defenders.filter((p) => !p.out); const ws = defOk.map((p) => o.M ? s.M.dnW[defenders.indexOf(p)] : 1);
         const fouler = uniqPick(rng, defOk, ws); const drawn = uniqPick(rng, attackers, attackers.map((p) => 0.5 + p.init));
-        const bonus = tf[1 - k] >= rules.teamPenaltyAfterFouls; it.foul = { ty: 'foul', tm: 1 - k, pl: fouler.id, kind: 'nonshooting', drawn: drawn.id, bonus }; countFoul(fouler, 1 - k);
+        const bonus = tf[1 - k] >= rules.teamPenaltyAfterFouls; it.foul = { ty: 'foul', tm: 1 - k, pl: fouler.id, kind: 'nonshooting', drawn: drawn.id, bonus }; countFoul(fouler, 1 - k, it.foul);
         if (bonus) { // el control se sustituye por la serie de libres del bonus (2) y su continuación
-          const bonusRec = { k, chain: [], dn: [] }; this._ftSeries(bonusRec, k, drawn, rules.freeThrowsForOrdinaryBonus, 'bonus', it, null, s, false);
+          const bonusRec = { k, chain: [], dn: [] }; this._ftSeries(bonusRec, k, drawn, rules.freeThrowsForOrdinaryBonus, 'bonus', it, null, s, false, { src: 'bonus_sin_familia', play: null, zone: null, fin: null });
           items.splice(i + 1, items.length - i - 1, ...flatten(bonusRec));
         }
       } else if (it.foul && it.foul.ty === 'shootfoul') {
         const f = it.foul; const defOk = defenders.filter((p) => !p.out); const ws = defOk.map((p) => s.M.dnW[defenders.indexOf(p)]);
-        const fouler = uniqPick(rng, defOk, ws); f.pl = fouler.id; countFoul(fouler, 1 - k);
-      } else if (it.t && it.t.kind === 'of') { const off = attackers.find((p) => p.id === it.t.pl); countFoul(off, k); it.offFoul = { ty: 'foul', tm: k, pl: off.id, kind: 'offensive', drawn: null }; }
+        const fouler = uniqPick(rng, defOk, ws); f.pl = fouler.id; countFoul(fouler, 1 - k, f);
+      } else if (it.t && it.t.kind === 'of') {
+        // falta personal ofensiva: el receptor es un defensor en pista (reparto por responsabilidad de contacto y rol defensivo); sin defensor representado se declara sujeto colectivo, no se fabrica un nombre
+        const off = attackers.find((p) => p.id === it.t.pl); const defOk = defenders.filter((p) => !p.out); const rw = defOk.map((p) => s.M.ofRecvW[defenders.indexOf(p)]); const recv = uniqPick(rng, defOk, rw);
+        it.offFoul = { ty: 'foul', tm: k, pl: off.id, kind: 'offensive', drawn: recv ? recv.id : null, drawnKind: recv ? 'player' : 'collective' }; countFoul(off, k, it.offFoul);
+      }
       i += 1;
     }
     lists[j] = items; if (fouledOut) cutIdx = j;
@@ -67,26 +72,24 @@ P._materialize = function materialize(timeline, seg, start, d) {
   this.score[0] += pts[0]; this.score[1] += pts[1]; this.periodScore[pIdx][0] += pts[0]; this.periodScore[pIdx][1] += pts[1];
   return cutTime;
 };
-P._noteFoul = function noteFoul(f, outNow) { const t = this.teams[f.tm]; const pl = t.byId[f.pl]; if (pl.fouls >= this.rules.foulOut) outNow.add(pl.id); };
+P._noteFoul = function noteFoul(f, outNow) { if (f.out) outNow.add(f.pl); };
 P._reselect = function reselect(side, outNow, ws) { const c = side.view.players.filter((p) => !outNow.has(p.id)); return c[Math.floor(this.rng.next() * c.length)] ?? null; };
 
 // ---------------------------------------------------------------------------------------------------------------------- cierre del tramo
 P._finishSegment = function finishSegment(seg, start, dur, models) {
-  const S = this.S; const minutes = dur;
-  seg.dur = dur;
+  const S = this.S; seg.dur = dur; seg.e0 = [[], []]; seg.er = [[], []];
   for (const t of this.teams) {
-    const s = this.sides[t.idx]; const M = models[t.idx]; const R = models[1 - t.idx]; const o = this.sides[1 - t.idx];
-    const offLoad = (1 - M.tau) * S.energy.load.organized + M.tau * S.energy.load.transition;
-    const height = o.plan.pressureHeight; const cov = S.defense.coverage.committedActorLoad[s.plan.coverage];
-    const defLoad = S.defense.pressure.committedActorLoadByHeight[height] * cov;
-    const load = clamp((offLoad + defLoad) / 2, S.energy.loadBounds[0], S.energy.loadBounds[1]);
+    const M = models[t.idx];
+    // C02-03: la presión que se EJECUTA (y la cobertura propia) cargan al equipo que la ordena (su propio plan), no al rival que la sufre
+    const { load } = energyLoad(S, M, t.plan);
     for (const p of t.players) {
+      seg.e0[t.idx].push(p.energy);
       if (p.onCourt) {
-        const f = enduranceFactorAt(S, p.ab.FIS06); p.energy = clamp(p.energy - S.energy.costPerLiveMinute * f * load * (dur / 60), S.energy.range[0], S.energy.range[1]); p.minutes += dur;
+        const f = enduranceFactorAt(S, p.ab.FIS06); const rate = -S.energy.costPerLiveMinute * f * load / 60; seg.er[t.idx].push(rate);
+        p.energy = clamp(p.energy + rate * dur, S.energy.range[0], S.energy.range[1]); p.minutes += dur;
         if (p.slot) p.slotMin[p.slot] = (p.slotMin[p.slot] ?? 0) + dur; if (p.offRole) p.roleMin[p.offRole] = (p.roleMin[p.offRole] ?? 0) + dur;
-      } else p.energy = clamp(p.energy + S.energy.benchRecoveryPerLiveMinute * (dur / 60), S.energy.range[0], S.energy.range[1]);
+      } else { const rate = S.energy.benchRecoveryPerLiveMinute / 60; seg.er[t.idx].push(rate); p.energy = clamp(p.energy + rate * dur, S.energy.range[0], S.energy.range[1]); }
     }
-    void minutes; void R;
   }
   // un jugador excluido deja de estar en pista desde el hecho
   for (const t of this.teams) for (const p of t.players) if (p.out && p.onCourt) { p.onCourt = false; p.slot = null; p.benchSince = this.gt + dur; }
@@ -109,13 +112,20 @@ P._closePeriod = function closePeriod() {
 };
 
 // ---------------------------------------------------------------------------------------------------------------------- avance, consulta y fin
-// Avanza por fronteras canónicas hasta alcanzar `until` (segundos de juego; 'end' = hasta terminar). Publica solo hechos con t ≤ until. Idempotente y sin azar al consultar.
+// Avanza por fronteras canónicas hasta alcanzar `until` (segundos de juego; 'end' = hasta terminar). La PUBLICACIÓN es monótona: una solicitud anterior al presente publicado no rebobina el encuentro y
+// devuelve un rechazo explícito (leer una vista histórica es otra operación: buildSimResult({ at })). El sufijo generado por delante del presente permanece privado. Sin azar al consultar.
 P.advance = function advance({ until = 'end' } = {}) {
+  const state = (extra = {}) => ({ status: this.status, published: this.published, generatedUntil: this.gt, ...extra });
+  if (until !== 'end' && !(typeof until === 'number' && Number.isFinite(until) && until >= 0)) return state({ ok: false, rejected: true, reason: `instante de publicación no válido: ${until}` });
+  if (until !== 'end' && until < this.published - 1e-9) return state({ ok: false, rejected: true, reason: `publicación monótona: el presente publicado (${this.published} s) no se rebobina a ${until} s` });
   const limit = until === 'end' ? Infinity : until;
-  while (this.status === 'running' && this.gt < limit) { if (!this.step()) break; }
-  this.published = until === 'end' || this.status === 'finished' ? (this.status === 'finished' ? this.gt : this.gt) : Math.min(until, this.gt);
-  if (until !== 'end' && this.status !== 'finished') this.published = Math.min(until, this.gt);
-  return { status: this.status, published: this.published, generatedUntil: this.gt };
+  try {
+    // si el generador está justo en el final de un periodo y el horizonte lo alcanza, se cierra el periodo (se sabrá si hay prórroga o final); si no, el siguiente tramo solo se genera si empieza antes del horizonte
+    while (this.status === 'running' && (this.gt < limit - 1e-9 || (this.gt <= limit + 1e-9 && this.gt >= this.periodStart + this.periodLen - 1e-9))) { if (!this.step()) break; }
+  } catch (e) { this.status = 'error'; this.error = { cause: String(e.message ?? e), phase: 'generación' }; }
+  const target = until === 'end' ? this.gt : Math.min(until, this.gt);
+  if (target > this.published) this.published = target;
+  return state({ ok: true });
 };
 P.finish = function finish() { this.advance({ until: 'end' }); return this.status; };
 P.publishedEvents = function publishedEvents() { const lim = this.published; return this.events.filter((e) => e.t <= lim + 1e-9); };
