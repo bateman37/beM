@@ -102,7 +102,7 @@ export function normalizeInput(input, sp, tables) {
   }
   norm.ignored = [...ignored].sort();
   const parts = canonicalInput(norm, sp, tables);
-  norm.canonical = parts; norm.fingerprint = fpCanonical(parts); norm.canonicalLength = canonical(parts).length;
+  norm.canonical = parts; const text = canonical(parts); norm.fingerprint = fpString(text); norm.canonicalLength = text.length; // un solo texto canónico (antes se construía dos veces por encuentro)
   return norm;
 }
 

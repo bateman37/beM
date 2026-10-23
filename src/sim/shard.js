@@ -27,10 +27,18 @@ export class ShardRunner {
     return { id: e.id, resolver: 'sim', start: e.start, local: Math.round(local * 10) / 10, started, status: m.status === 'error' ? 'error' : p.ended ? 'finished' : started ? 'running' : 'scheduled', published: Math.round(m.published * 10) / 10, score: p.score.slice(), periods: p.periods.map((x) => x.slice()), finished: p.ended, observedAt: Math.round(m.published * 10) / 10 };
   }
   // Publica los hechos alcanzados hasta el instante virtual `T` en todos los encuentros del fragmento (orden estable por identificador). Devuelve los paquetes de progreso.
-  advanceAll(T) {
+  // `defer`: publica los hechos y el estado terminado de cada encuentro pero DIFIERE la construcción de su esencial (el partido terminado sigue vivo, sin cambiar de resultado): `seal()` la hace después, en grupos pequeños, con el
+  // mismo instante público. El marcador y la clasificación no esperan a la construcción de las actas; el trabajo total (CPU) es el mismo.
+  advanceAll(T, { defer = false } = {}) {
     const out = [];
-    for (const id of [...this.matches.keys()].sort()) { const e = this.matches.get(id); if (!e.m) { out.push(e.final); continue; } const local = this.localTime(e, T); const tg = performance.now(); if (local > 0 && e.m.status === 'running' && local > e.m.published + 1e-9) e.m.advance({ until: local }); const tp = performance.now(); this.timing.gen += tp - tg; const p = this.progressOf(e, T); this.timing.progress += performance.now() - tp; if (this.releaseFinished && p.finished && !e.essential) { e.essential = buildSimEssential(e.m, { timing: this.timing }); e.final = p; e.m = null; } out.push(p); }
+    for (const id of [...this.matches.keys()].sort()) { const e = this.matches.get(id); if (!e.m) { out.push(e.final); continue; } const local = this.localTime(e, T); const tg = performance.now(); if (local > 0 && e.m.status === 'running' && local > e.m.published + 1e-9) e.m.advance({ until: local }); const tp = performance.now(); this.timing.gen += tp - tg; const p = this.progressOf(e, T); if (p.finished && !e.finPacket) e.finPacket = p; this.timing.progress += performance.now() - tp; if (this.releaseFinished && p.finished && !e.essential && !defer) { e.essential = buildSimEssential(e.m, { timing: this.timing }); e.final = e.finPacket; e.m = null; } out.push(p); }
     return out;
+  }
+  // Construye y libera el esencial de los encuentros terminados aún no sellados (orden estable por identificador), como mucho `max` por llamada. Devuelve cuántos selló y cuántos quedan.
+  seal({ max = Infinity } = {}) {
+    let sealed = 0; let remaining = 0;
+    for (const id of [...this.matches.keys()].sort()) { const e = this.matches.get(id); if (!e.m || e.essential) continue; const p = e.m.syncPub(); if (!p.ended) continue; if (sealed >= max) { remaining++; continue; } e.essential = buildSimEssential(e.m, { timing: this.timing }); e.final = e.finPacket; e.m = null; sealed++; }
+    return { sealed, remaining };
   }
   // Revisión de los entrenadores en la frontera `T` con el contexto ya publicado de cada encuentro (`needs[id] = [{ team, ... }]`). Devuelve las decisiones y las omitidas con su causa.
   review(T, needs = {}, { policy = true } = {}) {

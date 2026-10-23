@@ -39,7 +39,7 @@ export function essentialFromResult(res, { reconcile = null } = {}) {
 // `timing` (opcional, solo medición): acumula milisegundos de construcción y de conciliación; no altera nada.
 export function buildSimEssential(m, { validate = true, timing = null } = {}) {
   const t0 = timing ? performance.now() : 0;
-  const res = buildSimResult(m, { events: false, reconcile: false, audience: 'diagnostic' });
+  const res = buildSimResult(m, { events: false, reconcile: false, audience: 'diagnostic', lean: true });
   const t1 = timing ? performance.now() : 0;
   const rec = validate ? reconcileResult(m, res, m.events) : null;
   const t2 = timing ? performance.now() : 0;

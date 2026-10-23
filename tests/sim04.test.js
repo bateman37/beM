@@ -4,7 +4,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { data } from './helpers.js';
-import { makeContext, buildReferenceInput, SimMatch, buildSimResult, applyOverrides, validateOverrides, SIM_VERSION } from '../src/sim/index.js';
+import { makeContext, buildReferenceInput, SimMatch, buildSimResult, applyOverrides, validateOverrides, SIM_VERSION, RECONCILIATION_IDS } from '../src/sim/index.js';
 import { playAutomatic } from '../src/sim/coachsim.js';
 import { snapshotSim, restoreSim, validateSimSnapshot } from '../src/sim/snapshot.js';
 import { probeVector } from '../src/sim/probe.js';
@@ -151,4 +151,19 @@ test('S04-08 compatibilidad: un guardado de 02/03 se rechaza con explicación y 
   const m = new SimMatch(inputOf(5), ctx); m.advance({ until: 130 }); const snap = snapshotSim(m, { embedContext: false }); assert.equal(snap.simVersion, SIM_VERSION); assert.equal(snap.schema, 'beM-sim-snapshot/2'); assert.deepEqual(validateSimSnapshot(snap), []);
   const ctl = new SimMatch(inputOf(5), ctx); ctl.finish(); const r = restoreSim(deep(snap), ctx); r.finish(); assert.equal(r.rng.draws, ctl.rng.draws); assert.equal(buildSimResult(r, { events: false }).sportFingerprint, buildSimResult(ctl, { events: false }).sportFingerprint, 'continuación exacta con presión, bloqueador y asistencia ya generados');
   assert.equal(ctx.sp.id, 'SEM-SIM01-20261022+SEM-SIM02-20261022+SEM-SIM04-20261023'); const p = buildSimResult(ctl, { events: false }); assert.equal(p.schema, 'beM-sim-match/3'); assert.equal(essentialFromResult(p).schema, 'beM-sim-essential/2');
+});
+
+// ---------------------------------------------------------------------------------------------------------------------------------- optimizaciones exactas
+test('S04-09 optimizaciones exactas: el esencial por la ruta rápida (lean) = el de la ruta de lectura completa; el cierre diferido publica lo mismo y sella después; sin `delete` en los hechos', async () => {
+  const { ShardRunner } = await import('../src/sim/shard.js'); const { referenceTeamMap } = await import('../src/sim/teams.js'); const { contextToJSON } = await import('../src/sim/context.js');
+  // 1) misma intersección: acta, zonas, familias, denominadores, exposición, identidad y validez; las proyecciones omitidas no cambian ningún dato conservado
+  for (const seed of [71, 72, 73, 74]) { const m = play(inputOf(seed, 'EQ05', 'EQ09')); const lean = buildSimEssential(m); const full = essentialFromResult(buildSimResult(m, { events: false, reconcile: false, audience: 'diagnostic' }), { reconcile: null });
+    const withRec = essentialFromResult(buildSimResult(m, { events: false, reconcile: false, audience: 'diagnostic' }), { reconcile: buildSimResult(m, { events: false, reconcile: true }).reconciliation }); assert.equal(canonical(lean), canonical(withRec), `esencial lean = esencial completo con la misma conciliación (semilla ${seed})`); assert.equal(lean.validity.valid, true); assert.equal(full.validity, null, 'sin conciliación se declara null, no «válido»');
+    const leanRes = buildSimResult(m, { events: false, reconcile: true, lean: true }); assert.equal(leanRes.reconciliation.valid, true, 'la conciliación sigue completa en la ruta rápida'); assert.equal(leanRes.reconciliation.evaluated, RECONCILIATION_IDS.length); assert.equal(leanRes.observable, null); assert.deepEqual(leanRes.evolution, []); }
+  // 2) los hechos no se borran propiedades: sin modo diccionario (misma forma para todos los hechos del mismo tipo) y misma proyección canónica
+  const m = play(inputOf(81)); const keysOf = (e) => Object.keys(e).join(','); const shapes = new Set(m.events.filter((e) => e.ty === 'shot').map(keysOf)); assert.equal(shapes.size, 1, 'todos los tiros comparten forma (clave y orden)'); assert.equal(m.events.some((e) => 'tAbs' in e), false);
+  // 3) cierre diferido: mismos paquetes públicos y mismos esenciales que sin diferir; el sellado construye después y libera
+  const mk = (defer) => { const sh = new ShardRunner(null, { releaseFinished: true }); sh.setContext(contextToJSON(ctx)); sh.teamMap = referenceTeamMap(profile, players); for (let i = 0; i < 4; i++) sh.add({ id: `P${i}`, start: 0, spec: { a: 'EQ0' + (1 + i), b: 'EQ0' + (5 + i), seed: 900 + i } }); const log = []; for (let T = 120; T <= 3000; T += 120) { log.push(sh.advanceAll(T, { defer }).map((p) => [p.id, p.status, p.score, p.finished])); sh.review(T, {}, { policy: true }); if (defer) { const r = sh.seal({ max: 1 }); log.push(['seal', r.sealed >= 0]); while (r.remaining > 0) { const x = sh.seal({ max: 1 }); if (!x.remaining) break; } } } return { sh, log }; };
+  const a = mk(false); const b = mk(true); for (const id of ['P0', 'P1', 'P2', 'P3']) { assert.equal(b.sh.released(id), true, 'sellado y liberado'); assert.equal(canonical(a.sh.essential(id)), canonical(b.sh.essential(id)), `esencial idéntico con cierre diferido (${id})`); }
+  const strip = (log) => log.filter((x) => x[0] !== 'seal'); assert.equal(canonical(strip(a.log)), canonical(strip(b.log)), 'paquetes publicados por barrera idénticos con y sin cierre diferido');
 });

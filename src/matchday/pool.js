@@ -20,7 +20,11 @@ export class MatchdayPool {
     await Promise.all(this.workers.map((w, i) => (per[i].length ? this._send(w, { type: 'add', fixtures: per[i] }) : null)));
   }
   // `timing` (solo medición): milisegundos por fase sumados en los trabajadores durante la barrera (generación, construcción y conciliación del esencial, lectura de progreso); queda en `lastTiming`.
-  async advance(T) { const r = await Promise.all(this.workers.map((w) => this._send(w, { type: 'advance', T }))); this.lastTiming = r.map((x) => x.timing ?? null); return r.flatMap((x) => x.packets).sort((a, b) => (a.id < b.id ? -1 : 1)); }
+  async advance(T, { defer = false } = {}) { const r = await Promise.all(this.workers.map((w) => this._send(w, { type: 'advance', T, defer }))); this.lastTiming = r.map((x) => x.timing ?? null); return r.flatMap((x) => x.packets).sort((a, b) => (a.id < b.id ? -1 : 1)); }
+  // Sella (construye el esencial y libera el estado de) los encuentros terminados cuya construcción se difirió, en grupos de `group` por trabajador; devuelve el trabajo hecho. `lastSealTiming` conserva el tiempo por fase.
+  async seal({ group = 16 } = {}) { let total = 0; const acc = this.workers.map(() => ({ gen: 0, build: 0, recon: 0, assemble: 0, progress: 0 })); let pending = this.workers.map((w, i) => i); const rounds = [];
+    while (pending.length) { const r = await Promise.all(pending.map((i) => this._send(this.workers[i], { type: 'seal', max: group }).then((x) => [i, x]))); const next = []; for (const [i, x] of r) { total += x.sealed; for (const k of Object.keys(acc[i])) acc[i][k] += x.timing?.[k] ?? 0; if (x.remaining > 0) next.push(i); } rounds.push(r.reduce((s, [, x]) => s + x.sealed, 0)); pending = next; }
+    this.lastSealTiming = acc; return { sealed: total, rounds: rounds.length, groupSize: group }; }
   async review(T, needs = {}, policy = true) { const r = await Promise.all(this.workers.map((w) => this._send(w, { type: 'review', T, needs, policy }))); return Object.assign({}, ...r.map((x) => x.decisions)); }
   async essentials(ids) { const by = this.workers.map(() => []); for (const id of ids) by[this.owner.get(id)].push(id); const r = await Promise.all(this.workers.map((w, i) => (by[i].length ? this._send(w, { type: 'essentials', ids: by[i] }) : { essentials: [] }))); return Object.fromEntries(r.flatMap((x) => x.essentials)); }
   // Orden manual a UN encuentro: llega exactamente a su worker, una vez y con acuse. Un encuentro desconocido, terminado o sin autoridad devuelve un rechazo tipado (no una promesa colgada) y no toca a los demás.

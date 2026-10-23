@@ -91,7 +91,8 @@ export class SimMatch {
   }
 
   // ------------------------------------------------------------------------------------------------------------------------ eventos
-  _push(e) { e.i = this.seq++; e.t = r1(e.tAbs ?? this.gt); e.p = this.period; e.sg = this.segments.length - 1; delete e.tAbs; this.events.push(e); return e; }
+  // `tAbs` (instante absoluto) se pasa como argumento: antes se escribía en el hecho y se borraba con `delete`, lo que dejaba cada hecho en modo diccionario (más memoria y accesos lentos). Mismas claves y mismo orden de inserción.
+  _push(e, tAbs) { e.i = this.seq++; e.t = r1(tAbs ?? this.gt); e.p = this.period; e.sg = this.segments.length - 1; this.events.push(e); return e; }
 
   // ------------------------------------------------------------------------------------------------------------------------ rotación básica (política del entrenador del plan)
   _utility(pl, slot) { const w = this.S.rotation.slotAbilityWeights[slot]; let s = 0; for (const a in w) s += w[a] * ea(this.S, pl, a, this.S.rotation.utilityMaxEnergyPenalty); return s; }
