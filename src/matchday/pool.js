@@ -19,7 +19,8 @@ export class MatchdayPool {
     const per = this.workers.map(() => []); groups.forEach((g, i) => per[i % this.workers.length].push(...g)); per.forEach((list, wi) => list.forEach((f) => this.owner.set(f.id, wi)));
     await Promise.all(this.workers.map((w, i) => (per[i].length ? this._send(w, { type: 'add', fixtures: per[i] }) : null)));
   }
-  async advance(T) { const r = await Promise.all(this.workers.map((w) => this._send(w, { type: 'advance', T }))); return r.flatMap((x) => x.packets).sort((a, b) => (a.id < b.id ? -1 : 1)); }
+  // `timing` (solo medición): milisegundos por fase sumados en los trabajadores durante la barrera (generación, construcción y conciliación del esencial, lectura de progreso); queda en `lastTiming`.
+  async advance(T) { const r = await Promise.all(this.workers.map((w) => this._send(w, { type: 'advance', T }))); this.lastTiming = r.map((x) => x.timing ?? null); return r.flatMap((x) => x.packets).sort((a, b) => (a.id < b.id ? -1 : 1)); }
   async review(T, needs = {}, policy = true) { const r = await Promise.all(this.workers.map((w) => this._send(w, { type: 'review', T, needs, policy }))); return Object.assign({}, ...r.map((x) => x.decisions)); }
   async essentials(ids) { const by = this.workers.map(() => []); for (const id of ids) by[this.owner.get(id)].push(id); const r = await Promise.all(this.workers.map((w, i) => (by[i].length ? this._send(w, { type: 'essentials', ids: by[i] }) : { essentials: [] }))); return Object.fromEntries(r.flatMap((x) => x.essentials)); }
   // Orden manual a UN encuentro: llega exactamente a su worker, una vez y con acuse. Un encuentro desconocido, terminado o sin autoridad devuelve un rechazo tipado (no una promesa colgada) y no toca a los demás.

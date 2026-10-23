@@ -36,8 +36,14 @@ export function essentialFromResult(res, { reconcile = null } = {}) {
   };
 }
 // Construye el esencial de un partido terminado leyendo sus hechos (sin consumir azar). `validate=false` omite la conciliación (se declara `validity: null`, no «válido»).
-export function buildSimEssential(m, { validate = true } = {}) {
+// `timing` (opcional, solo medición): acumula milisegundos de construcción y de conciliación; no altera nada.
+export function buildSimEssential(m, { validate = true, timing = null } = {}) {
+  const t0 = timing ? performance.now() : 0;
   const res = buildSimResult(m, { events: false, reconcile: false, audience: 'diagnostic' });
+  const t1 = timing ? performance.now() : 0;
   const rec = validate ? reconcileResult(m, res, m.events) : null;
-  return essentialFromResult(res, { reconcile: rec });
+  const t2 = timing ? performance.now() : 0;
+  const out = essentialFromResult(res, { reconcile: rec });
+  if (timing) { timing.build += t1 - t0; timing.recon += t2 - t1; timing.assemble += performance.now() - t2; }
+  return out;
 }

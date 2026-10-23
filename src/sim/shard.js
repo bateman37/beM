@@ -11,7 +11,9 @@ import { buildPairInput } from './teams.js';
 
 export class ShardRunner {
   // `releaseFinished`: al terminar un encuentro se conserva solo su registro esencial y su último paquete (se libera el estado SIM con sus hechos): imprescindible para jornadas de miles de encuentros.
-  constructor(ctx = null, { releaseFinished = false } = {}) { this.ctx = ctx; this.matches = new Map(); this.teamMap = null; this.releaseFinished = releaseFinished; }
+  constructor(ctx = null, { releaseFinished = false } = {}) { this.ctx = ctx; this.matches = new Map(); this.teamMap = null; this.releaseFinished = releaseFinished; this.timing = { gen: 0, build: 0, recon: 0, assemble: 0, progress: 0 }; }
+  // Tiempos acumulados desde la última lectura (solo medición; no forman parte del deporte ni del estado guardado).
+  takeTiming() { const t = this.timing; this.timing = { gen: 0, build: 0, recon: 0, assemble: 0, progress: 0 }; return t; }
   setContext(ctxJSON) { this.ctx = contextFromJSON(ctxJSON); }
   // `fx`: { id, input, opts, start } ; el encuentro empieza en el instante virtual `start` (desfase sobre la agenda).
   // `fx.spec` ({ a, b, seed, importance }) construye la entrada en el propio fragmento con las doce plantillas ya enviadas (no se viaja una entrada de cientos de KB por encuentro).
@@ -27,7 +29,7 @@ export class ShardRunner {
   // Publica los hechos alcanzados hasta el instante virtual `T` en todos los encuentros del fragmento (orden estable por identificador). Devuelve los paquetes de progreso.
   advanceAll(T) {
     const out = [];
-    for (const id of [...this.matches.keys()].sort()) { const e = this.matches.get(id); if (!e.m) { out.push(e.final); continue; } const local = this.localTime(e, T); if (local > 0 && e.m.status === 'running' && local > e.m.published + 1e-9) e.m.advance({ until: local }); const p = this.progressOf(e, T); if (this.releaseFinished && p.finished && !e.essential) { e.essential = buildSimEssential(e.m); e.final = p; e.m = null; } out.push(p); }
+    for (const id of [...this.matches.keys()].sort()) { const e = this.matches.get(id); if (!e.m) { out.push(e.final); continue; } const local = this.localTime(e, T); const tg = performance.now(); if (local > 0 && e.m.status === 'running' && local > e.m.published + 1e-9) e.m.advance({ until: local }); const tp = performance.now(); this.timing.gen += tp - tg; const p = this.progressOf(e, T); this.timing.progress += performance.now() - tp; if (this.releaseFinished && p.finished && !e.essential) { e.essential = buildSimEssential(e.m, { timing: this.timing }); e.final = p; e.m = null; } out.push(p); }
     return out;
   }
   // Revisión de los entrenadores en la frontera `T` con el contexto ya publicado de cada encuentro (`needs[id] = [{ team, ... }]`). Devuelve las decisiones y las omitidas con su causa.

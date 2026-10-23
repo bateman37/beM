@@ -214,10 +214,10 @@ test('S03-11 política del entrenador coherente entre rutas: misma entrada, pol�
 });
 
 // ---------------------------------------------------------------------------------------------------------------------------------- neutralidad de las optimizaciones exactas (§5)
-test('S03-12 neutralidad de las optimizaciones: huellas del control preoptimización (ee14ec5), lectura incremental del entrenador = recorrido completo y plan recompilado al cambiar el libro', async () => {
+test('S03-12 neutralidad de las optimizaciones: huellas del control preoptimización O04-CONTROL, lectura incremental del entrenador = recorrido completo y plan recompilado al cambiar el libro', async () => {
   const { runCase } = await import('../src/sim/cases.js'); const { observationFor } = await import('../src/sim/coachsim.js'); const tm = referenceTeamMap(profile, players);
-  // casos de la agenda natural congelada de 01/02/03 (master 20261022) con su huella medida en el CONTROL antes de optimizar
-  const control = [{ n: 1, id: 'SIM01-C0001', a: 'EQ01', b: 'EQ02', seed: 152650156, fp: 'fb72046215122785' }, { n: 500, id: 'SIM01-C0500', a: 'EQ10', b: 'EQ05', seed: 1989927367, fp: 'ab1dc1ae565382d6' }, { n: 1000, id: 'SIM01-C1000', a: 'EQ07', b: 'EQ11', seed: 3958906328, fp: '082926a99e5493c2' }];
+  // casos de la agenda natural congelada de 01/02/03 (master 20261022) con su huella medida en O04-CONTROL (código con los mecanismos y el vector de 04 ya fijados, ANTES de las optimizaciones exactas de 04). Las huellas de 03 (fb720462…, ab1dc1ae…, 082926a9…) ya no valen: 04 cambia el deporte (C04-01/03/04).
+  const control = [{ n: 1, id: 'SIM01-C0001', a: 'EQ01', b: 'EQ02', seed: 152650156, fp: '350321f7f407be07' }, { n: 500, id: 'SIM01-C0500', a: 'EQ10', b: 'EQ05', seed: 1989927367, fp: '51b241e0afecc50a' }, { n: 1000, id: 'SIM01-C1000', a: 'EQ07', b: 'EQ11', seed: 3958906328, fp: '2166e6207547367c' }];
   for (const c of control) assert.equal(runCase(ctx, tm, c).fp, c.fp, `${c.id}: misma trayectoria que el control`);
   // observationFor incremental frente al recorrido completo original
   const naive = (m, team, T) => { const S = m.S; const seg = m.segments.filter((s) => s.start < T - 1e-9); const win = seg.slice(-S.coachSim.observationWindowSegments); const winIdx = new Set(win.map((s) => s.n)); const sc = [0, 0]; let periodStart = 0; let period = 1; const rival = { exterior: 0, interior: 0, media: 0 }; const g = (z) => (z === 'three' ? 'exterior' : z === 'rim' || z === 'inside' ? 'interior' : 'media');

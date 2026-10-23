@@ -12,3 +12,4 @@ export { decodeZone, ZONE_COMPACT_FIELDS } from './essential.js';
 export * from './version.js';
 export const createSimMatch = (input, ctx, opts) => new SimMatch(input, ctx, opts);
 export function playSimMatch(input, ctx, opts) { const m = new SimMatch(input, ctx, opts); m.finish(); return m; }
+export { SIM_CANDIDATES, candidateById } from './candidates.js';
