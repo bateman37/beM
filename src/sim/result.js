@@ -4,7 +4,7 @@
 import { SIM_MODEL, SIM_RESULT_SCHEMA, SIM_VERSION, SIM_COVERAGE_ID, SIM_STATS_POLICY_ID } from './version.js';
 import { fpString } from './fp.js';
 import { reconcileResult } from './reconcile.js';
-import { moduleExposure, pressExposure, assistTables } from './exposure.js';
+import { moduleExposure, pressExposure, assistTables, reboundFunnel } from './exposure.js';
 import { buildAnalysis } from './analysis.js';
 
 const ZONES = ['rim', 'inside', 'midrange', 'three'];
@@ -107,7 +107,7 @@ export function buildSimResult(m, opts = {}) {
     zones: ZONES.map((z) => ({ zone: z, teams: [0, 1].map((k) => { let a = 0; let mk = 0; for (const r of players) if (r.team === k) { a += r.zones[z].a; mk += r.zones[z].m; } return { a, m: mk }; }) })),
     families: famMap.map((f) => Object.values(f)),
     familyDenominators: [0, 1].map((k) => ({ controls: controls[k], finalizations: finTeam[k], ...fdn[k] })),
-    assistDenominators: assistDen, assistFunnel: assistFun, pressOps: { opportunities: press.opportunities, byHeight: press.byHeight, sumDelta: press.sumDelta, explicitOpportunities: press.explicitOpportunities, unit: press.unit },
+    assistDenominators: assistDen, assistFunnel: assistFun, reboundFunnel: reboundFunnel(evs), pressOps: { opportunities: press.opportunities, byHeight: press.byHeight, sumDelta: press.sumDelta, explicitOpportunities: press.explicitOpportunities, unit: press.unit },
     exposureInfo: { unit: 'segundos de juego (los módulos en operaciones de finalización SIM ponderadas)', provenance: 'intervalos de presencia por tramo hasta el presente publicado; posición = puesto asignado en el quinteto del tramo; rol = rol vigente de la ficha del jugador; módulos desde las finalizaciones publicadas', familias: 'uso de familias y fichas en families[] con denominadores en familyDenominators[] (finalizaciones únicas: tiro, falta de tiro y serie ligada cuentan una vez)' },
     quintets: [...q.values()].map((e) => ({ ...e, sec: Math.round(e.sec * 1000) / 1000, min: r1(e.sec / 60) })), evolution,
   };

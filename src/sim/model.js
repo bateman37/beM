@@ -287,7 +287,9 @@ export function shotCells(S, T, sides, k, M, ctx) {
   const famCache = {}; const Zq0 = perturbBinaryZ(S, M, av, dv); const beaten = Math.log(S.defense.pressure.closePressureBeatenWeightFactor) * (M.pClose - S.defense.choiceReferences.closePressureChoiceP0) / S.defense.choiceReferences.closePressureChoiceP0;
   // 04B §7.3: desplazamiento de calidad SOLO en celdas de aro, dentro de la misma formación (antes de sortear). Se calcula un objeto de calidad PROPIO para el aro de cada ficha: nunca se muta el objeto compartido por las demás zonas.
   const dq = S.opportunity.simRimQualityLogit ?? 0;
-  const nPlays = comp.plays.length; const qc = new Array(nPlays); const qcRim = dq !== 0 ? new Array(nPlays) : null;
+  // 04C §6.2: igual para la zona `inside` (objeto de calidad PROPIO por ficha, una sola vez, antes de sortear); independiente del aro: ninguna celda lee el objeto de la otra zona.
+  const di = S.opportunity.simInsideQualityLogit ?? 0;
+  const nPlays = comp.plays.length; const qc = new Array(nPlays); const qcRim = dq !== 0 ? new Array(nPlays) : null; const qcIn = di !== 0 ? new Array(nPlays) : null;
   let qp = comp.qpools; if (!qp || qp.xk !== av.xk) qp = comp.qpools = { xk: av.xk, attack: [] }; // pools de rol de la receta de calidad de ataque, por formación (no cambian entre tramos con la misma formación)
   for (let pi = 0; pi < nPlays; pi++) {
     const p = comp.plays[pi]; if (!p.available) continue;
@@ -296,7 +298,7 @@ export function shotCells(S, T, sides, k, M, ctx) {
     let cdRaw = recipeByRoleGroups(S, p.play.qualityDefense, defRolePlayers, tech);
     if (p.receiverFamily) cdRaw = N + (cdRaw - N) * 2 * M.pDeny; // negación de receptores: efecto proporcional a su elección (neutral en nivel 3)
     let extraZ = beaten; if (sides.fam) { const f = famPlayQuality(S, T, A, D, p, plan, defRolePlayers); extraZ += f; famCache[p.id] = f; }
-    qc[pi] = qualityFast(S, caRaw, cdRaw, 0, extraZ, Zq0); if (qcRim) qcRim[pi] = qualityFast(S, caRaw, cdRaw, 0, extraZ + dq, Zq0);
+    qc[pi] = qualityFast(S, caRaw, cdRaw, 0, extraZ, Zq0); if (qcRim) qcRim[pi] = qualityFast(S, caRaw, cdRaw, 0, extraZ + dq, Zq0); if (qcIn) qcIn[pi] = qualityFast(S, caRaw, cdRaw, 0, extraZ + di, Zq0);
   }
   // pesos de opción (mezcla de entrenador, adaptación y preferencias; misma fórmula que mixResolution)
   const rEst = sel.candidateRead.opponentAbilityEstimate; const ctlPass = mean(av.players.map((p) => taskFor(S, 'TAR07', 'attack', 'passer', p))); const ob = S.outcomes.base.turnover; const cs = S.outcomes.controlSensitivity;
@@ -309,7 +311,7 @@ export function shotCells(S, T, sides, k, M, ctx) {
   for (let ci = 0; ci < nc; ci++) {
     const c = comp.cells[ci]; const p = comp.plays[c.pi]; if (!p.available) continue;
     const sh = S.shots[c.zone]; const qd = qc[c.pi];
-    const fw = finisherWeights(S, T, av, p.play, c, plan); if (fw.pref === undefined) { let pf = 0; for (let i = 0; i < fw.length; i++) pf += fw[i].w0; fw.pref = pf / Math.max(1, fw.length); fw.pEst = estP(S, sh, fw, N, false, viewCache(S, av).A[c.zone]); }
+    const fw = finisherWeights(S, T, av, p.play, c, plan); if (fw.pref === undefined) { let pf = 0; for (let i = 0; i < fw.length; i++) pf += fw[i].w0; fw.pref = pf / Math.max(1, fw.length); fw.pEst = estP(S, sh, fw, N, false, viewCache(S, av).A[c.zone], c.zone === 'inside' ? (S.conversion?.simInsideLogitOffset ?? 0) : 0); }
     if (c.zone === 'midrange') { hasMid[ci] = 1; md[ci] = mp === 'avoid' ? mpPol.avoidWeight : mp === 'openOnly' ? qd.comfortable * mpPol.openOnlyComfortableWeight + (1 - qd.comfortable) * mpPol.openOnlyOtherWeight : seekMid; }
     const orient = c.zone === 'three' ? orientOut : (c.zone === 'rim' || c.zone === 'inside') ? orientIn : 1; const risk = c.exec === 'none' ? 0 : c.exec === 'dribble' ? riskD : c.exec === 'pass' ? riskP : riskN;
     const V = Math.max(sel.candidateRead.minimumUtility, sh.points * fw.pEst - sel.candidateRead.expectedTurnoverCostPoints * risk);
@@ -319,14 +321,15 @@ export function shotCells(S, T, sides, k, M, ctx) {
   for (let ci = 0; ci < nc; ci++) {
     const o = cells[ci]; const p = comp.plays[comp.cells[ci].pi]; if (!p.available) { o.w = 0; o.q = null; continue; }
     const pa = sa > 0 ? aa[ci] / sa : 0; const ppr = sp > 0 ? pp[ci] / sp : 0; const pj = q * pa + (1 - q) * ppr; let w = sc > 0 ? (1 - L) * (cc[ci] / sc) + L * pj : pj;
-    if (tilt !== 0) w *= Math.exp(tilt * rr[ci]); if (hasMid[ci]) w *= md[ci]; o.w = w; o.q = qcRim && comp.cells[ci].zone === 'rim' ? qcRim[comp.cells[ci].pi] : qc[comp.cells[ci].pi]; totalW += w;
+    if (tilt !== 0) w *= Math.exp(tilt * rr[ci]); if (hasMid[ci]) w *= md[ci]; o.w = w; const zc = comp.cells[ci].zone; o.q = qcRim && zc === 'rim' ? qcRim[comp.cells[ci].pi] : qcIn && zc === 'inside' ? qcIn[comp.cells[ci].pi] : qc[comp.cells[ci].pi]; totalW += w;
   }
   for (let ci = 0; ci < nc; ci++) cells[ci].w = totalW > 0 ? (cells[ci].w / totalW) * shareOrg : 0;
   // transición (zonas ESP de llegada, pase y movimiento derivados) y decisiones espontáneas (preferencias de los jugadores)
   const tz = S.derived.transition.zoneWeights; const trq = transitionQuality(S, T, sides, k, M); const spz = spontaneousZones(S, T, av, plan, M); const spq = spontaneousQuality(S, T, sides, k, M);
   const trqR = dq !== 0 ? transitionQuality(S, T, sides, k, M, dq) : null; const spqR = dq !== 0 ? spontaneousQuality(S, T, sides, k, M, dq) : null;
-  for (const o of comp.trans) { o.w = M.tau * tz[o.cell.zone]; o.q = trqR && o.cell.zone === 'rim' ? trqR : trq; o.cell.passShare = S.derived.transition.passShare; o.cell.movedShare = S.derived.transition.movedShare; }
-  for (const o of comp.spont) { o.w = M.sigma * spz[o.cell.zone]; o.q = spqR && o.cell.zone === 'rim' ? spqR : spq; o.cell.passShare = S.derived.spontaneous.passShare; o.cell.movedShare = S.derived.spontaneous.movedShare; }
+  const trqI = di !== 0 ? transitionQuality(S, T, sides, k, M, di) : null; const spqI = di !== 0 ? spontaneousQuality(S, T, sides, k, M, di) : null;
+  for (const o of comp.trans) { o.w = M.tau * tz[o.cell.zone]; o.q = trqR && o.cell.zone === 'rim' ? trqR : trqI && o.cell.zone === 'inside' ? trqI : trq; o.cell.passShare = S.derived.transition.passShare; o.cell.movedShare = S.derived.transition.movedShare; }
+  for (const o of comp.spont) { o.w = M.sigma * spz[o.cell.zone]; o.q = spqR && o.cell.zone === 'rim' ? spqR : spqI && o.cell.zone === 'inside' ? spqI : spq; o.cell.passShare = S.derived.spontaneous.passShare; o.cell.movedShare = S.derived.spontaneous.movedShare; }
   // §7.2: ajuste de MEZCLA (no de acierto). Una vez por contexto representado (organizado, transición, espontáneo): multiplica el peso de las celdas de triple y renormaliza dentro del contexto conservando su masa previa. Con 1, identidad exacta.
   const f3 = S.shotMix?.threeWeightFactor ?? 1;
   if (f3 !== 1) for (const grp of [cells, comp.trans, comp.spont]) { let m0 = 0; let m1 = 0; for (const o of grp) { m0 += o.w; if (o.cell.zone === 'three') o.w *= f3; m1 += o.w; } if (m1 > 0 && m0 > 0) { const r = m0 / m1; for (const o of grp) o.w *= r; } }
@@ -376,7 +379,9 @@ export function finisherWeights(S, T, view, play, c, plan) {
 }
 // `w` incluye el sesgo de rol (reparto del finalizador); `w0` es el peso SIN ese sesgo: la preferencia de celda (`pref`) usa `w0` para no aplicar la misma ventaja de rol dos veces (participación y mezcla de celdas).
 function buildFw(S, T, view, vc, play, c) { const pool = play ? rolePool(S, T, view, play, c.role) : view.players.map((pl) => ({ pl, w: offRoleBias(S, T, pl, S.roles.creditTags.spontaneous), b: offRoleBias(S, T, pl, S.roles.creditTags.spontaneous) })); const fit = vc.fit[c.zone]; const out = new Array(pool.length); for (let i = 0; i < pool.length; i++) { const ix = vc.idx.get(pool[i].pl); const f = fit[ix]; out[i] = { pl: pool[i].pl, w: pool[i].w * f, w0: pool[i].b != null ? pool[i].w * f / pool[i].b : pool[i].w * f, ix }; } return out; }
-function estP(S, sh, fw, N, moved, A) { const b0 = logit(sh.p0) - sh.sD * (S.selection.candidateRead.opponentAbilityEstimate - N); let s = 0; let ws = 0; for (let i = 0; i < fw.length; i++) { const x = fw[i]; s += x.w * sigmoid(b0 + sh.sA * (A[x.ix] - N)); ws += x.w; } return ws > 0 ? s / ws : sh.p0; }
+// 04C §6.3: la estimación de acierto de la decisión de finalización lee el mismo logit base del tiro; el desplazamiento de conversión de `inside` entra AQUÍ una vez (es la misma traducción del acierto, no una segunda aplicación) y no
+// incluye la calidad (que es un sorteo posterior): se anota en `dIn`.
+function estP(S, sh, fw, N, moved, A, dIn = 0) { const b0 = logit(sh.p0) - sh.sD * (S.selection.candidateRead.opponentAbilityEstimate - N) + dIn; let s = 0; let ws = 0; for (let i = 0; i < fw.length; i++) { const x = fw[i]; s += x.w * sigmoid(b0 + sh.sA * (A[x.ix] - N)); ws += x.w; } return ws > 0 ? s / ws : sh.p0; }
 
 // Calidad de la transición: parte sin oposición (llegada) y parte con oposición (llegada de defensores por FIS01/FIS02).
 function transitionQuality(S, T, sides, k, M, dq = 0) {
@@ -477,9 +482,11 @@ export function shotProbs(S, T, sides, k, M, cellInfo, shooter, qIdx, zoneOverri
   const prep = c.moved ? S.shotPreparation.movementMaximumLogitCost * (1 - (recipe(S, shooter, { TEC06: 0.8, FIS07: 0.2 }, S.shotPreparation.maxEnergyPenalty) - 1) / 29) : 0;
   const K = S.opportunity.qualityShotLogit[QUALS[qIdx]] + (interior ? S.opportunity.helperQualityLogit * M.pHelp : 0) - prep + shooter.form * S.form.taskMaxLogit.shot
     - pressureLossLogit(S, 'shot', M.pressure, ea(S, shooter, 'MEN07', 0)) - mean(D.view.players.map((p) => p.form)) * S.form.taskMaxLogit.defenseDispute + (cellInfo.kind === 'play' ? covK(S, T, c, D.plan.coverage, T.plays[c.playId]) : 0);
-  const pBase = sigmoid(logit(sh.p0) + sh.sA * (Aatt - N) - (Dv != null ? sD * (Dv - N) : 0) + K);
+  // 04C §6.3: `delta_sim_inside` se suma UNA vez al logit ya formado del tiro de la zona inside (antes de la logística y de la perturbación de momento); neutral 0 ⇒ operación anterior exacta.
+  const dIn = zone === 'inside' ? (S.conversion?.simInsideLogitOffset ?? 0) : 0;
+  const pBase = sigmoid(logit(sh.p0) + sh.sA * (Aatt - N) - (Dv != null ? sD * (Dv - N) : 0) + K + dIn);
   const Z = clamp(0.5 * shooter.M.TIR - 0.5 * mean(D.view.players.map((p) => p.M.DEF)), -1, 1);
-  return { p: perturbBinary(pBase, Z, S.moment.probabilityAlphaByTask.shot), pBase, A: Aatt, D: Dv, K };
+  return { p: perturbBinary(pBase, Z, S.moment.probabilityAlphaByTask.shot), pBase, A: Aatt, D: Dv, K, dIn };
 }
 
 // Tapón y rebote

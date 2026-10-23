@@ -9,7 +9,7 @@ export const RECONCILIATION_IDS = [
   'R08_exclusion_sin_acciones', 'R09_minutos_intervalos', 'R10_mas_menos', 'R11_quintetos_sin_doble_conteo', 'R12_final_sin_empate', 'R13_orden_y_tiempos', 'R14_asistencias', 'R15_tapones',
   'R16_faltas_bonus', 'R17_particiones_zonas', 'R18_lectura_sin_azar',
   'R19_finalizaciones_y_libres', 'R20_prefijo_publico', 'R21_faltas_causales', 'R22_receptor_falta_ofensiva', 'R23_continuidad_tapon_fuera',
-  'R24_bloqueador_pertinente', 'R25_exposicion_presion', 'R26_denominadores_asistencia',
+  'R24_bloqueador_pertinente', 'R25_exposicion_presion', 'R26_denominadores_asistencia', 'R27_rama_tras_rebote_ofensivo',
 ];
 
 export function reconcileResult(m, res, evs) {
@@ -125,6 +125,19 @@ export function reconcileResult(m, res, evs) {
   { const f = []; let n = 0; for (const k of [0, 1]) { const d = res.assistDenominators[k]; let fg = 0; let ft = 0; let del = 0; let bas = 0; for (const c of Object.values(d)) { fg += c.fgAssists; ft += c.ftAssists; del += c.delivered; bas += c.eligibleBaskets; n += c.fin; if (c.delivered > c.eligible || c.fgAssists > c.eligibleBaskets || c.eligible > c.fin || c.ftAssists > c.eligibleFtSeries) f.push({ equipo: k, causa: 'denominador menor que su numerador', c }); }
       if (d.putback.eligible || d.putback.fgAssists) f.push({ equipo: k, causa: 'putback elegible para asistencia' }); const t = box.teams[k]; if (fg !== t.astC) f.push({ equipo: k, asistenciasCampo: t.astC, denominadores: fg }); if (ft !== t.astL) f.push({ equipo: k, asistenciasLibres: t.astL, denominadores: ft }); void del; void bas; }
     add('R26_denominadores_asistencia', 'asistencias de campo y de libres del acta = numeradores de los denominadores por contexto; ningún numerador supera su denominador', n, f); }
+  // R27 rama tras rebote ofensivo (04C §5): cada rebote ofensivo válido tiene exactamente UNA decisión de rama; el reinicio organizado produce hechos organizados del mismo control (nunca `putback`) y la rama inmediata, el `putback`
+  // cercano al aro sin ficha; con P0 = 0 no hay reinicio y con P0 = 1 ningún rebote conserva la rama inmediata (si había celdas organizadas); un defensivo no lleva rama. Ningún reinicio hereda un bloqueador del tiro anterior.
+  { const f = []; let n = 0; const p0 = m.S.rebound.organizedResetP0 ?? 0; const BR = ['immediate', 'organized_reset', 'reset_unavailable']; const pend = [null, null];
+    for (const e of evs) {
+      if (e.ty === 'reb') { if (e.off) { n++; if (!BR.includes(e.rbb)) f.push({ hecho: e.i, causa: 'rebote ofensivo sin rama válida', rbb: e.rbb ?? null }); else { if (p0 === 0 && e.rbb !== 'immediate') f.push({ hecho: e.i, causa: 'rama distinta de la inmediata con P0 = 0', rbb: e.rbb }); if (p0 >= 1 && e.rbb === 'immediate') f.push({ hecho: e.i, causa: 'rama inmediata con P0 = 1' }); } pend[e.tm] = e.rbb; } else if (e.rbb != null) f.push({ hecho: e.i, causa: 'rebote defensivo con rama' }); continue; }
+      if (e.cont !== 'offensive_rebound') { if (e.rbb != null) f.push({ hecho: e.i, causa: 'rama en un hecho que no es continuación por rebote ofensivo' }); continue; }
+      if (e.rbb == null) { f.push({ hecho: e.i, causa: 'continuación por rebote ofensivo sin rama' }); continue; }
+      const k = e.ty === 'shootfoul' ? 1 - e.tm : e.tm; if (e.ty === 'shootfoul' && e.and1) continue; const want = pend[k]; pend[k] = null; if (want == null) { f.push({ hecho: e.i, causa: 'continuación sin rebote ofensivo previo' }); continue; } if (want !== e.rbb) f.push({ hecho: e.i, causa: 'la continuación no corresponde a la rama decidida', decidida: want, hecho_rama: e.rbb });
+      if (e.ty === 'tov') continue;
+      if (e.rbb === 'organized_reset') { if (e.ctx !== 'organized' || e.src === 'putback') f.push({ hecho: e.i, causa: 'reinicio organizado con hecho no organizado', ctx: e.ctx }); }
+      else { if (e.ctx !== 'putback' || (e.zone !== 'rim' && e.zone !== 'inside') || e.dir != null || e.scr != null || e.elig) f.push({ hecho: e.i, causa: 'continuación inmediata con ficha, bloqueador o pase heredados', ctx: e.ctx }); }
+    }
+    add('R27_rama_tras_rebote_ofensivo', 'cada rebote ofensivo decide una rama (inmediata, reinicio organizado o reinicio no disponible); el reinicio produce hechos organizados y la inmediata un putback sin ficha ni pase; P0 = 0 y P0 = 1 respetados', n, f); }
   const failures = checks.filter((c) => !c.ok);
   return { policy: RECON_POLICY, checks, passed: checks.length - failures.length, failed: failures.length, valid: failures.length === 0, evaluated: checks.length, notEvaluated: RECONCILIATION_IDS.filter((id) => !checks.some((c) => c.id === id)) };
 }

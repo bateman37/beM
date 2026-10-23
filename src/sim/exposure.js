@@ -68,3 +68,29 @@ export function assistTables(evs) {
   }
   return { den, funnel };
 }
+
+// SIM-MOTOR-04C §5.4: embudo de la continuación tras rebote ofensivo, por equipo atacante, PROCEDENCIA del rebote (campo, tapón sin salida, último libre) y RAMA decidida
+// (`immediate`, `organized_reset`, `reset_unavailable`). Cuenta DECISIONES de rama (un rebote ofensivo válido = una decisión; un segundo rebote encadenado es otra) y, de cada continuación, su primer hecho terminal:
+// tiro de campo (FGA, canasta), falta de tiro sin intento, pérdida u «otro» (continuación sin hecho terminal publicado). Los denominadores de asistencia siguen la misma definición de finalización única de `assistTables`
+// (entrega elegible, entrega producida, canastas elegibles, asistencias de campo, series de libres por falta de tiro elegibles y asistencias a libres). Sin azar; no cuenta rebotes defensivos ni tapones fuera.
+export const REBOUND_BRANCHES = ['immediate', 'organized_reset', 'reset_unavailable'];
+export const REBOUND_CAUSES = ['field', 'block', 'ft'];
+export const REBOUND_COUNTERS = ['decisions', 'fga', 'fgm', 'shooting_foul', 'turnover', 'other', 'eligible', 'delivered', 'eligibleBaskets', 'fgAssists', 'eligibleFtSeries', 'ftAssists'];
+export function reboundFunnel(evs) {
+  const mk = () => Object.fromEntries(REBOUND_COUNTERS.map((c) => [c, 0]));
+  const out = [0, 1].map(() => Object.fromEntries(REBOUND_CAUSES.map((c) => [c, Object.fromEntries(REBOUND_BRANCHES.map((b) => [b, mk()]))])));
+  const seriesAssist = new Set(); for (const e of evs) if (e.ty === 'ft' && e.cause === 'shooting' && e.made) seriesAssist.add(e.fin);
+  const pend = [null, null]; const seen = new Set();
+  for (const e of evs) {
+    if (e.ty === 'reb' && e.off && e.rbb) { if (pend[e.tm]) out[e.tm][pend[e.tm].cause][pend[e.tm].branch].other++; const row = out[e.tm][e.cause]?.[e.rbb]; if (!row) { pend[e.tm] = null; continue; } row.decisions++; pend[e.tm] = { cause: e.cause, branch: e.rbb }; continue; }
+    if (e.cont !== 'offensive_rebound' || !e.rbb) continue;
+    const k = e.ty === 'shootfoul' ? 1 - e.tm : e.tm; if (e.ty !== 'shot' && e.ty !== 'shootfoul' && e.ty !== 'tov') continue; if (e.ty === 'shootfoul' && e.and1) continue;
+    const pd = pend[k]; if (!pd) continue; const row = out[k][pd.cause][pd.branch]; pend[k] = null;
+    if (e.ty === 'tov') { row.turnover++; continue; }
+    const fk = `${k}|${e.fin}`; const first = !seen.has(fk); if (first) { seen.add(fk); if (e.elig) row.eligible++; if (e.elig && e.passer) row.delivered++; }
+    if (e.ty === 'shot') { row.fga++; if (e.made) { row.fgm++; if (e.elig) row.eligibleBaskets++; if (e.passer) row.fgAssists++; } }
+    else { row.shooting_foul++; if (e.elig) { row.eligibleFtSeries++; if (e.passer && seriesAssist.has(e.fin)) row.ftAssists++; } }
+  }
+  for (const k of [0, 1]) if (pend[k]) out[k][pend[k].cause][pend[k].branch].other++;
+  return out;
+}

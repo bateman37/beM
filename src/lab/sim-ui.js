@@ -6,7 +6,7 @@ import { store } from './store.js';
 import { makeContext, contextToJSON, SimMatch, buildSimResult, SIM_MODEL, SIM_RESULT_SCHEMA, SIM_VERSION } from '../sim/index.js';
 import { snapshotSim, restoreSim, validateSimSnapshot } from '../sim/snapshot.js';
 import { SIM_CANDIDATES } from '../sim/candidates.js';
-import { RIM_QUALITY_LOGIT_RANGE } from '../sim/profile.js';
+import { RIM_QUALITY_LOGIT_RANGE, INSIDE_QUALITY_LOGIT_RANGE, INSIDE_CONVERSION_LOGIT_RANGE, ORGANIZED_RESET_RANGE } from '../sim/profile.js';
 import { analysisCards, learningCard, rebuildFrom, dl as dlx } from './sim-analysis-ui.js';
 import { makeLearningCopy, teamStatesOf, nextMatchId, newLedgers } from './learning-model.js';
 import { ConsequenceLedger } from '../sim/consequences.js';
@@ -136,7 +136,7 @@ function paramsView(root) {
     st.overrides.length ? h('div', { class: 'small' }, h('strong', {}, 'Diferencias frente a la base: '), diffProfile(base, sp).map((d) => `${d.path}: ${fmtVal(d.base)} → ${fmtVal(d.candidate)}`).join(' · ')) : null));
   // Candidatas provisionales (SIM-MOTOR-04): vectores elegidos por el selector mecánico; NUNCA se activan solas. Cargar una es una acción explícita sobre este borrador y deja visibles sus diferencias frente a la base.
   const loadCand = (c) => { const errs = validateOverrides(base, c.overrides); if (errs.length) { e.msg = `Candidata ${c.id} NO válida: ${errs.map((x) => `${x.path}: ${x.message}`).join('; ')}`; render(); return; } st.overrides = c.overrides.map((o) => ({ ...o })); e.draft = {}; st.result = null; e.msg = `Candidata ${c.id} cargada como BORRADOR (provisional, pendiente de aceptación deportiva): ${c.overrides.length} fila(s) distintas de la base. La base ${base.id} no se ha modificado.`; render(); };
-  root.append(h('div', { class: 'card', id: 'sim-candidates' }, h('h3', { style: 'margin-top:0' }, 'Candidatas provisionales de SIM-MOTOR-04B'),
+  root.append(h('div', { class: 'card', id: 'sim-candidates' }, h('h3', { style: 'margin-top:0' }, 'Candidatas provisionales (SIM-MOTOR-04B y 04C)'),
     h('p', { class: 'small' }, `Perfil base activo: ${base.id} (huella ${base.fingerprint}). Las candidatas son vectores propuestos por un selector mecánico de convergencia funcional de laboratorio; no son un perfil calibrado ni aceptado por Dennis y no se activan sin tu acción.`),
     SIM_CANDIDATES.map((c) => h('div', { class: 'small', style: 'margin-bottom:8px' }, h('strong', {}, `${c.id} · ${c.version}`), h('div', { class: 'muted' }, c.status),
       table(['Ruta', 'Base', 'Candidata', 'Unidad', 'Origen', 'Efecto'], c.rows.map((r) => [r.path, fmtVal(r.base), fmtVal(r.value), r.unit, r.origin, r.effect])),
@@ -145,6 +145,10 @@ function paramsView(root) {
   const SEM04B = [['shotMix.rimWeightFactor', 1, '> 0 (semillas de evaluación 1,25 y 1,50)'], ['opportunity.simRimQualityLogit', 0, `[${RIM_QUALITY_LOGIT_RANGE.join(', ')}] (semillas +0,25 y +0,50 logit)`], ['assist.receivedAdvantageP0', 0, '[0, 1) (semillas 0,25 y 0,50)']];
   root.append(h('div', { class: 'card', id: 'sim-sem04b-rows' }, h('h3', { style: 'margin-top:0' }, 'Filas nuevas de SIM-MOTOR-04B (neutrales)'),
     table(['Ruta', 'Neutral', 'Valor actual', 'Rango autorizado', 'Unidad', 'Procedencia', 'Efecto'], SEM04B.map(([path, neutral, range]) => { const r = base.index.get(path); const cur = sp.index.get(path); return [path, fmtVal(neutral), h('span', { class: cur && cur.value !== neutral ? 'pill warn' : 'pill ok' }, fmtVal(cur?.value ?? null)), range, r?.unit ?? '', r?.origin ?? '', r?.effect ?? '']; }))));
+  // Filas nuevas de SIM-MOTOR-04C (SEM04C): reinicio organizado tras rebote ofensivo, calidad y conversión de la zona inside. Neutrales; coeficientes provisionales de traducción, no regla deportiva.
+  const SEM04C = [['rebound.organizedResetP0', 0, `[${ORGANIZED_RESET_RANGE.join(', ')}] (semillas de evaluación 0,35 · 0,65 · 0,85)`], ['opportunity.simInsideQualityLogit', 0, `[${INSIDE_QUALITY_LOGIT_RANGE.join(', ')}] logit (semillas 0,5 · 1,0)`], ['conversion.simInsideLogitOffset', 0, `[${INSIDE_CONVERSION_LOGIT_RANGE.join(', ')}] logit (semillas 0,15 · 0,30; solo con condición)`]];
+  root.append(h('div', { class: 'card', id: 'sim-sem04c-rows' }, h('h3', { style: 'margin-top:0' }, 'Filas nuevas de SIM-MOTOR-04C (neutrales)'),
+    table(['Ruta', 'Neutral', 'Valor actual', 'Rango autorizado', 'Unidad', 'Procedencia', 'Efecto'], SEM04C.map(([path, neutral, range]) => { const r = base.index.get(path); const cur = sp.index.get(path); return [path, fmtVal(neutral), h('span', { class: cur && cur.value !== neutral ? 'pill warn' : 'pill ok' }, fmtVal(cur?.value ?? null)), range, r?.unit ?? '', r?.origin ?? '', r?.effect ?? '']; }))));
   // Perfil anterior: consulta con tarjeta de compatibilidad y creación EXPLÍCITA de una candidata nueva con las filas compatibles; no se convierte ni activa nada en silencio.
   const importProfile = (file) => { const rd = new FileReader(); rd.onload = () => { try { const j = JSON.parse(rd.result); const rowsIn = Array.isArray(j.overrides) ? j.overrides : []; const items = rowsIn.map((o) => { const errs = validateOverrides(base, [o]); const cur = base.index.get(o.path); return { path: o.path, previous: o.value, current: cur?.value ?? null, status: !cur ? 'ruta desconocida en la base actual' : errs.length ? `no válida: ${errs[0].message}` : 'compatible' }; }); st.imported = { name: file.name, base: j.base ?? null, baseFingerprint: j.baseFingerprint ?? null, same: j.baseFingerprint === base.fingerprint, items, ok: rowsIn.length > 0 }; } catch (err) { st.imported = { name: file.name, ok: false, error: String(err.message ?? err), items: [] }; } render(); }; rd.readAsText(file); };
   const imp = st.imported;

@@ -179,7 +179,7 @@ export class SimMatch {
     const ctx = [0, 1].map((k) => ({ period, secondsLeft: secLeft, margin: over?.margin != null ? (k === 0 ? over.margin : -over.margin) : this.score[k] - this.score[1 - k], importance: over?.importance ?? this.norm.importance }));
     const models = [attackModel(S, this.T, this.sides, 0, ctx[0]), attackModel(S, this.T, this.sides, 1, ctx[1])];
     finishPace(S, models);
-    this.sides.forEach((s, k) => { s.putbackCells = null; s.M = models[k]; s.cells = shotCells(S, this.T, this.sides, k, models[k], ctx[k]); s.reb = reboundModel(S, this.T, this.sides, k, models[k]); s.assist = assistModel(S, models[k], s, null, null, s.plan); });
+    this.sides.forEach((s, k) => { s.putbackCells = null; s.orgCells = null; s.M = models[k]; s.cells = shotCells(S, this.T, this.sides, k, models[k], ctx[k]); s.reb = reboundModel(S, this.T, this.sides, k, models[k]); s.assist = assistModel(S, models[k], s, null, null, s.plan); });
     return models;
   }
 
@@ -230,21 +230,23 @@ export class SimMatch {
     for (const r of recs) this._resolve(r, k, 0, false);
     return recs;
   }
-  _sampleCell(s, putback) { const cells = s.cells; if (!putback) return cells[this.rng.weightedBy(cells, 'w')]; const sub = s.putbackCells ??= cells.filter((c) => c.cell.zone === 'rim' || c.cell.zone === 'inside'); return sub[this.rng.weightedBy(sub, 'w')] ?? cells[0]; }
+  // 04C §5.2: subconjunto organizado ADMISIBLE del plan/quinteto del tramo (celdas de ficha con peso; ya excluye fichas no disponibles). Se sortea renormalizando sus pesos; nunca se reutiliza `s.cells` completo.
+  _orgCells(s) { return s.orgCells ??= s.cells.filter((c) => c.kind === 'play' && c.w > 0); }
+  _sampleCell(s, putback, orgOnly = false) { const cells = s.cells; if (orgOnly) { const sub = this._orgCells(s); return sub[this.rng.weightedBy(sub, 'w')]; } if (!putback) return cells[this.rng.weightedBy(cells, 'w')]; const sub = s.putbackCells ??= cells.filter((c) => c.cell.zone === 'rim' || c.cell.zone === 'inside'); return sub[this.rng.weightedBy(sub, 'w')] ?? cells[0]; }
   // Resuelve un registro terminal: pérdidas, faltas de tiro y tiros de campo con sus créditos, rebotes y continuaciones por rebote ofensivo o tapón fuera.
   // Cada finalización (tiro, falta de tiro y serie ligada) recibe una identidad compacta `fin` (§3 C02-02); los libres de bonus no tienen ficha y usan la categoría `bonus_sin_familia`.
   _resolve(rec, k, depth, putback) {
     const rng = this.rng; const S = this.S; const T = this.T; const s = this.sides[k]; const o = this.sides[1 - k]; const M = s.M; const A = s.view.players; const Dp = o.view.players;
-    const kind = rec.kind; const cont = rec.cont ?? null;
+    const kind = rec.kind; const cont = rec.cont ?? null; const rbb = rec.rbb ?? null; const reset = rec.reset === true; // 04C: `rbb` = rama de la continuación tras rebote ofensivo (metadato; no entra en la huella deportiva)
     if (kind === 'to' || kind === 'lb' || kind === 'of' || kind === 'bv') {
       const who = A[rng.weighted(kind === 'of' ? M.ofW : M.toW)];
-      const t = { ty: 'tov', tm: k, pl: who.id, kind, stl: null, sub: null, cont };
+      const t = { ty: 'tov', tm: k, pl: who.id, kind, stl: null, sub: null, cont, rbb };
       if (kind === 'to' || kind === 'lb') { if (rng.bernoulli(M.pSteal)) { t.sub = 'steal'; t.stl = Dp[rng.weighted(M.stealW)].id; } else t.sub = rng.bernoulli(M.pStealOob) ? 'out_of_bounds' : 'bad_pass'; }
       else if (kind === 'of') t.sub = 'offensive_foul'; else t.sub = 'violation';
       rec.ev = t; rec.chain.push({ t }); return;
     }
     // tiro de campo o falta en el tiro
-    const cell = this._sampleCell(s, putback); const c = cell.cell; const play = c.playId ? T.plays[c.playId] : null;
+    const cell = this._sampleCell(s, putback, reset); const c = cell.cell; const play = c.playId ? T.plays[c.playId] : null;
     const fw = finisherWeights(S, T, s.view, play, cell.kind === 'play' ? { ...c, kind: 'play' } : c, s.plan); const fi = rng.weightedBy(fw, 'w'); if (fi < 0) throw new Error(`sin finalizadores: lu=${s.view.lu.length} dir=${s.view.director?.id} ${JSON.stringify({ c, fw: fw.map((x) => [x.pl.id, x.w]), kind: cell.kind })}`); const shooter = fw[fi].pl;
     const q = rng.weighted([cell.q.comfortable, cell.q.normal, cell.q.forced]);
     const moved = putback ? false : (cell.kind === 'play' ? c.moved : rng.bernoulli(c.movedShare));
@@ -264,7 +266,7 @@ export class SimMatch {
     // sin filtrar por posición nominal) con otro jugador distinto del ejecutante y del director. Sin candidato: `scrSrc` 0 (ausencia explícita); una continuación/putback no hereda el bloqueo anterior.
     if (ctxName !== 'putback') { dfn = s.zoneDefIds(zone); if (ctxName === 'organized') { dir = s.view.director.id; const sr = screenRoleOf(play); if (sr) { if (c.role === sr) { scr = shooter.id; scrSrc = 1; } else { const pool = rolePoolOf(S, T, s.view, play, sr).filter((x) => x.pl !== shooter && x.pl.id !== dir); const bi = rng.weighted(pool.map((x) => x.w)); scr = bi >= 0 ? pool[bi].pl.id : null; scrSrc = bi >= 0 ? 2 : 0; } } } }
     const elig = passable ? 1 : 0; // C04-06: la finalización admite una entrega final (denominador de asistencias)
-    const base = { ty: 'shot', tm: k, pl: shooter.id, zone, q, src, play: c.playId ?? null, moved, passer, blk: null, made: false, and1: false, pts: 0, end: null, fin, ctx: ctxName, dir, scr, scrSrc, elig, elc, dfn, cont };
+    const base = { ty: 'shot', tm: k, pl: shooter.id, zone, q, src, play: c.playId ?? null, moved, passer, blk: null, made: false, and1: false, pts: 0, end: null, fin, ctx: ctxName, dir, scr, scrSrc, elig, elc, dfn, cont, rbb };
     const info = { cell: { ...c, moved }, kind: cell.kind };
     const sp = shotProbs(S, T, this.sides, k, M, info, shooter, q);
     // 04B §7.5 (diagnóstico seleccionado): lo que el motor YA calculó para este tiro, con la condición de la probabilidad (`p` es condicional a que no haya tapón). No se vuelve a ejecutar ninguna fórmula ni se consume azar.
@@ -274,9 +276,9 @@ export class SimMatch {
       const made = rng.bernoulli(sp.p); const nFt = zone === 'three' ? 3 : 2;
       if (made) { // canasta con falta: el tiro cuenta y se añade un libre ligado; sigue siendo UNA finalización
         base.made = true; base.and1 = true; base.pts = S.shots[zone].points; const sh = this._pushShotRec(rec, base);
-        rec.chain.push({ foul: { ty: 'shootfoul', tm: 1 - k, zone, victim: shooter.id, src, play: c.playId ?? null, and1: true, fin, cont, ctx: ctxName, dir, scr, scrSrc, elig, elc, dfn, passer } }); this._ftSeries(rec, k, shooter, 1, 'and1', sh, passer, s, putback, origin);
+        rec.chain.push({ foul: { ty: 'shootfoul', tm: 1 - k, zone, victim: shooter.id, src, play: c.playId ?? null, and1: true, fin, cont, rbb, ctx: ctxName, dir, scr, scrSrc, elig, elc, dfn, passer } }); this._ftSeries(rec, k, shooter, 1, 'and1', sh, passer, s, putback, origin);
       } else { // fallo con falta de tiro: sin intento de campo (política EST-SIM02), libres del tirador; una finalización
-        const f = { ty: 'shootfoul', tm: 1 - k, zone, victim: shooter.id, src, play: c.playId ?? null, fin, cont, ctx: ctxName, dir, scr, scrSrc, elig, elc, dfn, passer }; rec.chain.push({ foul: f }); this._ftSeries(rec, k, shooter, nFt, 'shooting', f, passer, s, putback, origin);
+        const f = { ty: 'shootfoul', tm: 1 - k, zone, victim: shooter.id, src, play: c.playId ?? null, fin, cont, rbb, ctx: ctxName, dir, scr, scrSrc, elig, elc, dfn, passer }; rec.chain.push({ foul: f }); this._ftSeries(rec, k, shooter, nFt, 'shooting', f, passer, s, putback, origin);
       }
       return;
     }
@@ -292,10 +294,17 @@ export class SimMatch {
     this._rebound(rec, k, shooter, zone, shot, base.blk != null ? 'block' : 'field', depth);
   }
   // Reanuda la misma continuidad ofensiva (rebote ofensivo, tapón fuera): un nuevo registro terminal del mismo equipo dentro del MISMO control.
-  _continue(rec, k, depth, why, putback) {
+  // 04C §5: tras un rebote ofensivo `branch` fija la rama: `organized_reset` resuelve un nuevo registro terminal del mismo control con celdas organizadas admisibles (ficha, participantes y créditos propios, nada heredado);
+  // `immediate` y `reset_unavailable` conservan la continuación cercana de 04B. El resto de continuaciones (tapón fuera) no usa rama.
+  _continue(rec, k, depth, why, putback, branch = null) {
     if (depth >= GUARD_CHAIN) throw new Error(`tope técnico de continuaciones (${GUARD_CHAIN}) alcanzado en una misma posesión (${why})`);
-    const kinds = this.sides[k].M.termOrder; const kind = kinds[this.rng.weighted(kinds.map((x) => this.sides[k].M.term[x]))]; const child = { kind, k, chain: [], dn: [], cont: why };
-    this._resolve(child, k, depth + 1, putback); rec.chain.push({ child });
+    const kinds = this.sides[k].M.termOrder; const kind = kinds[this.rng.weighted(kinds.map((x) => this.sides[k].M.term[x]))]; const reset = branch === 'organized_reset'; const child = { kind, k, chain: [], dn: [], cont: why, rbb: branch, reset };
+    this._resolve(child, k, depth + 1, putback && !reset); rec.chain.push({ child });
+  }
+  // Decisión de rama (una vez por rebote ofensivo válido, ANTES de conocer cómo termina la continuación). Con P0 = 0 o 1 no hay sorteo (`bernoulli` no consume azar en los extremos).
+  _reboundBranch(k) {
+    if (!this.rng.bernoulli(this.S.rebound.organizedResetP0 ?? 0)) return 'immediate';
+    return this._orgCells(this.sides[k]).length ? 'organized_reset' : 'reset_unavailable';
   }
   _pushShotRec(rec, base) { const sh = { ev: base }; rec.chain.push({ shot: sh }); return sh; }
   _ftSeries(rec, k, shooter, n, cause, ref, passer, s, putback, origin) {
@@ -310,9 +319,10 @@ export class SimMatch {
     const off = rng.bernoulli(p); let pl = null;
     const part = off ? R.offP.slice() : R.defP.slice(); if (off && (zone === 'rim' || zone === 'inside') && S.rebound.addShooterIfNearRim && !part.includes(shooter)) part.push(shooter);
     if (part.length) { const capt = R.capt; const ws = part.map((x) => Math.max(0.05, capt(x))); pl = part[rng.weighted(ws)]; }
-    const ev = { ty: 'reb', tm: off ? k : 1 - k, off, pl: pl?.id ?? null, cause };
+    const branch = off ? this._reboundBranch(k) : null;
+    const ev = { ty: 'reb', tm: off ? k : 1 - k, off, pl: pl?.id ?? null, cause, rbb: branch };
     rec.chain.push({ reb: ev, parent });
-    if (off) this._continue(rec, k, depth, 'offensive_rebound', true);
+    if (off) this._continue(rec, k, depth, 'offensive_rebound', true, branch);
   }
 }
 

@@ -13,7 +13,7 @@ import { REVIEW_EVERY } from './coachsim.js';
 import { SIM_VERSION, SIM_PROFILE_ID, SIM_COVERAGE_ID, SIM_STATS_POLICY_ID, SIM_RESULT_SCHEMA } from './version.js';
 
 export const CAMPAIGN_RECORD_SCHEMA = 'beM-sim03-record/1';
-export const DIAG04B_SCHEMA = 'beM-sim04b-diag/1';
+export const DIAG04B_SCHEMA = 'beM-sim04c-diag/1';
 const r1 = (x) => Math.round(x * 10) / 10;
 const planBrief = (p) => ({ disposition: p.disposition, defense: p.defense, coverage: p.coverage, pressureHeight: p.pressureHeight, styles: { ...p.styles }, defStyles: { ...p.defStyles }, midrange: p.midrange, starters: { ...p.starters }, directorPriority: [...(p.directorPriority ?? [])], initialTeamMoment: p.initialTeamMoment ?? 0, coach: p.coach?.policy ?? null, playbook: (p.playbook ?? []).map((e) => `${e.playId}:${e.priority}`) });
 // Director EFECTIVO por tramo (prioridad vigente entre los presentes; si ninguno, el PG del tramo), con intervalos fusionados. Las órdenes de campaña no cambian la prioridad de director.
@@ -32,11 +32,11 @@ function directorIntervals(m, input) {
 function diag04b(m, detail) {
   const czq = {}; const foulMiss = {}; const subs = []; const shots = [];
   for (const e of m.events) {
-    if (e.ty === 'shot') { const k = `${e.tm}|${e.ctx}|${e.zone}|${e.q}`; const x = (czq[k] ??= [0, 0, 0]); x[0]++; if (e.made) { x[1]++; if (e.passer) x[2]++; } if (detail && e.diag) shots.push([e.t, e.tm, e.ctx, e.zone, e.q, e.made ? 1 : 0, e.blk ? 1 : 0, e.diag.p, e.diag.pBase, e.diag.K, e.diag.blkP, ...e.diag.qp]); }
+    if (e.ty === 'shot') { const k = `${e.tm}|${e.ctx}|${e.zone}|${e.q}`; const x = (czq[k] ??= [0, 0, 0, 0]); x[0]++; if (e.made) { x[1]++; if (e.passer) { x[2]++; x[3]++; } } // 04C §4.1: columnas distintas. En SIM el pasador representado ES el crédito causal de la canasta (el acta lo cuenta como AST_FG); se publican por separado para que el lector sea comparable con el detallado, donde NO coinciden if (detail && e.diag) shots.push([e.t, e.tm, e.ctx, e.zone, e.q, e.made ? 1 : 0, e.blk ? 1 : 0, e.diag.p, e.diag.pBase, e.diag.K, e.diag.blkP, ...e.diag.qp]); }
     else if (e.ty === 'shootfoul' && !e.and1) { const k = `${1 - e.tm}|${e.ctx}|${e.zone}`; foulMiss[k] = (foulMiss[k] ?? 0) + 1; }
     else if (e.ty === 'sub') subs.push([e.t, e.tm, (e.why ?? []).join('|'), e.out.length, e.in.length]);
   }
-  return { schema: DIAG04B_SCHEMA, czqColumns: ['tm|ctx|zone|q(0 cómoda,1 normal,2 forzada)', ['attempts', 'makes', 'assistedMakes']], czq, foulMissNote: 'fallos con falta de tiro: sin intento de campo', foulMiss, subsColumns: ['t', 'tm', 'why(slot:reason|…)', 'nOut', 'nIn'], subs,
+  return { schema: DIAG04B_SCHEMA, czqColumns: ['tm|ctx|zone|q(0 cómoda,1 normal,2 forzada)', ['attempts', 'makes', 'madeWithPasser', 'astFgCredited']], czq, foulMissNote: 'fallos con falta de tiro: sin intento de campo', foulMiss, subsColumns: ['t', 'tm', 'why(slot:reason|…)', 'nOut', 'nIn'], subs,
     ...(detail ? { rotationDecisions: m.rotLog, shotsColumns: ['t', 'tm', 'ctx', 'zone', 'q', 'made', 'blocked', 'p(condicional a no tapón)', 'pBase', 'K', 'pBlock', 'qPrior.comfortable', 'qPrior.normal', 'qPrior.forced'], shots } : {}) };
 }
 // Ruta de ejecución (repeticiones técnicas E, §9.1): 'auto' (de golpe con dirección automática), 'steps' (avance por los instantes `c.steps` con consultas intermedias, sin azar) o 'recover' (en los instantes

@@ -157,7 +157,7 @@ test('S04B-05 elegibilidad del pase final: tabla derivada del catálogo; sin asi
   // la asistencia no se sortea después de ver el resultado: el pasador existe ANTES de resolver el tiro (también en los fallos)
   const mm = play(inputOf(12, 'EQ01', 'EQ02'), c9); const missedWithPasser = mm.events.filter((e) => e.ty === 'shot' && !e.made && e.passer != null).length; assert.ok(missedWithPasser > 0, 'hay entregas en tiros fallados: el pase no depende del acierto');
   // exposición e identidad: la versión y el perfil de 04B son los nuevos
-  assert.equal(SIM_VERSION, '0.3.1-SIMMOTOR04B'); assert.match(SIM_PROFILE_ID, /SEM-SIM04B-20261023$/);
+  assert.equal(SIM_VERSION, '0.3.2-SIMMOTOR04C'); assert.match(SIM_PROFILE_ID, /SEM-SIM04B-20261023\+SEM-SIM04C-20261024$/);
 });
 
 // ---------------------------------------------------------------------------------------------------------------------------------- compatibilidad con 04
@@ -165,7 +165,7 @@ import { readFileSync } from 'node:fs';
 import { restoreSim } from '../src/sim/snapshot.js';
 test('S04B-08 compatibilidad: el guardado REAL de 04 (0.3.0-SIMMOTOR04) se rechaza con explicación y sin tocar el archivo; el guardado nuevo continúa exacto; no se activa ninguna candidata al abrir', () => {
   const old = JSON.parse(readFileSync(new URL('./fixtures/sim-snapshot-04.json', import.meta.url), 'utf8')).snap; const before = canonical(old);
-  assert.equal(old.simVersion, '0.3.0-SIMMOTOR04'); const errs = validateSimSnapshot(old); assert.ok(errs.some((e) => /SIM-MOTOR-04B cambia el futuro de un partido en curso \(la rotación decide con la fatiga actual/.test(e.message)), 'explicación del rechazo');
+  assert.equal(old.simVersion, '0.3.0-SIMMOTOR04'); const errs = validateSimSnapshot(old); assert.ok(errs.some((e) => /SIM-MOTOR-04C cambia el futuro de un partido en curso \(tras un rebote ofensivo decide una rama/.test(e.message)), 'explicación del rechazo');
   assert.equal(canonical(old), before, 'el archivo original queda intacto'); assert.throws(() => restoreSim(deep(old), ctx), /rechazado/);
   const m = new SimMatch(inputOf(5), ctx); m.advance({ until: 130 }); const snap = snapshotSim(m, { embedContext: false }); assert.equal(snap.simVersion, SIM_VERSION); assert.deepEqual(validateSimSnapshot(snap), []);
   const ctl = new SimMatch(inputOf(5), ctx); ctl.finish(); const r = restoreSim(deep(snap), ctx); r.finish(); assert.equal(r.rng.draws, ctl.rng.draws); assert.equal(buildSimResult(r, { events: false }).sportFingerprint, buildSimResult(ctl, { events: false }).sportFingerprint);
