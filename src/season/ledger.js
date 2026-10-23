@@ -72,10 +72,12 @@ export class SeasonLedger {
     if (prev) return { ok: false, duplicate: true, reason: `la consecuencia «stats» del encuentro ${ctx.matchId} (${scope}) ya se aplicó con el intento ${prev.attemptId}` };
     const lines = commonLines(ctx.model, ess); const teamMin = [0, 0]; for (const l of lines) teamMin[l.teamIndex] += l.line.minTenths;
     const uni = ctx.model === 'sim' ? { teamControls: ess.controls, teamFinalizations: ess.familyDenominators.map((d) => d.finalizations) } : { teamPossessions: [ess.acta.teams?.[0]?.possessions ?? null, ess.acta.teams?.[1]?.possessions ?? null] };
-    const staged = new Map(); // clave → tramo ya clonado (o nuevo) con la suma aplicada; nada toca el registro hasta confirmar
+    // Todo lo que puede fallar ya se comprobó: la confirmación no lanza. Se confirman juntas la guarda por encuentro lógico, las sumas y el detalle.
+    const guard = this.consequences.apply({ kind: 'stats', matchId: ctx.matchId, scope, attemptId: ctx.attemptId ?? 1, payload: { competition: ctx.competition, round: ctx.round, season: ctx.season } });
+    if (!guard.ok) return { ok: false, duplicate: true, reason: guard.reason };
     for (const l of lines) {
       const club = ctx.clubs[l.teamIndex]; const key = SeasonLedger.key(l.playerId, ctx.season, ctx.competition, club);
-      let st = staged.get(key); if (!st) { const cur = this.stints.get(key); st = cur ? structuredClone(cur) : { player: l.playerId, season: ctx.season, competition: ctx.competition, club, sums: zero(), rounds: [], byModel: {} }; staged.set(key, st); }
+      let st = this.stints.get(key); if (!st) { st = { player: l.playerId, season: ctx.season, competition: ctx.competition, club, sums: zero(), rounds: [], byModel: {} }; this.stints.set(key, st); }
       const add = (o) => { for (const k of COMMON_KEYS) o[k] = (o[k] ?? 0) + (k === 'games' ? 1 : k === 'starts' ? (l.starter ? 1 : 0) : (l.line[k] ?? 0)); };
       add(st.sums); st.rounds.push({ round: ctx.round, matchId: ctx.matchId, model: ctx.model });
       const advOne = { teamMinTenths: teamMin[l.teamIndex], teamControls: uni.teamControls ? uni.teamControls[l.teamIndex] : 0, teamFinalizations: uni.teamFinalizations ? uni.teamFinalizations[l.teamIndex] : 0, teamPossessions: uni.teamPossessions?.[l.teamIndex] ?? 0 };
@@ -83,9 +85,6 @@ export class SeasonLedger {
       const bm = (st.byModel[ctx.model] ??= { ...zero(), adv: { teamMinTenths: 0, teamControls: 0, teamFinalizations: 0, teamPossessions: 0 } }); add(bm);
       bm.adv.teamMinTenths += teamMin[l.teamIndex]; if (uni.teamControls) bm.adv.teamControls += uni.teamControls[l.teamIndex]; if (uni.teamFinalizations) bm.adv.teamFinalizations += uni.teamFinalizations[l.teamIndex]; if (uni.teamPossessions?.[l.teamIndex] != null) bm.adv.teamPossessions += uni.teamPossessions[l.teamIndex];
     }
-    const guard = this.consequences.apply({ kind: 'stats', matchId: ctx.matchId, scope, attemptId: ctx.attemptId ?? 1, payload: { competition: ctx.competition, round: ctx.round, season: ctx.season } });
-    if (!guard.ok) return { ok: false, duplicate: true, reason: guard.reason };
-    for (const [key, st] of staged) this.stints.set(key, st);
     this.matches.push({ matchId: ctx.matchId, season: ctx.season, competition: ctx.competition, round: ctx.round, model: ctx.model, clubs: ctx.clubs.slice() }); return { ok: true };
   }
   // Tramos de un jugador (por club y competición) hasta la fecha alcanzada: no se muestran totales ni DETALLE de rondas posteriores aunque ya se hayan calculado (C03-05). Todo lo devuelto es una copia
