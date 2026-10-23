@@ -1,6 +1,6 @@
 # Estado del proyecto
 
-Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANGELOG.md)). Última actualización: 2026-10-23, entrega SIM-MOTOR-02 (sobre SIM-MOTOR-01, PR #21).
+Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANGELOG.md)). Última actualización: 2026-10-23, entrega SIM-MOTOR-03 (incluye 02B; sobre SIM-MOTOR-01 y 02, PR #21).
 
 ## Qué hay realmente en el repositorio
 
@@ -8,6 +8,16 @@ Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANG
 - **Diseño funcional del motor y del primer laboratorio**, organizado por temas en [`motor/`](motor/README.md) (34 capítulos). Es **especificación**: está *definida*, no implementada.
 - **Copia original congelada** del funcional unificado y **exportado completo vigente** generado: ver [`historico/`](historico/README.md) y [`exportados/`](exportados/README.md).
 - **Utilidades documentales** en `scripts/docs/` (Python 3, librería estándar).
+
+## SIM-MOTOR-03 (incluye 02B; ejecutado; correcciones, rendimiento exacto y campaña comparativa congelada; pendiente de Dennis)
+
+- **Qué es**: tercera entrega del roadmap de cuatro. Cierra las correcciones C03-01…11 de la revisión independiente de 02, mide con honestidad el rendimiento y ejecuta una campaña comparativa **congelada** (1.632 SIM + 72 detallados; todos válidos) con paquetes para que ChatGPT analice el deporte. No calibra: SIM-MOTOR-04 decidirá los ajustes. [Plan](tecnico/sim-motor03-plan.md) · [resultados](tecnico/sim-motor03-campana.md) · [02B](tecnico/sim-motor02b.md).
+- **Git**: se continúa en la rama de la PR #21 (SIM-MOTOR-01 + 02 + 02B + 03), base `606c33b`, sin fusionar. Código congelado `24187fe`; control preoptimización `ee14ec5`.
+- **Versiones**: aplicación `SIM-MOTOR-03` (incluye `SIM-MOTOR-02B`), SIM `0.2.1-SIMMOTOR02B`, resultado `beM-sim-match/2`, guardado `beM-sim-snapshot/1` con matriz de compatibilidad (`SIM_SNAPSHOT_COMPAT`; el guardado real de 02 continúa exacto), perfil base `SEM-SIM01-20261022` + `SEM-SIM02-20261022` **sin cambio numérico**. Detallado **sin cambio** (83–98, 6.684 sorteos; 0 archivos deportivos modificados frente a `4194158`).
+- **Cambia el deporte SIM** solo por C03-11 (la dirección automática del entrenador se aplica igual en partido completo, lotes, temporada, laboratorio y jornada); `finish()` queda como primitiva sin política. No es calibración.
+- **Rendimiento**: objetivo de 5 s **NO cumplido**: final ≈8,2–9,2 s en caliente y 12,4–13,2 s en proceso nuevo frente a ≈8,4–9,7 s del control en la misma sesión (máquina ≈1,7× más lenta que la de 02); jornada de mil ≈19 s y RSS ≈2,66 GiB (control ≈2,31 GiB). Mejora exacta pequeña (huellas idénticas en 1.000/1.000 casos).
+- **Comprobado por Claude**: S03-01…12 (fallan con el comportamiento de 02: `scripts/sim03-repro-02b.mjs`), suite completa 325/325, `data:check`, comprobador documental (copia limpia), recorrido de Chromium (46 pasos, consola 0, red 0, recargas reales y descargas por sus bytes), equivalencia técnica 16/16, comprobador offline de la entrega (28 comprobaciones, 0 fallos). **Pendiente de Dennis**: [recorrido manual](prompts/SIM-MOTOR-03-recorrido-manual.md). **No ejecutado**: otros navegadores, Node 24, calibración, referencia externa (pendiente de investigación por ChatGPT).
+- **No cerrado**: calidad deportiva y comparación con competiciones reales, objetivo de rendimiento, instrumentación de algunas capacidades (ver `15-PENDIENTES-Y-LIMITES.md`). **Siguiente**: análisis de ChatGPT sobre los paquetes y decisión de Dennis (SIM-MOTOR-04).
 
 ## SIM-MOTOR-02 (ejecutado; correcciones, integración, simultaneidad e historia; pendiente de Dennis)
 
