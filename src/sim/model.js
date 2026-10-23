@@ -51,7 +51,9 @@ export function lineupView(S, T, side) {
   let director = null; for (const id of side.plan.directorPriority ?? []) if (ids.has(id)) { director = lu.find((e) => e.pl.id === id).pl; break; }
   if (!director) director = bySlot.PG ?? lu[0].pl;
   const pools = {}; for (const [g, slots] of Object.entries(T.participantSlots)) pools[g] = lu.filter((e) => slots.includes(e.slot)).map((e) => e.pl);
-  return { lu, players: lu.map((e) => e.pl), bySlot, director, pools };
+  // `xc`/`xk`: caché ENTRE tramos de lo que solo depende de la formación (puestos, jugadores y director): los pools de rol; se invalida sola al cambiar la clave (sustituciones o director distinto)
+  let xk = director.id; for (const e of lu) xk += `|${e.slot}${e.pl.id}`;
+  return { lu, players: lu.map((e) => e.pl), bySlot, director, pools, xk, xc: (side.xc ??= new Map()) };
 }
 
 // Reparto defensivo: asigna jugadores a funciones por adecuación (interior primero) y devuelve, por área, quién protege primero. `attFns` = funciones del ataque rival (organización individual).
@@ -98,7 +100,8 @@ export function pressureLevel(S, importance, period, secondsLeft, margin) {
 // ------------------------------------------------------------------------------------------------------------------------------ plan: parte estática (por plan) y dinámica (por tramo)
 // Celdas de finalización de las fichas del libro: una por (ficha, salida, zona). Estática por plan: se cachea en `plan._c`.
 export function compilePlan(S, T, plan) {
-  if (plan._c && plan._c.src === JSON.stringify([plan.playbook, plan.disposition])) return plan._c;
+  // el plan de trabajo de un encuentro es propio (copia) y solo cambia sustituyendo `playbook`/`disposition` (órdenes), nunca por mutación interna: la identidad de ambos decide si la compilación sigue vigente (antes: JSON.stringify del libro en cada tramo)
+  if (plan._c && plan._c.pb === plan.playbook && plan._c.dis === plan.disposition) return plan._c;
   const disFns = T.dispositions[plan.disposition].functions; const cells = []; const plays = []; const merged = new Map();
   for (const e of plan.playbook) {
     const pl = T.plays[e.playId]; let ok = true;
@@ -118,13 +121,13 @@ export function compilePlan(S, T, plan) {
   const mkPseudo = (kind, family) => ZONES.map((z) => ({ kind, cell: { zone: z, family, role: 'handler', exec: 'auto', moved: false, passShare: 0, movedShare: 0 }, w: 0, q: null }));
   const trans = mkPseudo('trans', 'transition'); const spont = mkPseudo('spont', 'spontaneous');
   plays.forEach((p) => { p.receiverFamily = ['handoff', 'off_ball_screen', 'give_and_go'].includes(p.family); });
-  plan._c = { src: JSON.stringify([plan.playbook, plan.disposition]), cells, plays, cellObjs, trans, spont, all: [...cellObjs, ...trans, ...spont] };
+  plan._c = { pb: plan.playbook, dis: plan.disposition, cells, plays, cellObjs, trans, spont, all: [...cellObjs, ...trans, ...spont] };
   return plan._c;
 }
 
 // Pools de rol de una ficha: devuelve [{pl, w}] con la plaza favorecida (rolePreference) frente al resto, sin prohibir por posición nominal. Memoizado por vista (tramo).
 function rolePool(S, T, view, play, role) {
-  const cache = viewCache(S, view); let byPlay = cache.pool.get(play.id); if (!byPlay) { byPlay = new Map(); cache.pool.set(play.id, byPlay); } const hit = byPlay.get(role); if (hit) return hit;
+  let lineup = view.xc?.get(view.xk); if (!lineup) { lineup = new Map(); view.xc?.set(view.xk, lineup); } let byPlay = lineup.get(play.id); if (!byPlay) { byPlay = new Map(); lineup.set(play.id, byPlay); } const hit = byPlay.get(role); if (hit) return hit;
   const d = play.roles[role]; let out;
   if (role === 'director') out = [{ pl: view.director, w: 1 }];
   else if (!d) out = view.players.map((pl) => ({ pl, w: 1 }));

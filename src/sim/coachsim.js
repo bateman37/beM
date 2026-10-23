@@ -28,14 +28,13 @@ const zoneGroup = (z) => (z === 'three' ? 'exterior' : z === 'rim' || z === 'ins
 // Vista del entrenador del equipo `team` en el presente publicado `T`. Solo lee hechos publicados (eventos ≤ T y tramos iniciados) y contexto con `receivedAtPublished` ≤ T.
 export function observationFor(m, team, T) {
   const S = m.S; const seg = m.segments.filter((s) => s.start < T - 1e-9); const win = seg.slice(-S.coachSim.observationWindowSegments); const winIdx = new Set(win.map((s) => s.n));
-  const margin = { v: 0 }; const sc = [0, 0]; let periodStart = 0; let period = 1; const rival = { exterior: 0, interior: 0, media: 0 }; const own = { fouls: {}, ownShots: 0 };
-  for (const e of m.events) {
-    if (e.t > T + 1e-9) break;
-    if (e.ty === 'period') { period = e.p; periodStart = e.t; }
-    else if (e.ty === 'shot') { if (e.made) sc[e.tm] += e.pts; if (e.tm === 1 - team && winIdx.has(e.sg)) rival[zoneGroup(e.zone)] += 1; if (e.tm === team) own.ownShots += 1; }
-    else if (e.ty === 'ft' && e.made) sc[e.tm] += 1;
-    else if (e.ty === 'foul' || e.ty === 'shootfoul') own.fouls[e.pl] = (own.fouls[e.pl] ?? 0) + 1;
-  }
+  const margin = { v: 0 }; const rival = { exterior: 0, interior: 0, media: 0 };
+  // Lectura INCREMENTAL (agregación en lugar de recorrer todos los hechos en cada revisión): el marcador, el periodo y su inicio se acumulan sobre un puntero que solo avanza (el prefijo publicado es monótono);
+  // el conteo de tiros rivales recorre solo los hechos de los tramos de la ventana. Mismo resultado que el recorrido completo; si T retrocede (consulta histórica) se recalcula desde cero.
+  let c = m._obs; if (!c || c.events !== m.events || T < c.T - 1e-9) c = m._obs = { events: m.events, i: 0, sc: [0, 0], period: 1, periodStart: 0, T };
+  const ev = m.events; let hi = c.i; while (hi < ev.length && ev[hi].t <= T + 1e-9) { const e = ev[hi]; if (e.ty === 'period') { c.period = e.p; c.periodStart = e.t; } else if (e.ty === 'shot') { if (e.made) c.sc[e.tm] += e.pts; } else if (e.ty === 'ft' && e.made) c.sc[e.tm] += 1; hi += 1; } c.i = hi; c.T = T;
+  if (win.length) { const first = win[0].n; for (let j = hi - 1; j >= 0 && ev[j].sg >= first; j--) { const e = ev[j]; if (e.ty === 'shot' && e.tm === 1 - team && winIdx.has(e.sg)) rival[zoneGroup(e.zone)] += 1; } }
+  const sc = c.sc.slice(); const period = c.period; const periodStart = c.periodStart;
   margin.v = sc[team] - sc[1 - team]; const len = period <= m.rules.quarters ? m.rules.quarterSeconds : m.rules.overtimeSeconds; const left = Math.max(0, periodStart + len - T);
   const external = m.contextLog.filter((c) => c.receivedAtPublished <= T + 1e-9);
   const view = { observedAt: Math.round(T * 10) / 10, team, period, secondsLeft: Math.round(left * 10) / 10, margin: margin.v, score: sc.slice(), rivalShots: { ...rival, window: win.map((s) => s.n) }, external };
