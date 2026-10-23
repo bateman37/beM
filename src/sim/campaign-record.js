@@ -45,7 +45,7 @@ export function runCampaignSim(ctx, c) {
     const tGen = performance.now();
     const res = buildSimResult(m, { events: false, reconcile: false, analysis: true }); const rec = reconcileResult(m, res, m.events); const ess = essentialFromResult(res, { reconcile: rec });
     const valid = m.status === 'finished' && rec.valid === true;
-    const record = { ...base, status: m.status, error: m.error?.cause ?? null, valid, failedChecks: rec.checks.filter((x) => !x.ok).map((x) => x.id), checks: rec.checks.length, notEvaluated: rec.notEvaluated ?? [],
+    const record = { ...base, status: m.status, error: m.error?.cause ?? null, valid, failedChecks: rec.checks.filter((x) => !x.ok).map((x) => x.id), checks: rec.checks.length, notEvaluated: rec.notEvaluated ?? [], recon: rec.checks.map((x) => [x.id, x.ok ? 1 : 0, x.universe, x.failureCount ?? 0]),
       identity: { seed: res.identity.seed, importance: res.identity.importance, inputFingerprint: res.identity.inputFingerprint, effectiveInputFingerprint: res.identity.effectiveInputFingerprint, nCommands: res.identity.nCommands, sportFingerprint: res.sportFingerprint, ignoredInput: res.identity.ignoredInput, teams: res.identity.teams.map((t) => t.id) },
       essential: ess, analysis: res.analysis, rngDraws: m.rng.draws, events: m.events.length, route,
       quintets: res.quintets.map((q) => ({ team: q.team, ids: q.ids, sec: q.sec, pf: q.pf, pa: q.pa, ctlFor: q.ctlFor, ctlAgainst: q.ctlAgainst, fga: q.fga, fgm: q.fgm, fg3a: q.fg3a, fg3m: q.fg3m, fta: q.fta, ftm: q.ftm, tov: q.tov, oreb: q.oreb, dreb: q.dreb, ast: q.ast, stl: q.stl, blk: q.blk, intervals: q.intervals })),
