@@ -36,6 +36,7 @@ Directorio de los encargos a Claude Code. **El texto original de un prompt ejecu
 | MOTOR-18C | Dos correcciones de identidad del aprendizaje del laboratorio: identidad exacta del encuentro aplicado (M1 ≠ M10) y pertenencia a la copia activa (un resultado no se aplica a otra copia) | [`MOTOR-18C-identidad-aprendizaje.md`](MOTOR-18C-identidad-aprendizaje.md) · [recorrido manual](MOTOR-18C-recorrido-manual.md) | **Ejecutado** (pendiente de Dennis; la PR #19 ya estaba fusionada: PR independiente) | 2026-10-22 · intento 1 | — |
 | SIM-MOTOR-01 | Primera de cuatro entregas de SIM-MOTOR: generador estadístico por tramos (motor ultrarrápido), selector de motor del laboratorio, perfil SIM editable, 32 capacidades y controles causales, conciliaciones y medición real de 1.000 partidos (B01/B02/B03) con paquetes para ChatGPT | [`SIM-MOTOR-01-generador-y-rendimiento.md`](SIM-MOTOR-01-generador-y-rendimiento.md) · [recorrido manual](SIM-MOTOR-01-recorrido-manual.md) | **Ejecutado** (pendiente de Dennis; la PR #20 de 18C ya estaba fusionada: PR independiente) | 2026-10-22 · intento 1 | — |
 | SIM-MOTOR-02 | Segunda de cuatro entregas de SIM-MOTOR: correcciones C02-01…05, roles/director/familiaridad pertinente, política pequeña del entrenador, lectores SIM, jornada simultánea con el detallado, guardado y lotes persistentes, historia individual de temporada y aprendizaje posterior | [`SIM-MOTOR-02-correcciones-integracion-simultaneidad-historia.md`](SIM-MOTOR-02-correcciones-integracion-simultaneidad-historia.md) · [recorrido manual](SIM-MOTOR-02-recorrido-manual.md) | **Ejecutado** (pendiente de Dennis) | 2026-10-23 · intento 1 | — |
+| SIM-MOTOR-03 | Tercera de cuatro entregas de SIM-MOTOR (incorpora 02B): cierre de C03-01…11, rendimiento exacto y campaña comparativa congelada con paquetes para ChatGPT | [`SIM-MOTOR-03-correcciones-02B-y-campana.md`](SIM-MOTOR-03-correcciones-02B-y-campana.md) | [recorrido manual](SIM-MOTOR-03-recorrido-manual.md) | ejecutado (ver ficha) |
 
 ## Fichas de ejecución
 
@@ -374,3 +375,15 @@ Comprobación local de enlaces: hecha por Claude. Presentación en GitHub: no co
 | Comprobaciones realizadas | Suite 307/307, `data:check`, comprobador documental, recorrido Chromium (43 pasos), SIGKILL real, verificación de paquetes (integridad 11/11, contenido 39/39). |
 | Limitaciones | Objetivo de 5 s no alcanzado; calidad deportiva sin validar; ZIP históricos de 01 no disponibles (`out/` no se versiona). |
 | Pendientes | Recorrido manual de Dennis ([guía](SIM-MOTOR-02-recorrido-manual.md)) y decisión de fusión; SIM-MOTOR-03. |
+
+### SIM-MOTOR-03
+
+| Campo | Valor |
+|---|---|
+| Objetivo | Cerrar las correcciones de SIM-MOTOR-02B (C03-01…11), medir con honestidad el rendimiento y ejecutar una campaña comparativa congelada (1.632 SIM + 72 detallados) con paquetes descargables para ChatGPT. |
+| Medio de entrada del texto | Archivo `.md` adjunto (`02c299a7-beM-PROMPT-SIM-MOTOR-02B-03-CORRECCIONES-Y-AUDITORIA.md`; prefijo añadido por la subida). La copia archivada es byte a byte idéntica. |
+| Fecha real de ejecución | 2026-10-23 · intento 1 |
+| Revisión de partida | `4194158` (cabeza de SIM-MOTOR-02 en la PR #21; la PR seguía abierta y contiene 01 + 02). |
+| Rama / PR | `claude/busy-edison-b1fmnc` · [bateman37/beM#21](https://github.com/bateman37/beM/pull/21) (abierta contra `main`, sin fusionar; título y descripción reflejan 01 + 02 + 02B + 03). |
+| Resultado breve | Ver [`../tecnico/sim-motor02b.md`](../tecnico/sim-motor02b.md), [`../tecnico/sim-motor03-plan.md`](../tecnico/sim-motor03-plan.md) y [`../tecnico/sim-motor03-campana.md`](../tecnico/sim-motor03-campana.md). Paquetes fuera de Git en `out/sim-motor03/entrega-final/`. |
+| Pendientes | Recorrido manual de Dennis ([guía](SIM-MOTOR-03-recorrido-manual.md)); análisis de ChatGPT y SIM-MOTOR-04. |

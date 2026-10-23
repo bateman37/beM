@@ -12,6 +12,7 @@ import { cpus, release, platform, arch, totalmem } from 'node:os';
 import * as L from './lib.js';
 import { contextToJSON } from '../../src/sim/context.js';
 import { SimPool } from '../../src/sim/pool.js';
+import { buildAgenda } from '../../src/sim/schedule.js';
 import { SIM_VERSION, SIM_PROFILE_ID, SIM_RESULT_SCHEMA, SIM_COVERAGE_ID, SIM_STATS_POLICY_ID, SIM_RECON_POLICY_ID } from '../../src/sim/version.js';
 import { APP_VERSION } from '../../src/version.js';
 import { ENGINE_VERSION } from '../../src/match/data.js';
@@ -37,6 +38,7 @@ if (phase === 'plan') {
   const head = ['case_id', 'block', 'scenario', 'variant', 'orientation', 'replicate', 'resolver', 'seed_key', 'seed', 'team0', 'team1', 'test_team', 'entry_id', 'input_hash', 'twin_case', 'diag', 'e_case', 'history72', 'learning_pair'];
   writeFileSync(join(PLAN_DIR, 'agenda-sim.csv'), csv([head, ...rows])); writeFileSync(join(PLAN_DIR, 'agenda-detallado.csv'), csv([head, ...rowsDet]));
   writeFileSync(join(PLAN_DIR, 'entries.jsonl.gz'), gzipSync([...entries.entries()].map(([id, inp]) => JSON.stringify({ entry_id: id, input: (({ seed, ...r }) => r)(inp) })).join('\n')));
+  const bench = buildAgenda({ master: 20261022 }); writeFileSync(join(PLAN_DIR, 'agenda-benchmark.csv'), csv([['n', 'id', 'round', 'pos', 'a', 'b', 'seed'], ...bench.map((c) => [c.n, c.id, c.round, c.pos, c.a, c.b, c.seed])]));
   const scen = L.scenariosB(env).map((s) => ({ id: s.id, factor: s.factor, pair: s.pair, testTeam: s.pair[0], detailed: !!s.detailed, note: s.note ?? null, variants: s.variants.map((x) => ({ id: x.id, label: x.label })) }));
   const budget = { sim: { A: 1056, B: 512, C: 64, comparison: 1632, E: 16, F: 5000 }, detailed: { A: 48, B: 24, C: 0, comparison: 72 }, plannedExplicitSim: 6648, plannedExplicitDetailed: 72, note: 'las pasadas de F repiten sus mil casos; E no son observaciones nuevas; pruebas, navegador, controles y perfilado se cuentan aparte' };
   const plan = { schema: 'beM-sim03-plan/1', campaign: CAMPAIGN_ID(), master: L.MASTER, seedFunction: 'deriveSeed(master, seed_key) = FNV-1a de 32 bits sobre «master|seed_key» (src/sim/rng.js)', seedKeyContract: 'bloque|enfrentamiento_o_escenario|orientación|réplica; excluye variante, resolutor, intento, worker, lote y ruta',
