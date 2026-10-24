@@ -45,10 +45,21 @@ function bootstrapMean(rows, value, B = 2000, seed = 20261024) {
   for (let b = 0; b < B; b++) { let s = 0; let n = 0; for (let i = 0; i < games.length; i++) { const g = games[Math.floor(rnd() * games.length)]; s += g.s; n += g.n; } means.push(s / n); }
   means.sort((x, y) => x - y); return { lo: means[Math.floor(0.025 * B)], hi: means[Math.ceil(0.975 * B) - 1] };
 }
+// Intervalo de la DIFERENCIA (SIM − DET) por remuestreo pareado de partidos completos (ambos equipos juntos, mismo emparejamiento por entrada): 2.000 remuestreos deterministas. Es descriptivo: no cambia el cumplimiento de la banda.
+const sumCols = (r, cols) => { let v = 0; for (const k of cols) { const x = r[ci(k)]; if (x == null) return null; v += x; } return v; };
+function metricParts(id) { const c = S.COUNTS.find((x) => x.id === id); if (c) return { count: true, cols: c.cols }; const t = S.RATES.find((x) => x.id === id); if (t) return { count: false, num: t.num, den: t.den }; const h = S.SHARES.find((x) => x.id === id); if (h) return { count: false, num: [`${h.zone}_a`], den: ['fga'] }; return null; }
+function pairedDelta(simRows, detRows, id, B = 2000, seed = 20261024) {
+  const mp = metricParts(id); if (!mp) return null;
+  const per = (rows) => { const m = new Map(); for (const r of rows) { const k = r[ci('case_id')]; const e = m.get(k) ?? m.set(k, { n: 0, a: 0, b: 0 }).get(k); if (mp.count) { const d = r[ci('duration_s')]; const v = sumCols(r, mp.cols); if (!(d > 0) || v == null) continue; e.a += (v * 2400) / d; e.n += 1; } else { const nn = sumCols(r, mp.num); const dd = sumCols(r, mp.den); if (nn == null || dd == null) continue; e.a += nn; e.b += dd; } } return m; };
+  const Sg = per(simRows); const Dg = per(detRows); const keys = [...Sg.keys()].filter((k) => Dg.has(k)); if (!keys.length) return null;
+  const stat = (g, ks) => { let a = 0; let b = 0; let n = 0; for (const k of ks) { const e = g.get(k); a += e.a; b += e.b; n += e.n; } return mp.count ? (n ? a / n : null) : (b > 0 ? a / b : null); };
+  const rnd = mulberry(seed); const ds = []; for (let i = 0; i < B; i++) { const ks = []; for (let j = 0; j < keys.length; j++) ks.push(keys[Math.floor(rnd() * keys.length)]); const s1 = stat(Sg, ks); const d1 = stat(Dg, ks); if (s1 != null && d1 != null) ds.push(s1 - d1); }
+  if (!ds.length) return null; ds.sort((x, y) => x - y); const point = stat(Sg, keys) - stat(Dg, keys); return { point, lo: ds[Math.floor(0.025 * ds.length)], hi: ds[Math.ceil(0.975 * ds.length) - 1], n: keys.length };
+}
 const per40Of = (cols) => (r) => { const d = r[ci('duration_s')]; if (!(d > 0)) return null; let v = 0; for (const k of cols) { const x = r[ci(k)]; if (x == null) return null; v += x; } return (v * 2400) / d; };
 
 // ---------------------------------------------------------------------------------------------------------------------------------- 06 comparativa del acta (DEV y VAL): DET, condiciones SIM, delta, error, banda y cumplimiento por métrica
-const cols06 = ['block', 'metric', 'kind', 'label', 'condition', 'det_mean40', 'sim_mean40', 'delta', 'error', 'band', 'meets_band', 'status', 'det_real', 'sim_real', 'det_num', 'det_den', 'sim_num', 'sim_den', 'sim_ci95_lo', 'sim_ci95_hi', 'det_ci95_lo', 'det_ci95_hi', 'in_comparable_M04E', 'n_team_games', 'cases', 'note'];
+const cols06 = ['block', 'metric', 'kind', 'label', 'condition', 'det_mean40', 'sim_mean40', 'delta', 'error', 'band', 'meets_band', 'status', 'det_real', 'sim_real', 'det_num', 'det_den', 'sim_num', 'sim_den', 'sim_ci95_lo', 'sim_ci95_hi', 'det_ci95_lo', 'det_ci95_hi', 'in_comparable_M04E', 'n_team_games', 'cases', 'delta_ci95_lo', 'delta_ci95_hi', 'delta_ci_excludes_zero', 'note'];
 const rows06 = []; const m04d = {}; const unitsNote = { count: 'media por actuación de equipo normalizada a 40 minutos; error relativo', rate: 'sumas completas de numeradores y denominadores; error en puntos porcentuales/100', share: 'cuota de FGA por zona; guarda funcional provisional de ±3 pp', forced: 'proporción de intentos en calidad forzada; diferencia informativa' };
 for (const block of SETS) {
   const ids = caseIdsOf(block); const D = pop(block, 'detailed', 'DET', ids); if (!D.rows.length) continue; const exclude = S.COMPARABLE_EXCLUSIONS.map((x) => x.id);
@@ -57,8 +68,8 @@ for (const block of SETS) {
     const errs = S.errorsOf(sp, dp); const both = S.scoreBoth(errs); m04d[`${block}|${cond}`] = { M04E: both.full, M04E_comparable: both.comparable, eZ: S.eZOf(errs), outOfBand: S.outOfBand(errs), outOfBandComparable: S.outOfBand(errs, exclude), cases: common.size, teamGames: sp.n, sim: sp, det: dp, errors: errs };
     const simRows = Sm.rows.filter((r) => common.has(r[ci('case_id')])); const detRows = D.rows.filter((r) => common.has(r[ci('case_id')]));
     for (const e of errs) {
-      const cnt = S.COUNTS.find((c) => c.id === e.id); const ciS = cnt ? bootstrapMean(simRows, per40Of(cnt.cols)) : null; const ciD = cnt ? bootstrapMean(detRows, per40Of(cnt.cols)) : null;
-      rows06.push([block, e.id, e.kind, e.label, cond, r4(e.det), r4(e.sim), e.sim != null && e.det != null ? r4(e.sim - e.det) : null, r4(e.error), e.band, e.error == null || e.band == null ? null : (e.error <= e.band + 1e-12 ? 1 : 0), e.status, r4(e.detReal ?? null), r4(e.simReal ?? null), e.detNum ?? null, e.detDen ?? null, e.simNum ?? null, e.simDen ?? null, r4(ciS?.lo), r4(ciS?.hi), r4(ciD?.lo), r4(ciD?.hi), e.kind === 'forced' ? 0 : exclude.includes(e.id) ? 0 : 1, sp.n, common.size, unitsNote[e.kind]]);
+      const pd = e.kind === 'forced' ? null : pairedDelta(simRows, detRows, e.id); const cnt = S.COUNTS.find((c) => c.id === e.id); const ciS = cnt ? bootstrapMean(simRows, per40Of(cnt.cols)) : null; const ciD = cnt ? bootstrapMean(detRows, per40Of(cnt.cols)) : null;
+      rows06.push([block, e.id, e.kind, e.label, cond, r4(e.det), r4(e.sim), e.sim != null && e.det != null ? r4(e.sim - e.det) : null, r4(e.error), e.band, e.error == null || e.band == null ? null : (e.error <= e.band + 1e-12 ? 1 : 0), e.status, r4(e.detReal ?? null), r4(e.simReal ?? null), e.detNum ?? null, e.detDen ?? null, e.simNum ?? null, e.simDen ?? null, r4(ciS?.lo), r4(ciS?.hi), r4(ciD?.lo), r4(ciD?.hi), e.kind === 'forced' ? 0 : exclude.includes(e.id) ? 0 : 1, sp.n, common.size, r4(pd?.lo), r4(pd?.hi), pd ? (pd.lo > 0 || pd.hi < 0 ? 1 : 0) : null, unitsNote[e.kind]]);
     }
   }
 }

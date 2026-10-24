@@ -4,6 +4,8 @@
 import { h, clear, table } from './dom.js';
 import { store } from './store.js';
 import { makeContext, contextToJSON, SimMatch, buildSimResult, SIM_MODEL, SIM_RESULT_SCHEMA, SIM_VERSION } from '../sim/index.js';
+import { SIM_STATS_POLICY_ID, SIM_RECON_POLICY_ID } from '../sim/version.js';
+import { REBOUND_CREDIT_POLICY_ID } from '../match/rebound-credit.js';
 import { snapshotSim, restoreSim, validateSimSnapshot } from '../sim/snapshot.js';
 import { SIM_CANDIDATES } from '../sim/candidates.js';
 import { RIM_QUALITY_LOGIT_RANGE, INSIDE_QUALITY_LOGIT_RANGE, INSIDE_CONVERSION_LOGIT_RANGE, ORGANIZED_RESET_RANGE, RECEIVED_ADVANTAGE_RANGE, MIDRANGE_WEIGHT_RANGE, RIM_CONVERSION_LOGIT_RANGE, ORDINARY_TURNOVER_RANGE, STEAL_ELIGIBLE_LOGIT_RANGE, SHOOTING_FOUL_RANGE, SPONTANEOUS_PASS_ODDS_RANGE } from '../sim/profile.js';
@@ -136,7 +138,7 @@ function paramsView(root) {
     st.overrides.length ? h('div', { class: 'small' }, h('strong', {}, 'Diferencias frente a la base: '), diffProfile(base, sp).map((d) => `${d.path}: ${fmtVal(d.base)} → ${fmtVal(d.candidate)}`).join(' · ')) : null));
   // Candidatas provisionales (SIM-MOTOR-04): vectores elegidos por el selector mecánico; NUNCA se activan solas. Cargar una es una acción explícita sobre este borrador y deja visibles sus diferencias frente a la base.
   const loadCand = (c) => { const errs = validateOverrides(base, c.overrides); if (errs.length) { e.msg = `Candidata ${c.id} NO válida: ${errs.map((x) => `${x.path}: ${x.message}`).join('; ')}`; render(); return; } st.overrides = c.overrides.map((o) => ({ ...o })); e.draft = {}; st.result = null; e.msg = `Candidata ${c.id} cargada como BORRADOR (provisional, pendiente de aceptación deportiva): ${c.overrides.length} fila(s) distintas de la base. La base ${base.id} no se ha modificado.`; render(); };
-  root.append(h('div', { class: 'card', id: 'sim-candidates' }, h('h3', { style: 'margin-top:0' }, 'Candidatas provisionales (SIM-MOTOR-04B y 04C)'),
+  root.append(h('div', { class: 'card', id: 'sim-candidates' }, h('h3', { style: 'margin-top:0' }, 'Candidatas provisionales y experimentales (SIM-MOTOR-04B a 04E)'),
     h('p', { class: 'small' }, `Perfil base activo: ${base.id} (huella ${base.fingerprint}). Las candidatas son vectores propuestos por un selector mecánico de convergencia funcional de laboratorio; no son un perfil calibrado ni aceptado por Dennis y no se activan sin tu acción.`),
     SIM_CANDIDATES.map((c) => h('div', { class: 'small', style: 'margin-bottom:8px' }, h('strong', {}, `${c.id} · ${c.version}`), h('div', { class: 'muted' }, c.status),
       table(['Ruta', 'Base', 'Candidata', 'Unidad', 'Origen', 'Efecto'], c.rows.map((r) => [r.path, fmtVal(r.base), fmtVal(r.value), r.unit, r.origin, r.effect])),
@@ -208,5 +210,5 @@ export function renderSim(root) {
 // El repintado se difiere un turno: un `change` disparado por el desenfoque de un campo no debe reentrar en la limpieza del contenedor.
 let pending = false;
 function render() { if (!rootEl || pending) return; pending = true; setTimeout(() => { pending = false; if (rootEl) renderSim(rootEl); }, 0); }
-export function simHeaderLine() { return `Motor ultrarrápido · ${SIM_MODEL} ${SIM_VERSION} · resultado ${SIM_RESULT_SCHEMA}`; }
+export function simHeaderLine() { return `Motor ultrarrápido · ${SIM_MODEL} ${SIM_VERSION} · resultado ${SIM_RESULT_SCHEMA} · acta ${SIM_STATS_POLICY_ID} · crédito de rebote ${REBOUND_CREDIT_POLICY_ID} · conciliación ${SIM_RECON_POLICY_ID}`; }
 export const simSetSub = (s) => { st.sub = s; };

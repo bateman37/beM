@@ -12,7 +12,7 @@ Este documento reúne el diseño por materias. Para utilizarlo no es necesario r
 
 La experiencia buscada es un partido completo de baloncesto, con jugadores diferentes y decisiones tácticas reconocibles. El cálculo avanza por acontecimientos pertinentes dentro de posesiones, conserva un contexto activo pequeño y reutiliza operaciones compartidas. El primer resultado deportivo que debe demostrarse es el partido completo con motor, tácticas, capacidades, dirección, administración y estadísticas conectados.
 
-> **Exportado generado: no editar a mano.** Reconstruido con `python3 scripts/docs/build_engine_docs.py` a partir de las secciones de [`docs/motor/`](../motor/README.md), en el orden de [`manifest.json`](../motor/manifest.json). La referencia congelada de la importación es [`unificado-original.md`](../historico/motor/unificado-original.md) (SHA-256 `df05edda480c7da556ba6a24009bedcd0a7f96c25e54f57c983951e63fc01fdd`). Revisión de composición: `DOC-001-r1`. Huella SHA-256 del contenido compuesto (sin esta nota): `d3090595b39cd5a4f9e9a8c1d38c6d067ca82c6f2a93dffc3dcadd4797ef0e5f`. Los índices de este archivo se generan a partir de los encabezados; el índice original se conserva solo en la copia histórica. Diseño definido no equivale a implementado, validado ni calibrado.
+> **Exportado generado: no editar a mano.** Reconstruido con `python3 scripts/docs/build_engine_docs.py` a partir de las secciones de [`docs/motor/`](../motor/README.md), en el orden de [`manifest.json`](../motor/manifest.json). La referencia congelada de la importación es [`unificado-original.md`](../historico/motor/unificado-original.md) (SHA-256 `df05edda480c7da556ba6a24009bedcd0a7f96c25e54f57c983951e63fc01fdd`). Revisión de composición: `DOC-001-r1`. Huella SHA-256 del contenido compuesto (sin esta nota): `30bb496cd547099bd03ef1d882bbd83bb27c4b133f0001807ed1ee9fc43ca23c`. Los índices de este archivo se generan a partir de los encabezados; el índice original se conserva solo en la copia histórica. Diseño definido no equivale a implementado, validado ni calibrado.
 
 ## Índice general
 
@@ -6742,6 +6742,8 @@ Esta lista define cobertura funcional. La edición elegida es FIBA 2026 v1.1. Su
 
 El alcance de referencia incluye cuatro cuartos de diez minutos, prórrogas de cinco, reloj de 24 y avance de ocho; distingue el reajuste a 14 por recuperación tras aro de un tapón sin aro. La mención histórica procedía de las reglas 2024. La administración vigente y sus condiciones se determinan por el perfil FIBA 2026 v1.1 y su correspondencia de casos; esta síntesis no sustituye ese perfil.
 
+**Reloj de posesión tras un lanzamiento con contacto en el aro (implementado en SIM-MOTOR-04E).** Un lanzamiento liberado a tiempo que alcanza el aro permite continuar: el reloj de posesión deja de limitar la operación de rebote (solo cuenta el reloj de juego) y, tras el nuevo control, se reinicia a 14 s para el mismo ataque y a 24 s para el rival. Es una regla distinta de la parada defensiva en pista delantera, que conserva el reloj si ya tiene 14 s o más. Sin aro, rige el reloj de posesión (violación aplicable, con reanudación rival explícita). El fin de periodo real se distingue de una violación; una expiración con reloj de juego positivo no es un fin de periodo. Una instrucción de siguiente posesión se consume una sola vez. Referencias: reglas 29 y 51 (FIBA 2026 v1.1), contrastadas por ChatGPT.
+
 Los cambios FIBA válidos desde octubre de 2026 introducen faltas disruptivas y flagrantes y categorías de técnicas. El perfil actual debe incorporarlos conforme al perfil 2026 elegido. La orden de detener el reloj no garantiza una falta personal ordinaria; la clasificación depende del contacto y contexto. El resumen de cambios no sustituye todas las interpretaciones oficiales.
 
 <a id="src-md03-l0730"></a>
@@ -8056,6 +8058,8 @@ El catálogo debe distinguir:
 - Excepción sin rebote: registrar la causa, no fabricar un crédito para cuadrar todos los fallos.
 
 El manual de referencia contiene excepciones relevantes para libres no finales y finales de periodo. Por ello no se adopta la igualdad universal «todo fallo = un rebote». La conciliación usa fallos con oportunidad de rebote y excepciones declaradas.
+
+**Criterio común vigente (SIM-MOTOR-04E, política `REBCRED-SIM04E-R1`, compartida por el detallado y SIM).** La recuperación controlada tras un tapón con balón vivo acredita rebote individual (ofensivo o defensivo según el equipo que recupera, con el recuperador que el motor ya resuelve); un tapón que sale fuera deja el derecho de saque al ataque y se acredita como rebote **colectivo** ofensivo, sin jugador inventado. No se acredita rebote con balón muerto por una parada, al acabar el periodo antes del control ni ante la violación aplicable antes de recuperar. Las violaciones de reloj son pérdidas de equipo. Un tapón no se reclasifica como robo ni se suma un segundo rebote al que ya existe. Referencia: FIBA Statisticians’ Manual 2024 (capítulos 4, 5 y 8), contrastada por ChatGPT.
 
 <a id="src-md04-l0553"></a>
 
@@ -14804,6 +14808,8 @@ Las 15 fichas posicionales, seis de saque, seis respuestas, nueve continuaciones
 |---|---|---|
 | [FIBA Official Basketball Rules 2026, v1.1](https://assets.fiba.basketball/image/upload/documents-corporate-fiba-official-rules-2026-v1-1.pdf) | Perfil reglamentario y correspondencia de administración. | El documento no reproduce todas las reglas ni declara terminado su mapeo de casos. |
 | [FIBA Statisticians’ Manual 2024, v1.0](https://assets.fiba.basketball/image/upload/documents-corporate-fiba-statisticians-manual-2024.pdf) | Política de créditos y definiciones estadísticas. | La convención F es propia; las adaptaciones de edición se identifican. |
+| [FIBA Official Basketball Rules Interpretations 2026, v1.0](https://assets.fiba.basketball/image/upload/documents-corporate-fiba-official-rules-2026-interpretations-v1-0.pdf) | Contraste puntual de casos de reloj de posesión y contacto con el aro (SIM-MOTOR-04E; reglas 29.1, 29.2.2, 29.2.7 y 51 del reglamento). | Lectura de contraste hecha por ChatGPT; Claude Code implementó desde esa especificación y **no** afirma lectura directa. |
+| FIBA Statisticians’ Manual 2024, v2.0 (mismo enlace que la fila anterior; capítulos 4, 5 y 8, pp. 13–14, 17 y 27 del PDF) | Criterio de crédito de rebote tras tapón, derecho de saque como rebote colectivo y ausencias de crédito (SIM-MOTOR-04E, política `REBCRED-SIM04E-R1`). | Implementado desde la especificación contrastada por ChatGPT; sin lectura directa de Claude Code. No se incluyen copias extensas del PDF. |
 | [WABC/FIBA Coaches Manual, Level 1](https://assets.fiba.basketball/image/upload/documents-corporate-wabc-coaching-level-manuals-level-1-eng.pdf) | Funciones e interacciones deportivas tratadas en la investigación precedente. | Consulta selectiva; no auditoría completa ni fuente de coeficientes del motor. |
 | [WABC/FIBA Coaches Manual, Level 3](https://assets.fiba.basketball/image/upload/documents-corporate-wabc-coaching-manual-level-3-eng.pdf) | Contraste de organización y contenido táctico. | No prescribe el catálogo inicial de beM ni sus frecuencias. |
 

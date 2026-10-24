@@ -125,6 +125,8 @@ Esta lista define cobertura funcional. La edición elegida es FIBA 2026 v1.1. Su
 
 El alcance de referencia incluye cuatro cuartos de diez minutos, prórrogas de cinco, reloj de 24 y avance de ocho; distingue el reajuste a 14 por recuperación tras aro de un tapón sin aro. La mención histórica procedía de las reglas 2024. La administración vigente y sus condiciones se determinan por el perfil FIBA 2026 v1.1 y su correspondencia de casos; esta síntesis no sustituye ese perfil.
 
+**Reloj de posesión tras un lanzamiento con contacto en el aro (implementado en SIM-MOTOR-04E).** Un lanzamiento liberado a tiempo que alcanza el aro permite continuar: el reloj de posesión deja de limitar la operación de rebote (solo cuenta el reloj de juego) y, tras el nuevo control, se reinicia a 14 s para el mismo ataque y a 24 s para el rival. Es una regla distinta de la parada defensiva en pista delantera, que conserva el reloj si ya tiene 14 s o más. Sin aro, rige el reloj de posesión (violación aplicable, con reanudación rival explícita). El fin de periodo real se distingue de una violación; una expiración con reloj de juego positivo no es un fin de periodo. Una instrucción de siguiente posesión se consume una sola vez. Referencias: reglas 29 y 51 (FIBA 2026 v1.1), contrastadas por ChatGPT.
+
 Los cambios FIBA válidos desde octubre de 2026 introducen faltas disruptivas y flagrantes y categorías de técnicas. El perfil actual debe incorporarlos conforme al perfil 2026 elegido. La orden de detener el reloj no garantiza una falta personal ordinaria; la clasificación depende del contacto y contexto. El resumen de cambios no sustituye todas las interpretaciones oficiales.
 
 <a id="src-md03-l0730"></a>
