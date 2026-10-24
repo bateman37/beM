@@ -13,8 +13,8 @@ const walk = (d, out = []) => { for (const n of readdirSync(join(root, d)).sort(
 const hashFiles = (files) => Object.fromEntries(files.map((f) => [f, sha(readFileSync(join(root, f)))]));
 // Qué puede alterar generación, lectores y métricas: todo src/, los datos, el cargador de datos, las herramientas de la campaña (scripts/sim03) y su medición (sim03-bench.js). El empaquetado, el comprobador y la documentación se registran aparte.
 // La congelación `val` no vigila src/lab (interfaz: no genera deporte); `cal` vigila todo src/. Congelación `cal`: solo lo que decide la comparación de candidatas (casos, ejecutor, tablas, selector, rotación, sondas y el trabajador detallado). Congelación `val`: además el banco de medida, la comparación de equivalencia y el generador de candidata; las herramientas de análisis posterior (historia, aprendizaje, auditorías, empaquetado y comprobador) no se vigilan: leen resultados, no los producen.
-const CAL_TOOLS = ['lib.js', 'exec.mjs', 'select.js', 'calibrate.js', 'tables.js', 'make-tables.js', 'rotation-checks.js', 'probes.js', 'detailed-worker.js'];
-const VAL_TOOLS = [...CAL_TOOLS, 'bench.mjs', 'equiv.js', 'write-candidate.js'];
+const CAL_TOOLS = ['lib.js', 'exec.mjs', 'select.js', 'calibrate.js', 'tables.js', 'detailed-worker.js'];
+const VAL_TOOLS = [...CAL_TOOLS, 'write-candidate.js', 'final-campaign.js']; // el banco de medida, la equivalencia, las tablas de informe y el empaquetado leen resultados o miden coste: no producen deporte
 const watched = () => [...walk('src').filter((f) => NAME === 'cal' || !f.startsWith('src/lab/')), ...walk('data'), 'scripts/node-data.js', ...walk('scripts/sim04c').filter((f) => ((NAME === 'cal' ? CAL_TOOLS : VAL_TOOLS).some((t) => f.endsWith(`/${t}`)))), ...EXTRA].filter((f) => existsSync(join(root, f)));
 const sportDetailed = () => [...walk('src/match'), ...walk('src/population'), ...walk('src/knowledge'), ...walk('data/match')];
 const current = () => {
