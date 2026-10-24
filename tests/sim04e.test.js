@@ -178,3 +178,32 @@ test('S04E-07 lista corta, reparaciones y criterio final: guardas frente a S0, 5
   const sim = { sums: { fgm: 40, fga: 80 }, counts: {} }; void sim;
   const rate = SEL.errorsOf; assert.equal(typeof rate, 'function');
 });
+
+import { detRebOpp as detRebOpp04E } from '../scripts/sim04e/tables.js';
+import { runDetailedCampaign } from '../scripts/sim04e/detailed-worker.js';
+test('S04E-08 lector de oportunidades de rebote del detallado: cada tapón tiene un único crédito (individual con balón vivo, colectivo si sale fuera) y las causas de no crédito suman el resto', () => {
+  const rec = runDetailedCampaign({ case_id: 'D', input: { ...JSON.parse(JSON.stringify(buildReferenceInput(profile, players, 'EQ01', 'EQ08', { seed: 14 }))) }, attempt: 1 }); const r = rec.record ?? rec; assert.equal(r.status, 'finished');
+  for (const o of detRebOpp04E(r.essential)) { const ind = (o.credits['block|def|ind'] ?? 0) + (o.credits['block|off|ind'] ?? 0); const coll = o.credits['block_out_of_bounds|off|coll'] ?? 0; assert.equal(ind + coll, o.blocked); assert.equal(coll, o.blockedOob); assert.equal(ind, o.blockedLive); const unc = Object.values(o.unc).reduce((s, v) => s + v, 0); const credited = Object.entries(o.credits).filter(([k]) => !k.startsWith('ft|')).reduce((s, [, v]) => s + v, 0); assert.equal(o.fgMiss + o.blocked, credited + unc); }
+});
+
+// ---------------------------------------------------------------------------------------------------------------------------------- 9 · persistencia, equivalencia de rutas y causalidad conservada
+import { advanceAutomatic } from '../src/sim/coachsim.js';
+import { snapshotSim, restoreSim, validateSimSnapshot } from '../src/sim/snapshot.js';
+import { canonical } from '../src/sim/fp.js';
+import { candidateById } from '../src/sim/candidates.js';
+import { validateOverrides } from '../src/sim/profile.js';
+import { SIM_VERSION } from '../src/sim/index.js';
+
+test('S04E-09 persistencia: un guardado nuevo conserva la huella y el azar; un guardado REAL de 04D (y de 04C) se rechaza con explicación sin tocarse; las candidatas de 04E son válidas, explícitas y no se activan solas', () => {
+  const fpOf = (m) => buildSimResult(m, { events: false }).sportFingerprint;
+  for (const id of ['C04E-FINAL-PROVISIONAL', 'C04E-EXPERIMENTAL']) { const c = candidateById(id); assert.ok(c, id); assert.deepEqual(validateOverrides(makeContext(profile).sp, c.overrides), [], `${id}: filas válidas dentro de los dominios`); assert.equal(c.overrides.length, 22); assert.match(c.status, id === 'C04E-EXPERIMENTAL' ? /EXPERIMENTAL, no recomendada/ : /provisional/); }
+  assert.equal(candidateById('C04E-FINAL-PROVISIONAL').aliasOf, 'SIM_04E_BASE', 'sin alternativa admisible, la recomendada es la base (alias)'); assert.ok(makeContext(profile).sp.edited !== true, 'la base no se cambia en silencio');
+  const rows = candidateById('C04E-EXPERIMENTAL').overrides; const c = makeContext(profile, rows); const input = buildReferenceInput(profile, players, 'EQ02', 'EQ10', { seed: 61 });
+  const ref = new SimMatch(input, c); playAutomatic(ref); const m = new SimMatch(input, c); advanceAutomatic(m, { until: 900 });
+  const snap = JSON.parse(JSON.stringify(snapshotSim(m, { embedContext: false }))); const back = restoreSim(snap, c, { matchId: 'x' }); advanceAutomatic(back, { until: 'end' });
+  assert.equal(fpOf(back), fpOf(ref), 'guardar y recuperar no cambia la trayectoria'); assert.equal(back.rng.draws, ref.rng.draws); assert.deepEqual(validateSimSnapshot(snap), []); assert.equal(snap.simVersion, SIM_VERSION);
+  for (const [file, ver, re] of [['sim-snapshot-04d.json', '0.3.3-SIMMOTOR04D', /SIM-MOTOR-04E añade el crédito colectivo/], ['sim-snapshot-04c.json', '0.3.2-SIMMOTOR04C', /SIM-MOTOR-04D añade seis filas SIM/]]) {
+    const old = JSON.parse(readFileSync(new URL(`./fixtures/${file}`, import.meta.url), 'utf8')).snap; const before = canonical(old); assert.equal(old.simVersion, ver);
+    const errs = validateSimSnapshot(old); assert.ok(errs.some((e) => re.test(e.message) && /no se implanta un resolutor histórico/.test(e.message)), `${file}: ${errs.map((e) => e.message).join('|')}`); assert.equal(canonical(old), before, 'el archivo no se toca'); assert.throws(() => restoreSim(JSON.parse(JSON.stringify(old)), c), /rechazado/);
+  }
+});

@@ -76,7 +76,7 @@ export const COLS = {
   funnel: ['case_id', 'block', 'scenario', 'variant', 'orientation', 'replicate', 'resolver', 'identity', 'team_index', 'class', 'opportunities', 'eligible', 'delivered', 'eligible_baskets', 'fg_assists', 'eligible_ft_series', 'ft_assists', 'note'],
   subs: ['case_id', 'block', 'scenario', 'variant', 'orientation', 'replicate', 'resolver', 'identity', 'team_index', 'slot_reason', 'substitutions', 'note'],
   // 04D §5 y §8.2: oportunidades y créditos de rebote por equipo que tira (embudo corto), universos separados de AST de campo y denominador elegible del robo.
-  rebopp: ['case_id', 'block', 'scenario', 'variant', 'orientation', 'replicate', 'resolver', 'identity', 'team_index', 'fg_miss_valid', 'blocked', 'blocked_out_of_bounds', 'blocked_live', 'shoot_foul_miss_no_fga', 'ft_last_miss_live', 'credits_field_off_ind', 'credits_field_off_coll', 'credits_field_def_ind', 'credits_field_def_coll', 'credits_block_off_ind', 'credits_block_off_coll', 'credits_block_def_ind', 'credits_block_def_coll', 'credits_ft_off_ind', 'credits_ft_off_coll', 'credits_ft_def_ind', 'credits_ft_def_coll', 'uncredited_shot_clock_expiry', 'uncredited_period_end', 'uncredited_foul', 'uncredited_out_of_bounds', 'uncredited_other_or_not_reconstructible', 'note'],
+  rebopp: ['case_id', 'block', 'scenario', 'variant', 'orientation', 'replicate', 'resolver', 'identity', 'team_index', 'fg_miss_valid', 'blocked', 'blocked_out_of_bounds', 'blocked_live', 'shoot_foul_miss_no_fga', 'ft_last_miss_live', 'credits_field_off_ind', 'credits_field_off_coll', 'credits_field_def_ind', 'credits_field_def_coll', 'credits_block_off_ind', 'credits_block_off_coll', 'credits_block_def_ind', 'credits_block_def_coll', 'credits_block_out_of_bounds_off_ind', 'credits_block_out_of_bounds_off_coll', 'credits_block_out_of_bounds_def_ind', 'credits_block_out_of_bounds_def_coll', 'credits_ft_off_ind', 'credits_ft_off_coll', 'credits_ft_def_ind', 'credits_ft_def_coll', 'uncredited_shot_clock_expiry', 'uncredited_period_end', 'uncredited_foul', 'uncredited_out_of_bounds', 'uncredited_other_or_not_reconstructible', 'note'],
   astu: ['case_id', 'block', 'scenario', 'variant', 'orientation', 'replicate', 'resolver', 'identity', 'team_index', 'universe', 'fgm', 'ast_fg', 'note'],
   tovf: ['case_id', 'block', 'scenario', 'variant', 'orientation', 'replicate', 'resolver', 'identity', 'team_index', 'tov_total', 'eligible_for_steal', 'steal', 'out_of_bounds', 'bad_pass', 'offensive_foul', 'violation', 'note'],
 };
@@ -92,7 +92,7 @@ function extraTeam(rec, v, k) {
 }
 
 // ---------------------------------------------------------------------------------------------------------------------------------- 04D §5: oportunidades y créditos de rebote, y universos de AST de campo
-const CRED_KEYS = ['field', 'block', 'ft'].flatMap((c) => ['off', 'def'].flatMap((s) => ['ind', 'coll'].map((t) => `${c}|${s}|${t}`)));
+const CRED_KEYS = ['field', 'block', 'block_out_of_bounds', 'ft'].flatMap((c) => ['off', 'def'].flatMap((s) => ['ind', 'coll'].map((t) => `${c}|${s}|${t}`)));
 const emptyOpp = () => ({ fgMiss: 0, blocked: 0, blockedOob: 0, blockedLive: 0, shootFoulMissNoFga: 0, ftLastMiss: 0, credits: {}, unc: { shot_clock_expiry: 0, period_end: 0, foul: 0, out_of_bounds: 0, other: 0 } });
 // SIM: lo conserva la instrumentación de lectura del registro (`diag04d`); un registro anterior a 04D no la tiene (nulo con causa).
 export const simRebOpp = (rec) => (rec.diag04d?.rebOpp ? rec.diag04d.rebOpp.map((r) => ({ ...emptyOpp(), ...r, unc: null })) : null);
@@ -105,7 +105,7 @@ export function detRebOpp(essential) {
     shotIds.add(row[ix('event_id')]); if (row[ix('annulled')]) continue; const k = row[ix('team')]; const o = out[k]; const made = row[ix('made')];
     if (made) continue; if (row[ix('from_foul')]) { o.shootFoulMissNoFga++; continue; }
     const blocked = row[ix('blocked_by')] != null; if (blocked) o.blocked++; else o.fgMiss++;
-    const c = reb.get(row[ix('event_id')]); if (c) { const key = `${blocked ? 'block' : 'field'}|${c.off ? 'off' : 'def'}|${c.p ? 'ind' : 'coll'}`; o.credits[key] = (o.credits[key] ?? 0) + 1; if (blocked) { if (c.p) o.blockedLive++; else o.blockedOob++; } continue; }
+    const c = reb.get(row[ix('event_id')]); if (c) { const key = `${blocked ? (c.p ? 'block' : 'block_out_of_bounds') : 'field'}|${c.off ? 'off' : 'def'}|${c.p ? 'ind' : 'coll'}`; o.credits[key] = (o.credits[key] ?? 0) + 1; if (blocked) { if (c.p) o.blockedLive++; else o.blockedOob++; } continue; }
     const i = at.get(row[ix('event_id')]); const nxt = []; for (let j = i + 1; j < Math.min(seq.length, i + 4); j++) nxt.push(seq[j][qi('type')]);
     let cause = 'other'; if (nxt.includes('period_end') && nxt.indexOf('period_end') <= 1) cause = 'period_end'; else if (nxt[0] === 'expiry') cause = 'shot_clock_expiry'; else if (nxt[0] === 'throw_in') cause = 'out_of_bounds'; else if (nxt[0] === 'foul') cause = 'foul';
     if (blocked) { if (cause === 'out_of_bounds') o.blockedOob++; else o.blockedLive++; }

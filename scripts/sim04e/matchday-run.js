@@ -12,9 +12,9 @@ import { canonical } from '../../src/sim/fp.js';
 import * as L from './lib.js';
 
 const root = new URL('../..', import.meta.url).pathname; const OUT = join(root, 'out/sim-motor04e/matchday'); mkdirSync(OUT, { recursive: true });
-const env = L.loadEnv(); const vec = JSON.parse(readFileSync(join(root, 'out/sim-motor04e/vectors/C04D-FINAL-PROVISIONAL.json'), 'utf8')).overrides; const ctx = makeContext(env.profile, vec); const profile = env.profile;
+const env = L.loadEnv(); const vec = JSON.parse(readFileSync(join(root, 'out/sim-motor04e/vectors/SIM_04E_CAND.json'), 'utf8')).overrides; const ctx = makeContext(env.profile, vec); const profile = env.profile;
 const sc = buildMixedScenario(profile, env.players); const deep = (x) => JSON.parse(JSON.stringify(x));
-const make = (over = {}) => new Matchday({ id: 'J-MIXTA-04D', fixtures: sc.fixtures, standings0: over.standings0 ?? sc.standings0, objectives: sc.objectives, ctx, profile, ...over });
+const make = (over = {}) => new Matchday({ id: 'J-MIXTA-04E', fixtures: sc.fixtures, standings0: over.standings0 ?? sc.standings0, objectives: sc.objectives, ctx, profile, ...over });
 const ORDER_AT = 600; const orders = (md) => ({ accepted: md.order('F2', { team: 0, plan: { styles: { organizedPace: 4 } } }), rejected: md.order('F2', { team: 1, plan: { styles: { organizedPace: 2 } } }) });
 const digest = (md) => ({ log: canonical(md.log), results: Object.fromEntries(Object.entries(md.results).map(([k, r]) => [k, [r.model, r.valid, r.essential.identity.sportFingerprint ?? r.essential.identity.trajectory ?? null, r.essential.score?.final ?? null]])), table: Object.fromEntries(md.competitions().map((c) => [c, md.table(c, 'final').rows.map((r) => [r.team, r.w, r.l, r.pf, r.pa, r.rank])])), decisions: md.decisions.map((d) => [d.barrier, d.fixture, d.team, d.reason, d.from, d.to]), contexts: Object.fromEntries([...md.shard.matches.entries()].filter(([id, e]) => e.m && !md.results[id]).map(([id, e]) => [id, e.m.contextLog])) });
 const ret = { schema: 'beM-sim04e-matchday/1', routes: {}, notes: [] };
