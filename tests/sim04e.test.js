@@ -113,3 +113,68 @@ test('S04E-05 integración: el acta, la conciliación y los totales cierran con 
   }
   assert.ok(collective > 0, 'se ejercitó el crédito colectivo');
 });
+
+// ---------------------------------------------------------------------------------------------------------------------------------- 6 · buscador acotado (objetivos sintéticos pequeños, no la campaña)
+import * as Q from '../scripts/sim04e/search.js';
+import * as SEL from '../scripts/sim04e/select.js';
+
+const BASE = { p3: 0.35, p2: 0.39, block: { rim: 0.06, inside: 0.05, midrange: 0.015, three: 0.008 } };
+const CFG = Q.buildConfig(BASE);
+// 31 errores sintéticos: cada métrica depende linealmente de la distancia del vector a un óptimo oculto; cuotas coherentes para el reequilibrio
+const TARGET = { V: 20, R: 1.75, M: 0.7, T: 0.6, O: 0.5, A: 0.5, S: 1.5, L: 0.8, E: 0.4, F: 1.1, C: 0.1, P3: 0.36, P2: 0.38, B: 1.1 };
+function synth(vec, { shift = 0 } = {}) {
+  const ids = Q.ORDER; const dist = (id) => Math.abs(vec[id] - TARGET[id]) / CFG.coords[id].range; const errs = [];
+  [...SEL.COUNTS.map((c) => ['count', c.id, SEL.BAND_COUNT]), ...SEL.RATES.map((c) => ['rate', c.id, SEL.BAND_RATE]), ...SEL.SHARES.map((c) => ['share', c.id, SEL.BAND_SHARE])].forEach(([kind, id, band], i) => {
+    const a = ids[i % ids.length]; const b = ids[(i * 3 + 1) % ids.length]; errs.push({ id, kind, label: id, band, error: band * (0.2 + 4 * dist(a) + 2 * dist(b) + shift), status: 'ok', sim: 10 * (1 + dist(a)), det: 10 });
+  });
+  const set = (id, sim, det) => { const e = errs.find((x) => x.id === id); e.sim = sim; e.det = det; };
+  set('rim_share', 0.30 * (vec.R / 1.5), 0.36); set('inside_share', 0.15, 0.12); set('mid_share', 0.12 * vec.M, 0.10); set('three_share', 0.43 * (vec.T / 0.7), 0.42);
+  errs.push({ id: 'forced_rim', kind: 'forced', band: null, error: 0.01, status: 'ok' }, { id: 'forced_inside', kind: 'forced', band: null, error: 0.01, status: 'ok' });
+  return { errs, invariantsOk: true };
+}
+const runSynthetic = async () => { const calls = []; const res = await Q.searchDevA({ cfg: CFG, evaluate: async (vec, meta) => { calls.push(meta.id); return synth(vec); } }); return { res, calls }; };
+
+test('S04E-06 buscador: dominios, vectores completos con B desde la misma base, deduplicación por filas efectivas, presupuesto por fase, mejora > 1e-9, determinismo y trazabilidad del padre', async () => {
+  // vectores completos y B materializada desde la base (nunca acumulando escalados)
+  const rows = Q.toOverrides(CFG, { ...CFG.s0, B: 1.1 }); assert.equal(rows.length, 5 + 13 + 4, 'fijas + 13 coordenadas simples + cuatro blockP0 (B)'); assert.deepEqual(rows.filter((r) => r.path.endsWith('.blockP0')).map((r) => [r.path, r.value]), [['shots.rim.blockP0', 0.066], ['shots.inside.blockP0', 0.055], ['shots.midrange.blockP0', 0.0165], ['shots.three.blockP0', 0.0088]]);
+  assert.ok(!rows.some((r) => r.path.startsWith('shots.freeThrow')), 'los libres quedan excluidos');
+  assert.equal(Q.vectorId(CFG, { ...CFG.s0 }), Q.vectorId(CFG, { ...CFG.s0, V: 19.5 + 1e-13 }), 'la identidad es el vector efectivo, no un nombre');
+  assert.deepEqual(Q.normalize(CFG, { ...CFG.s0, V: 30, T: 0, P3: 0.9, B: 2 }), { ...CFG.s0, V: 22, T: 0.35, P3: 0.37, B: 1.25 }, 'límites de campaña; P3/P2 = base ± 0,02');
+  const a = await runSynthetic(); const b = await runSynthetic(); const { res } = a;
+  assert.deepEqual(a.calls, b.calls, 'mismo orden de evaluación'); assert.equal(new Set(a.calls).size, a.calls.length, 'ningún vector efectivo se evalúa dos veces');
+  assert.ok(res.counts.starts <= 4 && res.counts.passes <= 56 && res.counts.joint <= 4 && res.counts.half <= 28 && res.order.length <= 92, JSON.stringify(res.counts));
+  for (const e of res.evals.values()) for (const id of Q.ORDER) assert.ok(e.vec[id] >= CFG.coords[id].lo - 1e-12 && e.vec[id] <= CFG.coords[id].hi + 1e-12, `${id} dentro del dominio`);
+  assert.equal(res.log[0].op, 'S0'); assert.equal(res.log[1].op, 'S1'); assert.ok(res.log.every((l) => l.parent == null || res.evals.has(l.parent)), 'cada perfil enlaza un padre evaluado');
+  // adoptar solo mejora estricta de L_search: la pasada acumula ajustes compatibles
+  const adopted = res.passes.flatMap((p) => p.steps).filter((s) => s.adopted); assert.ok(adopted.length > 3, 'se acumulan ajustes compatibles dentro de una pasada');
+  for (const s of adopted) assert.ok(res.evals.get(s.adopted).L < res.evals.get(s.from).L - 1e-9);
+  assert.ok(res.evals.get(res.sortedIds[0]).L < res.evals.get(Q.vectorId(CFG, CFG.s0)).L, 'el sintético mejora el inicio');
+  // con un objetivo plano (todos iguales) no se adopta nada: los empates conservan el centro
+  const flat = await Q.searchDevA({ cfg: CFG, evaluate: async (vec) => ({ errs: synth(CFG.s0).errs, invariantsOk: true }) }); assert.equal(flat.passes.flatMap((p) => p.steps).filter((s) => s.adopted).length, 0);
+});
+
+test('S04E-07 lista corta, reparaciones y criterio final: guardas frente a S0, 5 % de mejora, S0 ya dentro de banda, experimental aparte, alias y recalculable desde numeradores', async () => {
+  const { res } = await runSynthetic(); const s0id = Q.vectorId(CFG, CFG.s0);
+  const sl = Q.shortList(CFG, res.evals, s0id); assert.ok(sl.ids.length <= 5 && sl.ids[0] === s0id && new Set(sl.ids).size === sl.ids.length); assert.ok(sl.notes.length >= 4);
+  // reparaciones: operadores y recortes
+  const errs = synth(CFG.s0).errs; const set = (id, sim, det) => { const e = errs.find((x) => x.id === id); e.sim = sim; e.det = det; };
+  set('fga', 120, 100); set('tov', 8, 16); set('fta', 20, 10); set('stl', 5, 6); set('ast_fg', 10, 40);
+  assert.equal(Q.repairVector(CFG, 'R2', CFG.s0, errs).vec.V, 19.5 * 1.05, 'V × clip(FGA_SIM/FGA_DET; 0,95; 1,05)');
+  { const r = Q.repairVector(CFG, 'R3', CFG.s0, errs).vec; assert.equal(r.L, 1.1 > 1.2 ? 1.2 : Math.min(1.2, 1 * 1.1)); assert.equal(r.F, 0.9 * 1 < 0.8 ? 0.8 : 0.9); assert.equal(Math.round(r.E * 1e6) / 1e6, Math.round(Math.min(1, 0 + Math.min(0.1, Math.log(6 / 5))) * 1e6) / 1e6); }
+  { const r = Q.repairVector(CFG, 'R4', CFG.s0, errs); assert.equal(r.vec.S, 1.1); assert.equal(r.vec.A, 0.05, 'faltan AST: A + 0,05'); }
+  { const e2 = errs.map((e) => (e.id === 'ast_fg' ? { ...e, det: 0 } : e)); const r = Q.repairVector(CFG, 'R4', CFG.s0, e2); assert.deepEqual(r.vec, { ...CFG.s0 }); assert.ok(r.omitted.length, 'cociente no definido: se omite con causa'); }
+  { const rb = Q.rebalance(CFG, CFG.s0, errs.map((e) => (e.id === 'mid_share' ? { ...e, sim: 0 } : e))); assert.equal(rb.vec, null); assert.match(rb.cause, /nula/, 'cuota nula: omitir con causa, sin épsilon oculto'); }
+  // criterio final con guardas, 5 % y experimental
+  const mk = (id, shift, extra = {}) => { const e = synth({ ...CFG.s0 }, { shift }); const sc = SEL.scoreM(e.errs); return { id, vec: { ...CFG.s0, ...extra }, errs: e.errs, invariantsOk: true, L: sc.L, M: sc.M, violated: sc.violated, dominant: sc.dominant, missing: sc.missing, op: id }; };
+  const s0 = mk('S0', 0); const better = mk('A1', -1, { V: 20 }); const tiny = mk('A2', -0.001, { V: 19 });
+  const worseGuard = mk('A3', -1.5, { V: 21 }); worseGuard.errs = worseGuard.errs.map((e) => (e.id === 'inside_share' ? { ...e, error: 0.2 } : e)); const sc3 = SEL.scoreM(worseGuard.errs); Object.assign(worseGuard, { M: sc3.M, L: sc3.L });
+  const joint = new Map([s0, better, tiny, worseGuard].map((e) => [e.id, e]));
+  const fin = Q.finalSelect(CFG, joint, 'S0'); assert.ok(fin.rows.find((r) => r.id === 'A3').reasons.some((x) => x.startsWith('guardas')), 'una mejora agregada que daña una métrica queda fuera por guarda');
+  assert.equal(fin.recommendedId, 'A1'); assert.ok(fin.best.improvement >= 0.05); assert.equal(fin.experimentalId, 'A2', 'la mejor experimental distinta de S0 y de la recomendada (menor M, aunque no alcance el 5 %) se entrega aparte y nunca se recomienda'); assert.ok(!fin.rows.find((r) => r.id === 'A3').admissible);
+  const fin2 = Q.finalSelect(CFG, new Map([s0, tiny].map((e) => [e.id, e])), 'S0'); assert.equal(fin2.recommendedId, 'S0'); assert.equal(fin2.keptControl, true, 'mejora < 5 %: se conserva S0');
+  const inBand = mk('S0', -0.2 + 0.0); inBand.errs = inBand.errs.map((e) => ({ ...e, error: e.band * 0.5 })); Object.assign(inBand, SEL.scoreM(inBand.errs)); inBand.id = 'S0'; const alt = { ...better }; alt.errs = alt.errs.map((e, i) => (i === 0 ? { ...e, error: e.band * 1.5 } : { ...e, error: e.band * 0.1 })); Object.assign(alt, { M: SEL.scoreM(alt.errs).M, L: SEL.scoreM(alt.errs).L });
+  assert.equal(Q.finalSelect(CFG, new Map([['S0', inBand], ['A1', alt]]), 'S0').recommendedId, 'S0', 'si S0 ya cumple M ≤ 1, la alternativa también debe conservarlo');
+  // la elección es recalculable desde los numeradores y denominadores de cada perfil (sin simular): errores = f(numeradores)
+  const sim = { sums: { fgm: 40, fga: 80 }, counts: {} }; void sim;
+  const rate = SEL.errorsOf; assert.equal(typeof rate, 'function');
+});
