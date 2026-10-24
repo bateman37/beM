@@ -33,7 +33,7 @@ test('S04C-01 neutralidad: con las tres filas nuevas a 0 la trayectoria es la de
   const explicit = ctxWith([{ path: 'rebound.organizedResetP0', value: 0 }, { path: 'opportunity.simInsideQualityLogit', value: 0 }, { path: 'conversion.simInsideLogitOffset', value: 0 }]);
   for (const [a, b, seed, digest, draws] of gold) for (const c of [ctx, explicit]) { const m = play(inputOf(seed, a, b), c); assert.equal(fp(m), digest, `${a}-${b}: huella de 04B`); assert.equal(m.rng.draws, draws, `${a}-${b}: mismos sorteos`); }
   for (const p of ['rebound.organizedResetP0', 'opportunity.simInsideQualityLogit', 'conversion.simInsideLogitOffset']) { const r = ctx.sp.index.get(p); assert.equal(r.value, 0, `${p} neutral`); assert.ok(r.unit && r.effect && r.origin === 'SEM-SIM04C', `${p} declara unidad, origen y efecto`); }
-  assert.equal(SIM_VERSION, '0.3.2-SIMMOTOR04C');
+  assert.equal(SIM_VERSION, '0.3.3-SIMMOTOR04D');
 });
 
 // ---------------------------------------------------------------------------------------------------------------------------------- 2 · reinicio 0/1 por el camino real
@@ -143,6 +143,6 @@ test('S04C-08 compatibilidad: el guardado REAL de 04B se rechaza con explicació
   const errs = validateSimSnapshot(old); assert.ok(errs.some((e) => /SIM-MOTOR-04C cambia el futuro de un partido en curso/.test(e.message) && /no se implanta un resolutor histórico/.test(e.message))); assert.equal(canonical(old), before); assert.throws(() => restoreSim(deep(old), ctx), /rechazado/);
   const m = new SimMatch(inputOf(5), ctx); m.advance({ until: 130 }); assert.deepEqual(validateSimSnapshot(snapshotSim(m, { embedContext: false })), []);
   for (const p of ['rebound.organizedResetP0', 'opportunity.simInsideQualityLogit', 'conversion.simInsideLogitOffset', 'shotMix.rimWeightFactor']) assert.equal(ctx.sp.index.get(p).edited, undefined, `${p} no se activa al abrir`);
-  const { APP_VERSION } = await import('../src/version.js'); assert.equal(APP_VERSION, 'SIM-MOTOR-04C'); const { SIM_CANDIDATES } = await import('../src/sim/candidates.js'); assert.ok(SIM_CANDIDATES.some((c) => c.id === 'C04C-FINAL-PROVISIONAL' && /provisional/.test(c.status)));
+  const { APP_VERSION } = await import('../src/version.js'); assert.equal(APP_VERSION, 'SIM-MOTOR-04D'); const { SIM_CANDIDATES } = await import('../src/sim/candidates.js'); assert.ok(SIM_CANDIDATES.some((c) => c.id === 'C04C-FINAL-PROVISIONAL' && /provisional/.test(c.status)));
   assert.equal(ctx.sp.index.get('rebound.organizedResetP0').value, 0, 'cargar una candidata es una acción explícita: la base sigue neutral');
 });

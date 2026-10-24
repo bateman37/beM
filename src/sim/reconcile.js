@@ -2,6 +2,7 @@
 // Cada comprobación declara su universo (n) y devuelve sus fallos completos. El comprobador del detallado no se reutiliza porque sus supuestos (posesiones beM, acta del motor de acciones) no coinciden.
 import { SIM_RECON_POLICY_ID as RECON_POLICY } from './version.js';
 import { screenRoleOf } from './model.js';
+import { familyKeyOf } from './attribution.js';
 const ZONES = ['rim', 'inside', 'midrange', 'three'];
 
 export const RECONCILIATION_IDS = [
@@ -83,7 +84,7 @@ export function reconcileResult(m, res, evs) {
       const withFoulMade = evs.filter((e) => e.ty === 'shot' && e.tm === k && e.made && e.and1).length; const anyFt = new Set(evs.filter((e) => e.ty === 'ft' && e.tm === k && e.cause === 'and1').map((e) => e.fin)); if (anyFt.size !== withFoulMade) f.push({ equipo: k, canastas_con_falta: withFoulMade, series_ligadas: anyFt.size });
       const bonusFree = evs.filter((e) => e.ty === 'ft' && e.tm === k && e.cause === 'bonus' && (e.fin != null || e.src !== 'bonus_sin_familia')); if (bonusFree.length) f.push({ equipo: k, causa: 'libres de bonus con ficha o familia inventada', n: bonusFree.length }); }
     const sfByFin = new Map(); for (const e of evs) if (e.ty === 'shootfoul') sfByFin.set(e.fin, (sfByFin.get(e.fin) ?? 0) + 1); for (const [fin, c] of sfByFin) if (c !== 1) f.push({ fin, causa: 'más de una falta de tiro en la misma finalización', n: c });
-    for (const e of evs) if (e.ty === 'ft' && e.cause !== 'bonus') { const fam = res.families[e.tm].find((x) => x.key === (e.play ?? e.src)); if (!fam) f.push({ hecho: e.i, causa: 'libre sin su origen táctico' }); }
+    for (const e of evs) if (e.ty === 'ft' && e.cause !== 'bonus') { const fam = res.families[e.tm].find((x) => x.key === familyKeyOf(e)); if (!fam) f.push({ hecho: e.i, causa: 'libre sin su origen táctico' }); }
     add('R19_finalizaciones_y_libres', 'puntos, libres y finalizaciones únicas de las familias (con bonus_sin_familia) coinciden con el acta y los hechos', n, f); }
   // R20 prefijo público: todo campo público describe el presente; el futuro generado permanece privado
   { const f = []; if (T > m.gt + 1e-9) f.push({ causa: 'presente publicado por delante de lo generado', T, generado: m.gt });

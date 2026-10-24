@@ -14,6 +14,7 @@ import { SIM_VERSION, SIM_PROFILE_ID, SIM_COVERAGE_ID, SIM_STATS_POLICY_ID, SIM_
 
 export const CAMPAIGN_RECORD_SCHEMA = 'beM-sim03-record/1';
 export const DIAG04B_SCHEMA = 'beM-sim04c-diag/1';
+export const DIAG04D_SCHEMA = 'beM-sim04d-diag/1';
 const r1 = (x) => Math.round(x * 10) / 10;
 const planBrief = (p) => ({ disposition: p.disposition, defense: p.defense, coverage: p.coverage, pressureHeight: p.pressureHeight, styles: { ...p.styles }, defStyles: { ...p.defStyles }, midrange: p.midrange, starters: { ...p.starters }, directorPriority: [...(p.directorPriority ?? [])], initialTeamMoment: p.initialTeamMoment ?? 0, coach: p.coach?.policy ?? null, playbook: (p.playbook ?? []).map((e) => `${e.playId}:${e.priority}`) });
 // Director EFECTIVO por tramo (prioridad vigente entre los presentes; si ninguno, el PG del tramo), con intervalos fusionados. Las órdenes de campaña no cambian la prioridad de director.
@@ -39,6 +40,27 @@ function diag04b(m, detail) {
   }
   return { schema: DIAG04B_SCHEMA, czqColumns: ['tm|ctx|zone|q(0 cómoda,1 normal,2 forzada)', ['attempts', 'makes', 'madeWithPasser', 'astFgCredited']], czq, foulMissNote: 'fallos con falta de tiro: sin intento de campo', foulMiss, subsColumns: ['t', 'tm', 'why(slot:reason|…)', 'nOut', 'nIn'], subs,
     ...(detail ? { rotationDecisions: m.rotLog, shotsColumns: ['t', 'tm', 'ctx', 'zone', 'q', 'made', 'blocked', 'p(condicional a no tapón)', 'pBase', 'K', 'pBlock', 'qPrior.comfortable', 'qPrior.normal', 'qPrior.forced'], shots } : {}) };
+}
+
+// SIM-MOTOR-04D §4–§5: instrumentos de LECTURA sobre los hechos nativos (sin decisiones deportivas ni azar). Por equipo que TIRA o PIERDE:
+//  rebOpp  — oportunidades y créditos de rebote: fallos de campo válidos, tapones (fuera / balón vivo), fallos con falta de tiro sin intento, últimos libres fallados con balón vivo y créditos por causa, sentido e individual/colectivo.
+//  tovFunnel — denominador elegible del robo: pérdidas que ya admiten ese crédito (`to` y `lb`) frente a las que no (`of`, `bv`), con el reparto de su desenlace.
+//  astUniverse — asistencias de campo por universo SEPARADO: total, fuera del rebote, posterior a rebote ofensivo (cualquier rama) y, de este último, continuación inmediata frente a reinicio organizado.
+function diag04d(m) {
+  const mkR = () => ({ fgMiss: 0, blocked: 0, blockedOob: 0, blockedLive: 0, shootFoulMissNoFga: 0, ftLastMiss: 0, ftNonLastMiss: 0, credits: {} });
+  const rebOpp = [mkR(), mkR()]; const mkT = () => ({ eligible: 0, steal: 0, outOfBounds: 0, badPass: 0, offensiveFoul: 0, violation: 0, total: 0 });
+  const tov = [mkT(), mkT()]; const mkA = () => ({ fgm: 0, ast: 0 }); const ast = [0, 1].map(() => ({ total: mkA(), outside: mkA(), postRebound: mkA(), postImmediate: mkA(), postReset: mkA(), postOther: mkA() }));
+  for (const e of m.events) {
+    if (e.ty === 'shot') {
+      const r = rebOpp[e.tm];
+      if (!e.made) { if (e.blk != null) { r.blocked++; if (e.end === 'block_out_of_bounds') r.blockedOob++; else r.blockedLive++; } else r.fgMiss++; }
+      else { const a = ast[e.tm]; const post = e.cont === 'offensive_rebound'; const hit = (x) => { x.fgm++; if (e.passer) x.ast++; }; hit(a.total); hit(post ? a.postRebound : a.outside); if (post) hit(e.rbb === 'organized_reset' ? a.postReset : e.rbb === 'immediate' ? a.postImmediate : a.postOther); }
+    } else if (e.ty === 'shootfoul' && !e.and1) rebOpp[1 - e.tm].shootFoulMissNoFga++;
+    else if (e.ty === 'ft' && !e.made) { if (e.k === e.n) rebOpp[e.tm].ftLastMiss++; else rebOpp[e.tm].ftNonLastMiss++; }
+    else if (e.ty === 'reb') { const k = e.off ? e.tm : 1 - e.tm; const key = `${e.cause}|${e.off ? 'off' : 'def'}|${e.pl ? 'ind' : 'coll'}`; rebOpp[k].credits[key] = (rebOpp[k].credits[key] ?? 0) + 1; }
+    else if (e.ty === 'tov') { const t = tov[e.tm]; t.total++; if (e.kind === 'to' || e.kind === 'lb') t.eligible++; if (e.sub === 'steal') t.steal++; else if (e.sub === 'out_of_bounds') t.outOfBounds++; else if (e.sub === 'bad_pass') t.badPass++; else if (e.sub === 'offensive_foul') t.offensiveFoul++; else if (e.sub === 'violation') t.violation++; }
+  }
+  return { schema: DIAG04D_SCHEMA, rebOpp, tovFunnel: tov, astUniverse: ast, note: 'lectura de hechos nativos; sin azar. credits: causa|sentido|individual-colectivo' };
 }
 // Ruta de ejecución (repeticiones técnicas E, §9.1): 'auto' (de golpe con dirección automática), 'steps' (avance por los instantes `c.steps` con consultas intermedias, sin azar) o 'recover' (en los instantes
 // `c.cuts` se guarda, se serializa y se restaura el encuentro con su sufijo privado). Todas usan la misma política, revisiones y noticias; solo cambia CÓMO se avanza.
@@ -74,7 +96,7 @@ export function runCampaignSim(ctx, c) {
     const valid = m.status === 'finished' && rec.valid === true;
     const record = { ...base, status: m.status, error: m.error?.cause ?? null, valid, failedChecks: rec.checks.filter((x) => !x.ok).map((x) => x.id), checks: rec.checks.length, notEvaluated: rec.notEvaluated ?? [], recon: rec.checks.map((x) => [x.id, x.ok ? 1 : 0, x.universe, x.failureCount ?? 0]),
       identity: { seed: res.identity.seed, importance: res.identity.importance, inputFingerprint: res.identity.inputFingerprint, effectiveInputFingerprint: res.identity.effectiveInputFingerprint, nCommands: res.identity.nCommands, sportFingerprint: res.sportFingerprint, ignoredInput: res.identity.ignoredInput, teams: res.identity.teams.map((t) => t.id) },
-      essential: ess, diag04b: diag04b(m, !!c.diag), analysis: res.analysis, rngDraws: m.rng.draws, events: m.events.length, route,
+      essential: ess, diag04b: diag04b(m, !!c.diag), diag04d: diag04d(m), analysis: res.analysis, rngDraws: m.rng.draws, events: m.events.length, route,
       quintets: res.quintets.map((q) => ({ team: q.team, ids: q.ids, sec: q.sec, pf: q.pf, pa: q.pa, ctlFor: q.ctlFor, ctlAgainst: q.ctlAgainst, fga: q.fga, fgm: q.fgm, fg3a: q.fg3a, fg3m: q.fg3m, fta: q.fta, ftm: q.ftm, tov: q.tov, oreb: q.oreb, dreb: q.dreb, ast: q.ast, stl: q.stl, blk: q.blk, intervals: q.intervals })),
       evolution: res.evolution, segments: res.segments.map((s) => ({ n: s.n, start: s.start, end: s.end, period: s.period, controls: s.controls, lineups: s.lineups, org: s.org, coverage: s.plans.map((p) => p.coverage ?? null), pressureHeight: s.plans.map((p) => p.pressureHeight ?? null), cut: s.cut })),
       director: directorIntervals(m, input), decisions: res.decisions ?? [], commands: res.commands ?? [],

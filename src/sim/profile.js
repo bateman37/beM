@@ -1,7 +1,7 @@
 // Perfil SIM (SEM-SIM01-20261022): todas las decisiones numéricas deportivas del generador viven aquí, como filas con ruta, valor, unidad, procedencia y efecto.
 // Procedencia (SIM-MOTOR-01 §4.3): «heredada» (copia de una fila del perfil efectivo detallado), «derivada» (transformación explícita de filas existentes) o «SEM-SIM01»
 // (semilla nueva autorizada por el encargo, pendiente de auditoría/calibración). El código lee `profile.v.<ruta>`; nunca constantes deportivas sueltas.
-import { SIM_PROFILE_ID, SIM_EXTENSION_ID, SIM04_EXTENSION_ID, SIM04B_EXTENSION_ID, SIM04C_EXTENSION_ID } from './version.js';
+import { SIM_PROFILE_ID, SIM_EXTENSION_ID, SIM04_EXTENSION_ID, SIM04B_EXTENSION_ID, SIM04C_EXTENSION_ID, SIM04D_EXTENSION_ID } from './version.js';
 import { fpString } from './fp.js';
 
 const deep = (x) => JSON.parse(JSON.stringify(x));
@@ -73,6 +73,15 @@ const SEM04C_ROWS = [
   ['opportunity.simInsideQualityLogit', 0, 'logit', 'Desplaza el logit de calidad de la oportunidad (cómoda frente a forzada) SOLO en las celdas de la zona inside (también las de transición y espontáneo), antes de sortear la calidad y una sola vez, con objeto de calidad propio (no se muta el compartido con otras zonas). Con 0, identidad exacta.'],
   ['conversion.simInsideLogitOffset', 0, 'logit', 'Coeficiente PROVISIONAL de traducción agregada SIM (no regla deportiva): se suma una vez al logit del tiro de la zona inside, antes de la logística y de la perturbación de momento, y en la estimación de acierto de la decisión de finalización. No toca p0, recetas, pendientes, tapón ni libres. Con 0, identidad exacta.'],
 ];
+// Extensión SIM-MOTOR-04D (SEM-SIM04D-20261024, §6): seis filas NEUTRALES. Semillas de evaluación SIM, administrables y sin calibración externa; no se copian al perfil del detallado.
+const SEM04D_ROWS = [
+  ['shotMix.midrangeWeightFactor', 1, 'factor multiplicativo', 'Mezcla de zonas (no de acierto): multiplica una vez el peso de las celdas de media distancia YA existentes de cada contexto (organizado, transición, espontáneo) y renormaliza dentro del contexto conservando su masa previa; no crea celdas. Con 1, identidad exacta.'],
+  ['conversion.simRimLogitOffset', 0, 'logit', 'Coeficiente PROVISIONAL de traducción agregada SIM (no regla deportiva): se suma una vez al logit del tiro de la zona rim, antes de la logística y de la perturbación de momento, y en la estimación de acierto de la decisión de finalización. No toca recetas, pendientes, protección defensiva, tapón ni libres, ni las demás zonas. Con 0, identidad exacta.'],
+  ['outcomes.simOrdinaryTurnoverWeightFactor', 1, 'factor multiplicativo', 'Multiplica una vez el peso de la pérdida ORDINARIA (sin el peso adicional de la presión adelantada) antes de normalizar los terminales; conserva incidencia de presión, habilidad y estilos. No toca faltas ofensivas ni violaciones. Con 1, identidad exacta.'],
+  ['outcomes.simStealGivenEligibleTurnoverLogit', 0, 'logit', 'Se suma una vez al logit del robo condicionado a una pérdida que ya admite ese crédito (pérdida ordinaria o balón suelto con balón vivo); el autor, la causalidad y un crédito por pérdida se conservan. No convierte faltas ofensivas ni violaciones en robo. Con 0, identidad exacta.'],
+  ['outcomes.simShootingFoulWeightFactor', 1, 'factor multiplicativo', 'Multiplica una vez el peso de la falta en el tiro antes de normalizar los terminales (la razón de faltas no terminales se recalcula con el mismo total). No toca el porcentaje de libres ni el número reglamentario de libres de la serie. Con 1, identidad exacta.'],
+  ['assist.spontaneousPassOddsFactor', 1, 'factor multiplicativo de odds', 'Odds de entrega elegible en las finalizaciones espontáneas: odds(p\') = odds(p) × factor sobre derived.spontaneous.passShare (extremos 0 y 1 intactos); no añade AST directamente: el pasador sigue siendo un compañero real distinto del tirador, sorteado antes del tiro. No se aplica a transición ni a continuación tras rebote. Con 1, identidad exacta.'],
+];
 function flatten(prefix, src, out) {
   if (isLeaf(src)) { out.push([prefix, src]); return; }
   for (const [k, v] of Object.entries(src)) flatten(`${prefix}.${k}`, v, out);
@@ -93,6 +102,7 @@ export function buildSimProfile(detailed) {
   for (const [p, v, unit, effect] of SEM04_ROWS) add(p, v, unit, SIM04_EXTENSION_ID.split('-').slice(0, 2).join('-'), 'encargo SIM-MOTOR-04 §4 C04-01 / §7.2 (semilla de evaluación SEM04, no calibración empírica)', effect);
   for (const [p, v, unit, effect] of SEM04B_ROWS) add(p, v, unit, SIM04B_EXTENSION_ID.split('-').slice(0, 2).join('-'), 'encargo SIM-MOTOR-04B §7.2–§7.4 y §8 (fila neutral de evaluación SEM04B, no calibración empírica)', effect);
   for (const [p, v, unit, effect] of SEM04C_ROWS) add(p, v, unit, SIM04C_EXTENSION_ID.split('-').slice(0, 2).join('-'), 'encargo SIM-MOTOR-04C §5–§7 (fila neutral de evaluación SEM04C, no calibración empírica)', effect);
+  for (const [p, v, unit, effect] of SEM04D_ROWS) add(p, v, unit, SIM04D_EXTENSION_ID.split('-').slice(0, 2).join('-'), 'encargo SIM-MOTOR-04D §6 (fila neutral de evaluación SEM04D, no calibración empírica)', effect);
   // Correspondencia de roles → créditos compatibles (tabla declarada; los pesos numéricos son los heredados selection.rolePreference y defense.assignment.roleFitWeight/otherRoleFitWeight).
   add('roles.creditTags.block', ['rimProtect', 'rimHelp'], 'etiquetas', 'SEM-SIM02', 'encargo SIM-MOTOR-02 §4.1: etiquetas de función defensiva que orientan el reparto del crédito de tapón', 'Un defensor cuyo rol defensivo favorece estas etiquetas pesa roleFitWeight (una vez) en el reparto del tapón.');
   add('roles.creditTags.steal', ['ballPressure', 'chaser'], 'etiquetas', 'SEM-SIM02', 'encargo SIM-MOTOR-02 §4.1: etiquetas de función defensiva que orientan el reparto del crédito de robo', 'Un defensor cuyo rol defensivo favorece estas etiquetas pesa roleFitWeight (una vez) en el reparto del robo.');
@@ -134,6 +144,13 @@ export const RIM_QUALITY_LOGIT_RANGE = [0, 0.5];
 export const INSIDE_QUALITY_LOGIT_RANGE = [0, 1];
 export const INSIDE_CONVERSION_LOGIT_RANGE = [0, 0.3];
 export const ORGANIZED_RESET_RANGE = [0, 1];
+export const RECEIVED_ADVANTAGE_RANGE = [0, 1];
+export const MIDRANGE_WEIGHT_RANGE = [0.25, 2];
+export const RIM_CONVERSION_LOGIT_RANGE = [0, 0.25];
+export const ORDINARY_TURNOVER_RANGE = [0.6, 1.2];
+export const STEAL_ELIGIBLE_LOGIT_RANGE = [0, 1];
+export const SHOOTING_FOUL_RANGE = [0.8, 1.3];
+export const SPONTANEOUS_PASS_ODDS_RANGE = [1, 2];
 const deepNumeric = (x) => (Array.isArray(x) ? x.every(deepNumeric) : typeof x === 'number' && Number.isFinite(x));
 const sameShape = (a, b) => (Array.isArray(a) ? Array.isArray(b) && a.length === b.length && a.every((x, i) => sameShape(x, b[i])) : typeof b === 'number' && Number.isFinite(b));
 // Candidata: copia con filas sustituidas. Valida tipo, forma y límites; rechaza rutas desconocidas (nada se corrige en silencio).
@@ -149,7 +166,7 @@ function validateSem04(base, map) {
   if (base.index.has('shotMix.rimWeightFactor')) {
     const fr = eff('shotMix.rimWeightFactor'); if (!(typeof fr === 'number' && Number.isFinite(fr) && fr > 0)) add('shotMix.rimWeightFactor', 'factor finito y positivo');
     const dq = eff('opportunity.simRimQualityLogit'); if (!(typeof dq === 'number' && Number.isFinite(dq) && dq >= RIM_QUALITY_LOGIT_RANGE[0] && dq <= RIM_QUALITY_LOGIT_RANGE[1])) add('opportunity.simRimQualityLogit', `desplazamiento finito dentro de [${RIM_QUALITY_LOGIT_RANGE.join(', ')}] logit`);
-    const pr = eff('assist.receivedAdvantageP0'); if (!(typeof pr === 'number' && Number.isFinite(pr) && pr >= 0 && pr < 1)) add('assist.receivedAdvantageP0', 'probabilidad finita en [0, 1)');
+    const pr = eff('assist.receivedAdvantageP0'); if (!(typeof pr === 'number' && Number.isFinite(pr) && pr >= RECEIVED_ADVANTAGE_RANGE[0] && pr <= RECEIVED_ADVANTAGE_RANGE[1])) add('assist.receivedAdvantageP0', `probabilidad finita en [${RECEIVED_ADVANTAGE_RANGE.join(', ')}]`);
   }
   // 04C §7.1: dominios editables de las tres filas nuevas
   if (base.index.has('rebound.organizedResetP0')) {
@@ -157,6 +174,13 @@ function validateSem04(base, map) {
     if (!inRange(eff('rebound.organizedResetP0'), ORGANIZED_RESET_RANGE)) add('rebound.organizedResetP0', `probabilidad finita en [${ORGANIZED_RESET_RANGE.join(', ')}]`);
     if (!inRange(eff('opportunity.simInsideQualityLogit'), INSIDE_QUALITY_LOGIT_RANGE)) add('opportunity.simInsideQualityLogit', `desplazamiento finito dentro de [${INSIDE_QUALITY_LOGIT_RANGE.join(', ')}] logit`);
     if (!inRange(eff('conversion.simInsideLogitOffset'), INSIDE_CONVERSION_LOGIT_RANGE)) add('conversion.simInsideLogitOffset', `desplazamiento finito dentro de [${INSIDE_CONVERSION_LOGIT_RANGE.join(', ')}] logit`);
+  }
+  // 04D §6.1: dominios editables de las seis filas nuevas (la parrilla del §7 es un subconjunto; ampliar el rango del panel no amplía la campaña)
+  if (base.index.has('shotMix.midrangeWeightFactor')) {
+    const inRange = (v, [lo, hi]) => typeof v === 'number' && Number.isFinite(v) && v >= lo && v <= hi;
+    const chk = (path, range, what) => { if (!inRange(eff(path), range)) add(path, `${what} finito dentro de [${range.join(', ')}]`); };
+    chk('shotMix.midrangeWeightFactor', MIDRANGE_WEIGHT_RANGE, 'factor'); chk('conversion.simRimLogitOffset', RIM_CONVERSION_LOGIT_RANGE, 'desplazamiento (logit)'); chk('outcomes.simOrdinaryTurnoverWeightFactor', ORDINARY_TURNOVER_RANGE, 'factor');
+    chk('outcomes.simStealGivenEligibleTurnoverLogit', STEAL_ELIGIBLE_LOGIT_RANGE, 'desplazamiento (logit)'); chk('outcomes.simShootingFoulWeightFactor', SHOOTING_FOUL_RANGE, 'factor'); chk('assist.spontaneousPassOddsFactor', SPONTANEOUS_PASS_ODDS_RANGE, 'factor de odds');
   }
   return errs;
 }

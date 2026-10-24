@@ -1,5 +1,6 @@
 // Agregados COMPACTOS del nivel Simulada / Análisis (SIM-MOTOR-03 · C03-07/C03-08), calculados una sola vez desde los hechos ya generados al construir el resultado: no añaden acciones al generador ni retienen
 // la secuencia completa. Un lector que no encuentra ni hechos ni estos agregados devuelve «no conservado» con su motivo; nunca un cero.
+import { attributedPlay } from './attribution.js';
 export const ANALYSIS_SCHEMA = 'beM-sim-analysis/1';
 const r1 = (x) => Math.round(x * 10) / 10; const r3 = (x) => Math.round(x * 1000) / 1000;
 export const ABSENT_ZERO = Object.freeze({ absent: 'denominador_cero' });
@@ -34,7 +35,7 @@ export function buildAnalysis({ segs, evs, T, audience, team }) {
   for (const e of evs) {
     if (e.ty === 'shot') {
       if (e.fin != null) (finBy[e.pl] ??= new Set()).add(e.fin);
-      if (e.play) { const p = (part[e.tm][e.play] ??= { shooters: {}, directors: {}, screeners: {} }); p.shooters[e.pl] = (p.shooters[e.pl] ?? 0) + 1; if (e.dir) p.directors[e.dir] = (p.directors[e.dir] ?? 0) + 1; if (e.scr) p.screeners[e.scr] = (p.screeners[e.scr] ?? 0) + 1; }
+      if (attributedPlay(e)) { const p = (part[e.tm][e.play] ??= { shooters: {}, directors: {}, screeners: {} }); p.shooters[e.pl] = (p.shooters[e.pl] ?? 0) + 1; if (e.dir) p.directors[e.dir] = (p.directors[e.dir] ?? 0) + 1; if (e.scr) p.screeners[e.scr] = (p.screeners[e.scr] ?? 0) + 1; }
     } else if (e.ty === 'shootfoul') { if (e.fin != null && e.victim) (finBy[e.victim] ??= new Set()).add(e.fin); }
     else if (e.ty === 'plan' && audience !== 'public' && (audience === 'diagnostic' || e.tm === team)) orders.push({ t: e.t, team: e.tm, change: e.change, order: e.order, source: e.source ?? 'manual' });
   }
