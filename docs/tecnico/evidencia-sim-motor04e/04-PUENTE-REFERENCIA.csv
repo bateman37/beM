@@ -1,0 +1,28 @@
+case_id,stage,score_team0,score_team1,events,draws,dynamics_sha16,draws_sha16,false_expiry,reb_team0,reb_team1,oreb_team0,oreb_team1,dreb_team0,dreb_team1,tov_team0,tov_team1,causal_note
+VAL-EQ01-EQ03-R1,04D,70,85,533,8409,3ed3c7cbc1efafef,11a4b76de5787a78,1,25,23,4,9,21,14,19,7,referencia anterior
+VAL-EQ01-EQ03-R2,04D,73,82,537,8267,a79ac4151661e2ec,95d80c848adaddad,4,28,22,10,3,18,19,9,8,referencia anterior
+VAL-EQ03-EQ01-R1,04D,70,83,509,8054,e3efe8bf76e1b6e0,746d9605edf3d618,4,17,23,5,9,12,14,9,8,referencia anterior
+VAL-EQ03-EQ01-R2,04D,80,94,547,8582,e89225462a92c459,2906c50087833719,4,22,22,6,6,16,16,9,6,referencia anterior
+VAL-EQ03-EQ05-R1,04D,69,80,521,8549,f8fe5f2b6a4a22be,9c99ce2275602fe7,4,29,16,16,3,13,13,15,10,referencia anterior
+VAL-EQ03-EQ05-R2,04D,86,51,551,8676,da91e56276466e10,7fffad27a89d20d1,3,33,21,9,6,24,15,7,12,referencia anterior
+VAL-EQ05-EQ03-R1,04D,84,73,540,8398,cd3c81ec83d2d74a,f2cf40485a5af92a,2,21,19,3,6,18,13,12,13,referencia anterior
+VAL-EQ05-EQ03-R2,04D,82,81,497,7869,4bdc686723d8598d,26c47dd5df0ce307,2,23,25,6,5,17,20,6,8,referencia anterior
+VAL-EQ01-EQ03-R1,credito,70,85,533,8409,3ed3c7cbc1efafef,11a4b76de5787a78,1,27,25,4,10,23,15,19,7,"solo crédito observacional: dinámica idéntica a 04D (huellas, sorteos y marcador iguales); cambia el acta de rebotes"
+VAL-EQ01-EQ03-R2,credito,73,82,537,8267,a79ac4151661e2ec,95d80c848adaddad,4,31,25,12,4,19,21,9,8,"solo crédito observacional: dinámica idéntica a 04D (huellas, sorteos y marcador iguales); cambia el acta de rebotes"
+VAL-EQ03-EQ01-R1,credito,70,83,509,8054,e3efe8bf76e1b6e0,746d9605edf3d618,4,21,25,5,10,16,15,9,8,"solo crédito observacional: dinámica idéntica a 04D (huellas, sorteos y marcador iguales); cambia el acta de rebotes"
+VAL-EQ03-EQ01-R2,credito,80,94,547,8582,e89225462a92c459,2906c50087833719,4,24,26,8,8,16,18,9,6,"solo crédito observacional: dinámica idéntica a 04D (huellas, sorteos y marcador iguales); cambia el acta de rebotes"
+VAL-EQ03-EQ05-R1,credito,69,80,521,8549,f8fe5f2b6a4a22be,9c99ce2275602fe7,4,34,19,19,5,15,14,15,10,"solo crédito observacional: dinámica idéntica a 04D (huellas, sorteos y marcador iguales); cambia el acta de rebotes"
+VAL-EQ03-EQ05-R2,credito,86,51,551,8676,da91e56276466e10,7fffad27a89d20d1,3,37,29,9,10,28,19,7,12,"solo crédito observacional: dinámica idéntica a 04D (huellas, sorteos y marcador iguales); cambia el acta de rebotes"
+VAL-EQ05-EQ03-R1,credito,84,73,540,8398,cd3c81ec83d2d74a,f2cf40485a5af92a,2,25,25,6,9,19,16,12,13,"solo crédito observacional: dinámica idéntica a 04D (huellas, sorteos y marcador iguales); cambia el acta de rebotes"
+VAL-EQ05-EQ03-R2,credito,82,81,497,7869,4bdc686723d8598d,26c47dd5df0ce307,2,25,28,6,7,19,21,6,8,"solo crédito observacional: dinámica idéntica a 04D (huellas, sorteos y marcador iguales); cambia el acta de rebotes"
+VAL-EQ01-EQ03-R1,reloj,87,86,500,8123,8833cb4e1a852475,d0da5506f398f79c,0,32,25,13,5,19,20,6,5,corrección de reloj/rebote/control: cambia la trayectoria y desaparece la falsa expiración
+VAL-EQ01-EQ03-R2,reloj,70,77,505,8044,5e851e511ae265c5,ac852a8fd51106bd,0,30,28,11,6,19,22,11,11,corrección de reloj/rebote/control: cambia la trayectoria y desaparece la falsa expiración
+VAL-EQ03-EQ01-R1,reloj,93,83,505,8056,3492f806d1b2c97d,47eced5620167e86,0,24,30,2,11,22,19,9,12,corrección de reloj/rebote/control: cambia la trayectoria y desaparece la falsa expiración
+VAL-EQ03-EQ01-R2,reloj,90,72,538,8511,f008016ed7221bba,e6fe8835d5b66119,0,26,29,4,12,22,17,7,11,corrección de reloj/rebote/control: cambia la trayectoria y desaparece la falsa expiración
+VAL-EQ03-EQ05-R1,reloj,90,67,495,8065,e07e08d790ee1762,b62a7a730fc5611a,0,35,21,8,4,27,17,5,7,corrección de reloj/rebote/control: cambia la trayectoria y desaparece la falsa expiración
+VAL-EQ03-EQ05-R2,reloj,73,58,528,8291,457c137930799e2a,ff828ef85f5464d6,0,37,33,12,11,25,22,10,14,corrección de reloj/rebote/control: cambia la trayectoria y desaparece la falsa expiración
+VAL-EQ05-EQ03-R1,reloj,68,73,511,8164,4bb6273c5b4ed1c8,729e856570d3fb0d,0,36,32,11,7,25,25,9,7,corrección de reloj/rebote/control: cambia la trayectoria y desaparece la falsa expiración
+VAL-EQ05-EQ03-R2,reloj,77,69,519,8074,567372ce2f72eac3,7307221483609d38,0,32,32,9,7,23,25,4,5,corrección de reloj/rebote/control: cambia la trayectoria y desaparece la falsa expiración
+REF-20261016,04D,83,98,578,6684,ea9a1ef5ba90,,2,28,24,8,6,20,18,9,6,semilla de referencia (huella de trayectoria completa ea9a1ef5ba90); motor beM-motor-0.18.1-MOTOR18B; política de acta ACTA-MOTOR17B-R1
+REF-20261016,credito,83,98,578,6684,28c764604f92,,2,29,27,9,8,20,19,9,6,semilla de referencia (huella de trayectoria completa 28c764604f92); motor beM-motor-0.18.1-MOTOR18B; política de acta ACTA-MOTOR17B-R1
+REF-20261016,reloj,87,108,598,6733,edbb0d8b564c,,0,27,35,5,9,22,26,11,7,semilla de referencia (huella de trayectoria completa edbb0d8b564c); motor beM-motor-0.18.2-SIM04E; política de acta ACTA-SIM04E-R1

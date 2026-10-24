@@ -1,0 +1,178 @@
+{
+ "schema": "beM-sim04e-cost/1",
+ "scope": "ensayo breve de 200 encuentros (no certifica 1.000)",
+ "machine": {
+  "identity": "BASE",
+  "node": "v22.22.0",
+  "platform": "linux",
+  "arch": "x64",
+  "kernel": "6.18.44-fc-v153",
+  "cpuModel": "Intel(R) Xeon(R) Processor @ 2.30GHz",
+  "logicalCpus": 4,
+  "availableParallelism": 4,
+  "ramMiB": 16091,
+  "commit": "ab528ff1248edb3d43df768772aceaca8ec1b7f7",
+  "workingTreeDirty": true,
+  "sim": "0.3.4-SIMMOTOR04E",
+  "profile": "SEM-SIM01-20261022+SEM-SIM02-20261022+SEM-SIM04-20261023+SEM-SIM04B-20261023+SEM-SIM04C-20261024+SEM-SIM04D-20261024",
+  "overrides": [
+   {
+    "path": "assist.eligibleFinalPassP0",
+    "value": 0.9
+   },
+   {
+    "path": "energy.costPerLiveMinute",
+    "value": 3
+   },
+   {
+    "path": "opportunity.simRimQualityLogit",
+    "value": 0.5
+   },
+   {
+    "path": "opportunity.simInsideQualityLogit",
+    "value": 0.5
+   },
+   {
+    "path": "conversion.simInsideLogitOffset",
+    "value": 0.3
+   },
+   {
+    "path": "volume.neutralSecondsPerControl",
+    "value": 19.5
+   },
+   {
+    "path": "shotMix.rimWeightFactor",
+    "value": 1.5
+   },
+   {
+    "path": "shotMix.midrangeWeightFactor",
+    "value": 1
+   },
+   {
+    "path": "shotMix.threeWeightFactor",
+    "value": 0.7
+   },
+   {
+    "path": "rebound.organizedResetP0",
+    "value": 0.35
+   },
+   {
+    "path": "assist.receivedAdvantageP0",
+    "value": 0
+   },
+   {
+    "path": "assist.spontaneousPassOddsFactor",
+    "value": 1
+   },
+   {
+    "path": "outcomes.simOrdinaryTurnoverWeightFactor",
+    "value": 1
+   },
+   {
+    "path": "outcomes.simStealGivenEligibleTurnoverLogit",
+    "value": 0
+   },
+   {
+    "path": "outcomes.simShootingFoulWeightFactor",
+    "value": 1
+   },
+   {
+    "path": "conversion.simRimLogitOffset",
+    "value": 0
+   },
+   {
+    "path": "shots.three.p0",
+    "value": 0.35
+   },
+   {
+    "path": "shots.midrange.p0",
+    "value": 0.39
+   },
+   {
+    "path": "shots.rim.blockP0",
+    "value": 0.06
+   },
+   {
+    "path": "shots.inside.blockP0",
+    "value": 0.05
+   },
+   {
+    "path": "shots.midrange.blockP0",
+    "value": 0.015
+   },
+   {
+    "path": "shots.three.blockP0",
+    "value": 0.008
+   }
+  ],
+  "limit": null,
+  "scriptSha256": "3524cc896352a0ad88dd11e690db226ad3947dfbec779e211bcbaca79e728775",
+  "startedAt": "2026-10-24T15:17:20.203Z"
+ },
+ "runs": {
+  "clubsA200": {
+   "ms": 1826.7,
+   "phases": {
+    "processStartToWorkersReady": 1056.8,
+    "generateBuildValidateAndTransport": 1826.7,
+    "serialize": 47.8,
+    "persistFsync": 22.4,
+    "worldAvailability": 39.8,
+    "totalFromNewProcessToWorldData": 2993.9,
+    "totalFromRequestToWorldData": 1936.6
+   }
+  },
+  "clubsB200": {
+   "ms": 1570,
+   "phases": {
+    "processStartToWorkersReady": null,
+    "generateBuildValidateAndTransport": 1570,
+    "serialize": 17.8,
+    "persistFsync": 19,
+    "worldAvailability": 33.8,
+    "totalFromNewProcessToWorldData": null,
+    "totalFromRequestToWorldData": 1640.6
+   }
+  },
+  "continuous": {
+   "processStartToAgendaAWorldDataMs": 2993.9,
+   "processStartToAgendaBWorldDataMs": 4685.2,
+   "note": "apertura continua (proceso nuevo → fixtures → workers → agenda A → agenda B) sin espera de otro control; se informa además del objetivo de 5 s, que se mide con workers preparados"
+  },
+  "day200": {
+   "coordinatedRunMs": 2896.4,
+   "advanceMsTotal": 2291.5,
+   "essentialsTransportMs": 112.9,
+   "publicationMs": {
+    "max": 208.9,
+    "median": 102.8,
+    "p95": 204.4,
+    "definition": "desde el inicio de la barrera hasta marcador y clasificación publicados (advance + review + consulta/clasificación del coordinador)"
+   },
+   "valid": 200,
+   "finished": 200,
+   "requested": 200
+  }
+ },
+ "memory": {
+  "clubs": {
+   "rssMaxMiB": 679.4,
+   "note": "RSS del PROCESO (los workers son hilos del mismo proceso; no se suma por hilo); muestreo cada 25 ms",
+   "samples": 163
+  },
+  "day": {
+   "rssMaxMiB": 632.7,
+   "samples": 121,
+   "method": "RSS del proceso (workers = hilos), muestreo cada 25 ms más una lectura por barrera"
+  }
+ },
+ "executions": {
+  "base": 400,
+  "final": "alias de la base: lote base reutilizado",
+  "day": 200,
+  "total": 600,
+  "warmUp": "12 partidos por worker (4 workers) en cada proceso, declarados aparte"
+ },
+ "pending": "objetivos de 1.000 partidos en 5 s, publicación 1 s y RSS 1,5 GiB: PENDIENTES (no se extrapola)",
+ "relativeVariationControlFinal": "no medida (la candidata recomendada es alias de la base)"
+}

@@ -1,6 +1,6 @@
 # Estado del proyecto
 
-Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANGELOG.md)). Última actualización: 2026-10-24, entrega SIM-MOTOR-04D (acta y tiro; incluye 04C, 04B, 04, 03, 02B, 02 y 01).
+Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANGELOG.md)). Última actualización: 2026-10-24, entrega SIM-MOTOR-04E (coherencia y convergencia; incluye 04D, 04C, 04B, 04, 03, 02B, 02 y 01).
 
 ## Qué hay realmente en el repositorio
 
@@ -8,6 +8,17 @@ Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANG
 - **Diseño funcional del motor y del primer laboratorio**, organizado por temas en [`motor/`](motor/README.md) (34 capítulos). Es **especificación**: está *definida*, no implementada.
 - **Copia original congelada** del funcional unificado y **exportado completo vigente** generado: ver [`historico/`](historico/README.md) y [`exportados/`](exportados/README.md).
 - **Utilidades documentales** en `scripts/docs/` (Python 3, librería estándar).
+
+## SIM-MOTOR-04E (ejecutado; frontera de reloj corregida, crédito de rebote común, referencia nueva y ajuste acotado sin alternativa admisible; pendiente de Dennis)
+
+- **Qué es**: corrige en el detallado la frontera reloj/rebote/control (**excepción expresa a su congelación**) y los créditos de rebote vinculados, congela una referencia nueva y ajusta SIM contra ella con un buscador determinista y acotado. El resto de reglas, recetas, probabilidades, atributos, tácticas, estados, entrenador y arquitectura sigue congelado.
+- **Defecto corregido**: expiración «de periodo» con reloj de juego positivo tras un fallo con contacto de aro (E0070/E0071 de VAL04D): **514 casos en 176 detallados → 0**; todos limitados por el reloj de posesión y seguidos del mismo equipo con la instrucción de siguiente posesión antigua. Con contacto en el aro solo limita el reloj de juego; reinicio a 14 s (mismo ataque) o 24 s (rival); sin contacto rige el reloj de posesión; la instrucción de siguiente posesión se consume una vez. Referencia 20261016: 83–98 (6.684 sorteos) → **87–108 (6.733)**, sin recalibrar.
+- **Política común de crédito de rebote** (`REBCRED-SIM04E-R1`, detallado y SIM): individual tras tapón con balón vivo, **colectivo** ofensivo tras tapón fuera, sin crédito con causa (balón muerto, fin de periodo antes del control, violación). El paso de crédito conserva la dinámica deportiva (8 entradas: relojes, quintetos, marcador y sorteos idénticos a 04D).
+- **Versiones**: aplicación `SIM-MOTOR-04E`, detallado `beM-motor-0.18.2-SIM04E`, SIM `0.3.4-SIMMOTOR04E`, acta `ACTA-SIM04E-R1` / `EST-SIM04E-R1`, conciliación `RECON-SIM04E-R1`, cobertura `COV-SIM04E-R1`; resultado `beM-sim-match/3` y guardado `beM-sim-snapshot/2` (los guardados de 04D se rechazan con explicación).
+- **Búsqueda** (`SRCH-SIM04E-R1`, reglas con hash congeladas antes; DEV-A 48 + DEV-B 24, conocidos): 84 perfiles en DEV-A, lista corta de 5, tres reparaciones sobre las 72 entradas; **4.368 SIM de ajuste** de un máximo de 4.824. **Ninguna alternativa admisible** (guardas frente a S0): recomendada = S0 (`C04E-FINAL-PROVISIONAL`, alias de la base); `C04E-EXPERIMENTAL` (M conjunto 1,52) se entrega aparte y no se activa. M en VAL04E (96 entradas nuevas): base 4,38 (17/31 bandas fuera), experimental 5,40 (12/31); la mejora de DEV-A no generaliza (dominante: tapones).
+- **Rendimiento**: ensayo de 200 (lote 1,83 s, pool reutilizado 1,57 s; jornada de 200 con publicación máxima 0,21 s; RSS ≤ 679 MiB); la escala de 1.000 queda **pendiente**.
+- **Comprobado por Claude**: suite completa `npm test` **369/369** sobre el código final y `data:check`; S04E-01…09; Chromium (12 pasos, consola 0, red 0); TECH 12 SIM (huellas iguales); jornada mixta; historia/aprendizaje; comprobador offline de la entrega (ver recibo). **Pendiente de Dennis**: aceptación deportiva y [recorrido manual](prompts/SIM-MOTOR-04E-recorrido-manual.md). **No ejecutado**: otros navegadores/Node, escala de 1.000 partidos, auditoría de las 32 capacidades fuera de las sondas existentes.
+- **No cerrado / siguiente objetivo**: decisión sobre S0 frente a la experimental, la regla de guardas y el tamaño del desarrollo (§9 de [`tecnico/sim-motor04e.md`](tecnico/sim-motor04e.md)); criterio de rebote implementado desde la especificación de ChatGPT, sin lectura directa de Claude.
 
 ## SIM-MOTOR-04D (ejecutado; aproximación del acta al detallado, candidata = control de 04C sin vector admisible; pendiente de Dennis)
 

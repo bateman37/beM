@@ -1,0 +1,114 @@
+{
+ "schema": "beM-sim04e-clock-credit-cases/1",
+ "note": "Casos dirigidos, hechos anteriores y nuevos y motivo; no se fuerzan los IDs viejos en una trayectoria nueva (la trayectoria cambia con la corrección de reloj).",
+ "originalDefect": {
+  "source": "VAL04D · DET__detailed__VAL-EQ01-EQ04-R1 (evidencia original de 04D, fuera de Git)",
+  "events": [
+   {
+    "id": "E0070",
+    "type": "attempt",
+    "period": 1,
+    "possession": "P019",
+    "team": 1,
+    "clock": {
+     "before": 3225,
+     "after": 3080
+    },
+    "shotClock": {
+     "before": 146,
+     "after": 1
+    },
+    "intent": {
+     "origen": "POS13",
+     "zona": "inside",
+     "categoria": "fieldShot"
+    },
+    "effects": {}
+   },
+   {
+    "id": "E0071",
+    "type": "expiry",
+    "period": 1,
+    "possession": "P019",
+    "team": 1,
+    "clock": {
+     "before": 3080,
+     "after": 3079
+    },
+    "shotClock": {
+     "before": 1,
+     "after": 0
+    },
+    "intent": {
+     "origen": "tiro fallado",
+     "motivo": "bocina sin continuación viva"
+    },
+    "effects": {
+     "fin": "periodo"
+    }
+   },
+   {
+    "id": "E0072",
+    "type": "throw_in",
+    "period": 1,
+    "possession": "P020",
+    "team": 1,
+    "clock": {
+     "before": 3079,
+     "after": 3060
+    },
+    "shotClock": {
+     "before": 240,
+     "after": 240
+    },
+    "intent": {
+     "origen": "canasta recibida"
+    },
+    "effects": {},
+    "throwIn": {
+     "origen": "canasta recibida",
+     "sacador": "EQ04-J01"
+    }
+   }
+  ]
+ },
+ "audit": {
+  "entries": 176,
+  "scope": "DEV-A 48 + DEV-B 24 + VAL04E 96 + 8 anclas CONTRAST, re-ejecutadas con cada árbol de código",
+  "stage04D": {
+   "cases": 176,
+   "finished": 176,
+   "valid": 176,
+   "falseExpiry": 514,
+   "falseAfterFgMiss": 488,
+   "falseByLimitingClock": {
+    "posesion": 514
+   },
+   "falseSameTeamResume": 514,
+   "realPeriodEnd": 632,
+   "violation24": 101,
+   "rebounds": 8825,
+   "misses": 9724
+  },
+  "stage04E": {
+   "cases": 176,
+   "finished": 176,
+   "valid": 176,
+   "falseExpiry": 0,
+   "falseAfterFgMiss": 0,
+   "falseByLimitingClock": {},
+   "falseSameTeamResume": 0,
+   "realPeriodEnd": 635,
+   "violation24": 110,
+   "rebounds": 9500,
+   "misses": 9859
+  }
+ },
+ "directedTests": {
+  "S04E-01": "afterMiss con 0,1 s de posesión y 308 s de periodo: 24/24 periodEnd falsos en 04D, 24/24 rebotes en 04E",
+  "S04E-02": "contacto/sin contacto/no registrado, bocina real, reloj previo 20 s y 0,1 s → 14 s",
+  "S04E-03": "siguiente posesión consumida una vez",
+  "S04E-04": "créditos: tapón vivo (cada equipo), tapón fuera colectivo, ausencias legítimas",
+  "S04E-08": "lector de oportunidades de rebote del detallado"
+ }
+}

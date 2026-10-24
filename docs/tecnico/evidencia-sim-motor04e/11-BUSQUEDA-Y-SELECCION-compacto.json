@@ -1,0 +1,430 @@
+{
+ "schema": "beM-sim04e-search-selection-slim/1",
+ "note": "versión compacta (sin errores por métrica); el detalle completo está en la evidencia detallada fuera de Git",
+ "rulesSha256": "0c10b02a90d24ee1ec836d6c0b27cb5bb474b0085662bb2b63b601f1cf58710f",
+ "devA": {
+  "counts": {
+   "starts": 4,
+   "passes": 51,
+   "joint": 4,
+   "half": 25
+  },
+  "profiles": 84,
+  "simExecuted": 4032,
+  "ranking": [
+   "V-f7936e4bd63d",
+   "V-b5df1a6dadf8",
+   "V-d7e633e9e916",
+   "V-ed99f82e0b46",
+   "V-cf8a2445d3c0",
+   "V-af4e47154c2b",
+   "V-a72bb8f1775e",
+   "V-8545c72116d6",
+   "V-52b8604cbe36",
+   "V-a4fed568430c",
+   "V-96034e17476c",
+   "V-b6c836a442dd"
+  ]
+ },
+ "shortList": {
+  "ids": [
+   "V-c886b2edcac9",
+   "V-ea7c466d124d",
+   "V-f7936e4bd63d",
+   "V-ed99f82e0b46",
+   "V-b5df1a6dadf8"
+  ],
+  "alternatives": [
+   "V-ea7c466d124d",
+   "V-f7936e4bd63d",
+   "V-ed99f82e0b46",
+   "V-b5df1a6dadf8"
+  ],
+  "notes": [
+   {
+    "criterion": "menor M",
+    "result": "V-ea7c466d124d"
+   },
+   {
+    "criterion": "menor L_search",
+    "result": "V-f7936e4bd63d"
+   },
+   {
+    "criterion": "menos bandas incumplidas",
+    "result": "V-ed99f82e0b46"
+   },
+   {
+    "criterion": "mejor alternativa que cumple guardas (DEV-A)",
+    "result": "sin alternativa"
+   },
+   {
+    "criterion": "plaza completada por menor L_search",
+    "result": "V-b5df1a6dadf8"
+   }
+  ]
+ },
+ "repairs": [
+  {
+   "op": "R1",
+   "center": "V-ea7c466d124d",
+   "id": "V-b1888565fba6",
+   "adopted": true,
+   "ratios": {
+    "rim": 0.9446062187500305,
+    "inside": 1.1125029106701017,
+    "mid": 0.901022644127357,
+    "three": 1.0306595114639174
+   },
+   "omitted": [],
+   "L": 0.054124800566510714,
+   "M": 1.704060243769887
+  },
+  {
+   "op": "R2",
+   "center": "V-b1888565fba6",
+   "id": "V-c5fb237ed6e5",
+   "adopted": false,
+   "ratios": {
+    "fga": 1.0156079430264595
+   },
+   "omitted": [],
+   "L": 0.09902796079101833,
+   "M": 2.039715616572688
+  },
+  {
+   "op": "R3",
+   "center": "V-b1888565fba6",
+   "id": "V-9909449436fe",
+   "adopted": false,
+   "ratios": {
+    "tov": 0.9328288957099007,
+    "fta": 1.0553676339683102,
+    "stl": 0.031223024054692045
+   },
+   "omitted": [],
+   "L": 0.4999365476168346,
+   "M": 4.458204334365323
+  },
+  {
+   "op": "R4",
+   "center": "V-b1888565fba6",
+   "id": "V-b1888565fba6",
+   "duplicate": true,
+   "adopted": false,
+   "ratios": {
+    "ast_fg": 1.020865388223815,
+    "A_delta": 0.05
+   },
+   "omitted": []
+  }
+ ],
+ "repairStart": "V-ea7c466d124d",
+ "joint": [
+  {
+   "id": "V-c886b2edcac9",
+   "op": "S0",
+   "parent": null,
+   "coords": {
+    "V": 19.5,
+    "R": 1.5,
+    "M": 1,
+    "T": 0.7,
+    "O": 0.35,
+    "A": 0,
+    "S": 1,
+    "L": 1,
+    "E": 0,
+    "F": 1,
+    "C": 0,
+    "P3": 0.35,
+    "P2": 0.39,
+    "B": 1
+   },
+   "L": 1.8608833943205703,
+   "M": 5.009182736455466,
+   "violated": 20,
+   "dominant": "tov",
+   "invariantsOk": true
+  },
+  {
+   "id": "V-ea7c466d124d",
+   "op": "Ba861:P2+",
+   "parent": "V-d7e633e9e916",
+   "coords": {
+    "V": 20,
+    "R": 2.16350114,
+    "M": 0.695747032,
+    "T": 0.502677436,
+    "O": 0.7,
+    "A": 1,
+    "S": 2,
+    "L": 0.8,
+    "E": 0.7,
+    "F": 1.1,
+    "C": 0.15,
+    "P3": 0.35,
+    "P2": 0.4,
+    "B": 1
+   },
+   "L": 0.06400185990261173,
+   "M": 1.520414658543241,
+   "violated": 6,
+   "dominant": "fg3m",
+   "invariantsOk": true
+  },
+  {
+   "id": "V-f7936e4bd63d",
+   "op": "B4ad7:P2-",
+   "parent": "V-ed99f82e0b46",
+   "coords": {
+    "V": 20,
+    "R": 2.5,
+    "M": 0.85,
+    "T": 0.6,
+    "O": 0.85,
+    "A": 1,
+    "S": 2,
+    "L": 0.8,
+    "E": 0.7,
+    "F": 1.1,
+    "C": 0.15,
+    "P3": 0.35,
+    "P2": 0.38,
+    "B": 1
+   },
+   "L": 0.19578813038684728,
+   "M": 2.014749181910281,
+   "violated": 10,
+   "dominant": "inside_share",
+   "invariantsOk": true
+  },
+  {
+   "id": "V-ed99f82e0b46",
+   "op": "B4ad7:M+",
+   "parent": "V-ba3c4dd194b8",
+   "coords": {
+    "V": 20,
+    "R": 2.5,
+    "M": 0.85,
+    "T": 0.6,
+    "O": 0.85,
+    "A": 1,
+    "S": 2,
+    "L": 0.8,
+    "E": 0.7,
+    "F": 1.1,
+    "C": 0.15,
+    "P3": 0.35,
+    "P2": 0.39,
+    "B": 1
+   },
+   "L": 0.16406207231039988,
+   "M": 2.018463719255458,
+   "violated": 10,
+   "dominant": "inside_share",
+   "invariantsOk": true
+  },
+  {
+   "id": "V-b5df1a6dadf8",
+   "op": "D:B+",
+   "parent": "V-f7936e4bd63d",
+   "coords": {
+    "V": 20,
+    "R": 2.5,
+    "M": 0.85,
+    "T": 0.6,
+    "O": 0.85,
+    "A": 1,
+    "S": 2,
+    "L": 0.8,
+    "E": 0.7,
+    "F": 1.1,
+    "C": 0.15,
+    "P3": 0.35,
+    "P2": 0.38,
+    "B": 1.05
+   },
+   "L": 0.2616308904625303,
+   "M": 2.6699356420471876,
+   "violated": 9,
+   "dominant": "blk",
+   "invariantsOk": true
+  },
+  {
+   "id": "V-b1888565fba6",
+   "op": "R1",
+   "parent": "V-ea7c466d124d",
+   "coords": {
+    "V": 20,
+    "R": 1.836989918,
+    "M": 0.563489609,
+    "T": 0.465697011,
+    "O": 0.7,
+    "A": 1,
+    "S": 2,
+    "L": 0.8,
+    "E": 0.7,
+    "F": 1.1,
+    "C": 0.15,
+    "P3": 0.35,
+    "P2": 0.4,
+    "B": 1
+   },
+   "L": 0.054124800566510714,
+   "M": 1.704060243769887,
+   "violated": 5,
+   "dominant": "dreb",
+   "invariantsOk": true
+  },
+  {
+   "id": "V-c5fb237ed6e5",
+   "op": "R2",
+   "parent": "V-b1888565fba6",
+   "coords": {
+    "V": 20.312158861,
+    "R": 1.836989918,
+    "M": 0.563489609,
+    "T": 0.465697011,
+    "O": 0.7,
+    "A": 1,
+    "S": 2,
+    "L": 0.8,
+    "E": 0.7,
+    "F": 1.1,
+    "C": 0.15,
+    "P3": 0.35,
+    "P2": 0.4,
+    "B": 1
+   },
+   "L": 0.09902796079101833,
+   "M": 2.039715616572688,
+   "violated": 6,
+   "dominant": "oreb",
+   "invariantsOk": true
+  },
+  {
+   "id": "V-9909449436fe",
+   "op": "R3",
+   "parent": "V-b1888565fba6",
+   "coords": {
+    "V": 20,
+    "R": 1.836989918,
+    "M": 0.563489609,
+    "T": 0.465697011,
+    "O": 0.7,
+    "A": 1,
+    "S": 2,
+    "L": 0.746263117,
+    "E": 0.731223024,
+    "F": 1.160904397,
+    "C": 0.15,
+    "P3": 0.35,
+    "P2": 0.4,
+    "B": 1
+   },
+   "L": 0.4999365476168346,
+   "M": 4.458204334365323,
+   "violated": 10,
+   "dominant": "ast_ft",
+   "invariantsOk": true
+  }
+ ],
+ "final": {
+  "recommendedId": "V-c886b2edcac9",
+  "keptControl": true,
+  "experimentalId": "V-ea7c466d124d",
+  "s0": {
+   "id": "V-c886b2edcac9",
+   "M": 5.009182736455466,
+   "L": 1.8608833943205703,
+   "violated": 20,
+   "dominant": "tov"
+  },
+  "best": {
+   "id": "V-c886b2edcac9",
+   "M": 5.009182736455466,
+   "improvement": 0
+  },
+  "reason": "ninguna alternativa admisible: se conserva S0",
+  "rows": [
+   {
+    "id": "V-ea7c466d124d",
+    "M": 1.520414658543241,
+    "L": 0.06400185990261173,
+    "violated": 6,
+    "admissible": false,
+    "reasons": [
+     "guardas: fg3m,oreb,inside_share"
+    ]
+   },
+   {
+    "id": "V-b1888565fba6",
+    "M": 1.704060243769887,
+    "L": 0.054124800566510714,
+    "violated": 5,
+    "admissible": false,
+    "reasons": [
+     "guardas: oreb"
+    ]
+   },
+   {
+    "id": "V-f7936e4bd63d",
+    "M": 2.014749181910281,
+    "L": 0.19578813038684728,
+    "violated": 10,
+    "admissible": false,
+    "reasons": [
+     "guardas: fg3m,three_pct,inside_share"
+    ]
+   },
+   {
+    "id": "V-ed99f82e0b46",
+    "M": 2.018463719255458,
+    "L": 0.16406207231039988,
+    "violated": 10,
+    "admissible": false,
+    "reasons": [
+     "guardas: fg2a,rim_share,inside_share"
+    ]
+   },
+   {
+    "id": "V-c5fb237ed6e5",
+    "M": 2.039715616572688,
+    "L": 0.09902796079101833,
+    "violated": 6,
+    "admissible": false,
+    "reasons": [
+     "guardas: fg3m,oreb,inside_pct"
+    ]
+   },
+   {
+    "id": "V-b5df1a6dadf8",
+    "M": 2.6699356420471876,
+    "L": 0.2616308904625303,
+    "violated": 9,
+    "admissible": false,
+    "reasons": [
+     "guardas: blk,inside_share"
+    ]
+   },
+   {
+    "id": "V-9909449436fe",
+    "M": 4.458204334365323,
+    "L": 0.4999365476168346,
+    "violated": 10,
+    "admissible": false,
+    "reasons": [
+     "guardas: oreb,ast_ft,pf,pfd"
+    ]
+   },
+   {
+    "id": "V-c886b2edcac9",
+    "M": 5.009182736455466,
+    "L": 1.8608833943205703,
+    "violated": 20,
+    "admissible": true,
+    "reasons": []
+   }
+  ]
+ }
+}

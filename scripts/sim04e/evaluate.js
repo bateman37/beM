@@ -10,8 +10,10 @@ export function loadRecords(out, identity, resolver, block) {
 const idx = { res: COLS.team.indexOf('resolver'), id: COLS.team.indexOf('identity') };
 // DET: se construyen sus tablas UNA vez (son las mismas para todas las identidades)
 export function detTables(out, block, caseIds) { const recs = loadRecords(out, 'DET', 'detailed', block).filter((r) => caseIds.includes(r.case_id)); return buildTables([], recs).tables; }
-export function evaluate({ out, identity, block, caseIds, det }) {
-  const simRecs = loadRecords(out, identity, 'sim', block).filter((r) => caseIds.includes(r.case_id)); const simT = buildTables(simRecs, []).tables;
+export function evaluate({ out, identity, block, caseIds, det }) { return evaluateRecords({ simRecs: loadRecords(out, identity, 'sim', block), identity, caseIds, det }); }
+// Evaluación pura desde registros ya cargados (la usa el comprobador offline sobre los registros de los ZIP finales: sin simular)
+export function evaluateRecords({ simRecs: allRecs, identity, caseIds, det }) {
+  const simRecs = allRecs.filter((r) => caseIds.includes(r.case_id)); const simT = buildTables(simRecs, []).tables;
   const simL = S.linesOf(simT, caseIds, 'sim', identity); const detL = S.linesOf(det, caseIds, 'detailed', 'DET'); const ci = (n) => COLS.team.indexOf(n);
   const simIds = new Set(simL.rows.map((r) => r[ci('case_id')])); const detIds = new Set(detL.rows.map((r) => r[ci('case_id')])); const common = new Set([...simIds].filter((id) => detIds.has(id)));
   const zc = COLS.zone.indexOf('case_id'); const zr = (tab, res, id) => tab.zone.filter((r) => r[COLS.zone.indexOf('resolver')] === res && r[COLS.zone.indexOf('identity')] === id && common.has(r[zc]));

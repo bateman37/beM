@@ -39,6 +39,7 @@ Directorio de los encargos a Claude Code. **El texto original de un prompt ejecu
 | SIM-MOTOR-03 | Tercera de cuatro entregas de SIM-MOTOR (incorpora 02B): cierre de C03-01…11, rendimiento exacto y campaña comparativa congelada con paquetes para ChatGPT | [`SIM-MOTOR-03-correcciones-02B-y-campana.md`](SIM-MOTOR-03-correcciones-02B-y-campana.md) | [recorrido manual](SIM-MOTOR-03-recorrido-manual.md) | ejecutado (ver ficha) |
 | SIM-MOTOR-04 | Cuarta y última entrega de SIM-MOTOR: correcciones C04-01…06, candidata numérica provisional por selección mecánica congelada, rendimiento exacto, reserva y auditoría final | [`SIM-MOTOR-04-correcciones-calibracion-y-cierre.md`](SIM-MOTOR-04-correcciones-calibracion-y-cierre.md) | [recorrido manual](SIM-MOTOR-04-recorrido-manual.md) | ejecutado (ver ficha) |
 | SIM-MOTOR-04C | Convergencia estadística con el detallado: rebote ofensivo, oportunidad interior y asistencias (lector de crédito, rama tras rebote, calidad y conversión de `inside`, búsqueda limitada R→I→P solo con CAL, campaña emparejada, evidencia para ChatGPT) | [`SIM-MOTOR-04C-convergencia-estadistica.md`](SIM-MOTOR-04C-convergencia-estadistica.md) | [recorrido manual](SIM-MOTOR-04C-recorrido-manual.md) | ejecutado (ver ficha) |
+| SIM-MOTOR-04E | Corrección de reloj y rebotes, referencia coherente y ajuste final acotado de SIM: frontera reloj/rebote/control del detallado, política común de crédito de rebote, referencia nueva, buscador determinista acotado y VAL04E nueva | [`SIM-MOTOR-04E-coherencia-y-convergencia.md`](SIM-MOTOR-04E-coherencia-y-convergencia.md) | [recorrido manual](SIM-MOTOR-04E-recorrido-manual.md) | ejecutado (ver ficha) |
 | SIM-MOTOR-04D | Aproximación del acta al detallado (±5 % en estadísticas y ±3 pp en acierto): atribución `putback`, instrumentos de rebote/AST/robo, seis filas neutrales, búsqueda conjunta de 36 vectores y VAL04D nueva | [`SIM-MOTOR-04D-acta-y-tiro.md`](SIM-MOTOR-04D-acta-y-tiro.md) | [recorrido manual](SIM-MOTOR-04D-recorrido-manual.md) | ejecutado (ver ficha) |
 | SIM-MOTOR-04B | Cierre de 04: fatiga de la rotación y cierre idempotente, T03 con cero esperado, libres/unidades, paquete reproducible, convergencia acotada (≤ 7 vectores solo con CAL), optimizaciones exactas y campaña acotada | [`SIM-MOTOR-04B-cierre-y-convergencia.md`](SIM-MOTOR-04B-cierre-y-convergencia.md) | [recorrido manual](SIM-MOTOR-04B-recorrido-manual.md) | ejecutado (ver ficha) |
 
@@ -403,6 +404,18 @@ Comprobación local de enlaces: hecha por Claude. Presentación en GitHub: no co
 | Rama / PR | `claude/busy-edison-b1fmnc` · PR contra `main`, abierta y sin fusionar (ver la respuesta final). |
 | Resultado breve | Ver [`../tecnico/sim-motor04.md`](../tecnico/sim-motor04.md). Candidata `C04-FINAL-PROVISIONAL` (provisional, no aceptación deportiva); objetivo de 5 s **no** cumplido. Paquetes fuera de Git en `out/sim-motor04/entrega-final/`. |
 | Pendientes | Recorrido manual de Dennis ([guía](SIM-MOTOR-04-recorrido-manual.md)); interpretación deportiva de ChatGPT y aceptación de Dennis. |
+
+### SIM-MOTOR-04E
+
+| Campo | Valor |
+|---|---|
+| Objetivo | Corregir la frontera reloj/rebote/control del detallado (excepción expresa a su congelación) y los créditos de rebote vinculados con una política común, congelar una referencia nueva sin recalibrar y ajustar SIM contra ella con un buscador determinista y acotado (14 coordenadas, hasta 4.824 SIM), con VAL04E nueva y paquetes verificables para ChatGPT. |
+| Medio de entrada del texto | Archivo `.md` adjunto (`beM-PROMPT-SIM-MOTOR-04E-COHERENCIA-Y-CONVERGENCIA.md`; prefijo añadido por la subida). |
+| Fecha real de ejecución | 2026-10-24 · intento 1 |
+| Revisión de partida | HEAD de 04D `a4f59fb` (PR #23 abierta; la serie continúa en la misma rama). |
+| Rama / PR | `claude/busy-edison-b1fmnc` · PR bateman37/beM#23 (sin fusionar). |
+| Resultado breve | Ver [`../tecnico/sim-motor04e.md`](../tecnico/sim-motor04e.md). 514 falsas expiraciones → 0; referencia 83–98 → 87–108; ninguna alternativa admisible: recomendada = S0 (alias), experimental aparte; VAL04E: M 4,38 (base) y 5,40 (experimental). Paquetes fuera de Git en `out/sim-motor04e/entrega-final/`. |
+| Pendientes | Recorrido manual de Dennis ([guía](SIM-MOTOR-04E-recorrido-manual.md)); aceptación deportiva y decisiones de §9 de la página técnica. |
 
 ### SIM-MOTOR-04D
 
