@@ -1,9 +1,9 @@
-// SIM-MOTOR-04B · medición de coste (§9). Una invocación = un proceso nuevo. IDÉNTICA para O04B-CONTROL y O04B-FINAL (se ejecuta desde la raíz de código de cada una; sus importaciones son relativas a ella).
-//   node scripts/sim04c/bench.mjs --mode=F   --identity=O04B-CONTROL [--overrides=<vector.json>] [--out=out/sim-motor04c/bench]   F0 (proceso nuevo) + F1 + F2 (workers reutilizados): 1.000 partidos REALES por pasada
-//   node scripts/sim04c/bench.mjs --mode=DAY --identity=O04B-CONTROL [--overrides=...] [--defer=on|off] [--out=...]                              jornada simultánea de 1.000 encuentros con barreras de 120 s (política automática activa)
-// Cronómetros separados (§12.1): (1) proceso nuevo → importación, datos, workers y preparación; (2) solicitud con cuatro workers preparados → 1.000 ESENCIALES individuales completos, validados y transportados al coordinador
-// (objetivo existente ≤ 5.000 ms); (3) serialización/persistencia y confirmación de estadísticas de mundo; (4) total desde proceso nuevo hasta datos utilizables por el mundo. Los partidos de calentamiento se declaran con su número y tiempo.
-// La agenda es la BENCH congelada: 132 cruces ordenados de los doce equipos naturales × 7 vueltas + 76 de una octava (1.000 casos), semilla = SHA-256 de «20261023|SIM04B|BENCH|C<nnnn>|<A>-<B>|BENCH» (32 bits). No se devuelven resultados almacenados.
+// SIM-MOTOR-04C · medición de coste (§10). Una invocación = un proceso nuevo, SIN trabajo simultáneo de otro benchmark; el mismo script se ejecuta desde la raíz de código de cada identidad (B04B y final).
+//   node scripts/sim04c/bench.mjs --mode=CLUBS --identity=B04B  [--overrides=<vector.json>] [--out=out/sim-motor04c/bench]   apertura directa: agenda A de 1.000 encuentros y después agenda B con el pool reutilizado
+//   node scripts/sim04c/bench.mjs --mode=DAY   --identity=FINAL [--overrides=...] [--defer=on]                               jornada simultánea de 1.000 encuentros (agenda A) con barreras comunes de 120 s y actas esenciales finales
+// Fixtures: 2.000 CLUBES instanciados con identidades independientes (doce arquetipos de plantilla y plan, ids de club y de jugador remapeados), un único partido por club en cada agenda (A y B tienen cruces y semillas distintos).
+// La materialización de fixtures y su validación se miden (fase propia). Cronómetros separados: proceso nuevo → fixtures → workers preparados; solicitud con workers preparados → 1.000 esenciales validados en el coordinador;
+// serialización y persistencia; total CONTINUO desde la apertura del proceso (sin turnos de espera de otro control). Los partidos de calentamiento se declaran con su número y tiempo. No se devuelven resultados almacenados.
 import { writeFileSync, mkdirSync, readFileSync, openSync, writeSync, fsyncSync, closeSync, statSync, rmSync } from 'node:fs';
 import { cpus, totalmem, release, platform, arch, availableParallelism } from 'node:os';
 import { execSync } from 'node:child_process';
@@ -11,6 +11,8 @@ import { createHash } from 'node:crypto';
 import v8 from 'node:v8';
 import { join } from 'node:path';
 import { loadData } from '../node-data.js';
+import { validateSimInput } from '../../src/sim/adapt.js';
+import { buildPairInput } from '../../src/sim/teams.js';
 import { makeContext, contextToJSON } from '../../src/sim/context.js';
 import { referenceTeamMap } from '../../src/sim/teams.js';
 import { SimPool } from '../../src/sim/pool.js';
@@ -24,59 +26,62 @@ const mode = arg('mode', 'F'); const identity = arg('identity', 'O04B'); const o
 const root = new URL('../..', import.meta.url).pathname; const overrides = arg('overrides') ? JSON.parse(readFileSync(arg('overrides'), 'utf8')).overrides ?? JSON.parse(readFileSync(arg('overrides'), 'utf8')) : [];
 const now = () => performance.now(); const rss = []; const sampler = setInterval(() => rss.push(process.memoryUsage().rss), 25); sampler.unref();
 const DEFER = arg('defer', 'off') === 'on'; const SEAL_GROUP = Number(arg('seal-group', 16)); // cierre diferido en grupos pequeños (optimización de 04): false para el control
-const OBJECTIVE_MS = 5000; const MASTER = 20261023; const TEAMS = Array.from({ length: 12 }, (_, i) => `EQ${String(i + 1).padStart(2, '0')}`); const r1 = (x) => Math.round(x * 10) / 10; const mib = (x) => Math.round((x / 2 ** 20) * 10) / 10;
+const OBJECTIVE_MS = 5000; const MASTER = 20261024; const ARCH = Array.from({ length: 12 }, (_, i) => `EQ${String(i + 1).padStart(2, '0')}`); const r1 = (x) => Math.round(x * 10) / 10; const mib = (x) => Math.round((x / 2 ** 20) * 10) / 10;
 const sh = (c) => { try { return execSync(c, { cwd: root }).toString().trim(); } catch { return null; } }; const sha = (x) => createHash('sha256').update(x).digest('hex');
-const seedOf = (key) => { const v = createHash('sha256').update(`${MASTER}|SIM04B|BENCH|${key}|BENCH`).digest().readUInt32BE(0); return v === 0 ? 1 : v; };
-function benchAgenda() { const x = []; for (const a of TEAMS) for (const b of TEAMS) if (a !== b) x.push([a, b]); const out = []; let n = 0; const push = (r, p) => { const [a, b] = x[p]; n += 1; const id = `SIM04B-B${String(n).padStart(4, '0')}`; out.push({ n, id, round: r + 1, a, b, seed: seedOf(`C${String(n).padStart(4, '0')}|${a}-${b}`) }); }; for (let r = 0; r < 7; r++) for (let p = 0; p < x.length; p++) push(r, p); for (let p = 0; p < 76; p++) push(7, p); return out; }
-const LIMIT = Number(arg('limit', 0)); // SOLO para pruebas de humo (se contabilizan aparte); la medición real no usa límite
-const agenda = benchAgenda().slice(0, LIMIT > 0 ? LIMIT : undefined); const agendaFp = sha(JSON.stringify(agenda.map((c) => [c.id, c.a, c.b, c.seed])));
-if (arg('write-agenda')) { writeFileSync(arg('write-agenda'), ['n,id,round,a,b,seed', ...agenda.map((c) => [c.n, c.id, c.round, c.a, c.b, c.seed].join(','))].join('\n') + '\n'); console.log(JSON.stringify({ agenda: arg('write-agenda'), cases: agenda.length, agendaFp })); process.exit(0); }
+const u32 = (key) => { const v = createHash('sha256').update(key, 'utf8').digest().readUInt32BE(0); return v === 0 ? 1 : v; };
+const N_CLUBS = 2000; const clubId = (i) => `K${String(i + 1).padStart(4, '0')}`; const archOf = (i) => ARCH[i % 12];
+// Fisher–Yates determinista (semilla por agenda): cada club aparece exactamente una vez por agenda; A y B emparejan distinto
+function shuffled(tag) { const a = Array.from({ length: N_CLUBS }, (_, i) => i); let c = 0; const rnd = () => u32(`${MASTER}|SIM04C|BENCH|${tag}|shuffle|${c++}`) / 4294967296; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function benchAgenda(tag) { const p = shuffled(tag); const out = []; for (let n = 0; n < N_CLUBS / 2; n++) { const a = clubId(p[2 * n]); const b = clubId(p[2 * n + 1]); const k = `${tag}|C${String(n + 1).padStart(4, '0')}|${a}-${b}`; out.push({ n: n + 1, id: `SIM04C-${tag}${String(n + 1).padStart(4, '0')}`, round: 1, a, b, seed: u32(`${MASTER}|SIM04C|BENCH|${k}`) }); } return out; }
+const LIMIT = Number(arg('limit', 0)); // LIMIT solo para pruebas de humo (se contabilizan aparte)
+const agendaOf = (tag) => benchAgenda(tag).slice(0, LIMIT > 0 ? LIMIT : undefined); const agendaFpOf = (ag) => sha(JSON.stringify(ag.map((c) => [c.id, c.a, c.b, c.seed])));
+// Clubes: copia de cada arquetipo con TODAS las referencias (plan, titulares, prioridad de director, objetivos, jugadores) remapeadas a la identidad del club; devuelve el mapa que reciben los workers.
+const remap = (team, id) => JSON.parse(JSON.stringify(team).split(team.id).join(id));
+function buildClubs(arch) { const clubs = {}; for (let i = 0; i < N_CLUBS; i++) { const a = arch[archOf(i)]; const t = remap(a, clubId(i)); t.source = { teamId: clubId(i), instance: { of: clubId(i) }, archetype: a.id }; clubs[clubId(i)] = t; } return clubs; }
 const env = { identity, node: process.version, platform: platform(), arch: arch(), kernel: release(), cpuModel: cpus()[0]?.model, logicalCpus: cpus().length, availableParallelism: availableParallelism(), ramMiB: Math.round(totalmem() / 2 ** 20), commit: sh('git rev-parse HEAD'), workingTreeDirty: (sh('git status --porcelain -- src data scripts') ?? '').length > 0, sim: SIM_VERSION, profile: SIM_PROFILE_ID, overrides, limit: LIMIT > 0 ? LIMIT : null, scriptSha256: sha(readFileSync(new URL(import.meta.url))), startedAt: new Date().toISOString() };
-const t0 = now(); const { profile, players } = loadData(); const tData = now(); const ctx = makeContext(profile, overrides.length ? overrides : null); const teams = referenceTeamMap(profile, players); const ctxJSON = contextToJSON(ctx); const tCtx = now();
-const WARM_PAIRS = [['EQ01', 'EQ02'], ['EQ03', 'EQ03'], ['EQ05', 'EQ09'], ['EQ10', 'EQ07'], ['EQ12', 'EQ04'], ['EQ08', 'EQ06']]; const WARM_N = Number(arg('warm', 12));
-const warm = Array.from({ length: WARM_N }, (_, i) => ({ n: -(i + 1), id: `WARM-${i + 1}`, a: WARM_PAIRS[i % 6][0], b: WARM_PAIRS[i % 6][1], seed: 11 + i }));
-const cases = () => agenda.map((c) => ({ ...c, essential: true }));
+const t0 = now(); const { profile, players } = loadData(); const tData = now(); const ctx = makeContext(profile, overrides.length ? overrides : null); const archetypes = referenceTeamMap(profile, players); const ctxJSON = contextToJSON(ctx); const tCtx = now();
+// materialización de fixtures: 2.000 clubes con identidades propias + construcción y VALIDACIÓN de las entradas de cada agenda (funciones válidas existentes); se mide como fase propia
+const clubs = buildClubs(archetypes); const tClubs = now(); const teams = clubs;
+const validateAgenda = (ag) => { let bad = 0; const ids = new Set(); for (const c of ag) { const inp = buildPairInput(clubs, c.a, c.b, { seed: c.seed, importance: 'ordinary' }); if (validateSimInput(inp, ctx.sp, ctx.T).length) bad++; for (const t of inp.teams) { ids.add(t.id); for (const p of t.players) ids.add(p.id); } } return { bad, identities: ids.size }; };
+const WARM_N = Number(arg('warm', 12)); const warm = Array.from({ length: WARM_N }, (_, i) => ({ n: -(i + 1), id: `WARM-${i + 1}`, a: clubId(2 * i), b: clubId(2 * i + 1), seed: 11 + i }));
+const casesOf = (ag) => ag.map((c) => ({ ...c, essential: true }));
 const pct = (a, p) => { const s = a.slice().sort((x, y) => x - y); return s[Math.min(s.length - 1, Math.floor(p * s.length))]; };
 
-async function pass(name, pool, fresh, startInfo, tProc0) {
-  const tReq = now(); const r = await pool.run(cases(), { chunk: 5 }); const tDone = now(); const res = r.results;
+async function pass(name, pool, fresh, startInfo, tProc0, agenda, fixtureInfo) {
+  const agendaFp = agendaFpOf(agenda); const tReq = now(); const r = await pool.run(casesOf(agenda), { chunk: 5 }); const tDone = now(); const res = r.results;
   // fase 3: serialización, persistencia (JSONL con fsync) y confirmación de estadísticas de mundo (registro idempotente en una copia de prueba)
   const tS0 = now(); const lines = res.map((x) => JSON.stringify({ id: x.id, fp: x.fp, ess: x.ess })); const bytes = lines.reduce((a, l) => a + Buffer.byteLength(l) + 1, 0); const tS1 = now();
   const file = join(outDir, `${identity}-${name}-essentials.jsonl`); const fd = openSync(file, 'w'); for (const l of lines) writeSync(fd, `${l}\n`); fsyncSync(fd); closeSync(fd); const tP1 = now();
   const led = new SeasonLedger(); let dup = 0; for (const x of res) if (x.status === 'finished') { const rr = led.record(x.ess, { season: 'B', competition: 'AG', round: 1, clubs: [x.a, x.b], model: 'sim', matchId: x.id, attemptId: 1 }); if (rr.duplicate) dup++; } const tW1 = now();
   const finished = res.filter((x) => x.status === 'finished'); const valid = res.filter((x) => x.valid); const lat = res.map((x) => x.ms.input + x.ms.gen + x.ms.build + x.ms.recon);
-  const rec = { run: name, workers: pool.size, process: fresh ? 'nuevo' : 'reutilizado', cases: res.length, agendaFingerprint: agendaFp,
+  const rec = { run: name, workers: pool.size, process: fresh ? 'nuevo' : 'reutilizado', cases: res.length, agendaFingerprint: agendaFp, fixtures: fixtureInfo,
     objective: { definition: 'solicitud de pool.run (workers preparados) → actas esenciales individuales de los 1.000 casos, validadas y en poder del coordinador', targetMs: OBJECTIVE_MS, measuredMs: r1(tDone - tReq), met: tDone - tReq <= OBJECTIVE_MS },
     phasesMs: { processStartToWorkersReady: fresh ? r1(startInfo.processToReady) : null, generateBuildValidateAndTransport: r1(tDone - tReq), serialize: r1(tS1 - tS0), persistFsync: r1(tP1 - tS1), worldAvailability: r1(tW1 - tP1), totalFromNewProcessToWorldData: fresh ? r1(tW1 - tProc0) : null, totalFromRequestToWorldData: r1(tW1 - tReq) },
     startup: startInfo, throughputPerSecond: r1(res.length / ((tDone - tReq) / 1000)), workerBusyMs: r.workerMs.map(r1), casesPerWorker: r.perWorkerCases,
     latencyMs: { mean: r1(lat.reduce((a, b) => a + b, 0) / lat.length), p50: r1(pct(lat, 0.5)), p95: r1(pct(lat, 0.95)), max: r1(Math.max(...lat)), method: 'percentil por rango inferior; latencia por caso dentro del worker (entrada+generación+construcción+conciliación)' },
     phaseMeanInWorkerMs: Object.fromEntries(['input', 'gen', 'build', 'recon'].map((k) => [k, Math.round((res.reduce((a, x) => a + x.ms[k], 0) / res.length) * 100) / 100])),
-    counts: { requested: cases().length, finished: finished.length, valid: valid.length, invalid: res.filter((x) => x.status === 'finished' && !x.valid).length, failed: res.length - finished.length, interrupted: 0, duplicatesOnFirstRecord: dup, overtimes: res.filter((x) => x.overtimes > 0).length },
+    counts: { requested: agenda.length, finished: finished.length, valid: valid.length, invalid: res.filter((x) => x.status === 'finished' && !x.valid).length, failed: res.length - finished.length, interrupted: 0, duplicatesOnFirstRecord: dup, overtimes: res.filter((x) => x.overtimes > 0).length },
     bytes: { essentialsJsonl: bytes, perMatch: Math.round(bytes / res.length), file: statSync(file).size, playersRowsTotal: res.reduce((a, x) => a + x.ess.box.players.length, 0) },
     rssMaxMiBSoFar: mib(Math.max(...rss)) };
   // identidad por caso: huella deportiva, huella de entrada y huella SHA-256 del esencial completo (para comparar CONTROL y FINAL caso a caso, FUERA de los cronómetros)
   rec.perCase = res.map((x) => ({ n: x.n, id: x.id, a: x.a, b: x.b, seed: x.seed, status: x.status, valid: x.valid, score: x.score, overtimes: x.overtimes, fp: x.fp, inputFp: x.inputFp, essSha: sha(JSON.stringify(x.ess)), draws: x.draws, events: x.events, controls: x.controls, failed: x.failedChecks }));
   rmSync(file, { force: true }); return rec;
 }
-const out = { mode, identity, env, agendaFingerprint: agendaFp, setupMs: { importsToStart: r1(t0 - t00), dataLoad: r1(tData - t0), contextAndTeams: r1(tCtx - tData) } };
-if (mode === 'F') {
+const out = { mode, identity, env, setupMs: { importsToStart: r1(t0 - t00), dataLoad: r1(tData - t0), contextAndTeams: r1(tCtx - tData) } };
+if (mode === 'CLUBS') {
+  // apertura directa: fixtures → workers preparados → agenda A (primera solicitud) → agenda B (pool reutilizado); total CONTINUO desde la apertura del proceso
+  const agA = agendaOf('A'); const agB = agendaOf('B'); const tF0 = now(); const vA = validateAgenda(agA); const vB = validateAgenda(agB); const tF1 = now();
+  const fixtureInfo = { clubs: N_CLUBS, archetypes: 12, matchesPerAgenda: agA.length, clubsPerAgenda: agA.length * 2, buildClubsMs: r1(tClubs - tCtx), validateInputsMs: r1(tF1 - tF0), validated: agA.length + agB.length, invalidInputs: vA.bad + vB.bad, distinctIdentitiesAgendaA: vA.identities, distinctIdentitiesAgendaB: vB.identities, note: 'los clubes y sus jugadores tienen identidades propias (ids remapeados); atributos y planes son los de los doce arquetipos, sin cambios' };
   const tS = now(); const pool = new SimPool({ workers: 4 }); const startMs = await pool.start(ctxJSON, ctx.sp.fingerprint, teams, warm); const tReady = now();
-  const si = { workersStartMs: r1(startMs), warmCases: WARM_N, warmMsMax: r1(Math.max(...pool.readyInfo.map((x) => x.warmMs))), warmMsPerWorker: pool.readyInfo.map((x) => r1(x.warmMs)), processToReady: tReady - t00, importsToStartMs: r1(t0 - t00), dataLoadMs: r1(tData - t0), contextMs: r1(tCtx - tData), poolStartAndWarmMs: r1(tReady - tS), note: 'el arranque y el calentamiento (12 partidos por worker, identificados) se declaran aparte; no forman parte de la agenda ni del cronómetro objetivo' };
-  out.passes = [await pass('F0', pool, true, si, t00)]; for (const c of ['F1', 'F2']) out.passes.push(await pass(c, pool, false, { workersStartMs: 0, warmCases: 0 }, t00));
-  const sameCase = (a, b) => a.perCase.every((x, i) => x.fp === b.perCase[i].fp && x.essSha === b.perCase[i].essSha); out.equality = { F0_F1_F2_perCase: out.passes.slice(1).every((p) => sameCase(p, out.passes[0])) };
+  const si = { workersStartMs: r1(startMs), warmCases: WARM_N, warmMsMax: r1(Math.max(...pool.readyInfo.map((x) => x.warmMs))), warmMsPerWorker: pool.readyInfo.map((x) => r1(x.warmMs)), processToReady: tReady - t00, importsToStartMs: r1(t0 - t00), dataLoadMs: r1(tData - t0), contextMs: r1(tCtx - tData), fixturesMs: r1(tF1 - tCtx), poolStartAndWarmMs: r1(tReady - tS), note: 'el arranque, el envío de 2.000 clubes a los workers y el calentamiento (12 partidos por worker, identificados) se declaran aparte; no forman parte de la agenda ni del cronómetro objetivo' };
+  out.passes = [await pass('A', pool, true, si, t00, agA, fixtureInfo), await pass('B', pool, false, { workersStartMs: 0, warmCases: 0 }, t00, agB, fixtureInfo)];
+  out.continuous = { processStartToAgendaAWorldDataMs: out.passes[0].phasesMs.totalFromNewProcessToWorldData, processStartToAgendaBWorldDataMs: r1(now() - t00), note: 'apertura continua (proceso nuevo → fixtures → workers → agenda A → agenda B) sin espera de otro control; se informa además del objetivo de 5 s, que se mide con workers preparados' };
   await pool.close(); out.memory = { rssMaxMiB: mib(Math.max(...rss)), note: 'RSS del PROCESO (los workers son hilos del mismo proceso; no se suma por hilo); muestreo cada 25 ms', samples: rss.length };
-  out.verdict = { objectiveMs: OBJECTIVE_MS, passes: out.passes.map((p) => ({ run: p.run, ms: p.objective.measuredMs, met: p.objective.met })), note: 'tres pasadas son repeticiones de los mismos 1.000 casos, no 3.000 observaciones deportivas independientes' };
-  writeFileSync(join(outDir, `${identity}-F.json`), JSON.stringify(out, null, 1)); const slim = { ...out, passes: out.passes.map(({ perCase, ...r }) => r) };
-  console.log(JSON.stringify({ identity, passes: slim.passes.map((p) => ({ run: p.run, ms: p.objective.measuredMs, met: p.objective.met, valid: p.counts.valid, workerBusy: p.workerBusyMs, phases: p.phasesMs, inWorker: p.phaseMeanInWorkerMs, bytesPerMatch: p.bytes.perMatch })), equality: out.equality, memory: out.memory }, null, 1));
-} else if (mode === 'SERVE') {
-  // Proceso PREPARADO que ejecuta pasadas bajo demanda (stdin: `PASS <nombre>` / `EXIT`); lo orquesta `bench-alternate.mjs` para alternar versiones con UN solo pool trabajando cada vez. F0 = primera pasada de este proceso.
-  const tS = now(); const pool = new SimPool({ workers: 4 }); const startMs = await pool.start(ctxJSON, ctx.sp.fingerprint, teams, warm); const tReady = now();
-  const si = { workersStartMs: r1(startMs), warmCases: WARM_N, warmMsMax: r1(Math.max(...pool.readyInfo.map((x) => x.warmMs))), warmMsPerWorker: pool.readyInfo.map((x) => r1(x.warmMs)), processToReady: tReady - t00, importsToStartMs: r1(t0 - t00), dataLoadMs: r1(tData - t0), contextMs: r1(tCtx - tData), poolStartAndWarmMs: r1(tReady - tS), warmAgendaNote: 'calentamiento declarado: partidos de otra serie de semillas por trabajador, fuera de la agenda y de los cronómetros de pasada' };
-  process.stdout.write(`@@READY@@ ${JSON.stringify({ identity, env, setupMs: { importsToStart: r1(t0 - t00), dataLoad: r1(tData - t0), contextAndTeams: r1(tCtx - tData) }, startup: si, runtime: { gcMode: pool.gcMode, v8Flags: arg('v8-flags') } })}\n`);
-  const rl = (await import('node:readline')).createInterface({ input: process.stdin }); let first = true;
-  for await (const line of rl) { const [cmd, name] = line.trim().split(' '); if (cmd === 'PASS') { const rec = await pass(name, pool, first, first ? si : { workersStartMs: 0, warmCases: 0 }, t00); first = false; process.stdout.write(`@@RESULT@@ ${JSON.stringify(rec)}\n`); } else if (cmd === 'EXIT') break; }
-  await pool.close(); process.stdout.write(`@@END@@ ${JSON.stringify({ rssMaxMiB: mib(Math.max(...rss)), samples: rss.length, note: 'RSS del PROCESO (los workers son hilos del mismo proceso), muestreo cada 25 ms; incluye los periodos de espera entre pasadas' })}\n`);
+  out.verdict = { objectiveMs: OBJECTIVE_MS, passes: out.passes.map((p) => ({ run: p.run, ms: p.objective.measuredMs, met: p.objective.met })), note: 'dos agendas distintas de 1.000 partidos (A: primera solicitud tras apertura; B: pool reutilizado); no son repeticiones de los mismos casos' };
+  writeFileSync(join(outDir, `${identity}-CLUBS.json`), JSON.stringify(out, null, 1));
+  console.log(JSON.stringify({ identity, passes: out.passes.map((p) => ({ run: p.run, ms: p.objective.measuredMs, met: p.objective.met, valid: p.counts.valid, workerBusy: p.workerBusyMs, phases: p.phasesMs, inWorker: p.phaseMeanInWorkerMs, bytesPerMatch: p.bytes.perMatch })), fixtures: fixtureInfo, startup: si, memory: out.memory }, null, 1));
 } else if (mode === 'DAY') {
+  const agenda = agendaOf('A'); const fx0 = now(); const vD = validateAgenda(agenda); const fx1 = now(); out.fixtures = { clubs: N_CLUBS, matches: agenda.length, buildClubsMs: r1(tClubs - tCtx), validateInputsMs: r1(fx1 - fx0), invalidInputs: vD.bad, distinctIdentities: vD.identities, agendaFingerprint: agendaFpOf(agenda) };
   // jornada simultánea: 1.000 encuentros al mismo instante virtual; barreras comunes cada 120 s; política pequeña del entrenador activa; pool de cuatro workers; sin tarjetas ni mil hilos
   const pool = new MatchdayPool({ workers: 4 }); const startMs = await pool.start(ctxJSON, teams); const tAdd0 = now();
   await pool.add(agenda.map((c) => ({ id: c.id, start: 0, attemptId: 1, spec: { a: c.a, b: c.b, seed: c.seed, importance: 'ordinary' } })), { groupSize: 25 }); const addMs = now() - tAdd0;

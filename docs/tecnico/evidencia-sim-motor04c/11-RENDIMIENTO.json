@@ -1,0 +1,615 @@
+{
+ "schema": "beM-sim04c-performance/1",
+ "note": "mediciones reales de procesos independientes y secuenciales (sin trabajo simultáneo); la carga son 2.000 clubes con identidades propias, no doce identidades reutilizadas: no es comparable con el benchmark de 04B ni extrapolable a otra máquina",
+ "machine": {
+  "logicalCpus": 4,
+  "availableParallelism": 4,
+  "cpuModel": "Intel(R) Xeon(R) Processor @ 2.10GHz",
+  "ramMiB": 16091,
+  "node": "v22.22.0",
+  "platform": "linux",
+  "kernel": "6.18.44-fc-v153",
+  "workers": 4,
+  "runtimeFlags": "configuración de runtime de los workers existente (sin cambios)"
+ },
+ "fixtures": {
+  "clubs": 2000,
+  "archetypes": 12,
+  "perAgenda": {
+   "clubs": 2000,
+   "archetypes": 12,
+   "matchesPerAgenda": 1000,
+   "clubsPerAgenda": 2000,
+   "buildClubsMs": 272.6,
+   "validateInputsMs": 407.4,
+   "validated": 2000,
+   "invalidInputs": 0,
+   "distinctIdentitiesAgendaA": 26000,
+   "distinctIdentitiesAgendaB": 26000,
+   "note": "los clubes y sus jugadores tienen identidades propias (ids remapeados); atributos y planes son los de los doce arquetipos, sin cambios"
+  },
+  "dayAgendaA": {
+   "clubs": 2000,
+   "matches": 1000,
+   "buildClubsMs": 276.1,
+   "validateInputsMs": 198.1,
+   "invalidInputs": 0,
+   "distinctIdentities": 26000,
+   "agendaFingerprint": "9f6bc75d9741bee9e5ada07dd3b16dce4edf31c17716b616beda9eb87a0b4e4d"
+  },
+  "note": "ids de club y jugador remapeados; atributos y planes de los doce arquetipos sin cambios; un partido por club y agenda; A y B emparejan y siembran distinto"
+ },
+ "warmup": {
+  "casesPerWorker": 12,
+  "note": "calentamiento declarado (partidos de otra serie de semillas por worker), fuera de la agenda; su tiempo está en startup"
+ },
+ "B04B": {
+  "batchA": {
+   "run": "A",
+   "workers": 4,
+   "process": "nuevo",
+   "cases": 1000,
+   "agendaFingerprint": "9f6bc75d9741bee9e5ada07dd3b16dce4edf31c17716b616beda9eb87a0b4e4d",
+   "fixtures": {
+    "clubs": 2000,
+    "archetypes": 12,
+    "matchesPerAgenda": 1000,
+    "clubsPerAgenda": 2000,
+    "buildClubsMs": 278.4,
+    "validateInputsMs": 362.6,
+    "validated": 2000,
+    "invalidInputs": 0,
+    "distinctIdentitiesAgendaA": 26000,
+    "distinctIdentitiesAgendaB": 26000,
+    "note": "los clubes y sus jugadores tienen identidades propias (ids remapeados); atributos y planes son los de los doce arquetipos, sin cambios"
+   },
+   "objective": {
+    "definition": "solicitud de pool.run (workers preparados) → actas esenciales individuales de los 1.000 casos, validadas y en poder del coordinador",
+    "targetMs": 5000,
+    "measuredMs": 8685,
+    "met": false
+   },
+   "phasesMs": {
+    "processStartToWorkersReady": 2719.3,
+    "generateBuildValidateAndTransport": 8685,
+    "serialize": 163.1,
+    "persistFsync": 68.4,
+    "worldAvailability": 252.6,
+    "totalFromNewProcessToWorldData": 11889.6,
+    "totalFromRequestToWorldData": 9169.2
+   },
+   "startup": {
+    "workersStartMs": 1956.7,
+    "warmCases": 12,
+    "warmMsMax": 895.3,
+    "warmMsPerWorker": [
+     895.3,
+     835.1,
+     805.9,
+     653.8
+    ],
+    "processToReady": 2719.3064019999997,
+    "importsToStartMs": 18.8,
+    "dataLoadMs": 17,
+    "contextMs": 59.1,
+    "fixturesMs": 667.2,
+    "poolStartAndWarmMs": 1957.2,
+    "note": "el arranque, el envío de 2.000 clubes a los workers y el calentamiento (12 partidos por worker, identificados) se declaran aparte; no forman parte de la agenda ni del cronómetro objetivo"
+   },
+   "throughputPerSecond": 115.1,
+   "workerBusyMs": [
+    8358.1,
+    8345.8,
+    8378.8,
+    8309.5
+   ],
+   "casesPerWorker": [
+    230,
+    260,
+    245,
+    265
+   ],
+   "latencyMs": {
+    "mean": 32.9,
+    "p50": 31.5,
+    "p95": 60.6,
+    "max": 111.7,
+    "method": "percentil por rango inferior; latencia por caso dentro del worker (entrada+generación+construcción+conciliación)"
+   },
+   "phaseMeanInWorkerMs": {
+    "input": 0.39,
+    "gen": 27.07,
+    "build": 3.49,
+    "recon": 1.95
+   },
+   "counts": {
+    "requested": 1000,
+    "finished": 1000,
+    "valid": 1000,
+    "invalid": 0,
+    "failed": 0,
+    "interrupted": 0,
+    "duplicatesOnFirstRecord": 0,
+    "overtimes": 25
+   },
+   "bytes": {
+    "essentialsJsonl": 22494272,
+    "perMatch": 22494,
+    "file": 22494272,
+    "playersRowsTotal": 18672
+   },
+   "rssMaxMiBSoFar": 1142.3
+  },
+  "batchB": {
+   "run": "B",
+   "workers": 4,
+   "process": "reutilizado",
+   "cases": 1000,
+   "agendaFingerprint": "63e1e4958c8c0e38cd470bca1ee2e660506478b31e1520f544552a63d0e96634",
+   "fixtures": {
+    "clubs": 2000,
+    "archetypes": 12,
+    "matchesPerAgenda": 1000,
+    "clubsPerAgenda": 2000,
+    "buildClubsMs": 278.4,
+    "validateInputsMs": 362.6,
+    "validated": 2000,
+    "invalidInputs": 0,
+    "distinctIdentitiesAgendaA": 26000,
+    "distinctIdentitiesAgendaB": 26000,
+    "note": "los clubes y sus jugadores tienen identidades propias (ids remapeados); atributos y planes son los de los doce arquetipos, sin cambios"
+   },
+   "objective": {
+    "definition": "solicitud de pool.run (workers preparados) → actas esenciales individuales de los 1.000 casos, validadas y en poder del coordinador",
+    "targetMs": 5000,
+    "measuredMs": 5270.8,
+    "met": false
+   },
+   "phasesMs": {
+    "processStartToWorkersReady": null,
+    "generateBuildValidateAndTransport": 5270.8,
+    "serialize": 123.5,
+    "persistFsync": 65.9,
+    "worldAvailability": 265.2,
+    "totalFromNewProcessToWorldData": null,
+    "totalFromRequestToWorldData": 5725.5
+   },
+   "startup": {
+    "workersStartMs": 0,
+    "warmCases": 0
+   },
+   "throughputPerSecond": 189.7,
+   "workerBusyMs": [
+    4962.1,
+    5032.2,
+    5043.7,
+    5035.3
+   ],
+   "casesPerWorker": [
+    250,
+    235,
+    265,
+    250
+   ],
+   "latencyMs": {
+    "mean": 19.7,
+    "p50": 16.9,
+    "p95": 33.7,
+    "max": 84.3,
+    "method": "percentil por rango inferior; latencia por caso dentro del worker (entrada+generación+construcción+conciliación)"
+   },
+   "phaseMeanInWorkerMs": {
+    "input": 0.31,
+    "gen": 16.34,
+    "build": 2.17,
+    "recon": 0.93
+   },
+   "counts": {
+    "requested": 1000,
+    "finished": 1000,
+    "valid": 1000,
+    "invalid": 0,
+    "failed": 0,
+    "interrupted": 0,
+    "duplicatesOnFirstRecord": 0,
+    "overtimes": 25
+   },
+   "bytes": {
+    "essentialsJsonl": 22499798,
+    "perMatch": 22500,
+    "file": 22499798,
+    "playersRowsTotal": 18661
+   },
+   "rssMaxMiBSoFar": 1214
+  },
+  "startup": {
+   "workersStartMs": 1956.7,
+   "warmCases": 12,
+   "warmMsMax": 895.3,
+   "warmMsPerWorker": [
+    895.3,
+    835.1,
+    805.9,
+    653.8
+   ],
+   "processToReady": 2719.3064019999997,
+   "importsToStartMs": 18.8,
+   "dataLoadMs": 17,
+   "contextMs": 59.1,
+   "fixturesMs": 667.2,
+   "poolStartAndWarmMs": 1957.2,
+   "note": "el arranque, el envío de 2.000 clubes a los workers y el calentamiento (12 partidos por worker, identificados) se declaran aparte; no forman parte de la agenda ni del cronómetro objetivo"
+  },
+  "continuous": {
+   "processStartToAgendaAWorldDataMs": 11889.6,
+   "processStartToAgendaBWorldDataMs": 17907.6,
+   "note": "apertura continua (proceso nuevo → fixtures → workers → agenda A → agenda B) sin espera de otro control; se informa además del objetivo de 5 s, que se mide con workers preparados"
+  },
+  "memory": {
+   "rssMaxMiB": 1214,
+   "note": "RSS del PROCESO (los workers son hilos del mismo proceso; no se suma por hilo); muestreo cada 25 ms",
+   "samples": 575
+  }
+ },
+ "FINAL": {
+  "batchA": {
+   "run": "A",
+   "workers": 4,
+   "process": "nuevo",
+   "cases": 1000,
+   "agendaFingerprint": "9f6bc75d9741bee9e5ada07dd3b16dce4edf31c17716b616beda9eb87a0b4e4d",
+   "fixtures": {
+    "clubs": 2000,
+    "archetypes": 12,
+    "matchesPerAgenda": 1000,
+    "clubsPerAgenda": 2000,
+    "buildClubsMs": 272.6,
+    "validateInputsMs": 407.4,
+    "validated": 2000,
+    "invalidInputs": 0,
+    "distinctIdentitiesAgendaA": 26000,
+    "distinctIdentitiesAgendaB": 26000,
+    "note": "los clubes y sus jugadores tienen identidades propias (ids remapeados); atributos y planes son los de los doce arquetipos, sin cambios"
+   },
+   "objective": {
+    "definition": "solicitud de pool.run (workers preparados) → actas esenciales individuales de los 1.000 casos, validadas y en poder del coordinador",
+    "targetMs": 5000,
+    "measuredMs": 9536.5,
+    "met": false
+   },
+   "phasesMs": {
+    "processStartToWorkersReady": 2941.5,
+    "generateBuildValidateAndTransport": 9536.5,
+    "serialize": 137.9,
+    "persistFsync": 66.5,
+    "worldAvailability": 252,
+    "totalFromNewProcessToWorldData": 12935.4,
+    "totalFromRequestToWorldData": 9992.8
+   },
+   "startup": {
+    "workersStartMs": 2141.2,
+    "warmCases": 12,
+    "warmMsMax": 945.7,
+    "warmMsPerWorker": [
+     888.3,
+     945.7,
+     923.9,
+     820.3
+    ],
+    "processToReady": 2941.539972,
+    "importsToStartMs": 15.3,
+    "dataLoadMs": 16.8,
+    "contextMs": 61.1,
+    "fixturesMs": 706.4,
+    "poolStartAndWarmMs": 2142,
+    "note": "el arranque, el envío de 2.000 clubes a los workers y el calentamiento (12 partidos por worker, identificados) se declaran aparte; no forman parte de la agenda ni del cronómetro objetivo"
+   },
+   "throughputPerSecond": 104.9,
+   "workerBusyMs": [
+    9219.4,
+    9271.4,
+    9176.2,
+    9160.6
+   ],
+   "casesPerWorker": [
+    255,
+    260,
+    235,
+    250
+   ],
+   "latencyMs": {
+    "mean": 36.4,
+    "p50": 34.1,
+    "p95": 70.5,
+    "max": 125.8,
+    "method": "percentil por rango inferior; latencia por caso dentro del worker (entrada+generación+construcción+conciliación)"
+   },
+   "phaseMeanInWorkerMs": {
+    "input": 0.42,
+    "gen": 30.16,
+    "build": 3.68,
+    "recon": 2.16
+   },
+   "counts": {
+    "requested": 1000,
+    "finished": 1000,
+    "valid": 1000,
+    "invalid": 0,
+    "failed": 0,
+    "interrupted": 0,
+    "duplicatesOnFirstRecord": 0,
+    "overtimes": 22
+   },
+   "bytes": {
+    "essentialsJsonl": 26009416,
+    "perMatch": 26009,
+    "file": 26009416,
+    "playersRowsTotal": 18655
+   },
+   "rssMaxMiBSoFar": 1176.1
+  },
+  "batchB": {
+   "run": "B",
+   "workers": 4,
+   "process": "reutilizado",
+   "cases": 1000,
+   "agendaFingerprint": "63e1e4958c8c0e38cd470bca1ee2e660506478b31e1520f544552a63d0e96634",
+   "fixtures": {
+    "clubs": 2000,
+    "archetypes": 12,
+    "matchesPerAgenda": 1000,
+    "clubsPerAgenda": 2000,
+    "buildClubsMs": 272.6,
+    "validateInputsMs": 407.4,
+    "validated": 2000,
+    "invalidInputs": 0,
+    "distinctIdentitiesAgendaA": 26000,
+    "distinctIdentitiesAgendaB": 26000,
+    "note": "los clubes y sus jugadores tienen identidades propias (ids remapeados); atributos y planes son los de los doce arquetipos, sin cambios"
+   },
+   "objective": {
+    "definition": "solicitud de pool.run (workers preparados) → actas esenciales individuales de los 1.000 casos, validadas y en poder del coordinador",
+    "targetMs": 5000,
+    "measuredMs": 5430.4,
+    "met": false
+   },
+   "phasesMs": {
+    "processStartToWorkersReady": null,
+    "generateBuildValidateAndTransport": 5430.4,
+    "serialize": 128.7,
+    "persistFsync": 62.5,
+    "worldAvailability": 206.9,
+    "totalFromNewProcessToWorldData": null,
+    "totalFromRequestToWorldData": 5828.5
+   },
+   "startup": {
+    "workersStartMs": 0,
+    "warmCases": 0
+   },
+   "throughputPerSecond": 184.1,
+   "workerBusyMs": [
+    5161.3,
+    5230.9,
+    5125.1,
+    5128.6
+   ],
+   "casesPerWorker": [
+    255,
+    240,
+    245,
+    260
+   ],
+   "latencyMs": {
+    "mean": 20.4,
+    "p50": 17.3,
+    "p95": 36.2,
+    "max": 62.4,
+    "method": "percentil por rango inferior; latencia por caso dentro del worker (entrada+generación+construcción+conciliación)"
+   },
+   "phaseMeanInWorkerMs": {
+    "input": 0.28,
+    "gen": 16.88,
+    "build": 2.16,
+    "recon": 1.05
+   },
+   "counts": {
+    "requested": 1000,
+    "finished": 1000,
+    "valid": 1000,
+    "invalid": 0,
+    "failed": 0,
+    "interrupted": 0,
+    "duplicatesOnFirstRecord": 0,
+    "overtimes": 16
+   },
+   "bytes": {
+    "essentialsJsonl": 26002315,
+    "perMatch": 26002,
+    "file": 26002315,
+    "playersRowsTotal": 18645
+   },
+   "rssMaxMiBSoFar": 1240.7
+  },
+  "startup": {
+   "workersStartMs": 2141.2,
+   "warmCases": 12,
+   "warmMsMax": 945.7,
+   "warmMsPerWorker": [
+    888.3,
+    945.7,
+    923.9,
+    820.3
+   ],
+   "processToReady": 2941.539972,
+   "importsToStartMs": 15.3,
+   "dataLoadMs": 16.8,
+   "contextMs": 61.1,
+   "fixturesMs": 706.4,
+   "poolStartAndWarmMs": 2142,
+   "note": "el arranque, el envío de 2.000 clubes a los workers y el calentamiento (12 partidos por worker, identificados) se declaran aparte; no forman parte de la agenda ni del cronómetro objetivo"
+  },
+  "continuous": {
+   "processStartToAgendaAWorldDataMs": 12935.4,
+   "processStartToAgendaBWorldDataMs": 19093.6,
+   "note": "apertura continua (proceso nuevo → fixtures → workers → agenda A → agenda B) sin espera de otro control; se informa además del objetivo de 5 s, que se mide con workers preparados"
+  },
+  "memory": {
+   "rssMaxMiB": 1240.7,
+   "note": "RSS del PROCESO (los workers son hilos del mismo proceso; no se suma por hilo); muestreo cada 25 ms",
+   "samples": 625
+  }
+ },
+ "day": {
+  "identity": "FINAL",
+  "fixtures": {
+   "clubs": 2000,
+   "matches": 1000,
+   "buildClubsMs": 276.1,
+   "validateInputsMs": 198.1,
+   "invalidInputs": 0,
+   "distinctIdentities": 26000,
+   "agendaFingerprint": "9f6bc75d9741bee9e5ada07dd3b16dce4edf31c17716b616beda9eb87a0b4e4d"
+  },
+  "summary": {
+   "fixtures": 1000,
+   "workers": 4,
+   "barrierSeconds": 120,
+   "startMs": 1036,
+   "addMs": 439.6,
+   "coordinatedRunMs": 15937.8,
+   "essentialsTransportMs": 502.6,
+   "worldAvailabilityMs": 709.6,
+   "advanceMsTotal": 12104.2,
+   "reviewMsTotal": 1028.3,
+   "coordinatorQueryMsMax": 6.6,
+   "essentialsBytes": 25979417,
+   "valid": 1000,
+   "finished": 1000,
+   "requested": 1000,
+   "decisionsTotal": 6004,
+   "latencies": {
+    "publicationMs": {
+     "max": 1611.8,
+     "median": 524.7,
+     "p95": 1338.9,
+     "definition": "desde el inicio de la barrera hasta marcador y clasificación publicados (advance + review + consulta/clasificación del coordinador)"
+    },
+    "completeMs": {
+     "max": 4206.6,
+     "median": 529.3,
+     "definition": "desde el inicio de la barrera hasta terminar TODO el trabajo obligatorio de esa barrera (incluye el sellado de actas con cierre diferido)"
+    },
+    "objectivePublicationMs": 1000
+   },
+   "barrierUpdateMs": {
+    "max": 1611.8,
+    "median": 524.7,
+    "p95": 1338.9,
+    "p99": 1611.8,
+    "n": 25,
+    "method": "percentil por rango inferior sobre las barreras de la jornada; actualización = advance + review + consulta/clasificación del coordinador (con cierre diferido, el sellado de esenciales se mide aparte en withSeal)",
+    "withSeal": {
+     "max": 4206.6,
+     "median": 529.2,
+     "note": "actualización + sellado de esenciales (misma CPU total; con cierre diferido el marcador no espera al sellado)"
+    },
+    "deferredClosure": true,
+    "sealGroup": 16
+   },
+   "closureFrontier": {
+    "barriersWithMoreThan100Finishing": [
+     {
+      "T": 2400,
+      "newlyFinished": 978,
+      "advanceMs": 1606.8,
+      "reviewMs": 1.2,
+      "queryMs": 3.8,
+      "sealMs": 2594.8,
+      "sealCpuMs": {
+       "buildEssential": 4876.3,
+       "reconcile": 3328.1,
+       "assembleEssential": 561
+      },
+      "cpuMs": {
+       "generate": 5632.9,
+       "buildEssential": 0,
+       "reconcile": 0,
+       "assembleEssential": 0,
+       "progress": 24.2
+      },
+      "criticalWorkerMs": {
+       "generate": 1597.9,
+       "buildEssential": 0,
+       "reconcile": 0,
+       "assembleEssential": 0
+      }
+     }
+    ],
+    "updateMsMaxOfRest": 1338.9,
+    "restBarriers": 24,
+    "note": "frontera de cierre = barrera(s) donde terminan la mayoría de encuentros; el tiempo distribuido en tareas pequeñas sigue sumando CPU (cpuMs) aunque la pausa visible (criticalWorkerMs) sea menor"
+   },
+   "msgBytesTotal": 4932362,
+   "reused": "nada: se generan de nuevo los 1.000 encuentros dentro del avance coordinado; no se reutilizan resultados de otras pasadas",
+   "notes": "el tiempo de visionado del sénior no es tiempo de CPU del mundo"
+  },
+  "memory": {
+   "rssMaxMiB": 1540.5,
+   "samples": 658,
+   "method": "RSS del proceso (workers = hilos), muestreo cada 25 ms más una lectura por barrera"
+  }
+ },
+ "objectives": {
+  "batchFirstRequestB04B": {
+   "measuredMs": 8685,
+   "targetMs": 5000,
+   "distanceMs": 3685,
+   "met": false
+  },
+  "batchReusedB04B": {
+   "measuredMs": 5270.8,
+   "targetMs": 5000,
+   "distanceMs": 270.8,
+   "met": false
+  },
+  "batchFirstRequestFinal": {
+   "measuredMs": 9536.5,
+   "targetMs": 5000,
+   "distanceMs": 4536.5,
+   "met": false
+  },
+  "batchReusedFinal": {
+   "measuredMs": 5430.4,
+   "targetMs": 5000,
+   "distanceMs": 430.4,
+   "met": false
+  },
+  "publicationMaxMs": {
+   "measuredMs": 1611.8,
+   "targetMs": 1000,
+   "distanceMs": 611.8,
+   "met": false
+  },
+  "rssDayMiB": {
+   "measuredMs": 1540.5,
+   "targetMs": 1536,
+   "distanceMs": 4.5,
+   "met": false
+  },
+  "note": "objetivos: 5 s por lote de mil con cuatro workers preparados, 1 s de publicación máxima y 1,5 GiB RSS en la jornada; NINGUNO se redefine como cumplido en caliente; distancia = medido − objetivo"
+ },
+ "openContinuous": {
+  "B04B": {
+   "processStartToAgendaAWorldDataMs": 11889.6,
+   "processStartToAgendaBWorldDataMs": 17907.6,
+   "note": "apertura continua (proceso nuevo → fixtures → workers → agenda A → agenda B) sin espera de otro control; se informa además del objetivo de 5 s, que se mide con workers preparados"
+  },
+  "FINAL": {
+   "processStartToAgendaAWorldDataMs": 12935.4,
+   "processStartToAgendaBWorldDataMs": 19093.6,
+   "note": "apertura continua (proceso nuevo → fixtures → workers → agenda A → agenda B) sin espera de otro control; se informa además del objetivo de 5 s, que se mide con workers preparados"
+  },
+  "note": "apertura continua = proceso nuevo → fixtures → workers → agenda A (→ agenda B), sin esperas de orquestación; se informa además del objetivo de fase"
+ },
+ "loadDifference": "La diferencia con el benchmark de 04B (F1/F2 4,5 s, F0 7,95 s, publicación 1,36 s, RSS 1,29 GiB) procede sobre todo de la carga: 2.000 clubes y 26000 identidades distintas (equipos y jugadores) en lugar de doce reutilizadas. El control B04B con los mismos fixtures cuesta 8685 / 5270.8 ms (A/B) frente a 9536.5 / 5430.4 ms con 04C: la candidata añade 9.8 % (A) y 3.0 % (B); no se atribuye a una regresión de las filas nuevas sin una medición aislada, que no se hizo."
+}

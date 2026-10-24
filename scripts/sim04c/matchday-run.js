@@ -1,4 +1,4 @@
-// SIM-MOTOR-04B · jornada mixta (§11.2): cuatro SIM y un detallado (uno con inicio desplazado: en la barrera 6 hay un encuentro terminado y otro activo). Tres recorridos equivalentes con la candidata final:
+// SIM-MOTOR-04C · jornada mixta (§11.2): cuatro SIM y un detallado (uno con inicio desplazado: en la barrera 6 hay un encuentro terminado y otro activo). Tres recorridos equivalentes con la candidata final:
 //   D cierre DIFERIDO: se publica toda la jornada con las actas pendientes, se consulta el esencial ANTES de sellar, se guarda con sellado pendiente, se recarga de verdad y se sella cediendo el control (el resultado es el de A).
 //   A completo por barreras comunes · B pausas/consultas y avance por cuartos con el mismo calendario de revisión · C guardar cuando ya terminó uno, recargar de verdad (JSON) y continuar.
 // En el mismo instante (T=600) se envía una orden manual al equipo AUTORIZADO y otra a un equipo sin autoridad (rechazo tipado). Se comprueban publicaciones, resultados, noticias, decisiones y tablas.
@@ -12,9 +12,9 @@ import { canonical } from '../../src/sim/fp.js';
 import * as L from './lib.js';
 
 const root = new URL('../..', import.meta.url).pathname; const OUT = join(root, 'out/sim-motor04c/matchday'); mkdirSync(OUT, { recursive: true });
-const env = L.loadEnv(); const vec = JSON.parse(readFileSync(join(root, 'out/sim-motor04c/vectors/C04B-FINAL-PROVISIONAL.json'), 'utf8')).overrides; const ctx = makeContext(env.profile, vec); const profile = env.profile;
+const env = L.loadEnv(); const vec = JSON.parse(readFileSync(join(root, 'out/sim-motor04c/vectors/C04C-FINAL-PROVISIONAL.json'), 'utf8')).overrides; const ctx = makeContext(env.profile, vec); const profile = env.profile;
 const sc = buildMixedScenario(profile, env.players); const deep = (x) => JSON.parse(JSON.stringify(x));
-const make = (over = {}) => new Matchday({ id: 'J-MIXTA-04B', fixtures: sc.fixtures, standings0: over.standings0 ?? sc.standings0, objectives: sc.objectives, ctx, profile, ...over });
+const make = (over = {}) => new Matchday({ id: 'J-MIXTA-04C', fixtures: sc.fixtures, standings0: over.standings0 ?? sc.standings0, objectives: sc.objectives, ctx, profile, ...over });
 const ORDER_AT = 600; const orders = (md) => ({ accepted: md.order('F2', { team: 0, plan: { styles: { organizedPace: 4 } } }), rejected: md.order('F2', { team: 1, plan: { styles: { organizedPace: 2 } } }) });
 const digest = (md) => ({ log: canonical(md.log), results: Object.fromEntries(Object.entries(md.results).map(([k, r]) => [k, [r.model, r.valid, r.essential.identity.sportFingerprint ?? r.essential.identity.trajectory ?? null, r.essential.score?.final ?? null]])), table: Object.fromEntries(md.competitions().map((c) => [c, md.table(c, 'final').rows.map((r) => [r.team, r.w, r.l, r.pf, r.pa, r.rank])])), decisions: md.decisions.map((d) => [d.barrier, d.fixture, d.team, d.reason, d.from, d.to]), contexts: Object.fromEntries([...md.shard.matches.entries()].filter(([id, e]) => e.m && !md.results[id]).map(([id, e]) => [id, e.m.contextLog])) });
 const ret = { schema: 'beM-sim04c-matchday/1', routes: {}, notes: [] };

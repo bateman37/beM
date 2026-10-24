@@ -38,6 +38,7 @@ Directorio de los encargos a Claude Code. **El texto original de un prompt ejecu
 | SIM-MOTOR-02 | Segunda de cuatro entregas de SIM-MOTOR: correcciones C02-01…05, roles/director/familiaridad pertinente, política pequeña del entrenador, lectores SIM, jornada simultánea con el detallado, guardado y lotes persistentes, historia individual de temporada y aprendizaje posterior | [`SIM-MOTOR-02-correcciones-integracion-simultaneidad-historia.md`](SIM-MOTOR-02-correcciones-integracion-simultaneidad-historia.md) · [recorrido manual](SIM-MOTOR-02-recorrido-manual.md) | **Ejecutado** (pendiente de Dennis) | 2026-10-23 · intento 1 | — |
 | SIM-MOTOR-03 | Tercera de cuatro entregas de SIM-MOTOR (incorpora 02B): cierre de C03-01…11, rendimiento exacto y campaña comparativa congelada con paquetes para ChatGPT | [`SIM-MOTOR-03-correcciones-02B-y-campana.md`](SIM-MOTOR-03-correcciones-02B-y-campana.md) | [recorrido manual](SIM-MOTOR-03-recorrido-manual.md) | ejecutado (ver ficha) |
 | SIM-MOTOR-04 | Cuarta y última entrega de SIM-MOTOR: correcciones C04-01…06, candidata numérica provisional por selección mecánica congelada, rendimiento exacto, reserva y auditoría final | [`SIM-MOTOR-04-correcciones-calibracion-y-cierre.md`](SIM-MOTOR-04-correcciones-calibracion-y-cierre.md) | [recorrido manual](SIM-MOTOR-04-recorrido-manual.md) | ejecutado (ver ficha) |
+| SIM-MOTOR-04C | Convergencia estadística con el detallado: rebote ofensivo, oportunidad interior y asistencias (lector de crédito, rama tras rebote, calidad y conversión de `inside`, búsqueda limitada R→I→P solo con CAL, campaña emparejada, evidencia para ChatGPT) | [`SIM-MOTOR-04C-convergencia-estadistica.md`](SIM-MOTOR-04C-convergencia-estadistica.md) | [recorrido manual](SIM-MOTOR-04C-recorrido-manual.md) | ejecutado (ver ficha) |
 | SIM-MOTOR-04B | Cierre de 04: fatiga de la rotación y cierre idempotente, T03 con cero esperado, libres/unidades, paquete reproducible, convergencia acotada (≤ 7 vectores solo con CAL), optimizaciones exactas y campaña acotada | [`SIM-MOTOR-04B-cierre-y-convergencia.md`](SIM-MOTOR-04B-cierre-y-convergencia.md) | [recorrido manual](SIM-MOTOR-04B-recorrido-manual.md) | ejecutado (ver ficha) |
 
 ## Fichas de ejecución
@@ -401,6 +402,18 @@ Comprobación local de enlaces: hecha por Claude. Presentación en GitHub: no co
 | Rama / PR | `claude/busy-edison-b1fmnc` · PR contra `main`, abierta y sin fusionar (ver la respuesta final). |
 | Resultado breve | Ver [`../tecnico/sim-motor04.md`](../tecnico/sim-motor04.md). Candidata `C04-FINAL-PROVISIONAL` (provisional, no aceptación deportiva); objetivo de 5 s **no** cumplido. Paquetes fuera de Git en `out/sim-motor04/entrega-final/`. |
 | Pendientes | Recorrido manual de Dennis ([guía](SIM-MOTOR-04-recorrido-manual.md)); interpretación deportiva de ChatGPT y aceptación de Dennis. |
+
+### SIM-MOTOR-04C
+
+| Campo | Valor |
+|---|---|
+| Objetivo | Acercar SIM al detallado en zonas, oportunidad interior, circulación tras rebote y asistencias: lector de asistencia acreditada, rama tras rebote ofensivo, calidad y conversión de `inside` (filas neutrales), búsqueda limitada solo con CAL (≤ 8 vectores completos, reglas congeladas antes), campaña emparejada con semillas nuevas y evidencia verificable offline. |
+| Medio de entrada del texto | Archivo `.md` adjunto (`beM-PROMPT-SIM-MOTOR-04C-CONVERGENCIA-ESTADISTICA.md`; prefijo añadido por la subida). |
+| Fecha real de ejecución | 2026-10-24 · intento 1 |
+| Revisión de partida | Cabeza de SIM-MOTOR-04B en la rama de la serie (`48bcdef`; PR #22 abierta y sin fusionar). |
+| Rama / PR | `claude/busy-edison-b1fmnc` · [bateman37/beM#22](https://github.com/bateman37/beM/pull/22) (abierta contra `main`, sin fusionar; título y descripción reflejan 01 + 02 + 02B + 03 + 04 + 04B + 04C). |
+| Resultado breve | Ver [`../tecnico/sim-motor04c.md`](../tecnico/sim-motor04c.md). `C04C-FINAL-PROVISIONAL` (P30) elegida solo con CAL; M(VAL) 2,58 → 1,70; eZ, eA, e2 y eR siguen fuera de banda (eR empeora en VAL); objetivos de rendimiento **no** cumplidos con 2.000 clubes. Paquetes fuera de Git en `out/sim-motor04c/entrega-final/`. |
+| Pendientes | Recorrido manual de Dennis ([guía](SIM-MOTOR-04C-recorrido-manual.md)); aceptación deportiva y preguntas de §8 de la página técnica. |
 
 ### SIM-MOTOR-04B
 

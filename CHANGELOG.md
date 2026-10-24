@@ -2,6 +2,15 @@
 
 Registro breve de entregas. Una entrada por entrega; las más recientes primero.
 
+## SIM-MOTOR-04C — Convergencia estadística con el detallado: rebote ofensivo, oportunidad interior y asistencias — 2026-10-24
+
+- **Lectura**: canastas con pasador ≠ asistencias acreditadas (el detallado se lee del acta; CAL DET 1.017 acreditadas); versión visible `SIM-MOTOR-04C`; benchmark sin turnos de espera de otro control. SIM `0.3.2-SIMMOTOR04C`; los guardados de 04B se rechazan con explicación.
+- **Mecanismos** (filas `SEM04C` neutrales, no activas por defecto): rama tras rebote ofensivo (inmediata / reinicio organizado con celdas organizadas admisibles, `rebound.organizedResetP0`), calidad de `inside` (`opportunity.simInsideQualityLogit`) y conversión provisional de `inside` (`conversion.simInsideLogitOffset`); embudo `reboundFunnel` y conciliación R27. Con las filas a 0 la trayectoria es la de 04B (24/24 casos idénticos).
+- **Búsqueda** (solo CAL, reglas `SEL-SIM04C-R1` congeladas antes; 8 vectores completos R→I→P): elegida `C04C-FINAL-PROVISIONAL` = peso de aro 1,5 · calidad de aro 0,5 · reinicio 0,35 · calidad inside 0,5 · conversión inside 0,30 (M 2,64 → 1,45 en CAL; 2,58 → 1,70 en VAL). **eZ, eA, e2 y eR siguen fuera de banda** y eR empeora en VAL. No se activa por defecto.
+- **Campaña**: CAL 240 SIM + 24 DET, VAL nueva 96 + 48, CONTRAST 32 + 8, TECH 18; 0 fallos. Jornada mixta, historia/aprendizaje y Chromium (50 pasos, consola 0, red 0) sin fallos. Suite 351/352 (una expectativa de versión visible corregida y verificada). Detallado intacto (83–98, 6.684 sorteos).
+- **Rendimiento** con 2.000 clubes: lote 8,7–9,5 s (primera solicitud) y 5,3–5,4 s (pool reutilizado), publicación 1,61 s, RSS 1,54 GiB: **ningún objetivo cumplido**.
+- Pendiente de Dennis: [recorrido manual](docs/prompts/SIM-MOTOR-04C-recorrido-manual.md). Ver [`docs/tecnico/sim-motor04c.md`](docs/tecnico/sim-motor04c.md).
+
 ## SIM-MOTOR-04B — Fatiga y cierre corregidos, convergencia acotada y paquete reproducible — 2026-10-23
 
 - **Correcciones**: la rotación decide con la fatiga actual (un 20 con energía 5 ya sale; el referente 30 con energía 30 sigue); cierre, consulta y liberación idempotentes; suficiencia de exposición con cero esperado (T03); lectura de libres y unidades de coste; paquete reproducible con `scripts/sim03/lib.js`. SIM `0.3.1-SIMMOTOR04B`; los guardados de 04 se rechazan con explicación.

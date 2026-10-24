@@ -1,0 +1,1080 @@
+{
+ "schema": "beM-sim04c-vectors-rules/1",
+ "rulesFile": "plan/selection-rules.json (en la evidencia detallada)",
+ "selectionRulesSha256": "8be137b9d65ee586996ae85df96ea04d95bbcec091e5a06bcf2c4b435c5290b6",
+ "rules": {
+  "id": "SEL-SIM04C-R1",
+  "maxAdditionalVectors": 8,
+  "precision": 1e-9,
+  "minRelativeImprovement": 0.05,
+  "band": {
+   "eP": 0.08,
+   "eF": 0.08,
+   "eZ": 0.1,
+   "e2": 0.04,
+   "eR": 0.05,
+   "eI": 0.05,
+   "eQ": 0.05,
+   "eA": 0.08
+  },
+  "errors": {
+   "eP": "abs(meanPTS40_SIM / meanPTS40_DET − 1); medias por actuación de equipo normalizadas a 40 min (valor × 2400 / duración deportiva)",
+   "eF": "abs(meanFGA40_SIM / meanFGA40_DET − 1); mismas normalizaciones",
+   "eZ": "Σ_z abs(shareFGA_SIM[z] − shareFGA_DET[z]) en las cuatro zonas (sumas de numeradores y denominadores)",
+   "e2": "abs(Σ2PM_SIM/Σ2PA_SIM − Σ2PM_DET/Σ2PA_DET)",
+   "eR": "abs(ΣrimM_SIM/ΣrimA_SIM − ΣrimM_DET/ΣrimA_DET)",
+   "eI": "abs(ΣinsideM_SIM/ΣinsideA_SIM − ΣinsideM_DET/ΣinsideA_DET), zona inside sin aro",
+   "eQ": "abs(forcedRimShare_SIM − forcedRimShare_DET), con forcedRimShare = intentos al aro en calidad forzada / intentos al aro",
+   "eA": "abs(ΣAST_FG_SIM/ΣFGM_SIM − ΣAST_FG_DET/ΣFGM_DET), AST_FG acreditadas del acta",
+   "e3": "abs(Σ3PM/Σ3PA_SIM − Σ3PM/Σ3PA_DET)",
+   "eFT": "abs(ΣFTM/ΣFTA_SIM − ΣFTM/ΣFTA_DET)",
+   "forcedInside": "abs(forcedInsideShare_SIM − forcedInsideShare_DET), intentos inside en calidad forzada / intentos inside",
+   "freq40": "fracción de actuaciones de equipo con algún jugador ≥ 40 min (2400 s) en partidos SIN prórroga (informativo)"
+  },
+  "M": "M = max(eP/0,08; eF/0,08; eZ/0,10; e2/0,04; eR/0,05; eI/0,05; eQ/0,05; eA/0,08); se conservan los componentes y el error dominante",
+  "guards": "frente al MISMO N04C (e0), uniformes, sin acumular márgenes: eP/eF ≤ max(0,08; e0+0,02) · eZ ≤ e0+0,02 · e2 ≤ max(0,04; e0+0,015) · eR/eI/eQ ≤ max(0,05; e0+0,02) · eA ≤ max(0,08; e0+0,02) · e3 ≤ max(0,05; e3_0+0,015) · eFT ≤ max(0,04; eFT_0+0,02)",
+  "workingPointR": "menor M entre J0/R35/R65/R85 con todos los errores evaluados e invariantes correctas (puede incumplir guardas: explora, no activa); desempate del selector final",
+  "stageI": "I50/I100 solo si el punto R tiene eI > 0,05 o |Δ calidad forzada inside| > 0,05; punto I = menor M entre el punto R y los I ejecutados",
+  "stageP": "P15/P30 solo si el punto I tiene eI > 0,05, ≥ 80 FGA inside de calidad normal por modelo en CAL y FG%_DET_normal_inside − FG%_SIM_normal_inside > 0,03 (regla funcional de búsqueda, no significación)",
+  "final": "1) descartar vectores que fallen una guarda, tengan errores necesarios no evaluados o incumplan invariantes; 2) menor M entre los admisibles; proponer cambio solo con mejora relativa de M ≥ 5 % frente a N04C; 3) empate (1e-9): menos filas distintas de N04C, menor Σ|diferencia|/rango y después identificador lexicográfico; 4) sin mejora admisible, se conserva N04C",
+  "intermediates": "los puntos de trabajo no son ganadores aceptados ni multiplican tolerancias; la admisibilidad se calcula al final sobre TODOS los vectores completos ejecutados frente a N04C",
+  "valUse": "VAL no elige ni reajusta: ninguna regla lee resultados de VAL",
+  "rows": [
+   {
+    "path": "shotMix.rimWeightFactor",
+    "neutral": 1,
+    "range": 0.5,
+    "note": "rango autorizado [1; 1,5] (solo se evalúa 1,5)"
+   },
+   {
+    "path": "opportunity.simRimQualityLogit",
+    "neutral": 0,
+    "range": 0.5,
+    "note": "[0; 0,5] logit"
+   },
+   {
+    "path": "rebound.organizedResetP0",
+    "neutral": 0,
+    "range": 1,
+    "note": "[0; 1]"
+   },
+   {
+    "path": "opportunity.simInsideQualityLogit",
+    "neutral": 0,
+    "range": 1,
+    "note": "[0; 1] logit"
+   },
+   {
+    "path": "conversion.simInsideLogitOffset",
+    "neutral": 0,
+    "range": 0.3,
+    "note": "[0; 0,30] logit"
+   }
+  ]
+ },
+ "agenda": [
+  {
+   "id": "J0",
+   "stage": "R",
+   "parent": "N04C",
+   "set": {
+    "shotMix.rimWeightFactor": 1.5,
+    "opportunity.simRimQualityLogit": 0.5,
+    "rebound.organizedResetP0": 0
+   }
+  },
+  {
+   "id": "R35",
+   "stage": "R",
+   "parent": "N04C",
+   "set": {
+    "shotMix.rimWeightFactor": 1.5,
+    "opportunity.simRimQualityLogit": 0.5,
+    "rebound.organizedResetP0": 0.35
+   }
+  },
+  {
+   "id": "R65",
+   "stage": "R",
+   "parent": "N04C",
+   "set": {
+    "shotMix.rimWeightFactor": 1.5,
+    "opportunity.simRimQualityLogit": 0.5,
+    "rebound.organizedResetP0": 0.65
+   }
+  },
+  {
+   "id": "R85",
+   "stage": "R",
+   "parent": "N04C",
+   "set": {
+    "shotMix.rimWeightFactor": 1.5,
+    "opportunity.simRimQualityLogit": 0.5,
+    "rebound.organizedResetP0": 0.85
+   }
+  },
+  {
+   "id": "I50",
+   "stage": "I",
+   "parent": "punto R",
+   "set": {
+    "opportunity.simInsideQualityLogit": 0.5
+   },
+   "condition": "punto R con eI > 0,05 o |Δ proporción de calidad forzada de inside| > 0,05"
+  },
+  {
+   "id": "I100",
+   "stage": "I",
+   "parent": "punto R",
+   "set": {
+    "opportunity.simInsideQualityLogit": 1
+   },
+   "condition": "ídem I50"
+  },
+  {
+   "id": "P15",
+   "stage": "P",
+   "parent": "punto I",
+   "set": {
+    "conversion.simInsideLogitOffset": 0.15
+   },
+   "condition": "punto I con eI > 0,05, ≥ 80 FGA inside de calidad normal por modelo en CAL y FG%_DET_normal_inside − FG%_SIM_normal_inside > 0,03"
+  },
+  {
+   "id": "P30",
+   "stage": "P",
+   "parent": "punto I",
+   "set": {
+    "conversion.simInsideLogitOffset": 0.3
+   },
+   "condition": "ídem P15"
+  }
+ ],
+ "fixedRows": [
+  {
+   "path": "volume.neutralSecondsPerControl",
+   "value": 19.5
+  },
+  {
+   "path": "shotMix.threeWeightFactor",
+   "value": 0.7
+  },
+  {
+   "path": "assist.eligibleFinalPassP0",
+   "value": 0.9
+  },
+  {
+   "path": "energy.costPerLiveMinute",
+   "value": 3
+  },
+  {
+   "path": "assist.receivedAdvantageP0",
+   "value": 0
+  }
+ ],
+ "stages": {
+  "R": {
+   "workingPoint": "C04C-R35",
+   "M": 1.9706451245875534,
+   "candidates": [
+    {
+     "id": "C04C-J0",
+     "M": 2.8388426709857915,
+     "dominant": "eI",
+     "invariantsOk": true
+    },
+    {
+     "id": "C04C-R35",
+     "M": 1.9706451245875534,
+     "dominant": "eI",
+     "invariantsOk": true
+    },
+    {
+     "id": "C04C-R65",
+     "M": 2.420535791196486,
+     "dominant": "eI",
+     "invariantsOk": true
+    },
+    {
+     "id": "C04C-R85",
+     "M": 3.1530468541849053,
+     "dominant": "eI",
+     "invariantsOk": true
+    }
+   ]
+  },
+  "I": {
+   "condition": {
+    "run": true,
+    "eI": 0.09853225622937767,
+    "forcedInsideDiff": 0.19978936374430742,
+    "reason": "eI > 0,05 o diferencia de calidad forzada inside > 0,05"
+   },
+   "workingPoint": "C04C-I50",
+   "executed": [
+    "C04C-I50",
+    "C04C-I100"
+   ]
+  },
+  "P": {
+   "condition": {
+    "run": true,
+    "eI": 0.06797457861287659,
+    "simNormalInsideFga": 275,
+    "detNormalInsideFga": 390,
+    "simNormalInsideFg": "141/275",
+    "detNormalInsideFg": "219/390",
+    "gap": 0.048811188811188844,
+    "reason": "se cumplen las tres condiciones"
+   }
+  }
+ },
+ "omissions": {
+  "note": "ninguna etapa se omitió: se cumplieron las condiciones de I y de P",
+  "I": {
+   "run": true,
+   "eI": 0.09853225622937767,
+   "forcedInsideDiff": 0.19978936374430742,
+   "reason": "eI > 0,05 o diferencia de calidad forzada inside > 0,05"
+  },
+  "P": {
+   "run": true,
+   "eI": 0.06797457861287659,
+   "simNormalInsideFga": 275,
+   "detNormalInsideFga": 390,
+   "simNormalInsideFg": "141/275",
+   "detNormalInsideFg": "219/390",
+   "gap": 0.048811188811188844,
+   "reason": "se cumplen las tres condiciones"
+  }
+ },
+ "additionalVectorsExecuted": 8,
+ "maxAdditionalVectors": 8,
+ "vectors": [
+  {
+   "id": "B04B",
+   "executed": true,
+   "parent": null,
+   "completeRows": [
+    {
+     "path": "volume.neutralSecondsPerControl",
+     "value": 19.5
+    },
+    {
+     "path": "shotMix.threeWeightFactor",
+     "value": 0.7
+    },
+    {
+     "path": "assist.eligibleFinalPassP0",
+     "value": 0.9
+    },
+    {
+     "path": "energy.costPerLiveMinute",
+     "value": 3
+    },
+    {
+     "path": "assist.receivedAdvantageP0",
+     "value": 0
+    }
+   ],
+   "differencesVsParent": null,
+   "differencesVsN04C": null,
+   "M": 2.638620044275232,
+   "dominantError": "eQ",
+   "sha256": "4f26138af5fcf8a13bd7e1a24953e4bdda01f255ec32fe615f7d9e15d560f8a2",
+   "verdict": null
+  },
+  {
+   "id": "N04C",
+   "executed": true,
+   "parent": "B04B",
+   "completeRows": [
+    {
+     "path": "volume.neutralSecondsPerControl",
+     "value": 19.5
+    },
+    {
+     "path": "shotMix.threeWeightFactor",
+     "value": 0.7
+    },
+    {
+     "path": "assist.eligibleFinalPassP0",
+     "value": 0.9
+    },
+    {
+     "path": "energy.costPerLiveMinute",
+     "value": 3
+    },
+    {
+     "path": "assist.receivedAdvantageP0",
+     "value": 0
+    },
+    {
+     "path": "shotMix.rimWeightFactor",
+     "value": 1
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "value": 0
+    },
+    {
+     "path": "rebound.organizedResetP0",
+     "value": 0
+    },
+    {
+     "path": "opportunity.simInsideQualityLogit",
+     "value": 0
+    },
+    {
+     "path": "conversion.simInsideLogitOffset",
+     "value": 0
+    }
+   ],
+   "differencesVsParent": [
+    {
+     "path": "shotMix.rimWeightFactor",
+     "from": null,
+     "to": 1
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "from": null,
+     "to": 0
+    },
+    {
+     "path": "rebound.organizedResetP0",
+     "from": null,
+     "to": 0
+    },
+    {
+     "path": "opportunity.simInsideQualityLogit",
+     "from": null,
+     "to": 0
+    },
+    {
+     "path": "conversion.simInsideLogitOffset",
+     "from": null,
+     "to": 0
+    }
+   ],
+   "differencesVsN04C": null,
+   "M": 2.638620044275232,
+   "dominantError": "eQ",
+   "sha256": "749c0706c7294128bed055b5546fff333686c22ba92aff037e0f73fcbda7da53",
+   "verdict": null
+  },
+  {
+   "id": "C04C-J0",
+   "executed": true,
+   "parent": "N04C",
+   "completeRows": [
+    {
+     "path": "volume.neutralSecondsPerControl",
+     "value": 19.5
+    },
+    {
+     "path": "shotMix.threeWeightFactor",
+     "value": 0.7
+    },
+    {
+     "path": "assist.eligibleFinalPassP0",
+     "value": 0.9
+    },
+    {
+     "path": "energy.costPerLiveMinute",
+     "value": 3
+    },
+    {
+     "path": "assist.receivedAdvantageP0",
+     "value": 0
+    },
+    {
+     "path": "shotMix.rimWeightFactor",
+     "value": 1.5
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "rebound.organizedResetP0",
+     "value": 0
+    },
+    {
+     "path": "opportunity.simInsideQualityLogit",
+     "value": 0
+    },
+    {
+     "path": "conversion.simInsideLogitOffset",
+     "value": 0
+    }
+   ],
+   "differencesVsParent": [
+    {
+     "path": "shotMix.rimWeightFactor",
+     "from": 1,
+     "to": 1.5
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "from": 0,
+     "to": 0.5
+    }
+   ],
+   "differencesVsN04C": [
+    {
+     "path": "shotMix.rimWeightFactor",
+     "from": 1,
+     "to": 1.5
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "from": 0,
+     "to": 0.5
+    }
+   ],
+   "M": 2.8388426709857915,
+   "dominantError": "eI",
+   "sha256": "f69bb1c5ad7d24a129a9fc8801e86e23da94381d9fc2206f3db8bafe7c9323d9",
+   "verdict": "descartado: guardas"
+  },
+  {
+   "id": "C04C-R35",
+   "executed": true,
+   "parent": "N04C",
+   "completeRows": [
+    {
+     "path": "volume.neutralSecondsPerControl",
+     "value": 19.5
+    },
+    {
+     "path": "shotMix.threeWeightFactor",
+     "value": 0.7
+    },
+    {
+     "path": "assist.eligibleFinalPassP0",
+     "value": 0.9
+    },
+    {
+     "path": "energy.costPerLiveMinute",
+     "value": 3
+    },
+    {
+     "path": "assist.receivedAdvantageP0",
+     "value": 0
+    },
+    {
+     "path": "shotMix.rimWeightFactor",
+     "value": 1.5
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "rebound.organizedResetP0",
+     "value": 0.35
+    },
+    {
+     "path": "opportunity.simInsideQualityLogit",
+     "value": 0
+    },
+    {
+     "path": "conversion.simInsideLogitOffset",
+     "value": 0
+    }
+   ],
+   "differencesVsParent": [
+    {
+     "path": "shotMix.rimWeightFactor",
+     "from": 1,
+     "to": 1.5
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "from": 0,
+     "to": 0.5
+    },
+    {
+     "path": "rebound.organizedResetP0",
+     "from": 0,
+     "to": 0.35
+    }
+   ],
+   "differencesVsN04C": [
+    {
+     "path": "shotMix.rimWeightFactor",
+     "from": 1,
+     "to": 1.5
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "from": 0,
+     "to": 0.5
+    },
+    {
+     "path": "rebound.organizedResetP0",
+     "from": 0,
+     "to": 0.35
+    }
+   ],
+   "M": 1.9706451245875534,
+   "dominantError": "eI",
+   "sha256": "b7b48f6835dcef6225d0073835c84313c88714960e31a31904542e883e31356b",
+   "verdict": "admisible"
+  },
+  {
+   "id": "C04C-R65",
+   "executed": true,
+   "parent": "N04C",
+   "completeRows": [
+    {
+     "path": "volume.neutralSecondsPerControl",
+     "value": 19.5
+    },
+    {
+     "path": "shotMix.threeWeightFactor",
+     "value": 0.7
+    },
+    {
+     "path": "assist.eligibleFinalPassP0",
+     "value": 0.9
+    },
+    {
+     "path": "energy.costPerLiveMinute",
+     "value": 3
+    },
+    {
+     "path": "assist.receivedAdvantageP0",
+     "value": 0
+    },
+    {
+     "path": "shotMix.rimWeightFactor",
+     "value": 1.5
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "rebound.organizedResetP0",
+     "value": 0.65
+    },
+    {
+     "path": "opportunity.simInsideQualityLogit",
+     "value": 0
+    },
+    {
+     "path": "conversion.simInsideLogitOffset",
+     "value": 0
+    }
+   ],
+   "differencesVsParent": [
+    {
+     "path": "shotMix.rimWeightFactor",
+     "from": 1,
+     "to": 1.5
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "from": 0,
+     "to": 0.5
+    },
+    {
+     "path": "rebound.organizedResetP0",
+     "from": 0,
+     "to": 0.65
+    }
+   ],
+   "differencesVsN04C": [
+    {
+     "path": "shotMix.rimWeightFactor",
+     "from": 1,
+     "to": 1.5
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "from": 0,
+     "to": 0.5
+    },
+    {
+     "path": "rebound.organizedResetP0",
+     "from": 0,
+     "to": 0.65
+    }
+   ],
+   "M": 2.420535791196486,
+   "dominantError": "eI",
+   "sha256": "324f02e0bd34fc9b524583d682652615a4b8182f634b0baf5587dc74c27ad958",
+   "verdict": "admisible"
+  },
+  {
+   "id": "C04C-R85",
+   "executed": true,
+   "parent": "N04C",
+   "completeRows": [
+    {
+     "path": "volume.neutralSecondsPerControl",
+     "value": 19.5
+    },
+    {
+     "path": "shotMix.threeWeightFactor",
+     "value": 0.7
+    },
+    {
+     "path": "assist.eligibleFinalPassP0",
+     "value": 0.9
+    },
+    {
+     "path": "energy.costPerLiveMinute",
+     "value": 3
+    },
+    {
+     "path": "assist.receivedAdvantageP0",
+     "value": 0
+    },
+    {
+     "path": "shotMix.rimWeightFactor",
+     "value": 1.5
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "rebound.organizedResetP0",
+     "value": 0.85
+    },
+    {
+     "path": "opportunity.simInsideQualityLogit",
+     "value": 0
+    },
+    {
+     "path": "conversion.simInsideLogitOffset",
+     "value": 0
+    }
+   ],
+   "differencesVsParent": [
+    {
+     "path": "shotMix.rimWeightFactor",
+     "from": 1,
+     "to": 1.5
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "from": 0,
+     "to": 0.5
+    },
+    {
+     "path": "rebound.organizedResetP0",
+     "from": 0,
+     "to": 0.85
+    }
+   ],
+   "differencesVsN04C": [
+    {
+     "path": "shotMix.rimWeightFactor",
+     "from": 1,
+     "to": 1.5
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "from": 0,
+     "to": 0.5
+    },
+    {
+     "path": "rebound.organizedResetP0",
+     "from": 0,
+     "to": 0.85
+    }
+   ],
+   "M": 3.1530468541849053,
+   "dominantError": "eI",
+   "sha256": "46b6d97ca7420f96260d3b02e1ee816a2d97768e23714d355fe0d9e9fccc97a4",
+   "verdict": "descartado: guardas"
+  },
+  {
+   "id": "C04C-I50",
+   "executed": true,
+   "parent": "C04C-R35",
+   "completeRows": [
+    {
+     "path": "volume.neutralSecondsPerControl",
+     "value": 19.5
+    },
+    {
+     "path": "shotMix.threeWeightFactor",
+     "value": 0.7
+    },
+    {
+     "path": "assist.eligibleFinalPassP0",
+     "value": 0.9
+    },
+    {
+     "path": "energy.costPerLiveMinute",
+     "value": 3
+    },
+    {
+     "path": "assist.receivedAdvantageP0",
+     "value": 0
+    },
+    {
+     "path": "shotMix.rimWeightFactor",
+     "value": 1.5
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "rebound.organizedResetP0",
+     "value": 0.35
+    },
+    {
+     "path": "opportunity.simInsideQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "conversion.simInsideLogitOffset",
+     "value": 0
+    }
+   ],
+   "differencesVsParent": [
+    {
+     "path": "opportunity.simInsideQualityLogit",
+     "from": 0,
+     "to": 0.5
+    }
+   ],
+   "differencesVsN04C": [
+    {
+     "path": "shotMix.rimWeightFactor",
+     "from": 1,
+     "to": 1.5
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "from": 0,
+     "to": 0.5
+    },
+    {
+     "path": "rebound.organizedResetP0",
+     "from": 0,
+     "to": 0.35
+    },
+    {
+     "path": "opportunity.simInsideQualityLogit",
+     "from": 0,
+     "to": 0.5
+    }
+   ],
+   "M": 1.5829229846415673,
+   "dominantError": "eA",
+   "sha256": "91b1d25e7835a48a55e9042a988641788c755b2bace93aea2a4a77955d62540c",
+   "verdict": "admisible"
+  },
+  {
+   "id": "C04C-I100",
+   "executed": true,
+   "parent": "C04C-R35",
+   "completeRows": [
+    {
+     "path": "volume.neutralSecondsPerControl",
+     "value": 19.5
+    },
+    {
+     "path": "shotMix.threeWeightFactor",
+     "value": 0.7
+    },
+    {
+     "path": "assist.eligibleFinalPassP0",
+     "value": 0.9
+    },
+    {
+     "path": "energy.costPerLiveMinute",
+     "value": 3
+    },
+    {
+     "path": "assist.receivedAdvantageP0",
+     "value": 0
+    },
+    {
+     "path": "shotMix.rimWeightFactor",
+     "value": 1.5
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "rebound.organizedResetP0",
+     "value": 0.35
+    },
+    {
+     "path": "opportunity.simInsideQualityLogit",
+     "value": 1
+    },
+    {
+     "path": "conversion.simInsideLogitOffset",
+     "value": 0
+    }
+   ],
+   "differencesVsParent": [
+    {
+     "path": "opportunity.simInsideQualityLogit",
+     "from": 0,
+     "to": 1
+    }
+   ],
+   "differencesVsN04C": [
+    {
+     "path": "shotMix.rimWeightFactor",
+     "from": 1,
+     "to": 1.5
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "from": 0,
+     "to": 0.5
+    },
+    {
+     "path": "rebound.organizedResetP0",
+     "from": 0,
+     "to": 0.35
+    },
+    {
+     "path": "opportunity.simInsideQualityLogit",
+     "from": 0,
+     "to": 1
+    }
+   ],
+   "M": 1.6468297741997122,
+   "dominantError": "eA",
+   "sha256": "2b8cb9d696b3d67e8ec1b459848b829c986fe0b68f3c394ec32df0b53607aa82",
+   "verdict": "admisible"
+  },
+  {
+   "id": "C04C-P15",
+   "executed": true,
+   "parent": "C04C-I50",
+   "completeRows": [
+    {
+     "path": "volume.neutralSecondsPerControl",
+     "value": 19.5
+    },
+    {
+     "path": "shotMix.threeWeightFactor",
+     "value": 0.7
+    },
+    {
+     "path": "assist.eligibleFinalPassP0",
+     "value": 0.9
+    },
+    {
+     "path": "energy.costPerLiveMinute",
+     "value": 3
+    },
+    {
+     "path": "assist.receivedAdvantageP0",
+     "value": 0
+    },
+    {
+     "path": "shotMix.rimWeightFactor",
+     "value": 1.5
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "rebound.organizedResetP0",
+     "value": 0.35
+    },
+    {
+     "path": "opportunity.simInsideQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "conversion.simInsideLogitOffset",
+     "value": 0.15
+    }
+   ],
+   "differencesVsParent": [
+    {
+     "path": "conversion.simInsideLogitOffset",
+     "from": 0,
+     "to": 0.15
+    }
+   ],
+   "differencesVsN04C": [
+    {
+     "path": "shotMix.rimWeightFactor",
+     "from": 1,
+     "to": 1.5
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "from": 0,
+     "to": 0.5
+    },
+    {
+     "path": "rebound.organizedResetP0",
+     "from": 0,
+     "to": 0.35
+    },
+    {
+     "path": "opportunity.simInsideQualityLogit",
+     "from": 0,
+     "to": 0.5
+    },
+    {
+     "path": "conversion.simInsideLogitOffset",
+     "from": 0,
+     "to": 0.15
+    }
+   ],
+   "M": 1.7269713874128136,
+   "dominantError": "eA",
+   "sha256": "013d9fed74a7afd2fee86d5ebb31737941fb1dd6d9b1077202e4194c1a814dab",
+   "verdict": "admisible"
+  },
+  {
+   "id": "C04C-P30",
+   "executed": true,
+   "parent": "C04C-I50",
+   "completeRows": [
+    {
+     "path": "volume.neutralSecondsPerControl",
+     "value": 19.5
+    },
+    {
+     "path": "shotMix.threeWeightFactor",
+     "value": 0.7
+    },
+    {
+     "path": "assist.eligibleFinalPassP0",
+     "value": 0.9
+    },
+    {
+     "path": "energy.costPerLiveMinute",
+     "value": 3
+    },
+    {
+     "path": "assist.receivedAdvantageP0",
+     "value": 0
+    },
+    {
+     "path": "shotMix.rimWeightFactor",
+     "value": 1.5
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "rebound.organizedResetP0",
+     "value": 0.35
+    },
+    {
+     "path": "opportunity.simInsideQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "conversion.simInsideLogitOffset",
+     "value": 0.3
+    }
+   ],
+   "differencesVsParent": [
+    {
+     "path": "conversion.simInsideLogitOffset",
+     "from": 0,
+     "to": 0.3
+    }
+   ],
+   "differencesVsN04C": [
+    {
+     "path": "shotMix.rimWeightFactor",
+     "from": 1,
+     "to": 1.5
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "from": 0,
+     "to": 0.5
+    },
+    {
+     "path": "rebound.organizedResetP0",
+     "from": 0,
+     "to": 0.35
+    },
+    {
+     "path": "opportunity.simInsideQualityLogit",
+     "from": 0,
+     "to": 0.5
+    },
+    {
+     "path": "conversion.simInsideLogitOffset",
+     "from": 0,
+     "to": 0.3
+    }
+   ],
+   "M": 1.4491936096350355,
+   "dominantError": "eA",
+   "sha256": "d161b783fd4efd7f47cac4fc95b4ca01e5594d79e8ff6794c588eec61ad6876f",
+   "verdict": "admisible"
+  }
+ ],
+ "finalProvisional": {
+  "id": "C04C-FINAL-PROVISIONAL",
+  "basedOn": "C04C-P30",
+  "rows": [
+   {
+    "path": "volume.neutralSecondsPerControl",
+    "value": 19.5
+   },
+   {
+    "path": "shotMix.threeWeightFactor",
+    "value": 0.7
+   },
+   {
+    "path": "assist.eligibleFinalPassP0",
+    "value": 0.9
+   },
+   {
+    "path": "energy.costPerLiveMinute",
+    "value": 3
+   },
+   {
+    "path": "assist.receivedAdvantageP0",
+    "value": 0
+   },
+   {
+    "path": "shotMix.rimWeightFactor",
+    "value": 1.5
+   },
+   {
+    "path": "opportunity.simRimQualityLogit",
+    "value": 0.5
+   },
+   {
+    "path": "rebound.organizedResetP0",
+    "value": 0.35
+   },
+   {
+    "path": "opportunity.simInsideQualityLogit",
+    "value": 0.5
+   },
+   {
+    "path": "conversion.simInsideLogitOffset",
+    "value": 0.3
+   }
+  ],
+  "sha256": "8ef873d0061396ca7da2c9a04f1942e47b7cc00440dcc1f85ee89bfb441d4e8c",
+  "note": "candidata provisional elegida solo con CAL; pendiente de Dennis; no activada por defecto"
+ },
+ "aliases": {
+  "C04C-FINAL-PROVISIONAL": "C04C-P30",
+  "FINAL": "ejecuciones de VAL/CONTRAST/TECH con el vector de C04C-P30",
+  "TECH-auto": "misma ejecución lógica que C04C-P30 en CAL por el recorrido automático (se repitió para el control entre recorridos)"
+ }
+}
