@@ -12,6 +12,7 @@ import {
   shotClockAfterDefensiveStoppage, shotClockAfterRingContact, freeThrowsForShootingFoul,
 } from './rules.js';
 import { resolveFoul } from './regs.js';
+import { classifyReboundCredit } from './rebound-credit.js';
 
 const P = MatchCore.prototype;
 const ZONE_TEC = { three: 'TEC01', midrange: 'TEC02', inside: 'TEC03', rim: 'TEC04' };
@@ -475,11 +476,23 @@ P.applyInterference = function applyInterference(itf, { shotFact, stats, team, m
   return rec;
 };
 
+P.reboundStats = function reboundStats(ex, miss, control, of) { // rebote de un fallo con contacto de aro y balón vivo: crédito individual del captor ya sorteado (política común)
+  const c = classifyReboundCredit({ shooterTeam: ex.team, miss, ball: 'live', control });
+  return c.kind === 'none' ? [] : [{ k: 'reb', p: c.player, team: c.team, off: c.off, of }];
+};
+P.nextEventId = function nextEventId() { return `E${String(this.eventSeq + 1).padStart(4, '0')}`; };
+// SIM-MOTOR-04E (E02): crédito de rebote tras tapón según la política común (`rebound-credit.js`). Solo estadístico: usa el recuperador que el camino YA ha resuelto y no sortea ni cambia la continuación.
+P.blockedReboundStat = function blockedReboundStat(ex, ball, control) {
+  const c = classifyReboundCredit({ shooterTeam: ex.team, miss: 'blocked', ball, control });
+  return c.kind === 'none' ? [] : [{ k: 'reb', p: c.player, team: c.team, off: c.off, of: this.nextEventId(), cause: c.cause }];
+};
+
 P.resolveBlocked = function resolveBlocked(ex, base, blocker) {
   const b = this.profile.block;
   const stats = [{ k: 'shot', p: ex.actor, team: ex.team, zone: ex.zone, points: this.profile.shots[ex.zone].points, made: false, blockedBy: blocker }, { k: 'blk', p: blocker, team: 1 - ex.team }];
   this.cover('tapón');
   if (this.bernoulli(b.outOfBoundsGivenBlock, 'tapón:fuera')) {
+    stats.push(...this.blockedReboundStat(ex, 'outOfBounds', { team: ex.team, player: null })); // derecho de saque del ataque antes de control individual: rebote colectivo ofensivo
     this.emit('attempt', { ...base, stats, effects: { zona: ex.zone, tapon: true, destino: 'fuera, saque del ataque (sin contacto de aro: el reloj de posesión continúa)' } });
     this.cover('tapón fuera sin aro');
     this.deadBall('tapón fuera');
@@ -488,13 +501,14 @@ P.resolveBlocked = function resolveBlocked(ex, base, blocker) {
     return { cont: 'blockedOOB' };
   }
   const defenseGets = this.bernoulli(b.blockedLooseControlDefenseProbability, 'tapón:balón_vivo');
+  const carrier = defenseGets ? this.pickRecoverer(1 - ex.team, blocker) : this.pickRecoverer(ex.team, null); // el mismo sorteo y orden que antes: el recuperador se resuelve antes de describir el hecho
+  stats.push(...this.blockedReboundStat(ex, 'live', { team: defenseGets ? 1 - ex.team : ex.team, player: carrier }));
   this.emit('attempt', { ...base, stats, effects: { zona: ex.zone, tapon: true, destino: defenseGets ? 'balón vivo, control defensivo' : 'balón vivo, conserva el ataque' } });
   if (defenseGets) {
-    const carrier = this.pickRecoverer(1 - ex.team, blocker);
     this.endPossession('live', { team: ex.team, origin: 'tapón', carrier, deficit: this.reboundCommitments(ex.team, ex, ex.zone).deficit });
     return { end: 'blockRecovery' };
   }
-  this.poss.disorganized = true; this.poss.recovery = { kind: 'block', holder: this.pickRecoverer(ex.team, null) };
+  this.poss.disorganized = true; this.poss.recovery = { kind: 'block', holder: carrier };
   return { cont: 'blockedLive' };
 };
 
@@ -821,7 +835,7 @@ P.afterMiss = function afterMiss(ex, zone) {
   if (this.opts.detail === 'full') this.note('salida:rebote', { entradas: { p0, K, fpDelta: rfp.delta, Z: rz.Z, alpha: rz.alpha, hasOffense: offP.length > 0, RA, RD, fuerza: { ataque: Object.fromEntries(offP.map((id) => [id, fuerza[id]])), defensa: Object.fromEntries(defP.map((id) => [id, fuerza[id]])) }, captura: { lado: offReb ? 'ataque' : 'defensa', pesos: Object.fromEntries(capW.map((x) => [x.key, x.w])), probabilidades: pickProbabilities(capW) } },
     refs: { fuerza: [...offP.map((id) => ({ label: 'receta:rebote.fuerza', jugador: id, lado: 'ataque' })), ...defP.map((id) => ({ label: 'receta:rebote.fuerza', jugador: id, lado: 'defensa' }))], captura: capW.map((x) => ({ label: 'receta:rebote.captura', jugador: x.key, lado: offReb ? 'ataque' : 'defensa' })) }, salida: { pBase: round(pRO0, 8), p: round(pRO, 8) } });
   this.cover(offReb ? 'rebote ofensivo' : 'rebote defensivo');
-  this.emit('rebound', { t, team: offT, intent: { origen: ft ? 'último libre fallado' : `tiro fallado ${zone}` }, participants: { captor, candidatos: cands }, stats: [{ k: 'reb', p: captor, team, off: offReb, of: missEvent }], effects: { ofensivo: offReb, pRebOfensivo: round(pRO, 5), contactoAro: true, encargos: this.commitTrace(commit) } });
+  this.emit('rebound', { t, team: offT, intent: { origen: ft ? 'último libre fallado' : `tiro fallado ${zone}` }, participants: { captor, candidatos: cands }, stats: this.reboundStats(ex, ft ? 'freeThrowLast' : 'field', { team, player: captor }, missEvent), effects: { ofensivo: offReb, pRebOfensivo: round(pRO, 5), contactoAro: true, encargos: this.commitTrace(commit) } });
   if (!offReb) { this.endPossession('live', { team: offT, origin: 'rebote', carrier: captor, deficit: commit.deficit }); return { end: 'dreb' }; }
   this.shotClock = shotClockAfterRingContact(this.shotClock, this.profile.rules);
   this.poss.advanced = true; this.poss.disorganized = true;

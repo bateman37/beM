@@ -73,19 +73,19 @@ test('S04D-03 asistencia acreditada: en el detallado la AST es el crédito del a
 });
 
 // ---------------------------------------------------------------------------------------------------------------------------------- 4 · oportunidades y créditos de rebote
-test('S04D-04 rebotes: oportunidades y créditos conciliados sin duplicados (SIM) y fallos del detallado = créditos + causas de no crédito (el tapón con balón vivo y la expiración tras fallo no tienen crédito en el detallado)', () => {
+test('S04D-04 rebotes: oportunidades y créditos conciliados sin duplicados (SIM) y fallos del detallado = créditos + causas de no crédito (04E: el tapón con balón vivo tiene crédito individual y el tapón fuera colectivo en ambos motores; la expiración tras fallo sigue sin crédito)', () => {
   for (const seed of [41, 42, 43]) {
     const rec = runCampaignSim(ctxWith(FINAL04C), { case_id: `r${seed}`, input: inputOf(seed, 'EQ01', 'EQ08'), attempt: 1, policy: true }).record; assert.equal(rec.valid, true);
     const rebs = rec.essential.box.teams.reduce((s, t) => s + t.oreb + t.dreb + t.teamReb[0] + t.teamReb[1], 0); let credits = 0;
     for (const k of [0, 1]) {
       const o = rec.diag04d.rebOpp[k]; const sum = (cause) => Object.entries(o.credits).filter(([key]) => key.startsWith(`${cause}|`)).reduce((s, [, v]) => s + v, 0);
-      assert.equal(sum('field'), o.fgMiss, 'cada fallo de campo sin tapón tiene exactamente un crédito de rebote'); assert.equal(sum('block'), o.blockedLive, 'cada tapón con balón vivo, un crédito (criterio de SIM)'); assert.equal(o.blocked, o.blockedOob + o.blockedLive); assert.equal(sum('ft'), o.ftLastMiss, 'cada último libre fallado, un crédito');
-      credits += sum('field') + sum('block') + sum('ft');
+      assert.equal(sum('field'), o.fgMiss, 'cada fallo de campo sin tapón tiene exactamente un crédito de rebote'); assert.equal(sum('block'), o.blockedLive, 'cada tapón con balón vivo, un crédito (criterio de SIM)'); assert.equal(sum('block_out_of_bounds'), o.blockedOob, 'cada tapón fuera, un crédito colectivo ofensivo (04E)'); assert.equal(o.credits['block_out_of_bounds|off|coll'] ?? 0, o.blockedOob); assert.equal(o.blocked, o.blockedOob + o.blockedLive); assert.equal(sum('ft'), o.ftLastMiss, 'cada último libre fallado, un crédito');
+      credits += sum('field') + sum('block') + sum('block_out_of_bounds') + sum('ft');
     }
     assert.equal(credits, rebs, 'sin créditos duplicados ni huérfanos');
   }
   const det = runDetailedCampaign({ case_id: 'D', input: inputOf(14, 'EQ01', 'EQ08'), attempt: 1 }); const rec = det.record ?? det; const opp = detRebOpp(rec.essential);
-  for (const o of opp) { const credited = Object.entries(o.credits).filter(([k]) => !k.startsWith('ft|')).reduce((s, [, v]) => s + v, 0); const unc = Object.values(o.unc).reduce((s, v) => s + v, 0); assert.equal(o.fgMiss + o.blocked, credited + unc, 'fallos de campo = créditos + causas sin crédito'); assert.equal(o.credits['block|def|ind'] ?? 0, 0, 'el detallado no acredita rebote tras tapón'); assert.equal(o.credits['block|off|ind'] ?? 0, 0); }
+  for (const o of opp) { const credited = Object.entries(o.credits).filter(([k]) => !k.startsWith('ft|')).reduce((s, [, v]) => s + v, 0); const unc = Object.values(o.unc).reduce((s, v) => s + v, 0); assert.equal(o.fgMiss + o.blocked, credited + unc, 'fallos de campo = créditos + causas sin crédito'); const blk = (o.credits['block|def|ind'] ?? 0) + (o.credits['block|off|ind'] ?? 0) + (o.credits['block|off|coll'] ?? 0); assert.equal(blk, o.blocked, 'SIM-MOTOR-04E: el detallado acredita rebote tras tapón (individual con balón vivo, colectivo si sale fuera)'); }
 });
 
 // ---------------------------------------------------------------------------------------------------------------------------------- 5 · mezcla de media distancia y offset de aro

@@ -45,9 +45,9 @@ test('S04C-02 rama tras rebote: P0=0 y P0=1 no consumen azar para decidir; 0<P0<
   let resetShots = 0; let funnel = 0;
   for (const seed of [21, 22, 23, 24]) {
     const m = play(inputOf(seed), RESET1); const res = buildSimResult(m, { events: true }); assert.equal(res.reconciliation.valid, true, res.reconciliation.checks.filter((c) => !c.ok).map((c) => c.id).join()); assert.ok(res.reconciliation.checks.some((c) => c.id === 'R27_rama_tras_rebote_ofensivo'));
-    for (const e of m.events) { if (e.ty === 'reb') { assert.equal(e.rbb, e.off ? 'organized_reset' : null); } else if (e.cont === 'offensive_rebound' && (e.ty === 'shot' || e.ty === 'shootfoul')) { resetShots++; assert.equal(e.ctx, 'organized'); assert.notEqual(e.src, 'putback'); assert.ok(e.play, 'ficha propia de la nueva resolución'); } }
+    for (const e of m.events) { if (e.ty === 'reb') { if (!e.coll) assert.equal(e.rbb, e.off ? 'organized_reset' : null); } else if (e.cont === 'offensive_rebound' && (e.ty === 'shot' || e.ty === 'shootfoul')) { resetShots++; assert.equal(e.ctx, 'organized'); assert.notEqual(e.src, 'putback'); assert.ok(e.play, 'ficha propia de la nueva resolución'); } }
     funnel += reboundFunnel(m.events).reduce((s, t) => s + Object.values(t).reduce((a, br) => a + br.organized_reset.decisions, 0), 0);
-    const m1 = play(inputOf(seed)); for (const e of m1.events) { if (e.ty === 'reb' && e.off) assert.equal(e.rbb, 'immediate'); if (e.cont === 'offensive_rebound' && (e.ty === 'shot' || e.ty === 'shootfoul')) { assert.equal(e.ctx, 'putback'); assert.equal(e.dir, null); assert.equal(e.scr, null); assert.ok(!e.elig); } }
+    const m1 = play(inputOf(seed)); for (const e of m1.events) { if (e.ty === 'reb' && e.off && !e.coll) assert.equal(e.rbb, 'immediate'); if (e.cont === 'offensive_rebound' && (e.ty === 'shot' || e.ty === 'shootfoul')) { assert.equal(e.ctx, 'putback'); assert.equal(e.dir, null); assert.equal(e.scr, null); assert.ok(!e.elig); } }
   }
   assert.ok(resetShots > 5 && funnel > 5, 'el reinicio se ejerce en el camino real');
 });
@@ -59,7 +59,7 @@ test('S04C-03 cadena tras rebote: la continuación no hereda pase ni crédito; l
     const m = play(inputOf(seed, 'EQ05', 'EQ09'), ctxWith([{ path: 'rebound.organizedResetP0', value: 1 }, { path: 'assist.eligibleFinalPassP0', value: 0.9 }])); const ev = m.events;
     ev.forEach((e, i) => {
       if (e.ty === 'reb' && e.off && e.cause === 'ft') seen.ft++;
-      if (e.ty === 'reb' && e.off) { const next = ev.slice(i + 1).find((x) => x.cont === 'offensive_rebound' && (x.ty === 'shot' || x.ty === 'tov' || (x.ty === 'shootfoul' && !x.and1))); assert.ok(next, 'cada rebote ofensivo produce una continuación publicada'); if (next.ty === 'tov') seen.tov++; if (next.ty === 'shootfoul') seen.foul++; }
+      if (e.ty === 'reb' && e.off && !e.coll) { const next = ev.slice(i + 1).find((x) => x.cont === 'offensive_rebound' && (x.ty === 'shot' || x.ty === 'tov' || (x.ty === 'shootfoul' && !x.and1))); assert.ok(next, 'cada rebote ofensivo produce una continuación publicada'); if (next.ty === 'tov') seen.tov++; if (next.ty === 'shootfoul') seen.foul++; }
       if (e.ty === 'shot' && e.cont === 'offensive_rebound') { if (e.passer) { seen.assisted++; assert.notEqual(e.passer, e.pl); assert.ok(e.elig, 'solo con finalización elegible y entrega nueva'); } if (!e.made) { const nxt = ev[i + 1]; if (nxt && nxt.ty === 'reb' && nxt.off) seen.chained++; } }
     });
     const f = reboundFunnel(ev); for (const k of [0, 1]) for (const br of Object.values(f[k])) for (const c of Object.values(br)) { assert.equal(c.decisions, c.fga + c.shooting_foul + c.turnover + c.other); assert.ok(c.fgAssists <= c.eligibleBaskets && c.eligibleBaskets <= c.eligible + 1e9); }
@@ -104,7 +104,7 @@ test('S04C-06 guardado/recuperación y cierre con ramas: recuperar un partido co
   const m = new SimMatch(inputOf(51), c); m.advance({ until: 700 }); const snap = deep(snapshotSim(m, { embedContext: false })); assert.deepEqual(validateSimSnapshot(snap), []); const r = restoreSim(snap, c); r.finish();
   assert.equal(r.rng.draws, ctl.rng.draws); assert.equal(fp(r), fp(ctl));
   const ess = buildSimEssential(ctl); assert.ok(ess.reboundFunnel, 'el esencial conserva el embudo'); assert.equal(ess.validity.valid, true); assert.ok(ess.retention.conserved.includes('reboundFunnel'));
-  const dec = (f) => f.reduce((s, t) => s + Object.values(t).reduce((a, br) => a + Object.values(br).reduce((x, y) => x + y.decisions, 0), 0), 0); const offReb = ctl.events.filter((e) => e.ty === 'reb' && e.off).length; assert.equal(dec(ess.reboundFunnel), offReb);
+  const dec = (f) => f.reduce((s, t) => s + Object.values(t).reduce((a, br) => a + Object.values(br).reduce((x, y) => x + y.decisions, 0), 0), 0); const offReb = ctl.events.filter((e) => e.ty === 'reb' && e.off && !e.coll).length; // el crédito colectivo tras tapón fuera (04E) no es una decisión de rama assert.equal(dec(ess.reboundFunnel), offReb);
   const a = canonical(buildSimResult(ctl, { events: false }).exposure); buildSimResult(ctl, { events: false, audience: 'public' }); assert.equal(canonical(buildSimResult(ctl, { events: false }).exposure), a, 'consultar no genera dosis');
   // presente público: un prefijo publicado no muestra continuaciones futuras
   const part = new SimMatch(inputOf(51), c); part.advance({ until: 300 }); const pub = buildSimResult(part, { events: true, audience: 'public' }); assert.ok(pub.events.every((e) => e.t <= part.published + 1e-9));
