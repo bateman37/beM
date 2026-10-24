@@ -1,8 +1,8 @@
 {
  "schema": "beM-sim04e-freeze/1",
  "name": "val",
- "frozenAt": "2026-10-24T15:10:19.921Z",
- "codeCommit": "5a6d6a39faa06e6579b401df0bae64a9c91f5cf4",
+ "frozenAt": "2026-10-24T15:10:32.353Z",
+ "codeCommit": "be1c66bd2d2e9169f5b1cd883732a650200087f8",
  "branch": "claude/busy-edison-b1fmnc",
  "base": "a4f59fb",
  "node": "v22.22.0",
@@ -36,6 +36,14 @@
   ],
   "sportingDraws": 6733,
   "note": "referencia NUEVA del detallado corregido (DET_04E_REF): no es objetivo de calibración y no se recalibró para volver a 83–98 (referencia histórica de 04D con 6.684 sorteos)"
+ },
+ "searchEvidence": {
+  "out/sim-motor04e/11-BUSQUEDA-Y-SELECCION.json": "6a12635e330b8dc07206fa78bf3eeb16d23f7a42ccbb213d39fe02ed382c4b25",
+  "out/sim-motor04e/search/devA.json": "18e8f2480a8dbca8619ee1f40ede9858b621cfdfe214d77b0ee99f8c0aa8b2f5",
+  "out/sim-motor04e/search/short-list.json": "0f822a414abe0d37b6bffa85d5afebfec0faf3ae36c662a41cde88d92ac63e63",
+  "out/sim-motor04e/vectors/SIM_04E_BASE.json": "c133cc1546c79cbfb24dc1147dc506b29797d474e1cdc5e1a1d83fb02961bb89",
+  "out/sim-motor04e/vectors/SIM_04E_CAND.json": "aa79d92705f50483081e7f0135209de8b7e82a1b154122acf4bd502a832c0183",
+  "out/sim-motor04e/vectors/SIM_04E_EXPERIMENTAL.json": "d80aee2c6d08d70cb43feb6f5bb5524d77826c188be23a857f7b4e3182c50e59"
  },
  "files": {
   "src/analysis/catalog.js": "a1357e58c2b3adb60b06ed7cd95120f07c8ae84d50197904202dff575413fd7c",
