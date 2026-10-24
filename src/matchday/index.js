@@ -14,8 +14,10 @@ const deep = (x) => JSON.parse(JSON.stringify(x));
 export const DEFAULT_BARRIER = 120;
 
 export class Matchday {
-  constructor({ id = 'JORNADA', date = null, fixtures, standings0 = {}, objectives = [], ctx, profile = null, barrierSeconds = DEFAULT_BARRIER, policy = true, shard = null, _restore = null }) {
-    this.id = id; this.date = date; this.ctx = ctx; this.profile = profile; this.barrierSeconds = barrierSeconds; this.policy = policy; this.T = 0; this.paused = false; this.barrier = 0;
+  constructor({ id = 'JORNADA', date = null, fixtures, standings0 = {}, objectives = [], ctx, profile = null, barrierSeconds = DEFAULT_BARRIER, policy = true, shard = null, deferClose = false, _restore = null }) {
+    // `deferClose` (04B §9.2 C): la barrera PUBLICA los hechos y el marcador de los encuentros SIM que terminan, pero la construcción de su acta esencial (sellado) queda pendiente y se hace después con `sealPending` en grupos
+    // pequeños y cediendo el control entre ellos. Un terminado pendiente de sellado se publica con `sealed: false` y `valid: null` (provisional): nunca se presenta un acta parcial como final válida.
+    this.deferClose = deferClose; this.pendingSeal = new Set(); this.finPackets = new Map(); this.id = id; this.date = date; this.ctx = ctx; this.profile = profile; this.barrierSeconds = barrierSeconds; this.policy = policy; this.T = 0; this.paused = false; this.barrier = 0;
     this.standings0 = standings0; this.objectives = objectives; this.log = []; this.decisions = []; this.results = {}; this.contexts = {};
     this.meta = new Map(); this.detailed = new Map(); this.shard = shard ?? new ShardRunner(ctx); if (!shard) this.shard.ctx = ctx;
     for (const f of fixtures) {
@@ -23,7 +25,7 @@ export class Matchday {
       this.meta.set(f.id, meta);
       if (_restore) continue;
       if (meta.resolver === 'detailed') { if (!profile) throw new Error('la jornada necesita el perfil detallado para sus encuentros detallados'); this.detailed.set(f.id, new DetailedFixture({ id: f.id, input: f.input, profile, controlledTeams: meta.controlledTeams, start: meta.start })); }
-      else this.shard.add({ id: f.id, input: f.input, start: meta.start, attemptId: meta.attemptId });
+      else this.shard.add({ id: f.id, input: f.input, start: meta.start, attemptId: meta.attemptId, controlledTeams: meta.controlledTeams }); // C04: la autoridad sobre los equipos declarada llega al fragmento (antes solo la conocía el pool: la orden a un equipo sin autoridad no se rechazaba en la jornada en proceso)
     }
     this.packets = new Map(); this._publish(0);
   }
@@ -32,11 +34,15 @@ export class Matchday {
   resolverOf(id) { return this.meta.get(id).resolver; }
   _publish(T) {
     const out = new Map();
-    for (const p of this.shard.advanceAll(T)) out.set(p.id, p);
+    for (const p of this.shard.advanceAll(T, { defer: this.deferClose })) out.set(p.id, p);
     for (const [id, d] of [...this.detailed.entries()].sort((a, b) => (a[0] < b[0] ? -1 : 1))) out.set(id, d.advanceTo(Math.max(0, T - d.start)));
     // C03-01: un encuentro terminado y aceptado (p. ej. recuperado de un guardado) ya no tiene resolutor activo; su paquete sale de lo conservado, una sola vez y sin regenerarlo.
-    for (const id of this.ids) if (!out.has(id) && this.results[id]) out.set(id, this._packetOfResult(id, T));
-    for (const [id, p] of out) { const m = this.meta.get(id); p.competition = m.competition; p.teams = m.teams; p.youth = m.youth; p.valid = p.finished ? this._validOf(id, p) : null; }
+    // C04: un encuentro ya terminado y aceptado publica SIEMPRE su paquete congelado al aceptarlo (también el que sigue vivo en el fragmento): antes su `local` seguía creciendo por barrera y, tras recargar, quedaba congelado,
+    // de modo que la jornada recuperada no publicaba lo mismo que la ininterrumpida.
+    for (const id of this.ids) if (this.results[id]) out.set(id, this._packetOfResult(id, T));
+    // un terminado pendiente de sellado publica su paquete CONGELADO en la barrera en que terminó (igual que uno ya aceptado): su `local` no sigue creciendo mientras espera
+    for (const id of this.pendingSeal) if (this.finPackets.has(id)) out.set(id, deep(this.finPackets.get(id)));
+    for (const [id, p] of out) { const m = this.meta.get(id); p.competition = m.competition; p.teams = m.teams; p.youth = m.youth; p.valid = p.finished ? this._validOf(id, p) : null; if (this.deferClose && p.finished && m.resolver === 'sim') p.sealed = !this.pendingSeal.has(id) && !!this.results[id]; }
     const ordered = new Map(this.ids.filter((id) => out.has(id)).map((id) => [id, out.get(id)])); // orden estable por identificador (igual con o sin recuperación)
     this.packets = ordered; return ordered;
   }
@@ -45,7 +51,7 @@ export class Matchday {
     const res = this.results[id]; const m = this.meta.get(id); if (res.packet) return deep(res.packet);
     const r = res.essential; return { id, resolver: m.resolver, start: m.start, local: Math.max(0, T - m.start), started: true, status: 'finished', published: r.durationSeconds ?? null, score: (r.score?.final ?? r.score ?? [0, 0]).slice(), periods: r.score?.periods ?? null, finished: true, observedAt: r.durationSeconds ?? null };
   }
-  _validOf(id, p) { if (p.status === 'error') return false; if (this.results[id]) return this.results[id].valid !== false; return true; }
+  _validOf(id, p) { if (p.status === 'error') return false; if (this.results[id]) return this.results[id].valid !== false; if (this.deferClose && this.meta.get(id).resolver === 'sim') return null; return true; }
   // Tabla de una competición: 'initial' (de partida, artificial), 'provisional' (marcadores publicados) o 'final' (solo terminados válidos).
   table(comp, mode = 'provisional') {
     const base = this.standings0[comp] ?? { artificial: true, rows: [] };
@@ -59,7 +65,7 @@ export class Matchday {
     if (this.done) return { ok: false, rejected: true, reason: 'jornada terminada' };
     this.barrier += 1; this.T = Math.round((this.T + this.barrierSeconds) * 1000) / 1000;
     const packets = this._publish(this.T); // 1) todos los encuentros alcanzan el mismo presente
-    for (const p of packets.values()) if (p.finished && !this.results[p.id]) this._finish(p);
+    for (const p of packets.values()) if (p.finished && !this.results[p.id]) { if (this.deferClose && this.resolverOf(p.id) === 'sim') { const fz = deep(p); delete fz.sealed; delete fz.valid; this.finPackets.set(p.id, fz); this.pendingSeal.add(p.id); p.sealed = false; p.valid = null; } else this._finish(p); }
     const tables = Object.fromEntries(this.competitions().map((c) => [c, this.table(c, 'provisional')])); // 2) tabla desde ese mismo presente
     const needs = {}; // 3) vistas congeladas: necesidades declaradas evaluadas desde la tabla provisional
     for (const o of this.objectives) {
@@ -75,6 +81,18 @@ export class Matchday {
   runToEnd(maxBarriers = 5000) { const out = []; let n = 0; while (!this.paused && !this.done && n++ < maxBarriers) out.push(this.step()); return out; }
   pause() { this.paused = true; return { paused: true, T: this.T }; }
   resume() { this.paused = false; return { paused: false, T: this.T }; }
+  // Sellado diferido: construye (o reutiliza) el acta esencial de los encuentros SIM terminados pendientes, como mucho `group` por vuelta, y CEDE el control (`yieldFn`) entre vueltas para que la interfaz y el resto del programa sigan
+  // respondiendo; cada acta sellada pasa a resultado válido o inválido con su conciliación. No cambia ningún dato deportivo: el esencial es el mismo que el de un cierre inmediato (cierre idempotente del fragmento).
+  async sealPending({ group = 16, yieldFn = () => new Promise((r) => setTimeout(r, 0)), onProgress = null } = {}) {
+    let sealed = 0;
+    while (this.pendingSeal.size) {
+      const before = [...this.pendingSeal].sort(); this.shard.seal({ max: group }); let n = 0;
+      for (const id of before) if (this.shard.released(id)) { const fz = deep(this.finPackets.get(id)); this._finish(fz); const cur = this.packets.get(id); if (cur) { cur.valid = fz.valid; cur.sealed = true; } this.pendingSeal.delete(id); this.finPackets.delete(id); n++; }
+      if (!n) break; sealed += n; if (onProgress) onProgress({ sealed, pending: this.pendingSeal.size }); await yieldFn();
+    }
+    return { sealed, pending: this.pendingSeal.size };
+  }
+  get sealedAll() { return this.pendingSeal.size === 0; }
   _finish(p) {
     const id = p.id; const meta = this.meta.get(id);
     if (meta.resolver === 'sim') { const e = this.shard.essential(id); this.results[id] = { model: 'sim', matchId: id, attemptId: meta.attemptId, acceptedAt: this.T, essential: e, valid: e.validity?.valid !== false }; }
@@ -100,7 +118,7 @@ export class Matchday {
   // C03-02: instante independiente. Resultados, registro y decisiones se copian por valor; solo el contexto (perfil y tablas inmutables) se referencia. La suma se calcula sobre lo que se guarda.
   snapshot() {
     const fixtures = this.ids.map((id) => { const m = this.meta.get(id); const res = this.results[id] ?? null; const live = !res; return { meta: deep(m), result: res ? deep(res) : null, state: !live ? null : m.resolver === 'sim' ? snapshotSim(this.shard.matches.get(id).m, { embedContext: false }) : deep(this.detailed.get(id).snapshot(`${this.id}:${id}`)) }; });
-    const payload = { schema: SIM_MATCHDAY_SCHEMA, simVersion: SIM_VERSION, resultSchema: SIM_RESULT_SCHEMA, id: this.id, date: this.date, T: this.T, barrier: this.barrier, paused: this.paused, barrierSeconds: this.barrierSeconds, policy: this.policy, ctx: contextToJSON(this.ctx), standings0: deep(this.standings0), objectives: deep(this.objectives), fixtures, log: deep(this.log), decisions: deep(this.decisions) };
+    const payload = { schema: SIM_MATCHDAY_SCHEMA, simVersion: SIM_VERSION, resultSchema: SIM_RESULT_SCHEMA, ...(this.deferClose ? { deferClose: true, ...(this.finPackets.size ? { finPackets: Object.fromEntries([...this.finPackets.entries()].sort((a, b) => (a[0] < b[0] ? -1 : 1))) } : {}) } : {}), id: this.id, date: this.date, T: this.T, barrier: this.barrier, paused: this.paused, barrierSeconds: this.barrierSeconds, policy: this.policy, ctx: contextToJSON(this.ctx), standings0: deep(this.standings0), objectives: deep(this.objectives), fixtures, log: deep(this.log), decisions: deep(this.decisions) };
     const body = canonical(payload); return { ...payload, integrity: { algorithm: 'sha256', digest: sha256Hex(body), bytes: body.length } };
   }
   static validate(snap) {
@@ -120,15 +138,16 @@ export class Matchday {
     const errs = Matchday.validate(snap); if (errs.length) { const e = new Error(`jornada rechazada: ${errs.map((x) => `${x.path}: ${x.message}`).join('; ')}`); e.validation = errs; throw e; }
     const ctx = contextFromJSON(snap.ctx);
     const fixtures = snap.fixtures.map((f) => ({ id: f.meta.id, competition: f.meta.competition, resolver: f.meta.resolver, start: f.meta.start, controlledTeams: f.meta.controlledTeams, attemptId: f.meta.attemptId, label: f.meta.label, youth: f.meta.youth, input: { teams: f.meta.teams.map((id) => ({ id })) } }));
-    const md = new Matchday({ id: snap.id, date: snap.date, fixtures, standings0: snap.standings0, objectives: snap.objectives, ctx, profile, barrierSeconds: snap.barrierSeconds, policy: snap.policy, _restore: true });
-    for (const f of snap.fixtures) { if (f.result) { md.results[f.meta.id] = f.result; continue; } if (f.meta.resolver === 'sim') md.shard.restore({ id: f.meta.id, start: f.meta.start }, f.state); else md.detailed.set(f.meta.id, DetailedFixture.restore(f.meta.id, f.state, profile)); }
+    const md = new Matchday({ id: snap.id, date: snap.date, fixtures, standings0: snap.standings0, objectives: snap.objectives, ctx, profile, barrierSeconds: snap.barrierSeconds, policy: snap.policy, deferClose: snap.deferClose === true, _restore: true });
+    for (const f of snap.fixtures) { if (f.result) { md.results[f.meta.id] = f.result; continue; } if (f.meta.resolver === 'sim') md.shard.restore({ id: f.meta.id, start: f.meta.start, controlledTeams: f.meta.controlledTeams }, f.state); else md.detailed.set(f.meta.id, DetailedFixture.restore(f.meta.id, f.state, profile)); }
+    if (snap.finPackets) md.finPackets = new Map(Object.entries(deep(snap.finPackets)));
     md.T = snap.T; md.barrier = snap.barrier; md.paused = snap.paused; md.log = snap.log; md.decisions = snap.decisions;
     md.packets = new Map(); for (const id of md.ids) { /* se reconstruye el presente publicado sin avanzar */ } md._republish(); return md;
   }
   // Reconstruye los paquetes del presente SIN avanzar ni publicar nada nuevo (tras restaurar).
   _republish() {
     const out = new Map();
-    for (const id of this.ids) { const m = this.meta.get(id); let p; if (this.results[id]) p = this._packetOfResult(id, this.T); else if (m.resolver === 'sim') p = this.shard.progressOf(this.shard.matches.get(id), this.T); else p = this.detailed.get(id).published(Math.max(0, this.T - m.start)); p.competition = m.competition; p.teams = m.teams; p.youth = m.youth; p.valid = p.finished ? (this.results[id]?.valid ?? true) : null; out.set(id, p); }
+    for (const id of this.ids) { const m = this.meta.get(id); let p; if (this.results[id]) p = this._packetOfResult(id, this.T); else if (m.resolver === 'sim') p = this.shard.progressOf(this.shard.matches.get(id), this.T); else p = this.detailed.get(id).published(Math.max(0, this.T - m.start)); p.competition = m.competition; p.teams = m.teams; p.youth = m.youth; p.valid = p.finished ? (this.results[id]?.valid ?? true) : null; if (this.deferClose && m.resolver === 'sim' && !this.results[id] && this.finPackets.has(id)) { p = deep(this.finPackets.get(id)); p.competition = m.competition; p.teams = m.teams; p.youth = m.youth; this.pendingSeal.add(id); p.sealed = false; p.valid = null; } else if (this.deferClose && m.resolver === 'sim' && p.finished && this.results[id]) p.sealed = true; out.set(id, p); }
     this.packets = out;
   }
 }

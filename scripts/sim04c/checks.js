@@ -1,0 +1,26 @@
+// SIM-MOTOR-04C · comprobaciones mecánicas sobre los registros YA ejecutados (§9, §11; 12-COMPROBACIONES.json): neutralidad B04B ≡ N04C, equivalencia de recorridos TECH, conciliación de todos los registros,
+// misma entrada y semilla por caso entre identidades y modelos. No simula.   node scripts/sim04c/checks.js [--write=out/sim-motor04c/12-comprobaciones-campana.json]
+import { writeFileSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
+import { readJsonl } from './tables.js';
+import { loadAgenda } from './exec.mjs';
+import { canonical } from '../../src/sim/fp.js';
+const arg = (k, d = null) => { const a = process.argv.find((x) => x.startsWith(`--${k}=`)); return a ? a.slice(k.length + 3) : d; };
+const root = new URL('../..', import.meta.url).pathname.replace(/\/$/, ''); const CAMP = join(root, 'out/sim-motor04c/campaign'); const { agenda } = loadAgenda(join(root, 'docs/tecnico/evidencia-sim-motor04c/plan'));
+const latest = (recs) => { const m = new Map(); for (const r of recs) { const k = `${r.block}|${r.case_id}`; const p = m.get(k); if (!p || r.attempt >= p.attempt) m.set(k, r); } return m; };
+const byId = {}; for (const f of readdirSync(CAMP).filter((x) => x.startsWith('records-'))) byId[f.replace(/^records-(sim|detailed)-/, (m, r) => `${r}:`).replace('.jsonl', '')] = latest(readJsonl(join(CAMP, f)));
+const out = { schema: 'beM-sim04c-checks/1', neutrality: {}, tech: {}, reconciliation: {}, inputs: {} };
+// neutralidad: N04C con filas neutrales ≡ B04B (código real de 04B) sobre los 24 CAL: misma huella deportiva, marcador y esencial deportivo
+const nb = byId['sim:B04B']; const nn = byId['sim:N04C']; const cal = [...agenda.values()].filter((a) => a.block === 'CAL').map((a) => a.case_id); let same = 0; const diffs = [];
+for (const id of cal) { const a = nb.get(`CAL|${id}`); const b = nn.get(`CAL|${id}`); const ok = a && b && a.identity.sportFingerprint === b.identity.sportFingerprint && canonical(a.essential.box) === canonical(b.essential.box) && canonical(a.essential.zones) === canonical(b.essential.zones) && canonical(a.essential.assistFunnel) === canonical(b.essential.assistFunnel); if (ok) same++; else diffs.push(id); }
+out.neutrality = { comparedCases: cal.length, identicalSportFingerprintBoxZonesFunnel: same, differing: diffs, note: 'B04B = código de 04B (48bcdef) con la candidata 19,5/0,70/0,90/3; N04C = código de 04C con las tres filas nuevas a 0. Metadatos de implementación (versión, perfil) distintos.' };
+// TECH: tres recorridos de seis entradas CAL con la candidata final; igualdad entre recorridos y con el CAL de la misma identidad de vector (C04C-P30 cuando la candidata es P30)
+const fin = byId['sim:C04C-P30']; out.tech = { cases: {}, allEqual: true };
+for (const id of [...agenda.values()].filter((a) => a.tech === '1').map((a) => a.case_id)) { const r = ['auto', 'steps', 'recover'].map((n) => byId[`sim:TECH-${n}`]?.get(`TECH|${id}`)); const ref = fin?.get(`CAL|${id}`); const fps = r.map((x) => x?.identity?.sportFingerprint ?? null); const ess = r.map((x) => (x ? canonical({ b: x.essential.box, z: x.essential.zones, f: x.essential.families, s: x.essential.score, rf: x.essential.reboundFunnel }) : null));
+  const eq = fps.every((f) => f && f === fps[0]) && ess.every((e) => e === ess[0]); const eqCal = !!ref && ref.identity.sportFingerprint === fps[0]; out.tech.cases[id] = { fingerprints: fps, routesEqual: eq, equalToCalVector: eqCal, consults: r.map((x) => x?.route?.consults ?? null), restores: r.map((x) => x?.route?.restores ?? null), valid: r.map((x) => x?.valid ?? null) }; if (!eq || !eqCal) out.tech.allEqual = false; }
+// conciliación: todos los registros SIM
+for (const [k, m] of Object.entries(byId)) { if (!k.startsWith('sim:')) continue; let n = 0; let bad = 0; let notEval = 0; const checks = new Set(); for (const r of m.values()) { n++; if (!r.valid || (r.failedChecks ?? []).length) bad++; notEval += (r.notEvaluated ?? []).length; for (const c of r.recon ?? []) checks.add(c[0]); } out.reconciliation[k] = { records: n, invalidOrFailed: bad, notEvaluated: notEval, checksPerRecord: checks.size, hasR27: checks.has('R27_rama_tras_rebote_ofensivo') }; }
+// misma entrada y semilla por caso entre identidades y modelos
+const bad = []; for (const [k, m] of Object.entries(byId)) for (const [key, r] of m.entries()) { const a = agenda.get(r.case_id); if (!a || r.seed !== a.seed || r.input_hash !== a.input_hash || r.entry_id !== a.entry_id) bad.push({ identity: k, key }); } out.inputs = { runsChecked: Object.values(byId).reduce((s, m) => s + m.size, 0), mismatches: bad, note: 'cada registro lleva la semilla, el entry_id y el input_hash del plan congelado; V0/V1 de CONTRAST comparten semilla por diseño' };
+out.ok = out.neutrality.identicalSportFingerprintBoxZonesFunnel === cal.length && out.tech.allEqual && bad.length === 0 && Object.values(out.reconciliation).every((x) => x.invalidOrFailed === 0);
+if (arg('write')) writeFileSync(arg('write'), JSON.stringify(out, null, 1)); console.log(JSON.stringify({ ok: out.ok, neutrality: out.neutrality.identicalSportFingerprintBoxZonesFunnel + '/' + cal.length, tech: out.tech.allEqual, techDetail: Object.fromEntries(Object.entries(out.tech.cases).map(([k, v]) => [k, [v.routesEqual, v.equalToCalVector]])), reconciliation: out.reconciliation, mismatches: bad.length }, null, 1));

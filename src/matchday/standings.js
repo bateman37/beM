@@ -10,7 +10,7 @@ export function computeTable(base, progress, { mode = 'provisional' } = {}) {
   const rows = new Map(base.rows.map((r) => [r.team, { ...rowOf(r.team), played: (r.w ?? 0) + (r.l ?? 0), w: r.w ?? 0, l: r.l ?? 0, pf: r.pf ?? 0, pa: r.pa ?? 0 }]));
   for (const p of progress) {
     const [a, b] = p.teams; const [sa, sb] = p.score; const done = p.finished && p.valid !== false;
-    if (mode === 'final' && !done) continue; if (mode === 'provisional' && !done && !(p.started ?? true)) continue; if (p.status === 'error') continue;
+    if (mode === 'final' && (!done || p.sealed === false)) continue; // 04B: un terminado cuyo acta aún se está sellando cuenta en la provisional, no en la final válida if (mode === 'provisional' && !done && !(p.started ?? true)) continue; if (p.status === 'error') continue;
     const A = rows.get(a); const B = rows.get(b); if (!A || !B) continue;
     A.pf += sa; A.pa += sb; B.pf += sb; B.pa += sa;
     if (done) { A.played++; B.played++; if (sa > sb) { A.w++; B.l++; } else { B.w++; A.l++; } }

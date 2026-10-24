@@ -22,7 +22,10 @@ import { simReader } from '../src/sim/readers.js';
 const { profile, players } = data; const ctx = makeContext(profile);
 const inputOf = (seed, a = 'EQ03', b = 'EQ04') => buildReferenceInput(profile, players, a, b, { seed });
 const deep = (x) => JSON.parse(JSON.stringify(x));
-const OT_SEED = 9097; // EQ03–EQ04, un partido con prórroga bajo la dirección automática (evidencia conocida, sin búsqueda)
+// EQ03–EQ04: un partido con prórroga bajo la dirección automática. En 03 era la semilla 9097; SIM-MOTOR-04 cambia las trayectorias, así que se toma la primera semilla ≥ 9000 que produce prórroga (búsqueda determinista, estable
+// frente a cambios numéricos posteriores de la candidata: no depende de un valor ajustado a mano).
+const findOtSeed = () => { for (let s = 9000; s < 9400; s++) { const m = new SimMatch(buildReferenceInput(profile, players, 'EQ03', 'EQ04', { seed: s }), ctx); playAutomatic(m); if (m.period > 4) return s; } throw new Error('sin prórroga en 400 semillas'); };
+const OT_SEED = findOtSeed();
 const reseal = (snap) => { const { integrity, ...rest } = snap; const body = canonical(rest); return { ...rest, integrity: { algorithm: 'sha256', digest: sha256Hex(body), bytes: body.length } }; };
 
 // ---------------------------------------------------------------------------------------------------------------------------------- C03-01 · C03-02 · C03-03
@@ -65,10 +68,9 @@ test('S03-02b jornada: capturar → continuar la original → la captura sigue v
   const live = mkDay(); live.runUntil(240); const s2 = live.snapshot(); const nlog = live.log.length; s2.log.push({ junk: 1 }); s2.decisions.push({ junk: 1 }); assert.equal(live.log.length, nlog);
 });
 
-test('S03-03 compatibilidad explícita: guardado válido de SIM-MOTOR-02 continúa exacto; incompatible con suma correcta, incompleto y alterado se rechazan por motivos distintos, sin tocar archivo ni sesión', () => {
-  const fix = JSON.parse(readFileSync(new URL('./fixtures/sim-snapshot-02.json', import.meta.url), 'utf8')); const old = fix.snap; assert.equal(old.simVersion, '0.2.0-SIMMOTOR02');
-  assert.deepEqual(validateSimSnapshot(old), [], 'el guardado real de 02 es válido para este lector (compatibilidad documentada, no por número de schema)');
-  const r = restoreSim(deep(old), ctx); r.finish(); const res = buildSimResult(r, { events: false }); assert.deepEqual(res.score.final, fix.final.score); assert.equal(r.rng.draws, fix.final.draws); assert.equal(res.sportFingerprint, fix.final.sportFingerprint, 'continuación exacta del guardado de 02');
+test('S03-03 compatibilidad explícita: el guardado de SIM-MOTOR-02 se RECHAZA con explicación en 04 (su futuro cambia); incompatible con suma correcta, incompleto y alterado se rechazan por motivos distintos, sin tocar archivo ni sesión', () => {
+  const fix = JSON.parse(readFileSync(new URL('./fixtures/sim-snapshot-02.json', import.meta.url), 'utf8')); const old = fix.snap; assert.equal(old.simVersion, '0.2.0-SIMMOTOR02'); const oldBefore = canonical(old);
+  assert.ok(validateSimSnapshot(old).length >= 1, 'el guardado real de 02 no se continúa con 04 (la semántica exacta no puede demostrarse)'); assert.equal(canonical(old), oldBefore, 'rechazar no modifica el archivo'); assert.throws(() => restoreSim(deep(old), ctx), /rechazado/);
   const m = new SimMatch(inputOf(5), ctx); m.advance({ until: 130 }); const good = snapshotSim(m, { embedContext: false }); assert.equal(good.simVersion, SIM_VERSION);
   const before = canonical(good); const badVer = reseal({ ...deep(good), simVersion: '99.0.0-INCOMPATIBLE' }); const badRes = reseal({ ...deep(good), resultSchema: 'beM-sim-match/999' }); const badSchema = reseal({ ...deep(good), schema: 'beM-sim-snapshot/999' });
   for (const [bad, path] of [[badVer, 'simVersion'], [badRes, 'resultSchema'], [badSchema, 'schema']]) { assert.equal(bad.integrity.digest, reseal(bad).integrity.digest, 'la suma es COHERENTE: la prueba no se apoya en un checksum roto'); const errs = validateSimSnapshot(bad); assert.ok(errs.some((e) => e.path === path), `${path}: ${JSON.stringify(errs)}`); assert.ok(!errs.some((e) => e.path === 'integrity'), 'el rechazo es por compatibilidad, no por integridad'); assert.throws(() => restoreSim(bad, ctx), /rechazado/); }
@@ -197,14 +199,14 @@ test('S03-10 pool de jornada: la petición y el encuentro tienen identificadores
 });
 
 test('S03-11 política del entrenador coherente entre rutas: misma entrada, política, fronteras y noticias en completo, cuartos, jornada, trabajador y lote; noticia distinta: mismo prefijo, futuro distinto', async () => {
-  const inp = inputOf(20261023); const fin = new SimMatch(inp, ctx); fin.finish(); assert.deepEqual(fin.score, [76, 83]); assert.equal(fin.coach.log.length, 0, 'la PRIMITIVA finish() no revisa (control técnico identificado)');
-  const auto = new SimMatch(inp, ctx); playAutomatic(auto); assert.deepEqual(auto.score, [77, 79]); assert.equal(auto.coach.log.length, 8, 'la ruta de producto aplica el calendario de revisiones (cada 120 s)');
+  const inp = inputOf(20261023); const fin = new SimMatch(inp, ctx); fin.finish(); assert.equal(fin.coach.log.length, 0, 'la PRIMITIVA finish() no revisa (control técnico identificado)');
+  const auto = new SimMatch(inp, ctx); playAutomatic(auto); assert.ok(auto.coach.log.length > 0, 'la ruta de producto aplica el calendario de revisiones (cada 120 s)'); assert.notDeepEqual(auto.score, fin.score, 'la política automática cambia la trayectoria respecto a la primitiva sin revisión');
   const want = fpOf(auto); const wantDecisions = canonical(auto.coach.log);
   const q = new SimMatch(inp, ctx); for (const u of [600, 1200, 1800, 2400, 'end']) advanceAutomatic(q, { until: u }); assert.equal(fpOf(q), want, 'avance por cuartos'); assert.equal(canonical(q.coach.log), wantDecisions);
   const odd = new SimMatch(inp, ctx); for (const u of [37, 500, 501, 1999, 'end']) advanceAutomatic(odd, { until: u }); assert.equal(fpOf(odd), want, 'avance con instantes no múltiplos'); assert.equal(canonical(odd.coach.log), wantDecisions);
   const md = new Matchday({ id: 'J1', fixtures: [{ id: 'P', competition: 'C', start: 0, input: inp }], standings0: standings(inp.teams[0].id, inp.teams[1].id), ctx, policy: true }); md.runToEnd(); assert.equal(md.results.P.essential.identity.sportFingerprint, want, 'jornada'); assert.equal(canonical(md.shard.matches.get('P').m.coach.log), wantDecisions);
   const pool = new MatchdayPool({ workers: 1 }); await pool.start(contextToJSON(ctx), referenceTeamMap(profile, players)); try { await pool.add([{ id: 'P', input: inp, start: 0 }]); for (let T = 120; T <= 3000; T += 120) { await pool.advance(T); await pool.review(T, {}, true); } const e = (await pool.essentials(['P'])).P; assert.equal(e.identity.sportFingerprint, want, 'trabajador'); assert.equal(e.identity.effectiveInputFingerprint, buildSimResult(auto, { events: false, reconcile: false }).identity.effectiveInputFingerprint, 'mismas decisiones aplicadas'); } finally { await pool.close(); }
-  const { runCase } = await import('../src/sim/cases.js'); const tm = referenceTeamMap(profile, players); const c = { n: 1, id: 'C', a: 'EQ03', b: 'EQ04', seed: 20261023 }; const rc = runCase(ctx, tm, c); assert.equal(rc.policy, true); assert.equal(rc.decisions, 8); assert.equal(rc.fp, want, 'lote'); const tech = runCase(ctx, tm, { ...c, policy: false }); assert.equal(tech.policy, false); assert.equal(tech.decisions, 0); assert.equal(tech.fp, fpOf(fin), 'el modo técnico sin política está identificado y no sustituye al producto');
+  const { runCase } = await import('../src/sim/cases.js'); const tm = referenceTeamMap(profile, players); const c = { n: 1, id: 'C', a: 'EQ03', b: 'EQ04', seed: 20261023 }; const rc = runCase(ctx, tm, c); assert.equal(rc.policy, true); assert.equal(rc.decisions, auto.coach.log.length); assert.equal(rc.fp, want, 'lote'); const tech = runCase(ctx, tm, { ...c, policy: false }); assert.equal(tech.policy, false); assert.equal(tech.decisions, 0); assert.equal(tech.fp, fpOf(fin), 'el modo técnico sin política está identificado y no sustituye al producto');
   // noticia externa distinta: el prefijo anterior es igual; la respuesta futura permitida difiere
   const news = (T0) => { const m = new SimMatch(inp, ctx); advanceAutomatic(m, { context: (mm, T) => { if (T === T0) mm.addContext({ kind: 'need', team: 0, requiredMargin: 99, source: 'noticia de prueba' }); } }); return m; };
   const withNews = news(2160); const sameNo = auto; const upto = (m, t) => canonical(m.events.filter((e) => e.t <= t + 1e-9)); assert.equal(upto(withNews, 2160), upto(sameNo, 2160), 'prefijo anterior a la noticia: igual'); assert.equal(canonical(withNews.coach.log.filter((d) => d.at < 2160)), canonical(sameNo.coach.log.filter((d) => d.at < 2160)), 'decisiones previas a la noticia: iguales (la del propio instante ya ve la noticia en su vista)');
@@ -212,10 +214,10 @@ test('S03-11 política del entrenador coherente entre rutas: misma entrada, pol�
 });
 
 // ---------------------------------------------------------------------------------------------------------------------------------- neutralidad de las optimizaciones exactas (§5)
-test('S03-12 neutralidad de las optimizaciones: huellas del control preoptimización (ee14ec5), lectura incremental del entrenador = recorrido completo y plan recompilado al cambiar el libro', async () => {
+test('S03-12 neutralidad de las optimizaciones: huellas del control preoptimización O04B-CONTROL, lectura incremental del entrenador = recorrido completo y plan recompilado al cambiar el libro', async () => {
   const { runCase } = await import('../src/sim/cases.js'); const { observationFor } = await import('../src/sim/coachsim.js'); const tm = referenceTeamMap(profile, players);
-  // casos de la agenda natural congelada de 01/02/03 (master 20261022) con su huella medida en el CONTROL antes de optimizar
-  const control = [{ n: 1, id: 'SIM01-C0001', a: 'EQ01', b: 'EQ02', seed: 152650156, fp: 'fb72046215122785' }, { n: 500, id: 'SIM01-C0500', a: 'EQ10', b: 'EQ05', seed: 1989927367, fp: 'ab1dc1ae565382d6' }, { n: 1000, id: 'SIM01-C1000', a: 'EQ07', b: 'EQ11', seed: 3958906328, fp: '082926a99e5493c2' }];
+  // casos de la agenda natural congelada de 01/02/03 (master 20261022) con su huella medida en O04-CONTROL (código con los mecanismos y el vector de 04 ya fijados, ANTES de las optimizaciones exactas de 04). Las huellas de 03 (fb720462…, ab1dc1ae…, 082926a9…) ya no valen: 04 cambia el deporte (C04-01/03/04).
+  const control = [{ n: 1, id: 'SIM01-C0001', a: 'EQ01', b: 'EQ02', seed: 152650156, fp: '89dd468d1d7d4484' }, { n: 500, id: 'SIM01-C0500', a: 'EQ10', b: 'EQ05', seed: 1989927367, fp: '8e00bf6dda8b797a' }, { n: 1000, id: 'SIM01-C1000', a: 'EQ07', b: 'EQ11', seed: 3958906328, fp: '548a61ce61aceb7c' }];
   for (const c of control) assert.equal(runCase(ctx, tm, c).fp, c.fp, `${c.id}: misma trayectoria que el control`);
   // observationFor incremental frente al recorrido completo original
   const naive = (m, team, T) => { const S = m.S; const seg = m.segments.filter((s) => s.start < T - 1e-9); const win = seg.slice(-S.coachSim.observationWindowSegments); const winIdx = new Set(win.map((s) => s.n)); const sc = [0, 0]; let periodStart = 0; let period = 1; const rival = { exterior: 0, interior: 0, media: 0 }; const g = (z) => (z === 'three' ? 'exterior' : z === 'rim' || z === 'inside' ? 'interior' : 'media');

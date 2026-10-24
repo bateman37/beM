@@ -1,0 +1,160 @@
+{
+ "schema": "beM-sim04b-selection-rules/1",
+ "frozenBeforeCAL": true,
+ "rules": {
+  "id": "SEL-SIM04B-R1",
+  "maxAdditionalVectors": 7,
+  "precision": 1e-9,
+  "minRelativeImprovement": 0.05,
+  "band": {
+   "eP": 0.08,
+   "eF": 0.08,
+   "e2": 0.04,
+   "eR": 0.05,
+   "eQ": 0.05,
+   "eA": 0.08
+  },
+  "errors": {
+   "eP": "abs(meanPTS40_SIM / meanPTS40_DET − 1); medias por actuación de equipo normalizadas a 40 min (valor × 2400 / duración deportiva)",
+   "eF": "abs(meanFGA40_SIM / meanFGA40_DET − 1); mismas normalizaciones",
+   "eZ": "Σ_z abs(shareFGA_SIM[z] − shareFGA_DET[z]) en las cuatro zonas (sumas de numeradores y denominadores)",
+   "e2": "abs(Σ2PM_SIM/Σ2PA_SIM − Σ2PM_DET/Σ2PA_DET)",
+   "eR": "abs(ΣrimM_SIM/ΣrimA_SIM − ΣrimM_DET/ΣrimA_DET)",
+   "eQ": "abs(forcedRimShare_SIM − forcedRimShare_DET), con forcedRimShare = intentos al aro en calidad forzada / intentos al aro",
+   "eA": "abs(ΣAST_FG_SIM/ΣFGM_SIM − ΣAST_FG_DET/ΣFGM_DET)",
+   "freq40": "fracción de actuaciones de equipo con algún jugador ≥ 40 min (2400 s) en partidos SIN prórroga, con segundos originales"
+  },
+  "localGuards": "frente al ganador previo: eP ≤ max(0,08; eP_prev+0,02) · eF ≤ max(0,08; eF_prev+0,02) · e2 ≤ max(0,04; e2_prev+0,01) · eR ≤ max(0,05; eR_prev+0,01) · eA ≤ max(0,08; eA_prev+0,02) · eZ ≤ eZ_prev+0,02 · eQ ≤ max(0,05; eQ_prev+0,02)",
+  "cumulativeGuards": "frente a R04B-N: eP/eF/e2/eR/eQ/eA ≤ max(error inicial; banda 0,08/0,08/0,04/0,05/0,05/0,08) y eZ ≤ eZ inicial. Ninguna guarda se compensa con la mejora de otra.",
+  "stages": [
+   {
+    "stage": "Z",
+    "path": "shotMix.rimWeightFactor",
+    "baseline": 1,
+    "values": [
+     1.25,
+     1.5
+    ],
+    "objective": "menor eZ"
+   },
+   {
+    "stage": "Q",
+    "path": "opportunity.simRimQualityLogit",
+    "baseline": 0,
+    "values": [
+     0.25,
+     0.5
+    ],
+    "objective": "menor max(eR/0,05; eQ/0,05; e2/0,04)"
+   },
+   {
+    "stage": "A",
+    "path": "assist.receivedAdvantageP0",
+    "baseline": 0,
+    "values": [
+     0.25,
+     0.5
+    ],
+    "objective": "menor eA"
+   },
+   {
+    "stage": "E",
+    "path": "energy.costPerLiveMinute",
+    "baseline": 3,
+    "values": [
+     3.5
+    ],
+    "objective": "3,5 solo si reduce ≥ 20 % relativo la frecuencia de 40 min y supera guardas y casos de rotación"
+   }
+  ],
+  "ties": "se conserva el valor previo si el objetivo previo ya es cero o la mejora relativa es < 5 %; en empate (precisión 1e-9) se conserva el cambio menor respecto al previo y después el valor menor; denominador ausente/nulo ⇒ no evaluado y se conserva el valor previo (nunca una pérdida cero ficticia)",
+  "energy": "E = 3,5 solo si reduce ≥ 20 % relativo la frecuencia de 40 min frente al ganador previo con gasto 3, cumple todas las guardas y supera las comprobaciones de rotación corregidas",
+  "valUse": "VAL no elige ni reajusta: ninguna regla lee resultados de VAL"
+ },
+ "stages": [
+  {
+   "stage": "Z",
+   "path": "shotMix.rimWeightFactor",
+   "baseline": 1,
+   "values": [
+    1.25,
+    1.5
+   ],
+   "ids": [
+    "C04B-Z1",
+    "C04B-Z2"
+   ],
+   "objective": "menor eZ"
+  },
+  {
+   "stage": "Q",
+   "path": "opportunity.simRimQualityLogit",
+   "baseline": 0,
+   "values": [
+    0.25,
+    0.5
+   ],
+   "ids": [
+    "C04B-Q1",
+    "C04B-Q2"
+   ],
+   "objective": "menor max(eR/0,05; eQ/0,05; e2/0,04)"
+  },
+  {
+   "stage": "A",
+   "path": "assist.receivedAdvantageP0",
+   "baseline": 0,
+   "values": [
+    0.25,
+    0.5
+   ],
+   "ids": [
+    "C04B-A1",
+    "C04B-A2"
+   ],
+   "objective": "menor eA"
+  },
+  {
+   "stage": "E",
+   "path": "energy.costPerLiveMinute",
+   "baseline": 3,
+   "values": [
+    3.5
+   ],
+   "ids": [
+    "C04B-E1"
+   ],
+   "objective": "3,5 solo si reduce ≥ 20 % relativo la frecuencia de 40 min y supera guardas y casos de rotación"
+  }
+ ],
+ "baseVector": [
+  {
+   "path": "volume.neutralSecondsPerControl",
+   "value": 19.5
+  },
+  {
+   "path": "shotMix.threeWeightFactor",
+   "value": 0.7
+  },
+  {
+   "path": "assist.eligibleFinalPassP0",
+   "value": 0.9
+  },
+  {
+   "path": "energy.costPerLiveMinute",
+   "value": 3
+  }
+ ],
+ "budget": {
+  "maxAdditionalVectors": 7,
+  "note": "no es el producto cartesiano: cada etapa parte del ganador de la anterior; los partidos del ganador ya ejecutado se reutilizan"
+ },
+ "identities": {
+  "DET": "detallado congelado de MOTOR-18C (83–98, 6.684 sorteos), mismas entradas",
+  "R04": "código real de SIM-MOTOR-04 (ad52c91, 0.3.0-SIMMOTOR04) con su candidata 19,5 / 0,70 / 0,90 / 3",
+  "R04B-N": "código de 04B con los cuatro valores anteriores y las filas nuevas neutrales",
+  "C04B-*": "vectores limitados de este documento sobre R04B-N",
+  "C04B-FINAL-PROVISIONAL": "vector elegido por estas reglas SOLO con CAL, pendiente de aceptación de Dennis"
+ },
+ "selectionRulesSha256": "15de5306da3976ac516aa1a99fd9a411f80a43ebe4d085e033e9dc4ecf2ba499"
+}

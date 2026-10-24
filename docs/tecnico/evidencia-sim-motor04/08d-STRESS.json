@@ -1,0 +1,240 @@
+{
+ "schema": "beM-sim04-stress/1",
+ "note": "no se calibra para que el jugador de estrés deje de ser extraordinario; la referencia detallada de las dos estrellas procede de la campaña de 03 (el detallado no cambió: 83–98 y 6.684 sorteos)",
+ "players": [
+  {
+   "player": "EQ06-J03",
+   "R0": {
+    "n": 12,
+    "ptsMean": 51.25,
+    "ptsMax": 75,
+    "minMean": 34.223,
+    "minMax": 40,
+    "pfMean": 3.333,
+    "fgaMean": 29.417,
+    "ftaMean": 7.5
+   },
+   "FINAL": {
+    "n": 12,
+    "ptsMean": 36.083,
+    "ptsMax": 65,
+    "minMean": 32.533,
+    "minMax": 34,
+    "pfMean": 2.25,
+    "fgaMean": 21.917,
+    "ftaMean": 2.917
+   },
+   "detailed03": {
+    "n": 12,
+    "ptsMean": 34.333,
+    "ptsMax": 64,
+    "minMean": 38.619,
+    "source": "campaña de 03, motor detallado congelado, partidos donde la estrella jugó"
+   },
+   "reading": "SIM final 36.083 pts de media frente a 34.333 del detallado (n=12) y 51.25 de R0: la parte que procede de la ficha es la que muestra el detallado; la diferencia con SIM es lo que añade el generador"
+  },
+  {
+   "player": "EQ11-J03",
+   "R0": {
+    "n": 12,
+    "ptsMean": 37.5,
+    "ptsMax": 47,
+    "minMean": 38.504,
+    "minMax": 40,
+    "pfMean": 2.25,
+    "fgaMean": 26.083,
+    "ftaMean": 8.25
+   },
+   "FINAL": {
+    "n": 12,
+    "ptsMean": 33.417,
+    "ptsMax": 42,
+    "minMean": 38.87,
+    "minMax": 39,
+    "pfMean": 2.083,
+    "fgaMean": 23.083,
+    "ftaMean": 4
+   },
+   "detailed03": {
+    "n": 12,
+    "ptsMean": 28.917,
+    "ptsMax": 52,
+    "minMean": 39.573,
+    "source": "campaña de 03, motor detallado congelado, partidos donde la estrella jugó"
+   },
+   "reading": "SIM final 33.417 pts de media frente a 28.917 del detallado (n=12) y 37.5 de R0: la parte que procede de la ficha es la que muestra el detallado; la diferencia con SIM es lo que añade el generador"
+  }
+ ],
+ "team": {
+  "R0": {
+   "pts": 96.708,
+   "fga": 73.167,
+   "fg2_pct": 0.5329,
+   "fg3_pct": 0.39,
+   "tov": 18.625,
+   "validAll": true,
+   "maxPlayerPtsMax": 75,
+   "maxPlayerPtsP90": 53.2
+  },
+  "FINAL": {
+   "pts": 75.292,
+   "fga": 59.604,
+   "fg2_pct": 0.5061,
+   "fg3_pct": 0.3988,
+   "tov": 14.208,
+   "validAll": true,
+   "maxPlayerPtsMax": 65,
+   "maxPlayerPtsP90": 41.3
+  }
+ },
+ "extremes": {
+  "R0": [
+   {
+    "case": "STRESS-EQ11-EQ06-R2",
+    "player": "EQ06-J03",
+    "pts": 75,
+    "minutes": 40,
+    "pf": 1,
+    "fga": 45,
+    "fta": 11
+   },
+   {
+    "case": "STRESS-EQ07-EQ06-R1",
+    "player": "EQ06-J03",
+    "pts": 73,
+    "minutes": 40,
+    "pf": 3,
+    "fga": 36,
+    "fta": 12
+   },
+   {
+    "case": "STRESS-EQ10-EQ06-R2",
+    "player": "EQ06-J03",
+    "pts": 65,
+    "minutes": 40,
+    "pf": 3,
+    "fga": 32,
+    "fta": 7
+   },
+   {
+    "case": "STRESS-EQ10-EQ06-R1",
+    "player": "EQ06-J03",
+    "pts": 61,
+    "minutes": 40,
+    "pf": 4,
+    "fga": 33,
+    "fta": 15
+   },
+   {
+    "case": "STRESS-EQ07-EQ06-R2",
+    "player": "EQ06-J03",
+    "pts": 56,
+    "minutes": 40,
+    "pf": 2,
+    "fga": 37,
+    "fta": 6
+   },
+   {
+    "case": "STRESS-EQ06-EQ11-R2",
+    "player": "EQ06-J03",
+    "pts": 52,
+    "minutes": 31.71,
+    "pf": 5,
+    "fga": 27,
+    "fta": 4
+   },
+   {
+    "case": "STRESS-EQ11-EQ06-R1",
+    "player": "EQ06-J03",
+    "pts": 50,
+    "minutes": 40,
+    "pf": 3,
+    "fga": 34,
+    "fta": 10
+   },
+   {
+    "case": "STRESS-EQ06-EQ11-R1",
+    "player": "EQ06-J03",
+    "pts": 48,
+    "minutes": 24.97,
+    "pf": 5,
+    "fga": 24,
+    "fta": 7
+   }
+  ],
+  "FINAL": [
+   {
+    "case": "STRESS-EQ06-EQ11-R2",
+    "player": "EQ06-J03",
+    "pts": 65,
+    "minutes": 34,
+    "pf": 2,
+    "fga": 31,
+    "fta": 6
+   },
+   {
+    "case": "STRESS-EQ06-EQ10-R1",
+    "player": "EQ06-J03",
+    "pts": 49,
+    "minutes": 33.81,
+    "pf": 1,
+    "fga": 29,
+    "fta": 8
+   },
+   {
+    "case": "STRESS-EQ10-EQ06-R1",
+    "player": "EQ06-J03",
+    "pts": 43,
+    "minutes": 34,
+    "pf": 2,
+    "fga": 21,
+    "fta": 1
+   },
+   {
+    "case": "STRESS-EQ06-EQ11-R1",
+    "player": "EQ11-J03",
+    "pts": 42,
+    "minutes": 39,
+    "pf": 2,
+    "fga": 27,
+    "fta": 4
+   },
+   {
+    "case": "STRESS-EQ11-EQ06-R1",
+    "player": "EQ11-J03",
+    "pts": 42,
+    "minutes": 39,
+    "pf": 1,
+    "fga": 22,
+    "fta": 6
+   },
+   {
+    "case": "STRESS-EQ10-EQ06-R2",
+    "player": "EQ06-J03",
+    "pts": 41,
+    "minutes": 34,
+    "pf": 3,
+    "fga": 26,
+    "fta": 3
+   },
+   {
+    "case": "STRESS-EQ11-EQ10-R1",
+    "player": "EQ11-J03",
+    "pts": 40,
+    "minutes": 38.5,
+    "pf": 2,
+    "fga": 28,
+    "fta": 8
+   },
+   {
+    "case": "STRESS-EQ06-EQ10-R2",
+    "player": "EQ06-J03",
+    "pts": 39,
+    "minutes": 33.9,
+    "pf": 3,
+    "fga": 23,
+    "fta": 5
+   }
+  ]
+ }
+}

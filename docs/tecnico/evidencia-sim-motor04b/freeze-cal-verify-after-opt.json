@@ -1,0 +1,42 @@
+{
+ "mode": "verify",
+ "ok": false,
+ "codeCommitFrozen": "deaadc1560adf58cd069da062f8cd37217f2ff6f",
+ "headNow": "7977d5b83ec3cd4e29ab22ab7dddf1cca72c17e8",
+ "files": {
+  "changed": [
+   "src/lab/sim-day-ui.js",
+   "src/lab/sim-ui.js",
+   "src/matchday/index.js",
+   "src/matchday/pool.js",
+   "src/matchday/standings.js",
+   "src/matchday/worker-node.js",
+   "src/sim/adapt.js",
+   "src/sim/candidates.js",
+   "src/sim/coachsim.js",
+   "src/sim/engine.js",
+   "src/sim/exposure.js",
+   "src/sim/fp.js",
+   "src/sim/model.js",
+   "src/sim/pool.js",
+   "src/sim/result.js",
+   "src/sim/teams.js",
+   "scripts/sim04b/exec.mjs"
+  ],
+  "added": [
+   "src/sim/clone.js",
+   "src/sim/runtime.js"
+  ],
+  "removed": []
+ },
+ "plan": {
+  "changed": [],
+  "added": [],
+  "removed": []
+ },
+ "detailed": {
+  "changed": [],
+  "added": [],
+  "removed": []
+ }
+}

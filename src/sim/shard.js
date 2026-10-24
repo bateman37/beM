@@ -11,12 +11,14 @@ import { buildPairInput } from './teams.js';
 
 export class ShardRunner {
   // `releaseFinished`: al terminar un encuentro se conserva solo su registro esencial y su último paquete (se libera el estado SIM con sus hechos): imprescindible para jornadas de miles de encuentros.
-  constructor(ctx = null, { releaseFinished = false } = {}) { this.ctx = ctx; this.matches = new Map(); this.teamMap = null; this.releaseFinished = releaseFinished; }
+  constructor(ctx = null, { releaseFinished = false } = {}) { this.ctx = ctx; this.matches = new Map(); this.teamMap = null; this.releaseFinished = releaseFinished; this.timing = { gen: 0, build: 0, recon: 0, assemble: 0, progress: 0 }; }
+  // Tiempos acumulados desde la última lectura (solo medición; no forman parte del deporte ni del estado guardado).
+  takeTiming() { const t = this.timing; this.timing = { gen: 0, build: 0, recon: 0, assemble: 0, progress: 0 }; return t; }
   setContext(ctxJSON) { this.ctx = contextFromJSON(ctxJSON); }
   // `fx`: { id, input, opts, start } ; el encuentro empieza en el instante virtual `start` (desfase sobre la agenda).
   // `fx.spec` ({ a, b, seed, importance }) construye la entrada en el propio fragmento con las doce plantillas ya enviadas (no se viaja una entrada de cientos de KB por encuentro).
   add(fx) { if (!fx.input && fx.spec) fx = { ...fx, input: buildPairInput(this.teamMap, fx.spec.a, fx.spec.b, { seed: fx.spec.seed, importance: fx.spec.importance ?? 'ordinary' }) }; this.matches.set(fx.id, { id: fx.id, start: fx.start ?? 0, controlledTeams: fx.controlledTeams ?? null, m: new SimMatch(fx.input, this.ctx, { matchId: fx.id, attemptId: fx.attemptId ?? 1, ...(fx.opts ?? {}) }), essential: null }); return fx.id; }
-  restore(fx, snap) { this.matches.set(fx.id, { id: fx.id, start: fx.start ?? 0, m: restoreSim(snap, this.ctx, { matchId: fx.id }), essential: null }); }
+  restore(fx, snap) { this.matches.set(fx.id, { id: fx.id, start: fx.start ?? 0, controlledTeams: fx.controlledTeams ?? null, m: restoreSim(snap, this.ctx, { matchId: fx.id }), essential: null }); }
   has(id) { return this.matches.has(id); }
   // Tiempo local = tiempo disputado acumulado de periodos (virtual deportivo) menos el desfase de inicio; un partido no iniciado no publica nada.
   localTime(e, T) { return Math.max(0, T - e.start); }
@@ -25,10 +27,26 @@ export class ShardRunner {
     return { id: e.id, resolver: 'sim', start: e.start, local: Math.round(local * 10) / 10, started, status: m.status === 'error' ? 'error' : p.ended ? 'finished' : started ? 'running' : 'scheduled', published: Math.round(m.published * 10) / 10, score: p.score.slice(), periods: p.periods.map((x) => x.slice()), finished: p.ended, observedAt: Math.round(m.published * 10) / 10 };
   }
   // Publica los hechos alcanzados hasta el instante virtual `T` en todos los encuentros del fragmento (orden estable por identificador). Devuelve los paquetes de progreso.
-  advanceAll(T) {
+  // `defer`: publica los hechos y el estado terminado de cada encuentro pero DIFIERE la construcción de su esencial (el partido terminado sigue vivo, sin cambiar de resultado): `seal()` la hace después, en grupos pequeños, con el
+  // mismo instante público. El marcador y la clasificación no esperan a la construcción de las actas; el trabajo total (CPU) es el mismo.
+  advanceAll(T, { defer = false } = {}) {
     const out = [];
-    for (const id of [...this.matches.keys()].sort()) { const e = this.matches.get(id); if (!e.m) { out.push(e.final); continue; } const local = this.localTime(e, T); if (local > 0 && e.m.status === 'running' && local > e.m.published + 1e-9) e.m.advance({ until: local }); const p = this.progressOf(e, T); if (this.releaseFinished && p.finished && !e.essential) { e.essential = buildSimEssential(e.m); e.final = p; e.m = null; } out.push(p); }
+    for (const id of [...this.matches.keys()].sort()) { const e = this.matches.get(id); if (!e.m) { out.push(e.final); continue; } const local = this.localTime(e, T); const tg = performance.now(); if (local > 0 && e.m.status === 'running' && local > e.m.published + 1e-9) e.m.advance({ until: local }); const tp = performance.now(); this.timing.gen += tp - tg; const p = this.progressOf(e, T); if (p.finished && !e.finPacket) e.finPacket = p; this.timing.progress += performance.now() - tp; if (this.releaseFinished && p.finished && !defer) this._close(e); out.push(p); }
     return out;
+  }
+  // Cierre idempotente de UN encuentro terminado (04B §5.2): reutiliza el esencial completo ya consultado o lo construye, conserva el paquete público final con su identidad/instante/marcador originales y libera el estado
+  // generador (hechos, tramos, jugadores). Es el único camino de liberación: consultar antes de sellar, sellar antes de consultar o repetir ambas cosas conducen al mismo resultado y al mismo estado.
+  _close(e) {
+    if (!e.m) return false;
+    if (!(e.essential && e.essential.complete === true && e.essential.validity)) e.essential = buildSimEssential(e.m, { timing: this.timing });
+    e.final = e.finPacket ?? this.progressOf(e, e.start + e.m.published); e.m = null; return true;
+  }
+  // Construye (o reutiliza) y libera el esencial de los encuentros terminados aún no sellados (orden estable por identificador), como mucho `max` por llamada. Devuelve cuántos cerró (`reused`: de ellos, cuántos ya tenían
+  // el esencial por una consulta anterior) y cuántos quedan. Un encuentro ya liberado o en curso no se toca.
+  seal({ max = Infinity } = {}) {
+    let sealed = 0; let remaining = 0; let reused = 0;
+    for (const id of [...this.matches.keys()].sort()) { const e = this.matches.get(id); if (!e.m) continue; const p = e.m.syncPub(); if (!p.ended) continue; if (sealed >= max) { remaining++; continue; } const had = !!(e.essential && e.essential.complete === true && e.essential.validity); this._close(e); if (had) reused++; sealed++; }
+    return { sealed, remaining, reused };
   }
   // Revisión de los entrenadores en la frontera `T` con el contexto ya publicado de cada encuentro (`needs[id] = [{ team, ... }]`). Devuelve las decisiones y las omitidas con su causa.
   review(T, needs = {}, { policy = true } = {}) {
@@ -47,9 +65,15 @@ export class ShardRunner {
     if (e.controlledTeams) { const ti = typeof spec?.team === 'number' ? spec.team : e.m.teams.findIndex((t) => t.id === spec?.team); if (!e.controlledTeams.includes(ti)) return { ok: false, rejected: true, code: 'sin_autoridad', reason: `sin autoridad sobre el equipo ${spec?.team}` }; }
     const r = e.m.submit(spec); return r.ok ? r : { ...r, rejected: true, code: 'invalida' };
   }
-  result(id, opts = {}) { return buildSimResult(this.matches.get(id).m, opts); }
-  essential(id) { const e = this.matches.get(id); if (!e.essential) e.essential = buildSimEssential(e.m); return e.essential; }
+  // Un encuentro liberado devuelve lo CONSERVADO (esencial y último paquete público), nunca un error de nulos ni una regeneración.
+  result(id, opts = {}) { const e = this.matches.get(id); if (!e.m) return { conserved: true, coverage: 'essential', matchId: id, essential: e.essential, final: e.final }; return buildSimResult(e.m, opts); }
+  // Consulta del esencial. De un encuentro TERMINADO es el definitivo (se conserva para sellar sin recalcular); de uno en curso es una vista parcial (`complete: false`) que NO se guarda como definitiva.
+  essential(id) {
+    const e = this.matches.get(id); if (e.essential) return e.essential;
+    const ess = buildSimEssential(e.m); if (e.m.syncPub().ended) e.essential = ess; return ess;
+  }
   released(id) { return this.matches.get(id)?.m == null; }
-  snapshot(id) { return snapshotSim(this.matches.get(id).m); }
+  // Un encuentro liberado ya no tiene estado generador: se rechaza con causa tipada y el resultado final sigue disponible por `result`/`essential`.
+  snapshot(id) { const e = this.matches.get(id); if (!e?.m) return { ok: false, rejected: true, code: e ? 'liberado' : 'desconocido', reason: e ? 'el encuentro terminó y su estado generador está liberado: solo se conserva su resultado esencial' : `encuentro desconocido: ${id}` }; return snapshotSim(e.m); }
   drop(id) { this.matches.delete(id); }
 }

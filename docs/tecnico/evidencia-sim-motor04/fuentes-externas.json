@@ -1,0 +1,38 @@
+{
+  "schema": "beM-sim04-sources/1",
+  "note": "Registro de fuentes externas del §6.2 del encargo. Son datos APORTADOS POR CHATGPT desde fuente primaria en la revisión anterior; Claude NO las ha leído directamente en esta entrega (no se hicieron nuevos intentos de descarga ni se inventan medias externas). No existe un dataset externo completo de varias ligas: la validación externa es PARCIAL.",
+  "readDirectlyByClaude": false,
+  "sources": [
+    {
+      "id": "ACB-CURIOSIDADES-2026-27",
+      "url": "https://acb.com/es/liga/noticias/curiosidades-de-la-liga-endesa-2026-2027-146095",
+      "retrieved": "fecha de consulta comunicada por ChatGPT (no verificada por Claude)",
+      "provenance": "dato aportado por ChatGPT desde fuente primaria",
+      "datum": "Medias por equipo de fase regular de la Liga Endesa: 81,5 (2022-23); 83,2 (2023-24); 86,2 (2024-25); 88,1 (2025-26)",
+      "series": [{"season": "2022-23", "pointsPerTeamGame": 81.5}, {"season": "2023-24", "pointsPerTeamGame": 83.2}, {"season": "2024-25", "pointsPerTeamGame": 86.2}, {"season": "2025-26", "pointsPerTeamGame": 88.1}],
+      "phase": "fase regular", "unit": "puntos por equipo y partido", "category": "ACB sénior masculina",
+      "allowedUse": "contexto histórico del orden de magnitud; no es una cuota universal de puntos ni un objetivo de calibración",
+      "limit": "una sola competición y fase; no cubre otras ligas, categorías ni la plantilla de laboratorio de EQ01–EQ12"
+    },
+    {
+      "id": "EUROLEAGUE-TOP-SCORER-2024-25",
+      "url": "https://mediacentre.euroleague.net/en/app/2/communication/communication/preview/23103",
+      "retrieved": "fecha de consulta comunicada por ChatGPT (no verificada por Claude)",
+      "provenance": "dato aportado por ChatGPT desde fuente primaria",
+      "datum": "Premio de máximo anotador 2024-25: Kendrick Nunn, 21,1 puntos por partido en fase regular",
+      "phase": "fase regular", "unit": "puntos por partido (jugador)", "category": "EuroLeague sénior masculina",
+      "allowedUse": "contextualizar extremos individuales; no imponer un tope al jugador",
+      "limit": "un solo dato de un jugador y una temporada; no es una distribución"
+    },
+    {
+      "id": "FIBA-STATISTICIANS-MANUAL-2024-v2.0",
+      "url": "https://assets.fiba.basketball/image/upload/documents-corporate-fiba-statisticians-manual-2024.pdf",
+      "retrieved": "fecha de consulta comunicada por ChatGPT (no verificada por Claude)",
+      "provenance": "definición aportada por ChatGPT desde fuente primaria (v2.0, §2.1 y §6.1)",
+      "datum": "Una canasta con falta cuenta como intento de campo; el tiro fallado con falta de tiro no cuenta como intento; existen asistencias a libres elegibles",
+      "phase": "n/a", "unit": "definiciones estadísticas", "category": "reglamento estadístico FIBA",
+      "allowedUse": "definiciones de lectura estadística (C04-02 y C04-06)",
+      "limit": "el detallado ya aplicaba esta regla en su acta; el defecto estaba en los lectores de zona de 03"
+    }
+  ]
+}

@@ -1,0 +1,574 @@
+{
+ "schema": "beM-sim04c-checks-delivery/1",
+ "campaign": {
+  "schema": "beM-sim04c-checks/1",
+  "neutrality": {
+   "comparedCases": 24,
+   "identicalSportFingerprintBoxZonesFunnel": 24,
+   "differing": [],
+   "note": "B04B = código de 04B (48bcdef) con la candidata 19,5/0,70/0,90/3; N04C = código de 04C con las tres filas nuevas a 0. Metadatos de implementación (versión, perfil) distintos."
+  },
+  "tech": {
+   "cases": {
+    "CAL-EQ01-EQ02": {
+     "fingerprints": [
+      "10acb1fbb759c202",
+      "10acb1fbb759c202",
+      "10acb1fbb759c202"
+     ],
+     "routesEqual": true,
+     "equalToCalVector": true,
+     "consults": [
+      0,
+      4,
+      1
+     ],
+     "restores": [
+      0,
+      0,
+      1
+     ],
+     "valid": [
+      true,
+      true,
+      true
+     ]
+    },
+    "CAL-EQ03-EQ04": {
+     "fingerprints": [
+      "5c4bac63722eec53",
+      "5c4bac63722eec53",
+      "5c4bac63722eec53"
+     ],
+     "routesEqual": true,
+     "equalToCalVector": true,
+     "consults": [
+      0,
+      5,
+      2
+     ],
+     "restores": [
+      0,
+      0,
+      2
+     ],
+     "valid": [
+      true,
+      true,
+      true
+     ]
+    },
+    "CAL-EQ05-EQ08": {
+     "fingerprints": [
+      "bed77b1fc4bd8ed1",
+      "bed77b1fc4bd8ed1",
+      "bed77b1fc4bd8ed1"
+     ],
+     "routesEqual": true,
+     "equalToCalVector": true,
+     "consults": [
+      0,
+      4,
+      1
+     ],
+     "restores": [
+      0,
+      0,
+      1
+     ],
+     "valid": [
+      true,
+      true,
+      true
+     ]
+    },
+    "CAL-EQ09-EQ12": {
+     "fingerprints": [
+      "fbe58a3b26c2ca82",
+      "fbe58a3b26c2ca82",
+      "fbe58a3b26c2ca82"
+     ],
+     "routesEqual": true,
+     "equalToCalVector": true,
+     "consults": [
+      0,
+      6,
+      1
+     ],
+     "restores": [
+      0,
+      0,
+      1
+     ],
+     "valid": [
+      true,
+      true,
+      true
+     ]
+    },
+    "CAL-EQ01-EQ05": {
+     "fingerprints": [
+      "51b9403aa40846f0",
+      "51b9403aa40846f0",
+      "51b9403aa40846f0"
+     ],
+     "routesEqual": true,
+     "equalToCalVector": true,
+     "consults": [
+      0,
+      4,
+      2
+     ],
+     "restores": [
+      0,
+      0,
+      2
+     ],
+     "valid": [
+      true,
+      true,
+      true
+     ]
+    },
+    "CAL-EQ08-EQ02": {
+     "fingerprints": [
+      "f0460d0cf3582a7e",
+      "f0460d0cf3582a7e",
+      "f0460d0cf3582a7e"
+     ],
+     "routesEqual": true,
+     "equalToCalVector": true,
+     "consults": [
+      0,
+      4,
+      1
+     ],
+     "restores": [
+      0,
+      0,
+      1
+     ],
+     "valid": [
+      true,
+      true,
+      true
+     ]
+    }
+   },
+   "allEqual": true
+  },
+  "reconciliation": {
+   "sim:B04B": {
+    "records": 24,
+    "invalidOrFailed": 0,
+    "notEvaluated": 0,
+    "checksPerRecord": 26,
+    "hasR27": false
+   },
+   "sim:C04C-I100": {
+    "records": 24,
+    "invalidOrFailed": 0,
+    "notEvaluated": 0,
+    "checksPerRecord": 27,
+    "hasR27": true
+   },
+   "sim:C04C-I50": {
+    "records": 24,
+    "invalidOrFailed": 0,
+    "notEvaluated": 0,
+    "checksPerRecord": 27,
+    "hasR27": true
+   },
+   "sim:C04C-J0": {
+    "records": 24,
+    "invalidOrFailed": 0,
+    "notEvaluated": 0,
+    "checksPerRecord": 27,
+    "hasR27": true
+   },
+   "sim:C04C-P15": {
+    "records": 24,
+    "invalidOrFailed": 0,
+    "notEvaluated": 0,
+    "checksPerRecord": 27,
+    "hasR27": true
+   },
+   "sim:C04C-P30": {
+    "records": 24,
+    "invalidOrFailed": 0,
+    "notEvaluated": 0,
+    "checksPerRecord": 27,
+    "hasR27": true
+   },
+   "sim:C04C-R35": {
+    "records": 24,
+    "invalidOrFailed": 0,
+    "notEvaluated": 0,
+    "checksPerRecord": 27,
+    "hasR27": true
+   },
+   "sim:C04C-R65": {
+    "records": 24,
+    "invalidOrFailed": 0,
+    "notEvaluated": 0,
+    "checksPerRecord": 27,
+    "hasR27": true
+   },
+   "sim:C04C-R85": {
+    "records": 24,
+    "invalidOrFailed": 0,
+    "notEvaluated": 0,
+    "checksPerRecord": 27,
+    "hasR27": true
+   },
+   "sim:FINAL": {
+    "records": 64,
+    "invalidOrFailed": 0,
+    "notEvaluated": 0,
+    "checksPerRecord": 27,
+    "hasR27": true
+   },
+   "sim:N04C": {
+    "records": 88,
+    "invalidOrFailed": 0,
+    "notEvaluated": 0,
+    "checksPerRecord": 27,
+    "hasR27": true
+   },
+   "sim:TECH-auto": {
+    "records": 6,
+    "invalidOrFailed": 0,
+    "notEvaluated": 0,
+    "checksPerRecord": 27,
+    "hasR27": true
+   },
+   "sim:TECH-recover": {
+    "records": 6,
+    "invalidOrFailed": 0,
+    "notEvaluated": 0,
+    "checksPerRecord": 27,
+    "hasR27": true
+   },
+   "sim:TECH-steps": {
+    "records": 6,
+    "invalidOrFailed": 0,
+    "notEvaluated": 0,
+    "checksPerRecord": 27,
+    "hasR27": true
+   }
+  },
+  "inputs": {
+   "runsChecked": 466,
+   "mismatches": [],
+   "note": "cada registro lleva la semilla, el entry_id y el input_hash del plan congelado; V0/V1 de CONTRAST comparten semilla por diseño"
+  },
+  "ok": true
+ },
+ "history": {
+  "allChecksOk": true,
+  "scheduled": 24,
+  "ledgers": {
+   "sim": {
+    "accepted": 24,
+    "rejected": 0,
+    "stints": 118,
+    "resolvers": {
+     "sim": 24
+    },
+    "reconciliationOk": true,
+    "checksOk": true
+   },
+   "mixed": {
+    "accepted": 24,
+    "rejected": 0,
+    "stints": 120,
+    "resolvers": {
+     "detailed": 4,
+     "sim": 20
+    },
+    "reconciliationOk": true,
+    "checksOk": true
+   }
+  },
+  "learning": {
+   "pairs": 6,
+   "rows": 648,
+   "checks": [
+    {
+     "id": "nadie sin participación recibe dosis por estar en la plantilla",
+     "ok": true
+    },
+    {
+     "id": "misma exposición normalizada ⇒ misma propuesta con las funciones comunes (sin importar el adaptador)",
+     "ok": true
+    },
+    {
+     "id": "más eventos (créditos ×7) no conceden más presupuesto ni dosis",
+     "ok": true
+    },
+    {
+     "id": "aplicación sobre copia: una vez; segunda aplicación de la misma fuente rechazada; deshacer restaura el estado previo",
+     "ok": true
+    },
+    {
+     "id": "guarda por encuentro lógico: reintento (intento distinto) rechazado; M1 ≠ M10",
+     "ok": true
+    }
+   ]
+  }
+ },
+ "matchday": {
+  "allEqual": true,
+  "comparison": {
+   "A_vs_B": {
+    "log": true,
+    "results": true,
+    "table": true,
+    "decisions": true,
+    "contexts": true
+   },
+   "A_vs_C": {
+    "log": true,
+    "results": true,
+    "table": true,
+    "decisions": true,
+    "contexts": true
+   },
+   "A_vs_D_recargado": {
+    "log": true,
+    "results": true,
+    "table": true,
+    "decisions": true,
+    "contexts": true
+   },
+   "A_vs_D_sin_recargar": {
+    "log": true,
+    "results": true,
+    "table": true,
+    "decisions": true,
+    "contexts": true
+   }
+  },
+  "capture": {
+   "barrier": 20,
+   "T": 2400,
+   "finished": [
+    "F1",
+    "F2",
+    "F3",
+    "F5"
+   ],
+   "active": [
+    "F4"
+   ],
+   "ok": true
+  },
+  "routes": {
+   "A": {
+    "ordersAtT": 600,
+    "accepted": true,
+    "rejected": "sin_autoridad",
+    "barriers": 25,
+    "done": true
+   },
+   "B": {
+    "accepted": true,
+    "rejected": "sin_autoridad",
+    "barriers": 25,
+    "done": true
+   },
+   "C": {
+    "accepted": true,
+    "rejected": "sin_autoridad",
+    "savedAtT": 2400,
+    "finishedAtSave": [
+     "F1",
+     "F2",
+     "F3",
+     "F5"
+    ],
+    "activeAtSave": [
+     "F4"
+    ],
+    "snapshotBytes": 537638,
+    "barriers": 25,
+    "done": true
+   },
+   "D": {
+    "accepted": true,
+    "rejected": "sin_autoridad",
+    "pendingAtEnd": [
+     "F2",
+     "F3",
+     "F4",
+     "F5"
+    ],
+    "consultedBeforeSeal": {
+     "F2": {
+      "complete": true,
+      "valid": true
+     },
+     "F3": {
+      "complete": true,
+      "valid": true
+     },
+     "F4": {
+      "complete": true,
+      "valid": true
+     },
+     "F5": {
+      "complete": true,
+      "valid": true
+     }
+    },
+    "snapshotBytes": 898769,
+    "restoredPending": 0,
+    "sealedAfterReload": 4,
+    "yieldsAfterReload": 4,
+    "sealedOriginal": 4,
+    "provisionalBeforeSeal": [
+     [
+      "EQ01",
+      8,
+      3,
+      887,
+      813
+     ],
+     [
+      "EQ02",
+      6,
+      5,
+      861,
+      842
+     ],
+     [
+      "EQ03",
+      6,
+      5,
+      798,
+      784
+     ],
+     [
+      "EQ04",
+      5,
+      6,
+      784,
+      796
+     ],
+     [
+      "EQ06",
+      4,
+      7,
+      820,
+      845
+     ],
+     [
+      "EQ05",
+      4,
+      7,
+      810,
+      880
+     ]
+    ],
+    "finalPlayedBeforeSeal": 62,
+    "barriers": 25,
+    "done": true,
+    "sealedAll": true
+   }
+  },
+  "otherNeed": {
+   "extraRun": "2 jornadas adicionales (8 SIM + 2 detallados), contadas aparte",
+   "objective": {
+    "team": "EQ05",
+    "competition": "SEN-A",
+    "kind": "rank",
+    "target": 1
+   },
+   "loser": "EQ05",
+   "firstNeedBarrier": 19,
+   "identicalPrefixBeforeNews": true,
+   "futureDiffers": true,
+   "decisionsWithNeed": 1,
+   "decisionsWithNeedOtherNews": 0,
+   "note": "una necesidad clasificatoria distinta es otra entrada contextual y puede cambiar el futuro; el prefijo hasta la noticia es idéntico"
+  },
+  "note": "jornada mixta de cuatro SIM y un detallado (superconjunto de «un detallado y dos SIM»), con la candidata final; rutas A–D equivalentes"
+ },
+ "tests": {
+  "schema": "beM-sim04c-tests/1",
+  "fullSuite": {
+   "command": "npm test",
+   "tests": 352,
+   "pass": 351,
+   "fail": 1,
+   "skipped": 0,
+   "durationMs": 193272,
+   "log": "test-full.log",
+   "failure": "motor12 (10. abrir un partido del lote…): la expectativa de APP_VERSION seguía en 'SIM-MOTOR-04' (identidad visible, sin efecto deportivo); corregida en tests/motor12.test.js y el archivo se volvió a ejecutar: 12/12"
+  },
+  "rerunAfterFix": {
+   "tests/motor12.test.js": {
+    "pass": 12,
+    "fail": 0
+   }
+  },
+  "newTests": "tests/sim04c.test.js S04C-01…08 (8/8)",
+  "note": "no se repitió la suite completa por cambios exclusivamente de expectativas de prueba y documentación; ningún archivo de src/ ni data/ cambió después de ejecutar la suite"
+ },
+ "browser": {
+  "steps": 50,
+  "failed": 0,
+  "consoleErrors": 0,
+  "networkErrors": 0,
+  "downloads": [
+   {
+    "what": "JSON",
+    "name": "beM-sim-diagnostic-20261023.json",
+    "bytes": 148367,
+    "sha256": "82d856b158338ce5e44db852496e96d02d25b3fe035af01d86b991f3712b3e88"
+   },
+   {
+    "what": "CSV",
+    "name": "beM-sim-diagnostic-20261023.csv",
+    "bytes": 1637,
+    "sha256": "021afb281f73e1cc35f7b9359cd85f09a13eca8acca41046e347e0442b847dc4"
+   },
+   {
+    "what": "Markdown",
+    "name": "beM-sim-diagnostic-20261023.md",
+    "bytes": 578,
+    "sha256": "5f0bd7fae5ce72b3830324a2816e6a7f1e754da5c147d9813033de7a68846e07"
+   },
+   {
+    "what": "guardado continuable",
+    "name": "beM-sim-guardado-20261023.json",
+    "bytes": 416192,
+    "sha256": "78946e8f9e371b49e49dea2e48b245938b77a1c7c58c4c7e1e995b21deff6c27"
+   },
+   {
+    "what": "candidata",
+    "name": "beM-sim-candidata-b061d710acc2be77.json",
+    "bytes": 1701,
+    "sha256": "bf4d1110f3866c80d0e98fad0e5d1f092a186929b4cd11069cc2747c5797fb50"
+   },
+   {
+    "what": "jornada",
+    "name": "beM-sim-jornada-3000.json",
+    "bytes": 320276,
+    "sha256": "15d571dd755f6294f5e9f5074f63cf56e05b13800551c6cd9e15dd109b3db73f"
+   }
+  ],
+  "notRun": [
+   "otros navegadores",
+   "Node 24",
+   "recorrido manual de Dennis (pendiente de Dennis)"
+  ]
+ },
+ "notEvaluated": [
+  "otros navegadores",
+  "Node 24",
+  "recorrido manual de Dennis",
+  "aceptación deportiva",
+  "validación externa FIBA/ACB (fuera de alcance)"
+ ]
+}

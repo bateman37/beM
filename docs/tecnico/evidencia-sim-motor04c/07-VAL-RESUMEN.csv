@@ -1,0 +1,55 @@
+metrica,banda,error_N04C,error_candidata,cambio,dentro_de_banda_candidata,guarda_frente_a_N04C,num_den_N04C,num_den_candidata,num_den_DET,nota
+eP,0.08,0.0907,0.0589,mejora,1,cumple,74.958,77.579,82.438,misma entrada y semilla por caso (48 casos VAL); N04C = filas nuevas neutrales; DET = detallado congelado
+eF,0.08,0.0198,0.028,empeora,1,cumple,59.521,59.997,58.365,misma entrada y semilla por caso (48 casos VAL); N04C = filas nuevas neutrales; DET = detallado congelado
+eZ,0.1,0.225,0.1695,mejora,0,cumple,,,,misma entrada y semilla por caso (48 casos VAL); N04C = filas nuevas neutrales; DET = detallado congelado
+e2,0.04,0.0634,0.045,mejora,0,cumple,1864/3499,1970/3574,2210/3707,misma entrada y semilla por caso (48 casos VAL); N04C = filas nuevas neutrales; DET = detallado congelado
+eR,0.05,0.0472,0.0591,empeora,0,cumple,909/1512,1069/1814,1370/2113,misma entrada y semilla por caso (48 casos VAL); N04C = filas nuevas neutrales; DET = detallado congelado
+eI,0.05,0.0512,0.0077,mejora,1,cumple,666/1288,640/1111,678/1193,misma entrada y semilla por caso (48 casos VAL); N04C = filas nuevas neutrales; DET = detallado congelado
+eQ,0.05,0.1288,0.0286,mejora,1,cumple,295/1512,172/1814,140/2113,misma entrada y semilla por caso (48 casos VAL); N04C = filas nuevas neutrales; DET = detallado congelado
+eA,0.08,0.1395,0.1272,mejora,0,cumple,1442/2689,1546/2818,2022/2992,misma entrada y semilla por caso (48 casos VAL); N04C = filas nuevas neutrales; DET = detallado congelado
+e3,,0.04,0.0296,mejora,,cumple,825/2215,848/2215,782/1896,misma entrada y semilla por caso (48 casos VAL); N04C = filas nuevas neutrales; DET = detallado congelado
+eFT,,0.0449,0.0119,mejora,,cumple,993/1254,998/1210,1148/1372,misma entrada y semilla por caso (48 casos VAL); N04C = filas nuevas neutrales; DET = detallado congelado
+forcedInside,,0.1857,0.0979,mejora,,cumple,251/1288,119/1111,11/1193,misma entrada y semilla por caso (48 casos VAL); N04C = filas nuevas neutrales; DET = detallado congelado
+M,1,2.577,1.6954,mejora,0,cumple,eQ,eZ,,M = max(e/b); dominante en las columnas sim
+info:n,,96,,,,,,,,"informativo (por actuación de equipo, 96 actuaciones); columna N04C: valor propio"
+info:pts,,74.958,,,,,,,,"informativo (por actuación de equipo, 96 actuaciones); columna N04C: valor propio"
+info:fga,,59.521,,,,,,,,"informativo (por actuación de equipo, 96 actuaciones); columna N04C: valor propio"
+info:fta,,13.063,,,,,,,,"informativo (por actuación de equipo, 96 actuaciones); columna N04C: valor propio"
+info:tov,,13.323,,,,,,,,"informativo (por actuación de equipo, 96 actuaciones); columna N04C: valor propio"
+info:stl,,6.865,,,,,,,,"informativo (por actuación de equipo, 96 actuaciones); columna N04C: valor propio"
+info:blk,,2.271,,,,,,,,"informativo (por actuación de equipo, 96 actuaciones); columna N04C: valor propio"
+info:pf,,12.427,,,,,,,,"informativo (por actuación de equipo, 96 actuaciones); columna N04C: valor propio"
+info:orebPctOwn,,0.2643,,,,,,,,"informativo (por actuación de equipo, 96 actuaciones); columna N04C: valor propio"
+info:astFg,,15.021,,,,,,,,"informativo (por actuación de equipo, 96 actuaciones); columna N04C: valor propio"
+info:duration,,2400,,,,,,,,"informativo (por actuación de equipo, 96 actuaciones); columna N04C: valor propio"
+info:overtimes,,0,,,,,,,,"informativo (por actuación de equipo, 96 actuaciones); columna N04C: valor propio"
+info:playersUsed,,9.313,,,,,,,,"informativo (por actuación de equipo, 96 actuaciones); columna N04C: valor propio"
+info:maxMinutes,,38.423,,,,,,,,"informativo (por actuación de equipo, 96 actuaciones); columna N04C: valor propio"
+info:n,,,96,,,,,,,"informativo (por actuación de equipo, 96 actuaciones); columna FINAL: valor propio"
+info:pts,,,77.938,,,,,,,"informativo (por actuación de equipo, 96 actuaciones); columna FINAL: valor propio"
+info:fga,,,60.302,,,,,,,"informativo (por actuación de equipo, 96 actuaciones); columna FINAL: valor propio"
+info:fta,,,12.604,,,,,,,"informativo (por actuación de equipo, 96 actuaciones); columna FINAL: valor propio"
+info:tov,,,13.031,,,,,,,"informativo (por actuación de equipo, 96 actuaciones); columna FINAL: valor propio"
+info:stl,,,6.542,,,,,,,"informativo (por actuación de equipo, 96 actuaciones); columna FINAL: valor propio"
+info:blk,,,2.208,,,,,,,"informativo (por actuación de equipo, 96 actuaciones); columna FINAL: valor propio"
+info:pf,,,12.333,,,,,,,"informativo (por actuación de equipo, 96 actuaciones); columna FINAL: valor propio"
+info:orebPctOwn,,,0.2797,,,,,,,"informativo (por actuación de equipo, 96 actuaciones); columna FINAL: valor propio"
+info:astFg,,,16.104,,,,,,,"informativo (por actuación de equipo, 96 actuaciones); columna FINAL: valor propio"
+info:duration,,,2412.5,,,,,,,"informativo (por actuación de equipo, 96 actuaciones); columna FINAL: valor propio"
+info:overtimes,,,2,,,,,,,"informativo (por actuación de equipo, 96 actuaciones); columna FINAL: valor propio"
+info:playersUsed,,,9.417,,,,,,,"informativo (por actuación de equipo, 96 actuaciones); columna FINAL: valor propio"
+info:maxMinutes,,,38.11,,,,,,,"informativo (por actuación de equipo, 96 actuaciones); columna FINAL: valor propio"
+info:n,,,,,,,96,,,"informativo (por actuación de equipo, 96 actuaciones); columna DET: DET en la columna 8"
+info:pts,,,,,,,82.438,,,"informativo (por actuación de equipo, 96 actuaciones); columna DET: DET en la columna 8"
+info:fga,,,,,,,58.365,,,"informativo (por actuación de equipo, 96 actuaciones); columna DET: DET en la columna 8"
+info:fta,,,,,,,14.292,,,"informativo (por actuación de equipo, 96 actuaciones); columna DET: DET en la columna 8"
+info:tov,,,,,,,10.625,,,"informativo (por actuación de equipo, 96 actuaciones); columna DET: DET en la columna 8"
+info:stl,,,,,,,7.385,,,"informativo (por actuación de equipo, 96 actuaciones); columna DET: DET en la columna 8"
+info:blk,,,,,,,2.427,,,"informativo (por actuación de equipo, 96 actuaciones); columna DET: DET en la columna 8"
+info:pf,,,,,,,12.802,,,"informativo (por actuación de equipo, 96 actuaciones); columna DET: DET en la columna 8"
+info:orebPctOwn,,,,,,,0.2945,,,"informativo (por actuación de equipo, 96 actuaciones); columna DET: DET en la columna 8"
+info:astFg,,,,,,,21.063,,,"informativo (por actuación de equipo, 96 actuaciones); columna DET: DET en la columna 8"
+info:duration,,,,,,,2400,,,"informativo (por actuación de equipo, 96 actuaciones); columna DET: DET en la columna 8"
+info:overtimes,,,,,,,0,,,"informativo (por actuación de equipo, 96 actuaciones); columna DET: DET en la columna 8"
+info:playersUsed,,,,,,,8.615,,,"informativo (por actuación de equipo, 96 actuaciones); columna DET: DET en la columna 8"
+info:maxMinutes,,,,,,,39.622,,,"informativo (por actuación de equipo, 96 actuaciones); columna DET: DET en la columna 8"

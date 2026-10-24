@@ -1,0 +1,33 @@
+identidad,modelo,bloque,seccion,rama,decisiones_o_orb,fga,fgm,falta_de_tiro,perdida,otro,finalizaciones_elegibles,entrega_producida,canastas_elegibles,ast_fg,series_ft_elegibles,ast_ft,ast_fg_por_fgm_o_porcentaje,fga_por_decision,nota
+N04C,sim,VAL,tras_rebote_ofensivo,immediate,820,619,345,42,159,0,,,,0,,,0,0.7549,SIM: embudo del esencial (decisiones de rama; un segundo rebote encadenado es otra decisión)
+N04C,sim,VAL,tras_rebote_ofensivo,organized_reset,0,0,0,0,0,0,,,,0,,,,,SIM: embudo del esencial (decisiones de rama; un segundo rebote encadenado es otra decisión)
+N04C,sim,VAL,tras_rebote_ofensivo,reset_unavailable,0,0,0,0,0,0,,,,0,,,,,SIM: embudo del esencial (decisiones de rama; un segundo rebote encadenado es otra decisión)
+N04C,sim,VAL,total_equipo,todos,,5714,2689,,,,,,,1442,,,0.5363,,"FGA, FGM y AST_FG de todas las actuaciones; denominador AST_FG/FGM"
+N04C,sim,VAL,fuera_de_rebote,todos,,5095,2344,,,,,,,1442,,,0.6152,,total menos tiros posteriores a rebote ofensivo (aproximación en el detallado: primer tiro posterior)
+N04C,sim,VAL,rebote_ofensivo,ORB/(ORB+DREB_rival),820,,,,,,,,,,,,0.2643,,"ORB=820, DREB propios=2282; porcentaje = ORB/(ORB+DREB del rival) sobre 96 actuaciones (ORB de un equipo con DREB del rival: suma de ambos equipos de cada partido)"
+FINAL,sim,VAL,tras_rebote_ofensivo,immediate,580,451,269,22,107,0,,,,0,,,0,0.7776,SIM: embudo del esencial (decisiones de rama; un segundo rebote encadenado es otra decisión)
+FINAL,sim,VAL,tras_rebote_ofensivo,organized_reset,269,207,105,6,56,0,166,155,84,78,6,6,0.7429,0.7695,SIM: embudo del esencial (decisiones de rama; un segundo rebote encadenado es otra decisión)
+FINAL,sim,VAL,tras_rebote_ofensivo,reset_unavailable,0,0,0,0,0,0,,,,0,,,,,SIM: embudo del esencial (decisiones de rama; un segundo rebote encadenado es otra decisión)
+FINAL,sim,VAL,total_equipo,todos,,5789,2818,,,,,,,1546,,,0.5486,,"FGA, FGM y AST_FG de todas las actuaciones; denominador AST_FG/FGM"
+FINAL,sim,VAL,fuera_de_rebote,todos,,5131,2444,,,,,,,1468,,,0.6007,,total menos tiros posteriores a rebote ofensivo (aproximación en el detallado: primer tiro posterior)
+FINAL,sim,VAL,rebote_ofensivo,ORB/(ORB+DREB_rival),849,,,,,,,,,,,,0.2797,,"ORB=849, DREB propios=2186; porcentaje = ORB/(ORB+DREB del rival) sobre 96 actuaciones (ORB de un equipo con DREB del rival: suma de ambos equipos de cada partido)"
+DET,detailed,VAL,tras_rebote_ofensivo,detailed_native,687,547,296,32,0,108,,,,192,,,0.6486,0.7962,detallado: rebotes individuales del acta y primer tiro posterior en la misma posesión; elegibilidad no conservada (null)
+DET,detailed,VAL,total_equipo,todos,,5603,2992,,,,,,,2022,,,0.6758,,"FGA, FGM y AST_FG de todas las actuaciones; denominador AST_FG/FGM"
+DET,detailed,VAL,fuera_de_rebote,todos,,5056,2696,,,,,,,1830,,,0.6788,,total menos tiros posteriores a rebote ofensivo (aproximación en el detallado: primer tiro posterior)
+DET,detailed,VAL,rebote_ofensivo,ORB/(ORB+DREB_rival),687,,,,,,,,,,,,0.2945,,"ORB=687, DREB propios=1646; porcentaje = ORB/(ORB+DREB del rival) sobre 96 actuaciones (ORB de un equipo con DREB del rival: suma de ambos equipos de cada partido)"
+N04C,sim,CAL,tras_rebote_ofensivo,immediate,511,416,204,21,74,0,,,,0,,,0,0.8141,SIM: embudo del esencial (decisiones de rama; un segundo rebote encadenado es otra decisión)
+N04C,sim,CAL,tras_rebote_ofensivo,organized_reset,0,0,0,0,0,0,,,,0,,,,,SIM: embudo del esencial (decisiones de rama; un segundo rebote encadenado es otra decisión)
+N04C,sim,CAL,tras_rebote_ofensivo,reset_unavailable,0,0,0,0,0,0,,,,0,,,,,SIM: embudo del esencial (decisiones de rama; un segundo rebote encadenado es otra decisión)
+N04C,sim,CAL,total_equipo,todos,,2962,1328,,,,,,,705,,,0.5309,,"FGA, FGM y AST_FG de todas las actuaciones; denominador AST_FG/FGM"
+N04C,sim,CAL,fuera_de_rebote,todos,,2546,1124,,,,,,,705,,,0.6272,,total menos tiros posteriores a rebote ofensivo (aproximación en el detallado: primer tiro posterior)
+N04C,sim,CAL,rebote_ofensivo,ORB/(ORB+DREB_rival),511,,,,,,,,,,,,0.3071,,"ORB=511, DREB propios=1153; porcentaje = ORB/(ORB+DREB del rival) sobre 48 actuaciones (ORB de un equipo con DREB del rival: suma de ambos equipos de cada partido)"
+C04C-P30,sim,CAL,tras_rebote_ofensivo,immediate,286,229,130,10,47,0,,,,0,,,0,0.8007,SIM: embudo del esencial (decisiones de rama; un segundo rebote encadenado es otra decisión)
+C04C-P30,sim,CAL,tras_rebote_ofensivo,organized_reset,143,114,57,7,22,0,86,78,44,40,4,4,0.7018,0.7972,SIM: embudo del esencial (decisiones de rama; un segundo rebote encadenado es otra decisión)
+C04C-P30,sim,CAL,tras_rebote_ofensivo,reset_unavailable,0,0,0,0,0,0,,,,0,,,,,SIM: embudo del esencial (decisiones de rama; un segundo rebote encadenado es otra decisión)
+C04C-P30,sim,CAL,total_equipo,todos,,2895,1395,,,,,,,808,,,0.5792,,"FGA, FGM y AST_FG de todas las actuaciones; denominador AST_FG/FGM"
+C04C-P30,sim,CAL,fuera_de_rebote,todos,,2552,1208,,,,,,,768,,,0.6358,,total menos tiros posteriores a rebote ofensivo (aproximación en el detallado: primer tiro posterior)
+C04C-P30,sim,CAL,rebote_ofensivo,ORB/(ORB+DREB_rival),429,,,,,,,,,,,,0.2802,,"ORB=429, DREB propios=1102; porcentaje = ORB/(ORB+DREB del rival) sobre 48 actuaciones (ORB de un equipo con DREB del rival: suma de ambos equipos de cada partido)"
+DET,detailed,CAL,tras_rebote_ofensivo,detailed_native,359,292,158,17,0,50,,,,108,,,0.6835,0.8134,detallado: rebotes individuales del acta y primer tiro posterior en la misma posesión; elegibilidad no conservada (null)
+DET,detailed,CAL,total_equipo,todos,,2850,1463,,,,,,,1017,,,0.6951,,"FGA, FGM y AST_FG de todas las actuaciones; denominador AST_FG/FGM"
+DET,detailed,CAL,fuera_de_rebote,todos,,2558,1305,,,,,,,909,,,0.6966,,total menos tiros posteriores a rebote ofensivo (aproximación en el detallado: primer tiro posterior)
+DET,detailed,CAL,rebote_ofensivo,ORB/(ORB+DREB_rival),359,,,,,,,,,,,,0.2881,,"ORB=359, DREB propios=887; porcentaje = ORB/(ORB+DREB del rival) sobre 48 actuaciones (ORB de un equipo con DREB del rival: suma de ambos equipos de cada partido)"

@@ -51,7 +51,7 @@ P._materialize = function materialize(timeline, seg, start, d) {
   // ---- fase 2
   const last = cutIdx >= 0 ? cutIdx : timeline.length - 1; let cutTime = null; const outNow = new Set();
   const pts = [0, 0];
-  const emit = (e, t) => { e.tAbs = t; return this._push(e); };
+  const emit = (e, t) => this._push(e, t);
   for (let j = 0; j <= last; j++) {
     const { k, t } = timeline[j]; const items = lists[j]; const s = this.sides[k]; const o = this.sides[1 - k]; const tt = clamp(t, start, start + d);
     const parentSeq = new Map();

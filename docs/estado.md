@@ -1,6 +1,6 @@
 # Estado del proyecto
 
-Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANGELOG.md)). Última actualización: 2026-10-23, entrega SIM-MOTOR-03 (incluye 02B; sobre SIM-MOTOR-01 y 02, PR #21).
+Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANGELOG.md)). Última actualización: 2026-10-24, entrega SIM-MOTOR-04C (convergencia estadística; incluye 04B, 04, 03, 02B, 02 y 01).
 
 ## Qué hay realmente en el repositorio
 
@@ -8,6 +8,33 @@ Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANG
 - **Diseño funcional del motor y del primer laboratorio**, organizado por temas en [`motor/`](motor/README.md) (34 capítulos). Es **especificación**: está *definida*, no implementada.
 - **Copia original congelada** del funcional unificado y **exportado completo vigente** generado: ver [`historico/`](historico/README.md) y [`exportados/`](exportados/README.md).
 - **Utilidades documentales** en `scripts/docs/` (Python 3, librería estándar).
+
+## SIM-MOTOR-04C (ejecutado; convergencia estadística con el detallado, candidata provisional sin activar; pendiente de Dennis)
+
+- **Qué es**: acerca SIM al detallado en zonas, oportunidad interior, circulación tras rebote y asistencias sin cambiar el detallado. Corrige la lectura (canasta con pasador ≠ asistencia acreditada), añade la rama tras rebote ofensivo (inmediata / reinicio organizado), la calidad y una conversión provisional de `inside` (tres filas `SEM04C` **neutrales**), un embudo con conciliación R27 y una búsqueda limitada (≤ 8 vectores completos R→I→P, reglas `SEL-SIM04C-R1` congeladas antes, solo CAL).
+- **Versiones**: aplicación `SIM-MOTOR-04C`, SIM `0.3.2-SIMMOTOR04C`, perfil `…+SEM-SIM04C-20261024`, `RECON-SIM04C-R1`, resultado `beM-sim-match/3`, guardado `beM-sim-snapshot/2` (los de 04B se rechazan con explicación). Detallado **sin cambio** (83–98, 6.684 sorteos; 79 archivos).
+- **Candidata** `C04C-FINAL-PROVISIONAL` (peso de aro 1,5 · calidad de aro 0,5 · reinicio 0,35 · calidad inside 0,5 · conversión inside 0,30; el resto 19,5 / 0,70 / 0,90 / 3): M 2,64 → 1,45 en CAL y 2,58 → 1,70 en VAL. **eZ, eA, e2 y eR siguen fuera de banda** (eR empeora en VAL); no se activa por defecto ni es aceptación deportiva.
+- **Rendimiento** (2.000 clubes, 4 workers): 8,7–9,5 s en la primera solicitud, 5,3–5,4 s con el pool reutilizado, publicación máxima 1,61 s y RSS 1,54 GiB: **ningún objetivo cumplido**.
+- **Comprobado por Claude**: neutralidad 24/24, S04C-01…08, suite 351/352 (la expectativa de versión visible corregida y verificada), `data:check`, comprobador documental, Chromium (50 pasos, consola 0, red 0), TECH, jornada mixta, historia/aprendizaje y comprobador offline de la entrega.
+- **No cerrado / siguiente objetivo**: aceptación deportiva y manual (Dennis); preguntas de §8 de [`tecnico/sim-motor04c.md`](tecnico/sim-motor04c.md) (aceptar la candidata, actuar sobre las asistencias fuera del rebote, revisar aro frente a inside, objetivos de rendimiento con miles de clubes). Guía: [`prompts/SIM-MOTOR-04C-recorrido-manual.md`](prompts/SIM-MOTOR-04C-recorrido-manual.md).
+
+## SIM-MOTOR-04B (ejecutado; fatiga y cierre corregidos, convergencia acotada sin vector admisible y paquete reproducible; pendiente de Dennis)
+
+- **Qué es**: cierre de 04. Corrige la fatiga de la rotación y el cierre idempotente, la suficiencia de T03, la lectura de libres/unidades de coste y el paquete reproducible; intenta acercar SIM al detallado con ≤ 7 vectores (Z→Q→A→E) elegidos solo con CAL bajo reglas congeladas; optimiza de forma exacta; ejecuta una campaña acotada (360 SIM + 64 detallados) y entrega dos ZIP, un índice y un recibo offline.
+- **Versiones**: SIM `0.3.1-SIMMOTOR04B`, resultado `beM-sim-match/3`, guardado `beM-sim-snapshot/2` (los de 04 se rechazan con explicación), perfil `SEM-SIM01+SEM-SIM02+SEM-SIM04+SEM-SIM04B-20261023`; `APP_VERSION` sigue en `SIM-MOTOR-04`. Detallado **sin cambio** (83–98, 6.684 sorteos).
+- **Candidata** `C04B-FINAL-PROVISIONAL` = base neutral (19,5 / 0,70 / 0,90 / 3): ningún vector adicional fue admisible; no se activa por defecto. **DECISIÓN REQUERIDA**: reformular la guarda acumulada de asistencias para admitir Z2/Q2 (ver [`tecnico/sim-motor04b.md`](tecnico/sim-motor04b.md)).
+- **Rendimiento**: F0 7,95 s (objetivo 5 s, **no cumplido**; control 9,38 s); publicación de barrera 1,36 s (objetivo 1 s, **no cumplido**; control 3,18 s); RSS de la jornada de mil 1,29 GiB (cumple 1,5 GiB). Igualdad exacta frente al control.
+- **Comprobado por Claude**: suite, `data:check`, comprobador documental, Chromium (60 pasos, consola 0, red 0) y comprobador offline de la entrega; ver la respuesta final y el recibo para las cifras exactas.
+- **No cerrado**: aceptación deportiva y manual (Dennis), validación externa integral, objetivos de rendimiento, subproducción de puntos frente al detallado. Guía: [`prompts/SIM-MOTOR-04B-recorrido-manual.md`](prompts/SIM-MOTOR-04B-recorrido-manual.md).
+
+## SIM-MOTOR-04 (ejecutado; correcciones verificables, candidata provisional, rendimiento exacto y auditoría final; pendiente de Dennis)
+
+- **Qué es**: cuarta entrega del roadmap de cuatro. Cierra C04-01…06 (rebote ofensivo colectivo, lectores de zona y canastas con falta, bloqueador pertinente, familiaridad de presión, prioridades 1/5 con cobertura del instrumento y denominadores de asistencia), elige una candidata numérica **provisional** con un selector mecánico congelado antes de CAL (≤ 9 vectores), optimiza sin cambiar el deporte y ejecuta la reserva (VAL, STRESS, CONTRAST, diagnóstico), equivalencia, jornada mixta, historia y aprendizaje.
+- **Versiones**: aplicación `SIM-MOTOR-04` (incluye `SIM-MOTOR-03` y `02B`), SIM `0.3.0-SIMMOTOR04`, resultado `beM-sim-match/3`, guardado `beM-sim-snapshot/2` (los de 02/03 se rechazan con explicación), esencial `/2`, perfil `SEM-SIM01+SEM-SIM02+SEM-SIM04-20261023`. Detallado **sin cambio** (83–98, 6.684 sorteos; 0 archivos deportivos modificados).
+- **Candidata** `C04-FINAL-PROVISIONAL` (volumen 19,5 s/control, factor de triples 0,70, P0 de pase final 0,90, coste de energía 3): mejora observada en CAL y en VAL (8/8 estados descriptivos, sin contradicciones), pero **subproduce puntos** frente al detallado y no se activa por defecto. No es aceptación deportiva.
+- **Rendimiento**: objetivo de 5 s por mil **NO cumplido** (final 7,35–12,0 s frente a 8,2–12,2 s del control en la misma sesión); RSS del lote 694 MiB; jornada de mil 17,4 s, pausa pública máxima 1,82 s (+2,84 s de cierre diferido) y RSS 2,19 GiB (objetivos de 1 s y 1,5 GiB no cumplidos). Equivalencia exacta: OPT 56/56, TECH 16/16, huellas 1.000/1.000.
+- **Comprobado por Claude**: suite completa 335/335, `data:check`, comprobador documental (copia limpia), recorrido de Chromium (58 pasos, consola 0, red 0), comprobador offline de la entrega, jornada mixta (tres rutas iguales, autoridad de equipo) e historia/aprendizaje (seis pares, Polivalencia 8/16/24).
+- **No cerrado**: aceptación deportiva y manual (Dennis), validación externa integral, objetivos de rendimiento y memoria, 2P%/libres por debajo del detallado. Ver [`tecnico/sim-motor04.md`](tecnico/sim-motor04.md) y [`prompts/SIM-MOTOR-04-recorrido-manual.md`](prompts/SIM-MOTOR-04-recorrido-manual.md).
 
 ## SIM-MOTOR-03 (incluye 02B; ejecutado; correcciones, rendimiento exacto y campaña comparativa congelada; pendiente de Dennis)
 

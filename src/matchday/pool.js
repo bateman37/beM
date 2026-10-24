@@ -2,15 +2,21 @@
 // encuentros y devuelve por barrera paquetes compactos (marcador, estado, cursor); el coordinador no reconstruye actas completas en cada barrera. Solo Node (worker_threads).
 import { Worker } from 'node:worker_threads';
 import { cpus } from 'node:os';
+import { configureWorkerRuntime } from '../sim/runtime.js';
 
 const WORKER_URL = new URL('./worker-node.js', import.meta.url);
+// Límites de memoria de cada trabajador de la jornada (MiB). Con el máximo de la generación vieja acotado V8 recolecta antes y el heap no crece hasta el tamaño por defecto de Node: en la jornada de mil encuentros baja el pico de RSS de
+// ≈ 1,7 GiB a ≈ 1,25 GiB (medido en 04B). 800 MiB por trabajador dejan holgura para varios miles de encuentros por trabajador (cada uno retiene ≈ 0,5 MiB). SIM_DAY_OLD_MB / SIM_DAY_YOUNG_MB solo para experimentos (0 = sin límite).
+const num = (v, d) => (v === undefined ? d : Number(v));
+const OLD_MB = num(process.env.SIM_DAY_OLD_MB, 800); const YOUNG_MB = num(process.env.SIM_DAY_YOUNG_MB, 48);
+const LIMITS = { ...(OLD_MB > 0 ? { maxOldGenerationSizeMb: OLD_MB } : {}), ...(YOUNG_MB > 0 ? { maxYoungGenerationSizeMb: YOUNG_MB } : {}) };
 export class MatchdayPool {
   constructor({ workers = 4 } = {}) { this.size = Math.max(1, Math.min(workers, cpus().length)); this.requested = workers; this.workers = []; this.pending = new Map(); this.seq = 1; this.owner = new Map(); }
   // C03-10: `rid` identifica la PETICIÓN (correlación) y `id` queda reservado al identificador del encuentro: nunca comparten campo ni en el mensaje ni en la respuesta.
   _send(w, msg) { return new Promise((res, rej) => { const rid = this.seq++; this.pending.set(rid, { res, rej }); w.postMessage({ ...msg, rid }); }); }
   async start(ctxJSON, teams) {
-    const t0 = performance.now();
-    this.workers = Array.from({ length: this.size }, () => { const w = new Worker(WORKER_URL); w.on('message', (m) => { const p = this.pending.get(m.rid); if (!p) return; this.pending.delete(m.rid); m.type === 'error' ? p.rej(new Error(m.error)) : p.res(m); }); w.on('error', (e) => { for (const p of this.pending.values()) p.rej(e); }); return w; });
+    const t0 = performance.now(); this.gcMode = configureWorkerRuntime();
+    this.workers = Array.from({ length: this.size }, () => { const w = new Worker(WORKER_URL, { resourceLimits: LIMITS }); w.on('message', (m) => { const p = this.pending.get(m.rid); if (!p) return; this.pending.delete(m.rid); m.type === 'error' ? p.rej(new Error(m.error)) : p.res(m); }); w.on('error', (e) => { for (const p of this.pending.values()) p.rej(e); }); return w; });
     await Promise.all(this.workers.map((w) => this._send(w, { type: 'init', ctx: ctxJSON, teams }))); this.startMs = performance.now() - t0; return this.startMs;
   }
   // Reparte los encuentros en grupos contiguos y equilibrados (no un hilo por encuentro).
@@ -19,7 +25,12 @@ export class MatchdayPool {
     const per = this.workers.map(() => []); groups.forEach((g, i) => per[i % this.workers.length].push(...g)); per.forEach((list, wi) => list.forEach((f) => this.owner.set(f.id, wi)));
     await Promise.all(this.workers.map((w, i) => (per[i].length ? this._send(w, { type: 'add', fixtures: per[i] }) : null)));
   }
-  async advance(T) { const r = await Promise.all(this.workers.map((w) => this._send(w, { type: 'advance', T }))); return r.flatMap((x) => x.packets).sort((a, b) => (a.id < b.id ? -1 : 1)); }
+  // `timing` (solo medición): milisegundos por fase sumados en los trabajadores durante la barrera (generación, construcción y conciliación del esencial, lectura de progreso); queda en `lastTiming`.
+  async advance(T, { defer = false, mem = false } = {}) { const r = await Promise.all(this.workers.map((w) => this._send(w, { type: 'advance', T, defer, mem }))); this.lastTiming = r.map((x) => x.timing ?? null); this.lastMem = r.map((x) => x.mem ?? null); return r.flatMap((x) => x.packets).sort((a, b) => (a.id < b.id ? -1 : 1)); }
+  // Sella (construye el esencial y libera el estado de) los encuentros terminados cuya construcción se difirió, en grupos de `group` por trabajador; devuelve el trabajo hecho. `lastSealTiming` conserva el tiempo por fase.
+  async seal({ group = 16 } = {}) { let total = 0; const acc = this.workers.map(() => ({ gen: 0, build: 0, recon: 0, assemble: 0, progress: 0 })); let pending = this.workers.map((w, i) => i); const rounds = [];
+    while (pending.length) { const r = await Promise.all(pending.map((i) => this._send(this.workers[i], { type: 'seal', max: group }).then((x) => [i, x]))); const next = []; for (const [i, x] of r) { total += x.sealed; for (const k of Object.keys(acc[i])) acc[i][k] += x.timing?.[k] ?? 0; if (x.remaining > 0) next.push(i); } rounds.push(r.reduce((s, [, x]) => s + x.sealed, 0)); pending = next; }
+    this.lastSealTiming = acc; return { sealed: total, rounds: rounds.length, groupSize: group }; }
   async review(T, needs = {}, policy = true) { const r = await Promise.all(this.workers.map((w) => this._send(w, { type: 'review', T, needs, policy }))); return Object.assign({}, ...r.map((x) => x.decisions)); }
   async essentials(ids) { const by = this.workers.map(() => []); for (const id of ids) by[this.owner.get(id)].push(id); const r = await Promise.all(this.workers.map((w, i) => (by[i].length ? this._send(w, { type: 'essentials', ids: by[i] }) : { essentials: [] }))); return Object.fromEntries(r.flatMap((x) => x.essentials)); }
   // Orden manual a UN encuentro: llega exactamente a su worker, una vez y con acuse. Un encuentro desconocido, terminado o sin autoridad devuelve un rechazo tipado (no una promesa colgada) y no toca a los demás.

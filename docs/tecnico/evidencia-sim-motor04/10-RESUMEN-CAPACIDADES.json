@@ -1,0 +1,40 @@
+{
+ "capabilities": 32,
+ "rows": 768,
+ "controls": 56,
+ "registro": {
+  "suficiente": 24,
+  "proxy declarado": 7,
+  "no instrumentado": 1
+ },
+ "capabilitiesWithEffectInEveryPertinentSituation": 31,
+ "pertinentWithoutEffect": [
+  [
+   "FIS04",
+   "S4+1: tope: la capacidad ya está en 30, cambio aplicado 0 | S4+3: tope: la capacidad ya está en 30, cambio aplicado 0 | "
+  ]
+ ],
+ "tec09": {
+  "codigo": "TEC09",
+  "nombre": "Bloqueos",
+  "grupo": "TEC",
+  "atributo_consumido_por_operacion_pura": "Calidad de las fichas que usan bloqueo · tasks.TAR04 / qualityAttack de las fichas con bloqueo",
+  "situaciones_pertinentes": "S4",
+  "sensibilidad_n_cambian_sobre_n_magnitudes_por_situacion_y_delta_1_3_5": "S4:16/16|16/16|16/16",
+  "salida_principal_que_cambia": "quality.comfortable.0:0.275352569234>0.278036335595; mix.zone.midrange.0:0.0961124355934>0.0963775472811; mix.family.handoff.0:0.132753167719>0.132693912192",
+  "saturacion_o_tope_30": "no",
+  "operacion_expuesta": "",
+  "exposicion_VAL": 1413,
+  "exposicion_CONTRAST": 2109,
+  "exposicion_STRESS": 502,
+  "registro": "suficiente",
+  "proxy_o_nota": "C04-03: analysis.participation[].screeners (e.scr). Distingue tres cosas: CAPACIDAD UTILIZADA (TEC09 es operando de la calidad de las fichas con bloqueo: se mide en la sonda de magnitudes), PARTICIPANTE REGISTRADO (este contador) y EFECTO AGREGADO (la calidad usa grupos funcionales, no al sorteado). Con registro y sin bloqueos el 0 es legítimo; sin analysis es null",
+  "pertinentes_sin_efecto": "",
+  "limites_del_instrumento": "utilidad de rotación por puesto (S.rotation.slotAbilityWeights): elige sustitutos; no es magnitud de tramo [src/sim/engine.js:98]"
+ },
+ "exposureSets": {
+  "VAL": 56,
+  "CONTRAST": 88,
+  "STRESS": 24
+ }
+}

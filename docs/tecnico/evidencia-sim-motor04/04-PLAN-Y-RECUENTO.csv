@@ -1,0 +1,33 @@
+bloque,identidad,modelo,solicitado,iniciado,terminado_valido,terminado_no_valido,fallido,interrumpido,no_ejecutado,repetido,causa
+CAL,C04-A1,sim,56,56,56,0,0,0,0,0,
+CAL,C04-A2,sim,56,56,56,0,0,0,0,0,
+CAL,C04-E1,sim,56,56,56,0,0,0,0,0,
+CAL,C04-E2,sim,56,56,56,0,0,0,0,0,
+CAL,C04-V1,sim,56,56,56,0,0,0,0,0,
+CAL,C04-V2,sim,56,56,56,0,0,0,0,0,
+CAL,C04-V3,sim,56,56,56,0,0,0,0,0,
+CAL,C04-Z1,sim,56,56,56,0,0,0,0,0,
+CAL,C04-Z2,sim,56,56,56,0,0,0,0,0,
+CAL,DET,detailed,16,16,16,0,0,0,0,0,
+CAL,R0,sim,56,56,56,0,0,0,0,0,
+CAL,R1,sim,56,56,56,0,0,0,0,0,
+VAL,DET,detailed,16,16,16,0,0,0,0,0,
+VAL,FINAL,sim,56,56,56,0,0,0,0,0,
+VAL,R0,sim,56,56,56,0,0,0,0,0,
+VAL,R1,sim,56,56,56,0,0,0,0,0,
+STRESS,FINAL,sim,24,24,24,0,0,0,0,0,
+STRESS,R0,sim,24,24,24,0,0,0,0,0,
+CONTRAST,FINAL,sim,88,88,88,0,0,0,0,0,
+DIAG,DET-DIAG,detailed,4,4,4,0,0,0,0,0,
+DIAG,FINAL-DIAG,sim,12,12,12,0,0,0,0,0,
+OPT,O04-FINAL,sim,56,56,56,0,0,0,0,0,
+TECH,TECH-E1,sim,8,8,8,0,0,0,0,0,
+TECH,TECH-E2,sim,8,8,8,0,0,0,0,0,
+EXTRA,"O04-FINAL (OPT, primera ejecución sin vector)",sim,56,56,0,56,0,0,0,0,"medida inválida retirada del índice y repetida (incidents.jsonl, 1 incidente): ejecutadas pero NO contadas como válidas"
+EXTRA,reverificación OPT con el código final (out/sim-motor04/reverify),sim,56,56,56,0,0,0,0,0,"56/56 iguales a C04-E1 en las ocho secciones; comprobación técnica, no observación"
+EXTRA,jornada mixta (3 rutas A/B/C),sim+detailed,15,15,15,0,0,0,0,0,12 SIM + 3 detallados (contadas aparte)
+EXTRA,jornadas adicionales de noticias externas (§11.3),sim+detailed,10,10,10,0,0,0,0,0,8 SIM + 2 detallados
+EXTRA,"benchmark F (O04-CONTROL, O04-FINAL) 3 pasadas de 1.000",sim,6000,6000,6000,0,0,0,0,0,repeticiones de los mismos 1.000 casos; no son observaciones
+EXTRA,"benchmark jornada de mil (O04-CONTROL, O04-FINAL)",sim,2000,2000,2000,0,0,0,0,0,jornada de 1.000 simultáneos por identidad
+EXTRA,continuación real del snapshot de ejemplo,sim,1,1,1,0,0,0,0,0,recibo en ejemplos/RECIBO-SNAPSHOT.json
+EXTRA,historia desde VAL y aprendizaje (6 pares × Polivalencia 8/16/24),sim+detailed,0,0,0,0,0,0,0,0,sin partidos nuevos: usa registros ya ejecutados (648 filas de aprendizaje)

@@ -1,0 +1,69 @@
+{
+ "schema": "beM-sim04c-val-signals/1",
+ "labels": {
+  "cal": "mejora en CAL",
+  "val": "confirmada en VAL (M menor)"
+ },
+ "signals": {
+  "eP": {
+   "band": 0.08,
+   "N04C": 0.09072529694212794,
+   "FINAL": 0.05893915143346529,
+   "improves": true,
+   "inBand": true
+  },
+  "eF": {
+   "band": 0.08,
+   "N04C": 0.019810815634481616,
+   "FINAL": 0.027961211255874696,
+   "improves": false,
+   "inBand": true
+  },
+  "eZ": {
+   "band": 0.1,
+   "N04C": 0.22501233931944675,
+   "FINAL": 0.16954487310258454,
+   "improves": true,
+   "inBand": false
+  },
+  "e2": {
+   "band": 0.04,
+   "N04C": 0.06344577390141071,
+   "FINAL": 0.04496627548208454,
+   "improves": true,
+   "inBand": false
+  },
+  "eR": {
+   "band": 0.05,
+   "N04C": 0.047176774164469415,
+   "FINAL": 0.05906184792936675,
+   "improves": false,
+   "inBand": false
+  },
+  "eI": {
+   "band": 0.05,
+   "N04C": 0.05123442649409349,
+   "FINAL": 0.007742433924867731,
+   "improves": true,
+   "inBand": true
+  },
+  "eQ": {
+   "band": 0.05,
+   "N04C": 0.12884931277027822,
+   "FINAL": 0.028561574252109714,
+   "improves": true,
+   "inBand": true
+  },
+  "eA": {
+   "band": 0.08,
+   "N04C": 0.13954330675777527,
+   "FINAL": 0.12718609929293345,
+   "improves": true,
+   "inBand": false
+  }
+ },
+ "guardsFailed": [],
+ "MN04C": 2.5769862554055645,
+ "MFINAL": 1.6954487310258453,
+ "note": "señales de aceptación provisional; VAL no reajusta nada; una candidata con M > 1 no satisface todas las bandas aunque sea mejor"
+}

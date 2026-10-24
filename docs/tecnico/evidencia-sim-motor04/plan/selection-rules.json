@@ -1,0 +1,83 @@
+{
+ "schema": "beM-sim04-selection-rules/1",
+ "frozenBeforeCAL": true,
+ "rules": {
+  "id": "SEL-SIM04-R1",
+  "maxAdditionalVectors": 9,
+  "precision": 1e-9,
+  "minRelativeImprovement": 0.05,
+  "L_V": "abs(meanPTS_SIM/meanPTS_DET − 1) + abs(meanFGA_SIM/meanFGA_DET − 1); medias por equipo de equivalentes por 40 minutos (valor × 2400 / duración deportiva) en los casos CAL con ancla detallada",
+  "L_Z": "Σ_z abs(shareAttempts_SIM[z] − shareAttempts_DET[z]) (cuatro zonas; sumas de numeradores y denominadores); admisible si L_V no empeora más de max(0,02; 10 % del L_V previo)",
+  "L_A": "abs(ΣAST_FG_SIM/ΣFGM_SIM − ΣAST_FG_DET/ΣFGM_DET) en las anclas; las asistencias a libres se informan aparte",
+  "E": "menor gasto de {2, 3, 3,5} con: (1) frecuencia de actuaciones de equipo con algún jugador de ≥ 40 min (partidos sin prórroga, todos los CAL) reducida ≥ 20 % relativo frente al ganador previo con gasto 2; (2) L_V no empeora más de max(0,04; 20 % del L_V previo) ni L_A más de 0,05 absolutos; (3) comprobaciones de rotación superadas",
+  "ties": "se conserva el valor previo si la reducción de la pérdida es < 5 % relativo o si su pérdida es 0; entre valores con la misma pérdida (precisión 1e-9) se elige el más cercano al anterior y después el de menor cambio absoluto; denominador nulo o ancla no válida ⇒ métrica no evaluada y se conserva el valor previo"
+ },
+ "stages": [
+  {
+   "stage": "V",
+   "path": "volume.neutralSecondsPerControl",
+   "baseline": 16,
+   "values": [
+    17.5,
+    18.5,
+    19.5
+   ],
+   "ids": [
+    "C04-V1",
+    "C04-V2",
+    "C04-V3"
+   ]
+  },
+  {
+   "stage": "Z",
+   "path": "shotMix.threeWeightFactor",
+   "baseline": 1,
+   "values": [
+    0.85,
+    0.7
+   ],
+   "ids": [
+    "C04-Z1",
+    "C04-Z2"
+   ]
+  },
+  {
+   "stage": "A",
+   "path": "assist.eligibleFinalPassP0",
+   "baseline": 0.6,
+   "values": [
+    0.75,
+    0.9
+   ],
+   "ids": [
+    "C04-A1",
+    "C04-A2"
+   ]
+  },
+  {
+   "stage": "E",
+   "path": "energy.costPerLiveMinute",
+   "baseline": 2,
+   "values": [
+    3,
+    3.5
+   ],
+   "ids": [
+    "C04-E1",
+    "C04-E2"
+   ]
+  }
+ ],
+ "budget": {
+  "maxAdditionalVectors": 9,
+  "note": "no es el producto cartesiano: cada etapa parte del ganador provisional de la anterior; los partidos del ganador ya ejecutado se reutilizan"
+ },
+ "identities": {
+  "R0": "SIM-MOTOR-03 congelado (a201354, código y perfil históricos)",
+  "R1": "SIM con las correcciones funcionales de 04 y sus semillas nuevas, sin las candidatas numéricas",
+  "C04-*": "vectores numéricos candidatos sobre R1",
+  "C04-FINAL-PROVISIONAL": "vector elegido por estas reglas, pendiente de aceptación deportiva"
+ },
+ "sources": "ver fuentes-externas.json (datos aportados por ChatGPT desde fuente primaria; no leídos directamente por Claude)",
+ "selectionRulesSha256": "45926ca0fc2bdd897021200971cee9f8604b6478cd104f739c80f8cd6f5782e3"
+}

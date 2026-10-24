@@ -1,0 +1,23 @@
+{
+ "mode": "verify",
+ "ok": false,
+ "codeCommitFrozen": "a76ba537b367ed4d2001bb3a490cb7793062a86c",
+ "headNow": "3bbe5fce81588bde0f13dff44ed49668b293ec7a",
+ "files": {
+  "changed": [
+   "src/sim/candidates.js"
+  ],
+  "added": [],
+  "removed": []
+ },
+ "plan": {
+  "changed": [],
+  "added": [],
+  "removed": []
+ },
+ "detailed": {
+  "changed": [],
+  "added": [],
+  "removed": []
+ }
+}

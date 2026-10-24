@@ -1,6 +1,7 @@
 // Conciliación SIM (§7.3): invariantes sobre los hechos comprometidos. Separada de la evaluación deportiva: una comprobación «no evaluada» nunca se cuenta como conforme.
 // Cada comprobación declara su universo (n) y devuelve sus fallos completos. El comprobador del detallado no se reutiliza porque sus supuestos (posesiones beM, acta del motor de acciones) no coinciden.
 import { SIM_RECON_POLICY_ID as RECON_POLICY } from './version.js';
+import { screenRoleOf } from './model.js';
 const ZONES = ['rim', 'inside', 'midrange', 'three'];
 
 export const RECONCILIATION_IDS = [
@@ -8,6 +9,7 @@ export const RECONCILIATION_IDS = [
   'R08_exclusion_sin_acciones', 'R09_minutos_intervalos', 'R10_mas_menos', 'R11_quintetos_sin_doble_conteo', 'R12_final_sin_empate', 'R13_orden_y_tiempos', 'R14_asistencias', 'R15_tapones',
   'R16_faltas_bonus', 'R17_particiones_zonas', 'R18_lectura_sin_azar',
   'R19_finalizaciones_y_libres', 'R20_prefijo_publico', 'R21_faltas_causales', 'R22_receptor_falta_ofensiva', 'R23_continuidad_tapon_fuera',
+  'R24_bloqueador_pertinente', 'R25_exposicion_presion', 'R26_denominadores_asistencia', 'R27_rama_tras_rebote_ofensivo',
 ];
 
 export function reconcileResult(m, res, evs) {
@@ -106,6 +108,36 @@ export function reconcileResult(m, res, evs) {
   // R23 continuidad tras tapón fuera: el control no pasa al rival; la misma continuidad se reanuda con una continuación marcada
   { const f = []; let n = 0; for (let i = 0; i < evs.length; i++) { const e = evs[i]; if (!(e.ty === 'shot' && e.end === 'block_out_of_bounds')) continue; n++; const next = evs.slice(i + 1).find((x) => (x.ty === 'shot' || x.ty === 'tov' || x.ty === 'shootfoul') && x.cont === 'block_out_of_bounds'); if (!next || (next.ty !== 'shootfoul' && next.tm !== e.tm) || (next.ty === 'shootfoul' && next.tm !== 1 - e.tm) || next.t !== e.t) f.push({ hecho: e.i, causa: 'tapón fuera sin reanudación de la misma continuidad' }); }
     add('R23_continuidad_tapon_fuera', 'tras un tapón fuera el mismo equipo conserva la continuidad (reanudación compacta, sin rebote inventado)', n, f); }
+  // R24 bloqueador pertinente (C04-03): solo las fichas con función `screener` registran bloqueador; si el ejecutante la ocupa es él (un solo crédito); si no, otro jugador del mismo equipo distinto del ejecutante y del director; ausencia explícita sin candidato
+  { const f = []; let n = 0; for (const e of evs) { if (e.ty !== 'shot' && e.ty !== 'shootfoul') continue; const tm = e.ty === 'shot' ? e.tm : 1 - e.tm; const shooter = e.ty === 'shot' ? e.pl : e.victim; const play = e.play ? m.T.plays[e.play] : null; const has = e.ctx === 'organized' && screenRoleOf(play) != null;
+      if (!has) { if (e.scr != null || (e.scrSrc ?? null) !== null) f.push({ hecho: e.i, causa: 'bloqueador registrado donde la ficha o el contexto no lo representan', play: e.play, ctx: e.ctx }); continue; }
+      n++; if (e.scrSrc === 1) { if (e.scr !== shooter) f.push({ hecho: e.i, causa: 'ejecutante-bloqueador sin crédito único' }); } else if (e.scrSrc === 2) { if (e.scr == null || e.scr === shooter || e.scr === e.dir) f.push({ hecho: e.i, causa: 'bloqueador sorteado coincide con el ejecutante o el director' }); } else if (e.scrSrc === 0) { if (e.scr != null) f.push({ hecho: e.i, causa: 'ausencia declarada con jugador' }); } else f.push({ hecho: e.i, causa: 'ficha con bloqueo sin origen del bloqueador' });
+      if (e.scr != null && teamOfPlayer[e.scr] !== tm) f.push({ hecho: e.i, causa: 'bloqueador de otro equipo' }); if (e.scr != null && e.sg >= 0 && !m.segments[e.sg].lineups[tm].includes(e.scr)) f.push({ hecho: e.i, causa: 'bloqueador fuera de pista' }); }
+    add('R24_bloqueador_pertinente', 'el bloqueador de las fichas con función de bloqueo es el ejecutante (crédito único) u otro jugador en pista; sin candidato, ausencia explícita', n, f); }
+  // R25 exposición de presión (C04-04): las oportunidades son los controles publicados bajo presión adelantada; cada participante recibe como máximo una operación por oportunidad, y los créditos suman lo esperado
+  { const f = []; const opp = [0, 0]; let credDir = 0; let credDef = 0; let credAll = 0; const w = m.S.familiarity.tacticContextWeights.pressBreak;
+    for (const s2 of res.segments) { const sg = m.segments[s2.n]; if (!sg.press) continue; for (const k of [0, 1]) { const p = sg.press[k]; if (!p) continue; const n2 = s2.controls[k]; if (p.height === 'normal') f.push({ tramo: s2.n, causa: 'presión normal con oportunidad de avance presionado' }); opp[k] += n2; credDir += n2; credDef += n2 * sg.lineups[1 - k].length; if (!sg.lineups[k].includes(p.director)) f.push({ tramo: s2.n, causa: 'director de referencia fuera de pista' }); } }
+    if (res.pressOps) for (const k of [0, 1]) if (res.pressOps.opportunities[k] !== opp[k]) f.push({ equipo: k, acta: res.pressOps.opportunities[k], esperado: opp[k] });
+    for (const [id, e] of Object.entries(res.exposure ?? {})) { const pr = e.moduleOps?.press ?? {}; const s3 = Object.values(pr).reduce((a, x) => a + x, 0); credAll += s3; if (!e.moduleOps && Object.keys(pr).length) f.push({ jugador: id, causa: 'exposición de presión sin identidad de operación' }); }
+    if (res.exposure && Math.abs(credAll - (credDir * (w.attack.press_break) + credDef)) > 1e-3 * Math.max(1, credAll)) f.push({ causa: 'los créditos de presión no suman director + defensores por oportunidad', creditos: credAll, esperado: credDir * w.attack.press_break + credDef });
+    add('R25_exposicion_presion', 'la exposición de presión = controles publicados bajo presión adelantada × participantes (una operación por participante y oportunidad)', opp[0] + opp[1], f); }
+  // R26 denominadores de asistencia (C04-06): las asistencias del acta se reparten exactamente en los denominadores por contexto; sin doble crédito por finalización
+  { const f = []; let n = 0; for (const k of [0, 1]) { const d = res.assistDenominators[k]; let fg = 0; let ft = 0; let del = 0; let bas = 0; for (const c of Object.values(d)) { fg += c.fgAssists; ft += c.ftAssists; del += c.delivered; bas += c.eligibleBaskets; n += c.fin; if (c.delivered > c.eligible || c.fgAssists > c.eligibleBaskets || c.eligible > c.fin || c.ftAssists > c.eligibleFtSeries) f.push({ equipo: k, causa: 'denominador menor que su numerador', c }); }
+      if (d.putback.eligible || d.putback.fgAssists) f.push({ equipo: k, causa: 'putback elegible para asistencia' }); const t = box.teams[k]; if (fg !== t.astC) f.push({ equipo: k, asistenciasCampo: t.astC, denominadores: fg }); if (ft !== t.astL) f.push({ equipo: k, asistenciasLibres: t.astL, denominadores: ft }); void del; void bas; }
+    add('R26_denominadores_asistencia', 'asistencias de campo y de libres del acta = numeradores de los denominadores por contexto; ningún numerador supera su denominador', n, f); }
+  // R27 rama tras rebote ofensivo (04C §5): cada rebote ofensivo válido tiene exactamente UNA decisión de rama; el reinicio organizado produce hechos organizados del mismo control (nunca `putback`) y la rama inmediata, el `putback`
+  // cercano al aro sin ficha; con P0 = 0 no hay reinicio y con P0 = 1 ningún rebote conserva la rama inmediata (si había celdas organizadas); un defensivo no lleva rama. Ningún reinicio hereda un bloqueador del tiro anterior.
+  { const f = []; let n = 0; const p0 = m.S.rebound.organizedResetP0 ?? 0; const BR = ['immediate', 'organized_reset', 'reset_unavailable']; const pend = [null, null];
+    for (const e of evs) {
+      if (e.ty === 'reb') { if (e.off) { n++; if (!BR.includes(e.rbb)) f.push({ hecho: e.i, causa: 'rebote ofensivo sin rama válida', rbb: e.rbb ?? null }); else { if (p0 === 0 && e.rbb !== 'immediate') f.push({ hecho: e.i, causa: 'rama distinta de la inmediata con P0 = 0', rbb: e.rbb }); if (p0 >= 1 && e.rbb === 'immediate') f.push({ hecho: e.i, causa: 'rama inmediata con P0 = 1' }); } pend[e.tm] = e.rbb; } else if (e.rbb != null) f.push({ hecho: e.i, causa: 'rebote defensivo con rama' }); continue; }
+      if (e.cont !== 'offensive_rebound') { if (e.rbb != null) f.push({ hecho: e.i, causa: 'rama en un hecho que no es continuación por rebote ofensivo' }); continue; }
+      if (e.rbb == null) { f.push({ hecho: e.i, causa: 'continuación por rebote ofensivo sin rama' }); continue; }
+      const k = e.ty === 'shootfoul' ? 1 - e.tm : e.tm; if (e.ty === 'shootfoul' && e.and1) continue; const want = pend[k]; pend[k] = null; if (want == null) { f.push({ hecho: e.i, causa: 'continuación sin rebote ofensivo previo' }); continue; } if (want !== e.rbb) f.push({ hecho: e.i, causa: 'la continuación no corresponde a la rama decidida', decidida: want, hecho_rama: e.rbb });
+      if (e.ty === 'tov') continue;
+      if (e.rbb === 'organized_reset') { if (e.ctx !== 'organized' || e.src === 'putback') f.push({ hecho: e.i, causa: 'reinicio organizado con hecho no organizado', ctx: e.ctx }); }
+      else { if (e.ctx !== 'putback' || (e.zone !== 'rim' && e.zone !== 'inside') || e.dir != null || e.scr != null || e.elig) f.push({ hecho: e.i, causa: 'continuación inmediata con ficha, bloqueador o pase heredados', ctx: e.ctx }); }
+    }
+    add('R27_rama_tras_rebote_ofensivo', 'cada rebote ofensivo decide una rama (inmediata, reinicio organizado o reinicio no disponible); el reinicio produce hechos organizados y la inmediata un putback sin ficha ni pase; P0 = 0 y P0 = 1 respetados', n, f); }
   const failures = checks.filter((c) => !c.ok);
   return { policy: RECON_POLICY, checks, passed: checks.length - failures.length, failed: failures.length, valid: failures.length === 0, evaluated: checks.length, notEvaluated: RECONCILIATION_IDS.filter((id) => !checks.some((c) => c.id === id)) };
 }

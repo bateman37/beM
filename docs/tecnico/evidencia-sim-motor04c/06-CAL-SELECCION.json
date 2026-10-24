@@ -1,0 +1,2906 @@
+{
+ "schema": "beM-sim04c-cal-selection-delivery/1",
+ "selectionRulesSha256": "8be137b9d65ee586996ae85df96ea04d95bbcec091e5a06bcf2c4b435c5290b6",
+ "populations": {
+  "calCases": 24,
+  "anchors": 24
+ },
+ "runs": {
+  "DET": {
+   "block": "CAL",
+   "identity": "DET",
+   "resolver": "detailed",
+   "requested": 24,
+   "executed": 24,
+   "wallMs": 22210
+  },
+  "B04B": {
+   "block": "CAL",
+   "identity": "B04B",
+   "resolver": "sim",
+   "requested": 24,
+   "executed": 24,
+   "wallMs": 893
+  },
+  "N04C": {
+   "block": "CAL",
+   "identity": "N04C",
+   "resolver": "sim",
+   "requested": 24,
+   "executed": 24,
+   "wallMs": 939
+  },
+  "C04C-J0": {
+   "block": "CAL",
+   "identity": "C04C-J0",
+   "resolver": "sim",
+   "requested": 24,
+   "executed": 24,
+   "wallMs": 1023
+  },
+  "C04C-R35": {
+   "block": "CAL",
+   "identity": "C04C-R35",
+   "resolver": "sim",
+   "requested": 24,
+   "executed": 24,
+   "wallMs": 1054
+  },
+  "C04C-R65": {
+   "block": "CAL",
+   "identity": "C04C-R65",
+   "resolver": "sim",
+   "requested": 24,
+   "executed": 24,
+   "wallMs": 931
+  },
+  "C04C-R85": {
+   "block": "CAL",
+   "identity": "C04C-R85",
+   "resolver": "sim",
+   "requested": 24,
+   "executed": 24,
+   "wallMs": 1064
+  },
+  "C04C-I50": {
+   "block": "CAL",
+   "identity": "C04C-I50",
+   "resolver": "sim",
+   "requested": 24,
+   "executed": 24,
+   "wallMs": 1065
+  },
+  "C04C-I100": {
+   "block": "CAL",
+   "identity": "C04C-I100",
+   "resolver": "sim",
+   "requested": 24,
+   "executed": 24,
+   "wallMs": 990
+  },
+  "C04C-P15": {
+   "block": "CAL",
+   "identity": "C04C-P15",
+   "resolver": "sim",
+   "requested": 24,
+   "executed": 24,
+   "wallMs": 1097
+  },
+  "C04C-P30": {
+   "block": "CAL",
+   "identity": "C04C-P30",
+   "resolver": "sim",
+   "requested": 24,
+   "executed": 24,
+   "wallMs": 1128
+  }
+ },
+ "evaluations": {
+  "B04B": {
+   "id": "B04B",
+   "rows": [
+    {
+     "path": "volume.neutralSecondsPerControl",
+     "value": 19.5
+    },
+    {
+     "path": "shotMix.threeWeightFactor",
+     "value": 0.7
+    },
+    {
+     "path": "assist.eligibleFinalPassP0",
+     "value": 0.9
+    },
+    {
+     "path": "energy.costPerLiveMinute",
+     "value": 3
+    },
+    {
+     "path": "assist.receivedAdvantageP0",
+     "value": 0
+    }
+   ],
+   "comparableCases": 24,
+   "invariantsOk": true,
+   "sim": {
+    "teamLines": 48,
+    "games": 24,
+    "meanPTS40": 74.875,
+    "meanFGA40": 61.708333333333336,
+    "meanPTSReal": 74.875,
+    "meanFGAReal": 61.708333333333336,
+    "meanPTSNoOT": 74.875,
+    "meanFGANoOT": 61.708333333333336,
+    "nNoOT": 48,
+    "zoneAttempts": {
+     "rim": 793,
+     "inside": 669,
+     "midrange": 345,
+     "three": 1155
+    },
+    "zoneTotal": 2962,
+    "zoneShare": {
+     "rim": 0.2677245104659014,
+     "inside": 0.22586090479405807,
+     "midrange": 0.11647535449020932,
+     "three": 0.3899392302498312
+    },
+    "fg2m": 885,
+    "fg2a": 1807,
+    "fg3m": 443,
+    "fg3a": 1155,
+    "ftm": 495,
+    "fta": 612,
+    "rimM": 441,
+    "rimA": 793,
+    "insideM": 306,
+    "insideA": 669,
+    "rimForced": 151,
+    "rimAttZone": 793,
+    "insideForced": 136,
+    "insideAttZone": 669,
+    "insideNormalA": 369,
+    "insideNormalM": 153,
+    "fgm": 1328,
+    "fga": 2962,
+    "astFg": 705,
+    "astFt": 81
+   },
+   "det": {
+    "teamLines": 48,
+    "games": 24,
+    "meanPTS40": 79.53888888888888,
+    "meanFGA40": 58.44120370370371,
+    "meanPTSReal": 80.70833333333333,
+    "meanFGAReal": 59.375,
+    "meanPTSNoOT": 79.81818181818181,
+    "meanFGANoOT": 58.29545454545455,
+    "nNoOT": 44,
+    "zoneAttempts": {
+     "rim": 1043,
+     "inside": 611,
+     "midrange": 204,
+     "three": 992
+    },
+    "zoneTotal": 2850,
+    "zoneShare": {
+     "rim": 0.36596491228070177,
+     "inside": 0.2143859649122807,
+     "midrange": 0.07157894736842105,
+     "three": 0.3480701754385965
+    },
+    "fg2m": 1071,
+    "fg2a": 1858,
+    "fg3m": 392,
+    "fg3a": 992,
+    "ftm": 556,
+    "fta": 683,
+    "rimM": 641,
+    "rimA": 1043,
+    "insideM": 351,
+    "insideA": 611,
+    "rimForced": 61,
+    "rimAttZone": 1043,
+    "insideForced": 1,
+    "insideAttZone": 611,
+    "insideNormalA": 390,
+    "insideNormalM": 219,
+    "fgm": 1463,
+    "fga": 2850,
+    "astFg": 1017,
+    "astFt": 97
+   },
+   "errors": {
+    "eP": {
+     "value": 0.05863658587692944,
+     "evaluated": true
+    },
+    "eF": {
+     "value": 0.05590455744535894,
+     "evaluated": true
+    },
+    "eZ": {
+     "value": 0.19648080362960071,
+     "evaluated": true
+    },
+    "e2": {
+     "value": 0.08666422827623466,
+     "evaluated": true
+    },
+    "eR": {
+     "value": 0.05845733098456163,
+     "evaluated": true
+    },
+    "eI": {
+     "value": 0.11706898196736959,
+     "evaluated": true
+    },
+    "eQ": {
+     "value": 0.1319310022137616,
+     "evaluated": true
+    },
+    "eA": {
+     "value": 0.1642734643289494,
+     "evaluated": true
+    },
+    "e3": {
+     "value": 0.011611506772797098,
+     "evaluated": true
+    },
+    "eFT": {
+     "value": 0.005232107484282156,
+     "evaluated": true
+    },
+    "forcedInside": {
+     "value": 0.20165182907287668,
+     "evaluated": true
+    }
+   },
+   "parts": {
+    "simZoneShare": {
+     "rim": 0.2677245104659014,
+     "inside": 0.22586090479405807,
+     "midrange": 0.11647535449020932,
+     "three": 0.3899392302498312
+    },
+    "detZoneShare": {
+     "rim": 0.36596491228070177,
+     "inside": 0.2143859649122807,
+     "midrange": 0.07157894736842105,
+     "three": 0.3480701754385965
+    },
+    "sim2": 0.48976203652462647,
+    "det2": 0.5764262648008611,
+    "simRim": 0.5561160151324086,
+    "detRim": 0.6145733461169702,
+    "simInside": 0.45739910313901344,
+    "detInside": 0.574468085106383,
+    "simForcedRim": 0.19041614123581338,
+    "detForcedRim": 0.058485139022051776,
+    "simForcedInside": 0.20328849028400597,
+    "detForcedInside": 0.0016366612111292963,
+    "simAstPerFgm": 0.5308734939759037,
+    "detAstPerFgm": 0.6951469583048531,
+    "sim3": 0.38354978354978353,
+    "det3": 0.3951612903225806,
+    "simFT": 0.8088235294117647,
+    "detFT": 0.8140556368960469,
+    "simInsideNormal": 0.4146341463414634,
+    "detInsideNormal": 0.5615384615384615,
+    "simInsideNormalA": 369,
+    "detInsideNormalA": 390,
+    "simInsideNormalM": 153,
+    "detInsideNormalM": 219
+   },
+   "M": 2.638620044275232,
+   "dominant": "eQ",
+   "comps": {
+    "eP": 0.7329573234616179,
+    "eF": 0.6988069680669867,
+    "eZ": 1.964808036296007,
+    "e2": 2.1666057069058664,
+    "eR": 1.1691466196912326,
+    "eI": 2.341379639347392,
+    "eQ": 2.638620044275232,
+    "eA": 2.0534183041118674
+   },
+   "missing": [],
+   "freq40": {
+    "teamPerformances": 48,
+    "withFortyMinutes": 28,
+    "frequency": 0.5833333333333334
+   },
+   "excluded": {
+    "sim": [],
+    "detailed": []
+   }
+  },
+  "N04C": {
+   "id": "N04C",
+   "rows": [
+    {
+     "path": "volume.neutralSecondsPerControl",
+     "value": 19.5
+    },
+    {
+     "path": "shotMix.threeWeightFactor",
+     "value": 0.7
+    },
+    {
+     "path": "assist.eligibleFinalPassP0",
+     "value": 0.9
+    },
+    {
+     "path": "energy.costPerLiveMinute",
+     "value": 3
+    },
+    {
+     "path": "assist.receivedAdvantageP0",
+     "value": 0
+    },
+    {
+     "path": "shotMix.rimWeightFactor",
+     "value": 1
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "value": 0
+    },
+    {
+     "path": "rebound.organizedResetP0",
+     "value": 0
+    },
+    {
+     "path": "opportunity.simInsideQualityLogit",
+     "value": 0
+    },
+    {
+     "path": "conversion.simInsideLogitOffset",
+     "value": 0
+    }
+   ],
+   "comparableCases": 24,
+   "invariantsOk": true,
+   "sim": {
+    "teamLines": 48,
+    "games": 24,
+    "meanPTS40": 74.875,
+    "meanFGA40": 61.708333333333336,
+    "meanPTSReal": 74.875,
+    "meanFGAReal": 61.708333333333336,
+    "meanPTSNoOT": 74.875,
+    "meanFGANoOT": 61.708333333333336,
+    "nNoOT": 48,
+    "zoneAttempts": {
+     "rim": 793,
+     "inside": 669,
+     "midrange": 345,
+     "three": 1155
+    },
+    "zoneTotal": 2962,
+    "zoneShare": {
+     "rim": 0.2677245104659014,
+     "inside": 0.22586090479405807,
+     "midrange": 0.11647535449020932,
+     "three": 0.3899392302498312
+    },
+    "fg2m": 885,
+    "fg2a": 1807,
+    "fg3m": 443,
+    "fg3a": 1155,
+    "ftm": 495,
+    "fta": 612,
+    "rimM": 441,
+    "rimA": 793,
+    "insideM": 306,
+    "insideA": 669,
+    "rimForced": 151,
+    "rimAttZone": 793,
+    "insideForced": 136,
+    "insideAttZone": 669,
+    "insideNormalA": 369,
+    "insideNormalM": 153,
+    "fgm": 1328,
+    "fga": 2962,
+    "astFg": 705,
+    "astFt": 81
+   },
+   "det": {
+    "teamLines": 48,
+    "games": 24,
+    "meanPTS40": 79.53888888888888,
+    "meanFGA40": 58.44120370370371,
+    "meanPTSReal": 80.70833333333333,
+    "meanFGAReal": 59.375,
+    "meanPTSNoOT": 79.81818181818181,
+    "meanFGANoOT": 58.29545454545455,
+    "nNoOT": 44,
+    "zoneAttempts": {
+     "rim": 1043,
+     "inside": 611,
+     "midrange": 204,
+     "three": 992
+    },
+    "zoneTotal": 2850,
+    "zoneShare": {
+     "rim": 0.36596491228070177,
+     "inside": 0.2143859649122807,
+     "midrange": 0.07157894736842105,
+     "three": 0.3480701754385965
+    },
+    "fg2m": 1071,
+    "fg2a": 1858,
+    "fg3m": 392,
+    "fg3a": 992,
+    "ftm": 556,
+    "fta": 683,
+    "rimM": 641,
+    "rimA": 1043,
+    "insideM": 351,
+    "insideA": 611,
+    "rimForced": 61,
+    "rimAttZone": 1043,
+    "insideForced": 1,
+    "insideAttZone": 611,
+    "insideNormalA": 390,
+    "insideNormalM": 219,
+    "fgm": 1463,
+    "fga": 2850,
+    "astFg": 1017,
+    "astFt": 97
+   },
+   "errors": {
+    "eP": {
+     "value": 0.05863658587692944,
+     "evaluated": true
+    },
+    "eF": {
+     "value": 0.05590455744535894,
+     "evaluated": true
+    },
+    "eZ": {
+     "value": 0.19648080362960071,
+     "evaluated": true
+    },
+    "e2": {
+     "value": 0.08666422827623466,
+     "evaluated": true
+    },
+    "eR": {
+     "value": 0.05845733098456163,
+     "evaluated": true
+    },
+    "eI": {
+     "value": 0.11706898196736959,
+     "evaluated": true
+    },
+    "eQ": {
+     "value": 0.1319310022137616,
+     "evaluated": true
+    },
+    "eA": {
+     "value": 0.1642734643289494,
+     "evaluated": true
+    },
+    "e3": {
+     "value": 0.011611506772797098,
+     "evaluated": true
+    },
+    "eFT": {
+     "value": 0.005232107484282156,
+     "evaluated": true
+    },
+    "forcedInside": {
+     "value": 0.20165182907287668,
+     "evaluated": true
+    }
+   },
+   "parts": {
+    "simZoneShare": {
+     "rim": 0.2677245104659014,
+     "inside": 0.22586090479405807,
+     "midrange": 0.11647535449020932,
+     "three": 0.3899392302498312
+    },
+    "detZoneShare": {
+     "rim": 0.36596491228070177,
+     "inside": 0.2143859649122807,
+     "midrange": 0.07157894736842105,
+     "three": 0.3480701754385965
+    },
+    "sim2": 0.48976203652462647,
+    "det2": 0.5764262648008611,
+    "simRim": 0.5561160151324086,
+    "detRim": 0.6145733461169702,
+    "simInside": 0.45739910313901344,
+    "detInside": 0.574468085106383,
+    "simForcedRim": 0.19041614123581338,
+    "detForcedRim": 0.058485139022051776,
+    "simForcedInside": 0.20328849028400597,
+    "detForcedInside": 0.0016366612111292963,
+    "simAstPerFgm": 0.5308734939759037,
+    "detAstPerFgm": 0.6951469583048531,
+    "sim3": 0.38354978354978353,
+    "det3": 0.3951612903225806,
+    "simFT": 0.8088235294117647,
+    "detFT": 0.8140556368960469,
+    "simInsideNormal": 0.4146341463414634,
+    "detInsideNormal": 0.5615384615384615,
+    "simInsideNormalA": 369,
+    "detInsideNormalA": 390,
+    "simInsideNormalM": 153,
+    "detInsideNormalM": 219
+   },
+   "M": 2.638620044275232,
+   "dominant": "eQ",
+   "comps": {
+    "eP": 0.7329573234616179,
+    "eF": 0.6988069680669867,
+    "eZ": 1.964808036296007,
+    "e2": 2.1666057069058664,
+    "eR": 1.1691466196912326,
+    "eI": 2.341379639347392,
+    "eQ": 2.638620044275232,
+    "eA": 2.0534183041118674
+   },
+   "missing": [],
+   "freq40": {
+    "teamPerformances": 48,
+    "withFortyMinutes": 28,
+    "frequency": 0.5833333333333334
+   },
+   "excluded": {
+    "sim": [],
+    "detailed": []
+   }
+  },
+  "C04C-J0": {
+   "id": "C04C-J0",
+   "rows": [
+    {
+     "path": "volume.neutralSecondsPerControl",
+     "value": 19.5
+    },
+    {
+     "path": "shotMix.threeWeightFactor",
+     "value": 0.7
+    },
+    {
+     "path": "assist.eligibleFinalPassP0",
+     "value": 0.9
+    },
+    {
+     "path": "energy.costPerLiveMinute",
+     "value": 3
+    },
+    {
+     "path": "assist.receivedAdvantageP0",
+     "value": 0
+    },
+    {
+     "path": "shotMix.rimWeightFactor",
+     "value": 1.5
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "rebound.organizedResetP0",
+     "value": 0
+    },
+    {
+     "path": "opportunity.simInsideQualityLogit",
+     "value": 0
+    },
+    {
+     "path": "conversion.simInsideLogitOffset",
+     "value": 0
+    }
+   ],
+   "comparableCases": 24,
+   "invariantsOk": true,
+   "sim": {
+    "teamLines": 48,
+    "games": 24,
+    "meanPTS40": 75,
+    "meanFGA40": 61.229166666666664,
+    "meanPTSReal": 75,
+    "meanFGAReal": 61.229166666666664,
+    "meanPTSNoOT": 75,
+    "meanFGANoOT": 61.229166666666664,
+    "nNoOT": 48,
+    "zoneAttempts": {
+     "rim": 962,
+     "inside": 578,
+     "midrange": 332,
+     "three": 1067
+    },
+    "zoneTotal": 2939,
+    "zoneShare": {
+     "rim": 0.32732221844164683,
+     "inside": 0.1966655324940456,
+     "midrange": 0.11296359305886355,
+     "three": 0.363048656005444
+    },
+    "fg2m": 940,
+    "fg2a": 1872,
+    "fg3m": 410,
+    "fg3a": 1067,
+    "ftm": 490,
+    "fta": 606,
+    "rimM": 558,
+    "rimA": 962,
+    "insideM": 250,
+    "insideA": 578,
+    "rimForced": 111,
+    "rimAttZone": 962,
+    "insideForced": 112,
+    "insideAttZone": 578,
+    "insideNormalA": 326,
+    "insideNormalM": 133,
+    "fgm": 1350,
+    "fga": 2939,
+    "astFg": 733,
+    "astFt": 81
+   },
+   "det": {
+    "teamLines": 48,
+    "games": 24,
+    "meanPTS40": 79.53888888888888,
+    "meanFGA40": 58.44120370370371,
+    "meanPTSReal": 80.70833333333333,
+    "meanFGAReal": 59.375,
+    "meanPTSNoOT": 79.81818181818181,
+    "meanFGANoOT": 58.29545454545455,
+    "nNoOT": 44,
+    "zoneAttempts": {
+     "rim": 1043,
+     "inside": 611,
+     "midrange": 204,
+     "three": 992
+    },
+    "zoneTotal": 2850,
+    "zoneShare": {
+     "rim": 0.36596491228070177,
+     "inside": 0.2143859649122807,
+     "midrange": 0.07157894736842105,
+     "three": 0.3480701754385965
+    },
+    "fg2m": 1071,
+    "fg2a": 1858,
+    "fg3m": 392,
+    "fg3a": 992,
+    "ftm": 556,
+    "fta": 683,
+    "rimM": 641,
+    "rimA": 1043,
+    "insideM": 351,
+    "insideA": 611,
+    "rimForced": 61,
+    "rimAttZone": 1043,
+    "insideForced": 1,
+    "insideAttZone": 611,
+    "insideNormalA": 390,
+    "insideNormalM": 219,
+    "fgm": 1463,
+    "fga": 2850,
+    "astFg": 1017,
+    "astFt": 97
+   },
+   "errors": {
+    "eP": {
+     "value": 0.057065027589578654,
+     "evaluated": true
+    },
+    "eF": {
+     "value": 0.04770543360294055,
+     "evaluated": true
+    },
+    "eZ": {
+     "value": 0.1127262525145801,
+     "evaluated": true
+    },
+    "e2": {
+     "value": 0.07428951266410899,
+     "evaluated": true
+    },
+    "eR": {
+     "value": 0.03453176607539021,
+     "evaluated": true
+    },
+    "eI": {
+     "value": 0.14194213354928958,
+     "evaluated": true
+    },
+    "eQ": {
+     "value": 0.056899476362563615,
+     "evaluated": true
+    },
+    "eA": {
+     "value": 0.1521839953418901,
+     "evaluated": true
+    },
+    "e3": {
+     "value": 0.01090636998518607,
+     "evaluated": true
+    },
+    "eFT": {
+     "value": 0.005474778810238279,
+     "evaluated": true
+    },
+    "forcedInside": {
+     "value": 0.19213496508644856,
+     "evaluated": true
+    }
+   },
+   "parts": {
+    "simZoneShare": {
+     "rim": 0.32732221844164683,
+     "inside": 0.1966655324940456,
+     "midrange": 0.11296359305886355,
+     "three": 0.363048656005444
+    },
+    "detZoneShare": {
+     "rim": 0.36596491228070177,
+     "inside": 0.2143859649122807,
+     "midrange": 0.07157894736842105,
+     "three": 0.3480701754385965
+    },
+    "sim2": 0.5021367521367521,
+    "det2": 0.5764262648008611,
+    "simRim": 0.58004158004158,
+    "detRim": 0.6145733461169702,
+    "simInside": 0.43252595155709345,
+    "detInside": 0.574468085106383,
+    "simForcedRim": 0.11538461538461539,
+    "detForcedRim": 0.058485139022051776,
+    "simForcedInside": 0.19377162629757785,
+    "detForcedInside": 0.0016366612111292963,
+    "simAstPerFgm": 0.542962962962963,
+    "detAstPerFgm": 0.6951469583048531,
+    "sim3": 0.38425492033739456,
+    "det3": 0.3951612903225806,
+    "simFT": 0.8085808580858086,
+    "detFT": 0.8140556368960469,
+    "simInsideNormal": 0.40797546012269936,
+    "detInsideNormal": 0.5615384615384615,
+    "simInsideNormalA": 326,
+    "detInsideNormalA": 390,
+    "simInsideNormalM": 133,
+    "detInsideNormalM": 219
+   },
+   "M": 2.8388426709857915,
+   "dominant": "eI",
+   "comps": {
+    "eP": 0.7133128448697331,
+    "eF": 0.5963179200367569,
+    "eZ": 1.1272625251458008,
+    "e2": 1.8572378166027248,
+    "eR": 0.6906353215078043,
+    "eI": 2.8388426709857915,
+    "eQ": 1.1379895272512723,
+    "eA": 1.9022999417736262
+   },
+   "missing": [],
+   "freq40": {
+    "teamPerformances": 48,
+    "withFortyMinutes": 28,
+    "frequency": 0.5833333333333334
+   },
+   "excluded": {
+    "sim": [],
+    "detailed": []
+   }
+  },
+  "C04C-R35": {
+   "id": "C04C-R35",
+   "rows": [
+    {
+     "path": "volume.neutralSecondsPerControl",
+     "value": 19.5
+    },
+    {
+     "path": "shotMix.threeWeightFactor",
+     "value": 0.7
+    },
+    {
+     "path": "assist.eligibleFinalPassP0",
+     "value": 0.9
+    },
+    {
+     "path": "energy.costPerLiveMinute",
+     "value": 3
+    },
+    {
+     "path": "assist.receivedAdvantageP0",
+     "value": 0
+    },
+    {
+     "path": "shotMix.rimWeightFactor",
+     "value": 1.5
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "rebound.organizedResetP0",
+     "value": 0.35
+    },
+    {
+     "path": "opportunity.simInsideQualityLogit",
+     "value": 0
+    },
+    {
+     "path": "conversion.simInsideLogitOffset",
+     "value": 0
+    }
+   ],
+   "comparableCases": 24,
+   "invariantsOk": true,
+   "sim": {
+    "teamLines": 48,
+    "games": 24,
+    "meanPTS40": 75.58101851851852,
+    "meanFGA40": 61.25694444444445,
+    "meanPTSReal": 76.02083333333333,
+    "meanFGAReal": 61.583333333333336,
+    "meanPTSNoOT": 75.19565217391305,
+    "meanFGANoOT": 61.19565217391305,
+    "nNoOT": 46,
+    "zoneAttempts": {
+     "rim": 955,
+     "inside": 561,
+     "midrange": 338,
+     "three": 1102
+    },
+    "zoneTotal": 2956,
+    "zoneShare": {
+     "rim": 0.32307171853856564,
+     "inside": 0.18978349120433016,
+     "midrange": 0.11434370771312584,
+     "three": 0.37280108254397837
+    },
+    "fg2m": 938,
+    "fg2a": 1854,
+    "fg3m": 434,
+    "fg3a": 1102,
+    "ftm": 471,
+    "fta": 574,
+    "rimM": 540,
+    "rimA": 955,
+    "insideM": 267,
+    "insideA": 561,
+    "rimForced": 96,
+    "rimAttZone": 955,
+    "insideForced": 113,
+    "insideAttZone": 561,
+    "insideNormalA": 307,
+    "insideNormalM": 159,
+    "fgm": 1372,
+    "fga": 2956,
+    "astFg": 767,
+    "astFt": 80
+   },
+   "det": {
+    "teamLines": 48,
+    "games": 24,
+    "meanPTS40": 79.53888888888888,
+    "meanFGA40": 58.44120370370371,
+    "meanPTSReal": 80.70833333333333,
+    "meanFGAReal": 59.375,
+    "meanPTSNoOT": 79.81818181818181,
+    "meanFGANoOT": 58.29545454545455,
+    "nNoOT": 44,
+    "zoneAttempts": {
+     "rim": 1043,
+     "inside": 611,
+     "midrange": 204,
+     "three": 992
+    },
+    "zoneTotal": 2850,
+    "zoneShare": {
+     "rim": 0.36596491228070177,
+     "inside": 0.2143859649122807,
+     "midrange": 0.07157894736842105,
+     "three": 0.3480701754385965
+    },
+    "fg2m": 1071,
+    "fg2a": 1858,
+    "fg3m": 392,
+    "fg3a": 992,
+    "ftm": 556,
+    "fta": 683,
+    "rimM": 641,
+    "rimA": 1043,
+    "insideM": 351,
+    "insideA": 611,
+    "rimForced": 61,
+    "rimAttZone": 1043,
+    "insideForced": 1,
+    "insideAttZone": 611,
+    "insideNormalA": 390,
+    "insideNormalM": 219,
+    "fgm": 1463,
+    "fga": 2850,
+    "astFg": 1017,
+    "astFt": 97
+   },
+   "errors": {
+    "eP": {
+     "value": 0.04976019184652258,
+     "evaluated": true
+    },
+    "eF": {
+     "value": 0.04818074513003734,
+     "evaluated": true
+    },
+    "eZ": {
+     "value": 0.13499133490017334,
+     "evaluated": true
+    },
+    "e2": {
+     "value": 0.07049314721725808,
+     "evaluated": true
+    },
+    "eR": {
+     "value": 0.04912831993895972,
+     "evaluated": true
+    },
+    "eI": {
+     "value": 0.09853225622937767,
+     "evaluated": true
+    },
+    "eQ": {
+     "value": 0.04203842118737231,
+     "evaluated": true
+    },
+    "eA": {
+     "value": 0.1361090574302175,
+     "evaluated": true
+    },
+    "e3": {
+     "value": 0.0013318892336514065,
+     "evaluated": true
+    },
+    "eFT": {
+     "value": 0.0065018543931517625,
+     "evaluated": true
+    },
+    "forcedInside": {
+     "value": 0.19978936374430742,
+     "evaluated": true
+    }
+   },
+   "parts": {
+    "simZoneShare": {
+     "rim": 0.32307171853856564,
+     "inside": 0.18978349120433016,
+     "midrange": 0.11434370771312584,
+     "three": 0.37280108254397837
+    },
+    "detZoneShare": {
+     "rim": 0.36596491228070177,
+     "inside": 0.2143859649122807,
+     "midrange": 0.07157894736842105,
+     "three": 0.3480701754385965
+    },
+    "sim2": 0.505933117583603,
+    "det2": 0.5764262648008611,
+    "simRim": 0.5654450261780105,
+    "detRim": 0.6145733461169702,
+    "simInside": 0.47593582887700536,
+    "detInside": 0.574468085106383,
+    "simForcedRim": 0.10052356020942409,
+    "detForcedRim": 0.058485139022051776,
+    "simForcedInside": 0.2014260249554367,
+    "detForcedInside": 0.0016366612111292963,
+    "simAstPerFgm": 0.5590379008746356,
+    "detAstPerFgm": 0.6951469583048531,
+    "sim3": 0.3938294010889292,
+    "det3": 0.3951612903225806,
+    "simFT": 0.8205574912891986,
+    "detFT": 0.8140556368960469,
+    "simInsideNormal": 0.5179153094462541,
+    "detInsideNormal": 0.5615384615384615,
+    "simInsideNormalA": 307,
+    "detInsideNormalA": 390,
+    "simInsideNormalM": 159,
+    "detInsideNormalM": 219
+   },
+   "M": 1.9706451245875534,
+   "dominant": "eI",
+   "comps": {
+    "eP": 0.6220023980815322,
+    "eF": 0.6022593141254667,
+    "eZ": 1.3499133490017334,
+    "e2": 1.762328680431452,
+    "eR": 0.9825663987791944,
+    "eI": 1.9706451245875534,
+    "eQ": 0.8407684237474462,
+    "eA": 1.7013632178777187
+   },
+   "missing": [],
+   "freq40": {
+    "teamPerformances": 46,
+    "withFortyMinutes": 29,
+    "frequency": 0.6304347826086957
+   },
+   "excluded": {
+    "sim": [],
+    "detailed": []
+   }
+  },
+  "C04C-R65": {
+   "id": "C04C-R65",
+   "rows": [
+    {
+     "path": "volume.neutralSecondsPerControl",
+     "value": 19.5
+    },
+    {
+     "path": "shotMix.threeWeightFactor",
+     "value": 0.7
+    },
+    {
+     "path": "assist.eligibleFinalPassP0",
+     "value": 0.9
+    },
+    {
+     "path": "energy.costPerLiveMinute",
+     "value": 3
+    },
+    {
+     "path": "assist.receivedAdvantageP0",
+     "value": 0
+    },
+    {
+     "path": "shotMix.rimWeightFactor",
+     "value": 1.5
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "rebound.organizedResetP0",
+     "value": 0.65
+    },
+    {
+     "path": "opportunity.simInsideQualityLogit",
+     "value": 0
+    },
+    {
+     "path": "conversion.simInsideLogitOffset",
+     "value": 0
+    }
+   ],
+   "comparableCases": 24,
+   "invariantsOk": true,
+   "sim": {
+    "teamLines": 48,
+    "games": 24,
+    "meanPTS40": 74.13194444444444,
+    "meanFGA40": 60.34953703703704,
+    "meanPTSReal": 74.47916666666667,
+    "meanFGAReal": 60.666666666666664,
+    "meanPTSNoOT": 74.45652173913044,
+    "meanFGANoOT": 60.32608695652174,
+    "nNoOT": 46,
+    "zoneAttempts": {
+     "rim": 960,
+     "inside": 494,
+     "midrange": 364,
+     "three": 1094
+    },
+    "zoneTotal": 2912,
+    "zoneShare": {
+     "rim": 0.32967032967032966,
+     "inside": 0.16964285714285715,
+     "midrange": 0.125,
+     "three": 0.3756868131868132
+    },
+    "fg2m": 931,
+    "fg2a": 1818,
+    "fg3m": 407,
+    "fg3a": 1094,
+    "ftm": 492,
+    "fta": 600,
+    "rimM": 558,
+    "rimA": 960,
+    "insideM": 224,
+    "insideA": 494,
+    "rimForced": 105,
+    "rimAttZone": 960,
+    "insideForced": 108,
+    "insideAttZone": 494,
+    "insideNormalA": 264,
+    "insideNormalM": 125,
+    "fgm": 1338,
+    "fga": 2912,
+    "astFg": 780,
+    "astFt": 90
+   },
+   "det": {
+    "teamLines": 48,
+    "games": 24,
+    "meanPTS40": 79.53888888888888,
+    "meanFGA40": 58.44120370370371,
+    "meanPTSReal": 80.70833333333333,
+    "meanFGAReal": 59.375,
+    "meanPTSNoOT": 79.81818181818181,
+    "meanFGANoOT": 58.29545454545455,
+    "nNoOT": 44,
+    "zoneAttempts": {
+     "rim": 1043,
+     "inside": 611,
+     "midrange": 204,
+     "three": 992
+    },
+    "zoneTotal": 2850,
+    "zoneShare": {
+     "rim": 0.36596491228070177,
+     "inside": 0.2143859649122807,
+     "midrange": 0.07157894736842105,
+     "three": 0.3480701754385965
+    },
+    "fg2m": 1071,
+    "fg2a": 1858,
+    "fg3m": 392,
+    "fg3a": 992,
+    "ftm": 556,
+    "fta": 683,
+    "rimM": 641,
+    "rimA": 1043,
+    "insideM": 351,
+    "insideA": 611,
+    "rimForced": 61,
+    "rimAttZone": 1043,
+    "insideForced": 1,
+    "insideAttZone": 611,
+    "insideNormalA": 390,
+    "insideNormalM": 219,
+    "fgm": 1463,
+    "fga": 2850,
+    "astFg": 1017,
+    "astFt": 97
+   },
+   "errors": {
+    "eP": {
+     "value": 0.06797862680729194,
+     "evaluated": true
+    },
+    "eF": {
+     "value": 0.03265390191154438,
+     "evaluated": true
+    },
+    "eZ": {
+     "value": 0.16207538075959133,
+     "evaluated": true
+    },
+    "e2": {
+     "value": 0.06432505467984906,
+     "evaluated": true
+    },
+    "eR": {
+     "value": 0.03332334611697019,
+     "evaluated": true
+    },
+    "eI": {
+     "value": 0.12102678955982432,
+     "evaluated": true
+    },
+    "eQ": {
+     "value": 0.050889860977948224,
+     "evaluated": true
+    },
+    "eA": {
+     "value": 0.11218731704924767,
+     "evaluated": true
+    },
+    "e3": {
+     "value": 0.023132039865542242,
+     "evaluated": true
+    },
+    "eFT": {
+     "value": 0.005944363103953076,
+     "evaluated": true
+    },
+    "forcedInside": {
+     "value": 0.21698682057024724,
+     "evaluated": true
+    }
+   },
+   "parts": {
+    "simZoneShare": {
+     "rim": 0.32967032967032966,
+     "inside": 0.16964285714285715,
+     "midrange": 0.125,
+     "three": 0.3756868131868132
+    },
+    "detZoneShare": {
+     "rim": 0.36596491228070177,
+     "inside": 0.2143859649122807,
+     "midrange": 0.07157894736842105,
+     "three": 0.3480701754385965
+    },
+    "sim2": 0.5121012101210121,
+    "det2": 0.5764262648008611,
+    "simRim": 0.58125,
+    "detRim": 0.6145733461169702,
+    "simInside": 0.4534412955465587,
+    "detInside": 0.574468085106383,
+    "simForcedRim": 0.109375,
+    "detForcedRim": 0.058485139022051776,
+    "simForcedInside": 0.21862348178137653,
+    "detForcedInside": 0.0016366612111292963,
+    "simAstPerFgm": 0.5829596412556054,
+    "detAstPerFgm": 0.6951469583048531,
+    "sim3": 0.3720292504570384,
+    "det3": 0.3951612903225806,
+    "simFT": 0.82,
+    "detFT": 0.8140556368960469,
+    "simInsideNormal": 0.4734848484848485,
+    "detInsideNormal": 0.5615384615384615,
+    "simInsideNormalA": 264,
+    "detInsideNormalA": 390,
+    "simInsideNormalM": 125,
+    "detInsideNormalM": 219
+   },
+   "M": 2.420535791196486,
+   "dominant": "eI",
+   "comps": {
+    "eP": 0.8497328350911493,
+    "eF": 0.40817377389430476,
+    "eZ": 1.6207538075959131,
+    "e2": 1.6081263669962265,
+    "eR": 0.6664669223394037,
+    "eI": 2.420535791196486,
+    "eQ": 1.0177972195589644,
+    "eA": 1.402341463115596
+   },
+   "missing": [],
+   "freq40": {
+    "teamPerformances": 46,
+    "withFortyMinutes": 28,
+    "frequency": 0.6086956521739131
+   },
+   "excluded": {
+    "sim": [],
+    "detailed": []
+   }
+  },
+  "C04C-R85": {
+   "id": "C04C-R85",
+   "rows": [
+    {
+     "path": "volume.neutralSecondsPerControl",
+     "value": 19.5
+    },
+    {
+     "path": "shotMix.threeWeightFactor",
+     "value": 0.7
+    },
+    {
+     "path": "assist.eligibleFinalPassP0",
+     "value": 0.9
+    },
+    {
+     "path": "energy.costPerLiveMinute",
+     "value": 3
+    },
+    {
+     "path": "assist.receivedAdvantageP0",
+     "value": 0
+    },
+    {
+     "path": "shotMix.rimWeightFactor",
+     "value": 1.5
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "rebound.organizedResetP0",
+     "value": 0.85
+    },
+    {
+     "path": "opportunity.simInsideQualityLogit",
+     "value": 0
+    },
+    {
+     "path": "conversion.simInsideLogitOffset",
+     "value": 0
+    }
+   ],
+   "comparableCases": 24,
+   "invariantsOk": true,
+   "sim": {
+    "teamLines": 48,
+    "games": 24,
+    "meanPTS40": 74.41666666666667,
+    "meanFGA40": 60.979166666666664,
+    "meanPTSReal": 74.41666666666667,
+    "meanFGAReal": 60.979166666666664,
+    "meanPTSNoOT": 74.41666666666667,
+    "meanFGANoOT": 60.979166666666664,
+    "nNoOT": 48,
+    "zoneAttempts": {
+     "rim": 896,
+     "inside": 559,
+     "midrange": 359,
+     "three": 1113
+    },
+    "zoneTotal": 2927,
+    "zoneShare": {
+     "rim": 0.3061154765971985,
+     "inside": 0.1909805261359754,
+     "midrange": 0.12265117868124359,
+     "three": 0.3802528185855825
+    },
+    "fg2m": 906,
+    "fg2a": 1814,
+    "fg3m": 431,
+    "fg3a": 1113,
+    "ftm": 467,
+    "fta": 559,
+    "rimM": 520,
+    "rimA": 896,
+    "insideM": 233,
+    "insideA": 559,
+    "rimForced": 118,
+    "rimAttZone": 896,
+    "insideForced": 108,
+    "insideAttZone": 559,
+    "insideNormalA": 313,
+    "insideNormalM": 125,
+    "fgm": 1337,
+    "fga": 2927,
+    "astFg": 824,
+    "astFt": 93
+   },
+   "det": {
+    "teamLines": 48,
+    "games": 24,
+    "meanPTS40": 79.53888888888888,
+    "meanFGA40": 58.44120370370371,
+    "meanPTSReal": 80.70833333333333,
+    "meanFGAReal": 59.375,
+    "meanPTSNoOT": 79.81818181818181,
+    "meanFGANoOT": 58.29545454545455,
+    "nNoOT": 44,
+    "zoneAttempts": {
+     "rim": 1043,
+     "inside": 611,
+     "midrange": 204,
+     "three": 992
+    },
+    "zoneTotal": 2850,
+    "zoneShare": {
+     "rim": 0.36596491228070177,
+     "inside": 0.2143859649122807,
+     "midrange": 0.07157894736842105,
+     "three": 0.3480701754385965
+    },
+    "fg2m": 1071,
+    "fg2a": 1858,
+    "fg3m": 392,
+    "fg3a": 992,
+    "ftm": 556,
+    "fta": 683,
+    "rimM": 641,
+    "rimA": 1043,
+    "insideM": 351,
+    "insideA": 611,
+    "rimForced": 61,
+    "rimAttZone": 1043,
+    "insideForced": 1,
+    "insideAttZone": 611,
+    "insideNormalA": 390,
+    "insideNormalM": 219,
+    "fgm": 1463,
+    "fga": 2850,
+    "astFg": 1017,
+    "astFt": 97
+   },
+   "errors": {
+    "eP": {
+     "value": 0.06439896626388186,
+     "evaluated": true
+    },
+    "eF": {
+     "value": 0.043427629859070116,
+     "evaluated": true
+    },
+    "eZ": {
+     "value": 0.16650974891961715,
+     "evaluated": true
+    },
+    "e2": {
+     "value": 0.07697753271706842,
+     "evaluated": true
+    },
+    "eR": {
+     "value": 0.03421620325982733,
+     "evaluated": true
+    },
+    "eI": {
+     "value": 0.15765234270924527,
+     "evaluated": true
+    },
+    "eQ": {
+     "value": 0.0732112895493768,
+     "evaluated": true
+    },
+    "eA": {
+     "value": 0.07884179749707443,
+     "evaluated": true
+    },
+    "e3": {
+     "value": 0.007919601194099068,
+     "evaluated": true
+    },
+    "eFT": {
+     "value": 0.0213647566638816,
+     "evaluated": true
+    },
+    "forcedInside": {
+     "value": 0.19156548547938948,
+     "evaluated": true
+    }
+   },
+   "parts": {
+    "simZoneShare": {
+     "rim": 0.3061154765971985,
+     "inside": 0.1909805261359754,
+     "midrange": 0.12265117868124359,
+     "three": 0.3802528185855825
+    },
+    "detZoneShare": {
+     "rim": 0.36596491228070177,
+     "inside": 0.2143859649122807,
+     "midrange": 0.07157894736842105,
+     "three": 0.3480701754385965
+    },
+    "sim2": 0.4994487320837927,
+    "det2": 0.5764262648008611,
+    "simRim": 0.5803571428571429,
+    "detRim": 0.6145733461169702,
+    "simInside": 0.41681574239713776,
+    "detInside": 0.574468085106383,
+    "simForcedRim": 0.13169642857142858,
+    "detForcedRim": 0.058485139022051776,
+    "simForcedInside": 0.19320214669051877,
+    "detForcedInside": 0.0016366612111292963,
+    "simAstPerFgm": 0.6163051608077786,
+    "detAstPerFgm": 0.6951469583048531,
+    "sim3": 0.38724168912848156,
+    "det3": 0.3951612903225806,
+    "simFT": 0.8354203935599285,
+    "detFT": 0.8140556368960469,
+    "simInsideNormal": 0.3993610223642173,
+    "detInsideNormal": 0.5615384615384615,
+    "simInsideNormalA": 313,
+    "detInsideNormalA": 390,
+    "simInsideNormalM": 125,
+    "detInsideNormalM": 219
+   },
+   "M": 3.1530468541849053,
+   "dominant": "eI",
+   "comps": {
+    "eP": 0.8049870782985232,
+    "eF": 0.5428453732383764,
+    "eZ": 1.6650974891961714,
+    "e2": 1.9244383179267104,
+    "eR": 0.6843240651965465,
+    "eI": 3.1530468541849053,
+    "eQ": 1.464225790987536,
+    "eA": 0.9855224687134303
+   },
+   "missing": [],
+   "freq40": {
+    "teamPerformances": 48,
+    "withFortyMinutes": 31,
+    "frequency": 0.6458333333333334
+   },
+   "excluded": {
+    "sim": [],
+    "detailed": []
+   }
+  },
+  "C04C-I50": {
+   "id": "C04C-I50",
+   "rows": [
+    {
+     "path": "volume.neutralSecondsPerControl",
+     "value": 19.5
+    },
+    {
+     "path": "shotMix.threeWeightFactor",
+     "value": 0.7
+    },
+    {
+     "path": "assist.eligibleFinalPassP0",
+     "value": 0.9
+    },
+    {
+     "path": "energy.costPerLiveMinute",
+     "value": 3
+    },
+    {
+     "path": "assist.receivedAdvantageP0",
+     "value": 0
+    },
+    {
+     "path": "shotMix.rimWeightFactor",
+     "value": 1.5
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "rebound.organizedResetP0",
+     "value": 0.35
+    },
+    {
+     "path": "opportunity.simInsideQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "conversion.simInsideLogitOffset",
+     "value": 0
+    }
+   ],
+   "comparableCases": 24,
+   "invariantsOk": true,
+   "sim": {
+    "teamLines": 48,
+    "games": 24,
+    "meanPTS40": 75.70833333333333,
+    "meanFGA40": 60.916666666666664,
+    "meanPTSReal": 75.70833333333333,
+    "meanFGAReal": 60.916666666666664,
+    "meanPTSNoOT": 75.70833333333333,
+    "meanFGANoOT": 60.916666666666664,
+    "nNoOT": 48,
+    "zoneAttempts": {
+     "rim": 945,
+     "inside": 539,
+     "midrange": 344,
+     "three": 1096
+    },
+    "zoneTotal": 2924,
+    "zoneShare": {
+     "rim": 0.323187414500684,
+     "inside": 0.18433652530779754,
+     "midrange": 0.11764705882352941,
+     "three": 0.3748290013679891
+    },
+    "fg2m": 944,
+    "fg2a": 1828,
+    "fg3m": 428,
+    "fg3a": 1096,
+    "ftm": 462,
+    "fta": 560,
+    "rimM": 535,
+    "rimA": 945,
+    "insideM": 273,
+    "insideA": 539,
+    "rimForced": 97,
+    "rimAttZone": 945,
+    "insideForced": 59,
+    "insideAttZone": 539,
+    "insideNormalA": 275,
+    "insideNormalM": 141,
+    "fgm": 1372,
+    "fga": 2924,
+    "astFg": 780,
+    "astFt": 87
+   },
+   "det": {
+    "teamLines": 48,
+    "games": 24,
+    "meanPTS40": 79.53888888888888,
+    "meanFGA40": 58.44120370370371,
+    "meanPTSReal": 80.70833333333333,
+    "meanFGAReal": 59.375,
+    "meanPTSNoOT": 79.81818181818181,
+    "meanFGANoOT": 58.29545454545455,
+    "nNoOT": 44,
+    "zoneAttempts": {
+     "rim": 1043,
+     "inside": 611,
+     "midrange": 204,
+     "three": 992
+    },
+    "zoneTotal": 2850,
+    "zoneShare": {
+     "rim": 0.36596491228070177,
+     "inside": 0.2143859649122807,
+     "midrange": 0.07157894736842105,
+     "three": 0.3480701754385965
+    },
+    "fg2m": 1071,
+    "fg2a": 1858,
+    "fg3m": 392,
+    "fg3a": 992,
+    "ftm": 556,
+    "fta": 683,
+    "rimM": 641,
+    "rimA": 1043,
+    "insideM": 351,
+    "insideA": 611,
+    "rimForced": 61,
+    "rimAttZone": 1043,
+    "insideForced": 1,
+    "insideAttZone": 611,
+    "insideNormalA": 390,
+    "insideNormalM": 219,
+    "fgm": 1463,
+    "fga": 2850,
+    "astFg": 1017,
+    "astFt": 97
+   },
+   "errors": {
+    "eP": {
+     "value": 0.048159530627924774,
+     "evaluated": true
+    },
+    "eF": {
+     "value": 0.04235817892310245,
+     "evaluated": true
+    },
+    "eZ": {
+     "value": 0.1456538747690019,
+     "evaluated": true
+    },
+    "e2": {
+     "value": 0.06001488624506246,
+     "evaluated": true
+    },
+    "eR": {
+     "value": 0.04843577997940407,
+     "evaluated": true
+    },
+    "eI": {
+     "value": 0.06797457861287659,
+     "evaluated": true
+    },
+    "eQ": {
+     "value": 0.044160363623450875,
+     "evaluated": true
+    },
+    "eA": {
+     "value": 0.1266338387713254,
+     "evaluated": true
+    },
+    "e3": {
+     "value": 0.0046503414174711155,
+     "evaluated": true
+    },
+    "eFT": {
+     "value": 0.010944363103953081,
+     "evaluated": true
+    },
+    "forcedInside": {
+     "value": 0.10782530539369446,
+     "evaluated": true
+    }
+   },
+   "parts": {
+    "simZoneShare": {
+     "rim": 0.323187414500684,
+     "inside": 0.18433652530779754,
+     "midrange": 0.11764705882352941,
+     "three": 0.3748290013679891
+    },
+    "detZoneShare": {
+     "rim": 0.36596491228070177,
+     "inside": 0.2143859649122807,
+     "midrange": 0.07157894736842105,
+     "three": 0.3480701754385965
+    },
+    "sim2": 0.5164113785557987,
+    "det2": 0.5764262648008611,
+    "simRim": 0.5661375661375662,
+    "detRim": 0.6145733461169702,
+    "simInside": 0.5064935064935064,
+    "detInside": 0.574468085106383,
+    "simForcedRim": 0.10264550264550265,
+    "detForcedRim": 0.058485139022051776,
+    "simForcedInside": 0.10946196660482375,
+    "detForcedInside": 0.0016366612111292963,
+    "simAstPerFgm": 0.5685131195335277,
+    "detAstPerFgm": 0.6951469583048531,
+    "sim3": 0.3905109489051095,
+    "det3": 0.3951612903225806,
+    "simFT": 0.825,
+    "detFT": 0.8140556368960469,
+    "simInsideNormal": 0.5127272727272727,
+    "detInsideNormal": 0.5615384615384615,
+    "simInsideNormalA": 275,
+    "detInsideNormalA": 390,
+    "simInsideNormalM": 141,
+    "detInsideNormalM": 219
+   },
+   "M": 1.5829229846415673,
+   "dominant": "eA",
+   "comps": {
+    "eP": 0.6019941328490597,
+    "eF": 0.5294772365387806,
+    "eZ": 1.456538747690019,
+    "e2": 1.5003721561265615,
+    "eR": 0.9687155995880814,
+    "eI": 1.3594915722575318,
+    "eQ": 0.8832072724690174,
+    "eA": 1.5829229846415673
+   },
+   "missing": [],
+   "freq40": {
+    "teamPerformances": 48,
+    "withFortyMinutes": 29,
+    "frequency": 0.6041666666666666
+   },
+   "excluded": {
+    "sim": [],
+    "detailed": []
+   }
+  },
+  "C04C-I100": {
+   "id": "C04C-I100",
+   "rows": [
+    {
+     "path": "volume.neutralSecondsPerControl",
+     "value": 19.5
+    },
+    {
+     "path": "shotMix.threeWeightFactor",
+     "value": 0.7
+    },
+    {
+     "path": "assist.eligibleFinalPassP0",
+     "value": 0.9
+    },
+    {
+     "path": "energy.costPerLiveMinute",
+     "value": 3
+    },
+    {
+     "path": "assist.receivedAdvantageP0",
+     "value": 0
+    },
+    {
+     "path": "shotMix.rimWeightFactor",
+     "value": 1.5
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "rebound.organizedResetP0",
+     "value": 0.35
+    },
+    {
+     "path": "opportunity.simInsideQualityLogit",
+     "value": 1
+    },
+    {
+     "path": "conversion.simInsideLogitOffset",
+     "value": 0
+    }
+   ],
+   "comparableCases": 24,
+   "invariantsOk": true,
+   "sim": {
+    "teamLines": 48,
+    "games": 24,
+    "meanPTS40": 76.41666666666667,
+    "meanFGA40": 60.541666666666664,
+    "meanPTSReal": 76.41666666666667,
+    "meanFGAReal": 60.541666666666664,
+    "meanPTSNoOT": 76.41666666666667,
+    "meanFGANoOT": 60.541666666666664,
+    "nNoOT": 48,
+    "zoneAttempts": {
+     "rim": 931,
+     "inside": 533,
+     "midrange": 355,
+     "three": 1087
+    },
+    "zoneTotal": 2906,
+    "zoneShare": {
+     "rim": 0.3203716448726772,
+     "inside": 0.18341362697866484,
+     "midrange": 0.12216104611149346,
+     "three": 0.3740536820371645
+    },
+    "fg2m": 965,
+    "fg2a": 1819,
+    "fg3m": 423,
+    "fg3a": 1087,
+    "ftm": 469,
+    "fta": 570,
+    "rimM": 539,
+    "rimA": 931,
+    "insideM": 283,
+    "insideA": 533,
+    "rimForced": 96,
+    "rimAttZone": 931,
+    "insideForced": 30,
+    "insideAttZone": 533,
+    "insideNormalA": 231,
+    "insideNormalM": 123,
+    "fgm": 1388,
+    "fga": 2906,
+    "astFg": 782,
+    "astFt": 92
+   },
+   "det": {
+    "teamLines": 48,
+    "games": 24,
+    "meanPTS40": 79.53888888888888,
+    "meanFGA40": 58.44120370370371,
+    "meanPTSReal": 80.70833333333333,
+    "meanFGAReal": 59.375,
+    "meanPTSNoOT": 79.81818181818181,
+    "meanFGANoOT": 58.29545454545455,
+    "nNoOT": 44,
+    "zoneAttempts": {
+     "rim": 1043,
+     "inside": 611,
+     "midrange": 204,
+     "three": 992
+    },
+    "zoneTotal": 2850,
+    "zoneShare": {
+     "rim": 0.36596491228070177,
+     "inside": 0.2143859649122807,
+     "midrange": 0.07157894736842105,
+     "three": 0.3480701754385965
+    },
+    "fg2m": 1071,
+    "fg2a": 1858,
+    "fg3m": 392,
+    "fg3a": 992,
+    "ftm": 556,
+    "fta": 683,
+    "rimM": 641,
+    "rimA": 1043,
+    "insideM": 351,
+    "insideA": 611,
+    "rimForced": 61,
+    "rimAttZone": 1043,
+    "insideForced": 1,
+    "insideAttZone": 611,
+    "insideNormalA": 390,
+    "insideNormalM": 219,
+    "fgm": 1463,
+    "fga": 2850,
+    "astFg": 1017,
+    "astFt": 97
+   },
+   "errors": {
+    "eP": {
+     "value": 0.03925403366627067,
+     "evaluated": true
+    },
+    "eF": {
+     "value": 0.03594147330729669,
+     "evaluated": true
+    },
+    "eZ": {
+     "value": 0.15313121068328084,
+     "evaluated": true
+    },
+    "e2": {
+     "value": 0.045914994872328974,
+     "evaluated": true
+    },
+    "eR": {
+     "value": 0.03562597769591758,
+     "evaluated": true
+    },
+    "eI": {
+     "value": 0.043511237076364284,
+     "evaluated": true
+    },
+    "eQ": {
+     "value": 0.044629791160547584,
+     "evaluated": true
+    },
+    "eA": {
+     "value": 0.13174638193597699,
+     "evaluated": true
+    },
+    "e3": {
+     "value": 0.006016856099949508,
+     "evaluated": true
+    },
+    "eFT": {
+     "value": 0.008751380647812779,
+     "evaluated": true
+    },
+    "forcedInside": {
+     "value": 0.05464851702526845,
+     "evaluated": true
+    }
+   },
+   "parts": {
+    "simZoneShare": {
+     "rim": 0.3203716448726772,
+     "inside": 0.18341362697866484,
+     "midrange": 0.12216104611149346,
+     "three": 0.3740536820371645
+    },
+    "detZoneShare": {
+     "rim": 0.36596491228070177,
+     "inside": 0.2143859649122807,
+     "midrange": 0.07157894736842105,
+     "three": 0.3480701754385965
+    },
+    "sim2": 0.5305112699285321,
+    "det2": 0.5764262648008611,
+    "simRim": 0.5789473684210527,
+    "detRim": 0.6145733461169702,
+    "simInside": 0.5309568480300187,
+    "detInside": 0.574468085106383,
+    "simForcedRim": 0.10311493018259936,
+    "detForcedRim": 0.058485139022051776,
+    "simForcedInside": 0.05628517823639775,
+    "detForcedInside": 0.0016366612111292963,
+    "simAstPerFgm": 0.5634005763688761,
+    "detAstPerFgm": 0.6951469583048531,
+    "sim3": 0.3891444342226311,
+    "det3": 0.3951612903225806,
+    "simFT": 0.8228070175438597,
+    "detFT": 0.8140556368960469,
+    "simInsideNormal": 0.5324675324675324,
+    "detInsideNormal": 0.5615384615384615,
+    "simInsideNormalA": 231,
+    "detInsideNormalA": 390,
+    "simInsideNormalM": 123,
+    "detInsideNormalM": 219
+   },
+   "M": 1.6468297741997122,
+   "dominant": "eA",
+   "comps": {
+    "eP": 0.4906754208283834,
+    "eF": 0.4492684163412086,
+    "eZ": 1.5313121068328084,
+    "e2": 1.1478748718082243,
+    "eR": 0.7125195539183515,
+    "eI": 0.8702247415272857,
+    "eQ": 0.8925958232109517,
+    "eA": 1.6468297741997122
+   },
+   "missing": [],
+   "freq40": {
+    "teamPerformances": 48,
+    "withFortyMinutes": 27,
+    "frequency": 0.5625
+   },
+   "excluded": {
+    "sim": [],
+    "detailed": []
+   }
+  },
+  "C04C-P15": {
+   "id": "C04C-P15",
+   "rows": [
+    {
+     "path": "volume.neutralSecondsPerControl",
+     "value": 19.5
+    },
+    {
+     "path": "shotMix.threeWeightFactor",
+     "value": 0.7
+    },
+    {
+     "path": "assist.eligibleFinalPassP0",
+     "value": 0.9
+    },
+    {
+     "path": "energy.costPerLiveMinute",
+     "value": 3
+    },
+    {
+     "path": "assist.receivedAdvantageP0",
+     "value": 0
+    },
+    {
+     "path": "shotMix.rimWeightFactor",
+     "value": 1.5
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "rebound.organizedResetP0",
+     "value": 0.35
+    },
+    {
+     "path": "opportunity.simInsideQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "conversion.simInsideLogitOffset",
+     "value": 0.15
+    }
+   ],
+   "comparableCases": 24,
+   "invariantsOk": true,
+   "sim": {
+    "teamLines": 48,
+    "games": 24,
+    "meanPTS40": 77.375,
+    "meanFGA40": 60.625,
+    "meanPTSReal": 77.375,
+    "meanFGAReal": 60.625,
+    "meanPTSNoOT": 77.375,
+    "meanFGANoOT": 60.625,
+    "nNoOT": 48,
+    "zoneAttempts": {
+     "rim": 937,
+     "inside": 555,
+     "midrange": 329,
+     "three": 1089
+    },
+    "zoneTotal": 2910,
+    "zoneShare": {
+     "rim": 0.32199312714776634,
+     "inside": 0.19072164948453607,
+     "midrange": 0.11305841924398626,
+     "three": 0.37422680412371134
+    },
+    "fg2m": 978,
+    "fg2a": 1821,
+    "fg3m": 417,
+    "fg3a": 1089,
+    "ftm": 507,
+    "fta": 618,
+    "rimM": 543,
+    "rimA": 937,
+    "insideM": 308,
+    "insideA": 555,
+    "rimForced": 102,
+    "rimAttZone": 937,
+    "insideForced": 60,
+    "insideAttZone": 555,
+    "insideNormalA": 293,
+    "insideNormalM": 161,
+    "fgm": 1395,
+    "fga": 2910,
+    "astFg": 777,
+    "astFt": 102
+   },
+   "det": {
+    "teamLines": 48,
+    "games": 24,
+    "meanPTS40": 79.53888888888888,
+    "meanFGA40": 58.44120370370371,
+    "meanPTSReal": 80.70833333333333,
+    "meanFGAReal": 59.375,
+    "meanPTSNoOT": 79.81818181818181,
+    "meanFGANoOT": 58.29545454545455,
+    "nNoOT": 44,
+    "zoneAttempts": {
+     "rim": 1043,
+     "inside": 611,
+     "midrange": 204,
+     "three": 992
+    },
+    "zoneTotal": 2850,
+    "zoneShare": {
+     "rim": 0.36596491228070177,
+     "inside": 0.2143859649122807,
+     "midrange": 0.07157894736842105,
+     "three": 0.3480701754385965
+    },
+    "fg2m": 1071,
+    "fg2a": 1858,
+    "fg3m": 392,
+    "fg3a": 992,
+    "ftm": 556,
+    "fta": 683,
+    "rimM": 641,
+    "rimA": 1043,
+    "insideM": 351,
+    "insideA": 611,
+    "rimForced": 61,
+    "rimAttZone": 1043,
+    "insideForced": 1,
+    "insideAttZone": 611,
+    "insideNormalA": 390,
+    "insideNormalM": 219,
+    "fgm": 1463,
+    "fga": 2850,
+    "astFg": 1017,
+    "astFt": 97
+   },
+   "errors": {
+    "eP": {
+     "value": 0.027205420129915336,
+     "evaluated": true
+    },
+    "eF": {
+     "value": 0.037367407888586834,
+     "evaluated": true
+    },
+    "eZ": {
+     "value": 0.13527220112136012,
+     "evaluated": true
+    },
+    "e2": {
+     "value": 0.039358719496083494,
+     "evaluated": true
+    },
+    "eR": {
+     "value": 0.035064274612167656,
+     "evaluated": true
+    },
+    "eI": {
+     "value": 0.019513130151428082,
+     "evaluated": true
+    },
+    "eQ": {
+     "value": 0.05037291860868461,
+     "evaluated": true
+    },
+    "eA": {
+     "value": 0.1381577109930251,
+     "evaluated": true
+    },
+    "e3": {
+     "value": 0.012241180129743179,
+     "evaluated": true
+    },
+    "eFT": {
+     "value": 0.006332712618516201,
+     "evaluated": true
+    },
+    "forcedInside": {
+     "value": 0.10647144689697882,
+     "evaluated": true
+    }
+   },
+   "parts": {
+    "simZoneShare": {
+     "rim": 0.32199312714776634,
+     "inside": 0.19072164948453607,
+     "midrange": 0.11305841924398626,
+     "three": 0.37422680412371134
+    },
+    "detZoneShare": {
+     "rim": 0.36596491228070177,
+     "inside": 0.2143859649122807,
+     "midrange": 0.07157894736842105,
+     "three": 0.3480701754385965
+    },
+    "sim2": 0.5370675453047776,
+    "det2": 0.5764262648008611,
+    "simRim": 0.5795090715048026,
+    "detRim": 0.6145733461169702,
+    "simInside": 0.554954954954955,
+    "detInside": 0.574468085106383,
+    "simForcedRim": 0.10885805763073639,
+    "detForcedRim": 0.058485139022051776,
+    "simForcedInside": 0.10810810810810811,
+    "detForcedInside": 0.0016366612111292963,
+    "simAstPerFgm": 0.556989247311828,
+    "detAstPerFgm": 0.6951469583048531,
+    "sim3": 0.38292011019283745,
+    "det3": 0.3951612903225806,
+    "simFT": 0.8203883495145631,
+    "detFT": 0.8140556368960469,
+    "simInsideNormal": 0.5494880546075085,
+    "detInsideNormal": 0.5615384615384615,
+    "simInsideNormalA": 293,
+    "detInsideNormalA": 390,
+    "simInsideNormalM": 161,
+    "detInsideNormalM": 219
+   },
+   "M": 1.7269713874128136,
+   "dominant": "eA",
+   "comps": {
+    "eP": 0.3400677516239417,
+    "eF": 0.46709259860733543,
+    "eZ": 1.3527220112136011,
+    "e2": 0.9839679874020874,
+    "eR": 0.7012854922433531,
+    "eI": 0.39026260302856164,
+    "eQ": 1.0074583721736923,
+    "eA": 1.7269713874128136
+   },
+   "missing": [],
+   "freq40": {
+    "teamPerformances": 48,
+    "withFortyMinutes": 24,
+    "frequency": 0.5
+   },
+   "excluded": {
+    "sim": [],
+    "detailed": []
+   }
+  },
+  "C04C-P30": {
+   "id": "C04C-P30",
+   "rows": [
+    {
+     "path": "volume.neutralSecondsPerControl",
+     "value": 19.5
+    },
+    {
+     "path": "shotMix.threeWeightFactor",
+     "value": 0.7
+    },
+    {
+     "path": "assist.eligibleFinalPassP0",
+     "value": 0.9
+    },
+    {
+     "path": "energy.costPerLiveMinute",
+     "value": 3
+    },
+    {
+     "path": "assist.receivedAdvantageP0",
+     "value": 0
+    },
+    {
+     "path": "shotMix.rimWeightFactor",
+     "value": 1.5
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "rebound.organizedResetP0",
+     "value": 0.35
+    },
+    {
+     "path": "opportunity.simInsideQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "conversion.simInsideLogitOffset",
+     "value": 0.3
+    }
+   ],
+   "comparableCases": 24,
+   "invariantsOk": true,
+   "sim": {
+    "teamLines": 48,
+    "games": 24,
+    "meanPTS40": 76.6875,
+    "meanFGA40": 60.3125,
+    "meanPTSReal": 76.6875,
+    "meanFGAReal": 60.3125,
+    "meanPTSNoOT": 76.6875,
+    "meanFGANoOT": 60.3125,
+    "nNoOT": 48,
+    "zoneAttempts": {
+     "rim": 929,
+     "inside": 571,
+     "midrange": 315,
+     "three": 1080
+    },
+    "zoneTotal": 2895,
+    "zoneShare": {
+     "rim": 0.3208981001727116,
+     "inside": 0.19723661485319516,
+     "midrange": 0.10880829015544041,
+     "three": 0.37305699481865284
+    },
+    "fg2m": 975,
+    "fg2a": 1815,
+    "fg3m": 420,
+    "fg3a": 1080,
+    "ftm": 471,
+    "fta": 583,
+    "rimM": 536,
+    "rimA": 929,
+    "insideM": 326,
+    "insideA": 571,
+    "rimForced": 90,
+    "rimAttZone": 929,
+    "insideForced": 67,
+    "insideAttZone": 571,
+    "insideNormalA": 296,
+    "insideNormalM": 162,
+    "fgm": 1395,
+    "fga": 2895,
+    "astFg": 808,
+    "astFt": 92
+   },
+   "det": {
+    "teamLines": 48,
+    "games": 24,
+    "meanPTS40": 79.53888888888888,
+    "meanFGA40": 58.44120370370371,
+    "meanPTSReal": 80.70833333333333,
+    "meanFGAReal": 59.375,
+    "meanPTSNoOT": 79.81818181818181,
+    "meanFGANoOT": 58.29545454545455,
+    "nNoOT": 44,
+    "zoneAttempts": {
+     "rim": 1043,
+     "inside": 611,
+     "midrange": 204,
+     "three": 992
+    },
+    "zoneTotal": 2850,
+    "zoneShare": {
+     "rim": 0.36596491228070177,
+     "inside": 0.2143859649122807,
+     "midrange": 0.07157894736842105,
+     "three": 0.3480701754385965
+    },
+    "fg2m": 1071,
+    "fg2a": 1858,
+    "fg3m": 392,
+    "fg3a": 992,
+    "ftm": 556,
+    "fta": 683,
+    "rimM": 641,
+    "rimA": 1043,
+    "insideM": 351,
+    "insideA": 611,
+    "rimForced": 61,
+    "rimAttZone": 1043,
+    "insideForced": 1,
+    "insideAttZone": 611,
+    "insideNormalA": 390,
+    "insideNormalM": 219,
+    "fgm": 1463,
+    "fga": 2850,
+    "astFg": 1017,
+    "astFt": 97
+   },
+   "errors": {
+    "eP": {
+     "value": 0.0358489907103442,
+     "evaluated": true
+    },
+    "eF": {
+     "value": 0.03202015320874896,
+     "evaluated": true
+    },
+    "eZ": {
+     "value": 0.12443232433415147,
+     "evaluated": true
+    },
+    "e2": {
+     "value": 0.039236182156233035,
+     "evaluated": true
+    },
+    "eR": {
+     "value": 0.03760886818370868,
+     "evaluated": true
+    },
+    "eI": {
+     "value": 0.003539888959272708,
+     "evaluated": true
+    },
+    "eQ": {
+     "value": 0.038393224810025724,
+     "evaluated": true
+    },
+    "eA": {
+     "value": 0.11593548877080284,
+     "evaluated": true
+    },
+    "e3": {
+     "value": 0.006272401433691732,
+     "evaluated": true
+    },
+    "eFT": {
+     "value": 0.006165413911484285,
+     "evaluated": true
+    },
+    "forcedInside": {
+     "value": 0.11570134229149767,
+     "evaluated": true
+    }
+   },
+   "parts": {
+    "simZoneShare": {
+     "rim": 0.3208981001727116,
+     "inside": 0.19723661485319516,
+     "midrange": 0.10880829015544041,
+     "three": 0.37305699481865284
+    },
+    "detZoneShare": {
+     "rim": 0.36596491228070177,
+     "inside": 0.2143859649122807,
+     "midrange": 0.07157894736842105,
+     "three": 0.3480701754385965
+    },
+    "sim2": 0.5371900826446281,
+    "det2": 0.5764262648008611,
+    "simRim": 0.5769644779332616,
+    "detRim": 0.6145733461169702,
+    "simInside": 0.5709281961471103,
+    "detInside": 0.574468085106383,
+    "simForcedRim": 0.0968783638320775,
+    "detForcedRim": 0.058485139022051776,
+    "simForcedInside": 0.11733800350262696,
+    "detForcedInside": 0.0016366612111292963,
+    "simAstPerFgm": 0.5792114695340502,
+    "detAstPerFgm": 0.6951469583048531,
+    "sim3": 0.3888888888888889,
+    "det3": 0.3951612903225806,
+    "simFT": 0.8078902229845626,
+    "detFT": 0.8140556368960469,
+    "simInsideNormal": 0.5472972972972973,
+    "detInsideNormal": 0.5615384615384615,
+    "simInsideNormalA": 296,
+    "detInsideNormalA": 390,
+    "simInsideNormalM": 162,
+    "detInsideNormalM": 219
+   },
+   "M": 1.4491936096350355,
+   "dominant": "eA",
+   "comps": {
+    "eP": 0.44811238387930247,
+    "eF": 0.400251915109362,
+    "eZ": 1.2443232433415146,
+    "e2": 0.9809045539058259,
+    "eR": 0.7521773636741735,
+    "eI": 0.07079777918545416,
+    "eQ": 0.7678644962005144,
+    "eA": 1.4491936096350355
+   },
+   "missing": [],
+   "freq40": {
+    "teamPerformances": 48,
+    "withFortyMinutes": 26,
+    "frequency": 0.5416666666666666
+   },
+   "excluded": {
+    "sim": [],
+    "detailed": []
+   }
+  }
+ },
+ "stages": {
+  "R": {
+   "workingPoint": "C04C-R35",
+   "M": 1.9706451245875534,
+   "candidates": [
+    {
+     "id": "C04C-J0",
+     "M": 2.8388426709857915,
+     "dominant": "eI",
+     "invariantsOk": true
+    },
+    {
+     "id": "C04C-R35",
+     "M": 1.9706451245875534,
+     "dominant": "eI",
+     "invariantsOk": true
+    },
+    {
+     "id": "C04C-R65",
+     "M": 2.420535791196486,
+     "dominant": "eI",
+     "invariantsOk": true
+    },
+    {
+     "id": "C04C-R85",
+     "M": 3.1530468541849053,
+     "dominant": "eI",
+     "invariantsOk": true
+    }
+   ]
+  },
+  "I": {
+   "condition": {
+    "run": true,
+    "eI": 0.09853225622937767,
+    "forcedInsideDiff": 0.19978936374430742,
+    "reason": "eI > 0,05 o diferencia de calidad forzada inside > 0,05"
+   },
+   "workingPoint": "C04C-I50",
+   "executed": [
+    "C04C-I50",
+    "C04C-I100"
+   ]
+  },
+  "P": {
+   "condition": {
+    "run": true,
+    "eI": 0.06797457861287659,
+    "simNormalInsideFga": 275,
+    "detNormalInsideFga": 390,
+    "simNormalInsideFg": "141/275",
+    "detNormalInsideFg": "219/390",
+    "gap": 0.048811188811188844,
+    "reason": "se cumplen las tres condiciones"
+   }
+  }
+ },
+ "selection": {
+  "chosenId": "C04C-P30",
+  "kept": false,
+  "reason": "C04C-P30 mejora M 45.0776 % ≥ 5 % relativo y cumple todas las guardas",
+  "relativeImprovement": 0.45077594147015754,
+  "log": [
+   {
+    "id": "C04C-J0",
+    "M": 2.8388426709857915,
+    "dominant": "eI",
+    "distinctRows": 2,
+    "normalizedDistance": 2,
+    "verdict": "descartado: guardas",
+    "fails": [
+     {
+      "guard": "eI",
+      "value": 0.14194213354928958,
+      "limit": 0.13706898196736958
+     }
+    ]
+   },
+   {
+    "id": "C04C-R35",
+    "M": 1.9706451245875534,
+    "dominant": "eI",
+    "distinctRows": 3,
+    "normalizedDistance": 2.35,
+    "verdict": "admisible",
+    "relativeImprovement": 0.2531531287109417
+   },
+   {
+    "id": "C04C-R65",
+    "M": 2.420535791196486,
+    "dominant": "eI",
+    "distinctRows": 3,
+    "normalizedDistance": 2.65,
+    "verdict": "admisible",
+    "relativeImprovement": 0.08265087410061285
+   },
+   {
+    "id": "C04C-R85",
+    "M": 3.1530468541849053,
+    "dominant": "eI",
+    "distinctRows": 3,
+    "normalizedDistance": 2.85,
+    "verdict": "descartado: guardas",
+    "fails": [
+     {
+      "guard": "eI",
+      "value": 0.15765234270924527,
+      "limit": 0.13706898196736958
+     }
+    ]
+   },
+   {
+    "id": "C04C-I50",
+    "M": 1.5829229846415673,
+    "dominant": "eA",
+    "distinctRows": 4,
+    "normalizedDistance": 2.85,
+    "verdict": "admisible",
+    "relativeImprovement": 0.4000943833971519
+   },
+   {
+    "id": "C04C-I100",
+    "M": 1.6468297741997122,
+    "dominant": "eA",
+    "distinctRows": 4,
+    "normalizedDistance": 3.35,
+    "verdict": "admisible",
+    "relativeImprovement": 0.37587460620839086
+   },
+   {
+    "id": "C04C-P15",
+    "M": 1.7269713874128136,
+    "dominant": "eA",
+    "distinctRows": 5,
+    "normalizedDistance": 3.35,
+    "verdict": "admisible",
+    "relativeImprovement": 0.345502058487101
+   },
+   {
+    "id": "C04C-P30",
+    "M": 1.4491936096350355,
+    "dominant": "eA",
+    "distinctRows": 5,
+    "normalizedDistance": 3.85,
+    "verdict": "admisible",
+    "relativeImprovement": 0.45077594147015754
+   }
+  ]
+ },
+ "finalProvisional": {
+  "id": "C04C-FINAL-PROVISIONAL",
+  "basedOn": "C04C-P30",
+  "overrides": [
+   {
+    "path": "volume.neutralSecondsPerControl",
+    "value": 19.5
+   },
+   {
+    "path": "shotMix.threeWeightFactor",
+    "value": 0.7
+   },
+   {
+    "path": "assist.eligibleFinalPassP0",
+    "value": 0.9
+   },
+   {
+    "path": "energy.costPerLiveMinute",
+    "value": 3
+   },
+   {
+    "path": "assist.receivedAdvantageP0",
+    "value": 0
+   },
+   {
+    "path": "shotMix.rimWeightFactor",
+    "value": 1.5
+   },
+   {
+    "path": "opportunity.simRimQualityLogit",
+    "value": 0.5
+   },
+   {
+    "path": "rebound.organizedResetP0",
+    "value": 0.35
+   },
+   {
+    "path": "opportunity.simInsideQualityLogit",
+    "value": 0.5
+   },
+   {
+    "path": "conversion.simInsideLogitOffset",
+    "value": 0.3
+   }
+  ],
+  "allRows": [
+   {
+    "path": "volume.neutralSecondsPerControl",
+    "before": 16,
+    "after": 19.5,
+    "unit": "s por control",
+    "origin": "SEM-SIM01"
+   },
+   {
+    "path": "shotMix.threeWeightFactor",
+    "before": 1,
+    "after": 0.7,
+    "unit": "factor multiplicativo",
+    "origin": "SEM-SIM04"
+   },
+   {
+    "path": "assist.eligibleFinalPassP0",
+    "before": 0.6,
+    "after": 0.9,
+    "unit": "probabilidad",
+    "origin": "SEM-SIM01"
+   },
+   {
+    "path": "energy.costPerLiveMinute",
+    "before": 2,
+    "after": 3,
+    "unit": "energía 0–100 / factor",
+    "origin": "heredada"
+   },
+   {
+    "path": "assist.receivedAdvantageP0",
+    "before": 0,
+    "after": 0,
+    "unit": "probabilidad",
+    "origin": "SEM-SIM04B"
+   },
+   {
+    "path": "shotMix.rimWeightFactor",
+    "before": 1,
+    "after": 1.5,
+    "unit": "factor multiplicativo",
+    "origin": "SEM-SIM04B"
+   },
+   {
+    "path": "opportunity.simRimQualityLogit",
+    "before": 0,
+    "after": 0.5,
+    "unit": "logit",
+    "origin": "SEM-SIM04B"
+   },
+   {
+    "path": "rebound.organizedResetP0",
+    "before": 0,
+    "after": 0.35,
+    "unit": "probabilidad",
+    "origin": "SEM-SIM04C"
+   },
+   {
+    "path": "opportunity.simInsideQualityLogit",
+    "before": 0,
+    "after": 0.5,
+    "unit": "logit",
+    "origin": "SEM-SIM04C"
+   },
+   {
+    "path": "conversion.simInsideLogitOffset",
+    "before": 0,
+    "after": 0.3,
+    "unit": "logit",
+    "origin": "SEM-SIM04C"
+   }
+  ],
+  "errorsFinal": {
+   "eP": {
+    "value": 0.0358489907103442,
+    "evaluated": true
+   },
+   "eF": {
+    "value": 0.03202015320874896,
+    "evaluated": true
+   },
+   "eZ": {
+    "value": 0.12443232433415147,
+    "evaluated": true
+   },
+   "e2": {
+    "value": 0.039236182156233035,
+    "evaluated": true
+   },
+   "eR": {
+    "value": 0.03760886818370868,
+    "evaluated": true
+   },
+   "eI": {
+    "value": 0.003539888959272708,
+    "evaluated": true
+   },
+   "eQ": {
+    "value": 0.038393224810025724,
+    "evaluated": true
+   },
+   "eA": {
+    "value": 0.11593548877080284,
+    "evaluated": true
+   },
+   "e3": {
+    "value": 0.006272401433691732,
+    "evaluated": true
+   },
+   "eFT": {
+    "value": 0.006165413911484285,
+    "evaluated": true
+   },
+   "forcedInside": {
+    "value": 0.11570134229149767,
+    "evaluated": true
+   },
+   "parts": {
+    "simZoneShare": {
+     "rim": 0.3208981001727116,
+     "inside": 0.19723661485319516,
+     "midrange": 0.10880829015544041,
+     "three": 0.37305699481865284
+    },
+    "detZoneShare": {
+     "rim": 0.36596491228070177,
+     "inside": 0.2143859649122807,
+     "midrange": 0.07157894736842105,
+     "three": 0.3480701754385965
+    },
+    "sim2": 0.5371900826446281,
+    "det2": 0.5764262648008611,
+    "simRim": 0.5769644779332616,
+    "detRim": 0.6145733461169702,
+    "simInside": 0.5709281961471103,
+    "detInside": 0.574468085106383,
+    "simForcedRim": 0.0968783638320775,
+    "detForcedRim": 0.058485139022051776,
+    "simForcedInside": 0.11733800350262696,
+    "detForcedInside": 0.0016366612111292963,
+    "simAstPerFgm": 0.5792114695340502,
+    "detAstPerFgm": 0.6951469583048531,
+    "sim3": 0.3888888888888889,
+    "det3": 0.3951612903225806,
+    "simFT": 0.8078902229845626,
+    "detFT": 0.8140556368960469,
+    "simInsideNormal": 0.5472972972972973,
+    "detInsideNormal": 0.5615384615384615,
+    "simInsideNormalA": 296,
+    "detInsideNormalA": 390,
+    "simInsideNormalM": 162,
+    "detInsideNormalM": 219
+   }
+  },
+  "M": 1.4491936096350355,
+  "dominant": "eA",
+  "errorsN04C": {
+   "eP": {
+    "value": 0.05863658587692944,
+    "evaluated": true
+   },
+   "eF": {
+    "value": 0.05590455744535894,
+    "evaluated": true
+   },
+   "eZ": {
+    "value": 0.19648080362960071,
+    "evaluated": true
+   },
+   "e2": {
+    "value": 0.08666422827623466,
+    "evaluated": true
+   },
+   "eR": {
+    "value": 0.05845733098456163,
+    "evaluated": true
+   },
+   "eI": {
+    "value": 0.11706898196736959,
+    "evaluated": true
+   },
+   "eQ": {
+    "value": 0.1319310022137616,
+    "evaluated": true
+   },
+   "eA": {
+    "value": 0.1642734643289494,
+    "evaluated": true
+   },
+   "e3": {
+    "value": 0.011611506772797098,
+    "evaluated": true
+   },
+   "eFT": {
+    "value": 0.005232107484282156,
+    "evaluated": true
+   },
+   "forcedInside": {
+    "value": 0.20165182907287668,
+    "evaluated": true
+   },
+   "parts": {
+    "simZoneShare": {
+     "rim": 0.2677245104659014,
+     "inside": 0.22586090479405807,
+     "midrange": 0.11647535449020932,
+     "three": 0.3899392302498312
+    },
+    "detZoneShare": {
+     "rim": 0.36596491228070177,
+     "inside": 0.2143859649122807,
+     "midrange": 0.07157894736842105,
+     "three": 0.3480701754385965
+    },
+    "sim2": 0.48976203652462647,
+    "det2": 0.5764262648008611,
+    "simRim": 0.5561160151324086,
+    "detRim": 0.6145733461169702,
+    "simInside": 0.45739910313901344,
+    "detInside": 0.574468085106383,
+    "simForcedRim": 0.19041614123581338,
+    "detForcedRim": 0.058485139022051776,
+    "simForcedInside": 0.20328849028400597,
+    "detForcedInside": 0.0016366612111292963,
+    "simAstPerFgm": 0.5308734939759037,
+    "detAstPerFgm": 0.6951469583048531,
+    "sim3": 0.38354978354978353,
+    "det3": 0.3951612903225806,
+    "simFT": 0.8088235294117647,
+    "detFT": 0.8140556368960469,
+    "simInsideNormal": 0.4146341463414634,
+    "detInsideNormal": 0.5615384615384615,
+    "simInsideNormalA": 369,
+    "detInsideNormalA": 390,
+    "simInsideNormalM": 153,
+    "detInsideNormalM": 219
+   }
+  },
+  "MN04C": 2.638620044275232,
+  "note": "candidata provisional elegida solo con CAL; no es aceptación deportiva ni calibración"
+ },
+ "note": "numeradores y denominadores por vector (sim, det); el comprobador offline recalcula errores, M, guardas, puntos de trabajo, condiciones y decisión desde ellos"
+}

@@ -1,0 +1,186 @@
+{
+ "schema": "beM-sim04c-selection-rules/1",
+ "frozenBeforeCAL": true,
+ "rules": {
+  "id": "SEL-SIM04C-R1",
+  "maxAdditionalVectors": 8,
+  "precision": 1e-9,
+  "minRelativeImprovement": 0.05,
+  "band": {
+   "eP": 0.08,
+   "eF": 0.08,
+   "eZ": 0.1,
+   "e2": 0.04,
+   "eR": 0.05,
+   "eI": 0.05,
+   "eQ": 0.05,
+   "eA": 0.08
+  },
+  "errors": {
+   "eP": "abs(meanPTS40_SIM / meanPTS40_DET − 1); medias por actuación de equipo normalizadas a 40 min (valor × 2400 / duración deportiva)",
+   "eF": "abs(meanFGA40_SIM / meanFGA40_DET − 1); mismas normalizaciones",
+   "eZ": "Σ_z abs(shareFGA_SIM[z] − shareFGA_DET[z]) en las cuatro zonas (sumas de numeradores y denominadores)",
+   "e2": "abs(Σ2PM_SIM/Σ2PA_SIM − Σ2PM_DET/Σ2PA_DET)",
+   "eR": "abs(ΣrimM_SIM/ΣrimA_SIM − ΣrimM_DET/ΣrimA_DET)",
+   "eI": "abs(ΣinsideM_SIM/ΣinsideA_SIM − ΣinsideM_DET/ΣinsideA_DET), zona inside sin aro",
+   "eQ": "abs(forcedRimShare_SIM − forcedRimShare_DET), con forcedRimShare = intentos al aro en calidad forzada / intentos al aro",
+   "eA": "abs(ΣAST_FG_SIM/ΣFGM_SIM − ΣAST_FG_DET/ΣFGM_DET), AST_FG acreditadas del acta",
+   "e3": "abs(Σ3PM/Σ3PA_SIM − Σ3PM/Σ3PA_DET)",
+   "eFT": "abs(ΣFTM/ΣFTA_SIM − ΣFTM/ΣFTA_DET)",
+   "forcedInside": "abs(forcedInsideShare_SIM − forcedInsideShare_DET), intentos inside en calidad forzada / intentos inside",
+   "freq40": "fracción de actuaciones de equipo con algún jugador ≥ 40 min (2400 s) en partidos SIN prórroga (informativo)"
+  },
+  "M": "M = max(eP/0,08; eF/0,08; eZ/0,10; e2/0,04; eR/0,05; eI/0,05; eQ/0,05; eA/0,08); se conservan los componentes y el error dominante",
+  "guards": "frente al MISMO N04C (e0), uniformes, sin acumular márgenes: eP/eF ≤ max(0,08; e0+0,02) · eZ ≤ e0+0,02 · e2 ≤ max(0,04; e0+0,015) · eR/eI/eQ ≤ max(0,05; e0+0,02) · eA ≤ max(0,08; e0+0,02) · e3 ≤ max(0,05; e3_0+0,015) · eFT ≤ max(0,04; eFT_0+0,02)",
+  "workingPointR": "menor M entre J0/R35/R65/R85 con todos los errores evaluados e invariantes correctas (puede incumplir guardas: explora, no activa); desempate del selector final",
+  "stageI": "I50/I100 solo si el punto R tiene eI > 0,05 o |Δ calidad forzada inside| > 0,05; punto I = menor M entre el punto R y los I ejecutados",
+  "stageP": "P15/P30 solo si el punto I tiene eI > 0,05, ≥ 80 FGA inside de calidad normal por modelo en CAL y FG%_DET_normal_inside − FG%_SIM_normal_inside > 0,03 (regla funcional de búsqueda, no significación)",
+  "final": "1) descartar vectores que fallen una guarda, tengan errores necesarios no evaluados o incumplan invariantes; 2) menor M entre los admisibles; proponer cambio solo con mejora relativa de M ≥ 5 % frente a N04C; 3) empate (1e-9): menos filas distintas de N04C, menor Σ|diferencia|/rango y después identificador lexicográfico; 4) sin mejora admisible, se conserva N04C",
+  "intermediates": "los puntos de trabajo no son ganadores aceptados ni multiplican tolerancias; la admisibilidad se calcula al final sobre TODOS los vectores completos ejecutados frente a N04C",
+  "valUse": "VAL no elige ni reajusta: ninguna regla lee resultados de VAL",
+  "rows": [
+   {
+    "path": "shotMix.rimWeightFactor",
+    "neutral": 1,
+    "range": 0.5,
+    "note": "rango autorizado [1; 1,5] (solo se evalúa 1,5)"
+   },
+   {
+    "path": "opportunity.simRimQualityLogit",
+    "neutral": 0,
+    "range": 0.5,
+    "note": "[0; 0,5] logit"
+   },
+   {
+    "path": "rebound.organizedResetP0",
+    "neutral": 0,
+    "range": 1,
+    "note": "[0; 1]"
+   },
+   {
+    "path": "opportunity.simInsideQualityLogit",
+    "neutral": 0,
+    "range": 1,
+    "note": "[0; 1] logit"
+   },
+   {
+    "path": "conversion.simInsideLogitOffset",
+    "neutral": 0,
+    "range": 0.3,
+    "note": "[0; 0,30] logit"
+   }
+  ]
+ },
+ "agenda": [
+  {
+   "id": "J0",
+   "stage": "R",
+   "parent": "N04C",
+   "set": {
+    "shotMix.rimWeightFactor": 1.5,
+    "opportunity.simRimQualityLogit": 0.5,
+    "rebound.organizedResetP0": 0
+   }
+  },
+  {
+   "id": "R35",
+   "stage": "R",
+   "parent": "N04C",
+   "set": {
+    "shotMix.rimWeightFactor": 1.5,
+    "opportunity.simRimQualityLogit": 0.5,
+    "rebound.organizedResetP0": 0.35
+   }
+  },
+  {
+   "id": "R65",
+   "stage": "R",
+   "parent": "N04C",
+   "set": {
+    "shotMix.rimWeightFactor": 1.5,
+    "opportunity.simRimQualityLogit": 0.5,
+    "rebound.organizedResetP0": 0.65
+   }
+  },
+  {
+   "id": "R85",
+   "stage": "R",
+   "parent": "N04C",
+   "set": {
+    "shotMix.rimWeightFactor": 1.5,
+    "opportunity.simRimQualityLogit": 0.5,
+    "rebound.organizedResetP0": 0.85
+   }
+  },
+  {
+   "id": "I50",
+   "stage": "I",
+   "parent": "punto R",
+   "set": {
+    "opportunity.simInsideQualityLogit": 0.5
+   },
+   "condition": "punto R con eI > 0,05 o |Δ proporción de calidad forzada de inside| > 0,05"
+  },
+  {
+   "id": "I100",
+   "stage": "I",
+   "parent": "punto R",
+   "set": {
+    "opportunity.simInsideQualityLogit": 1
+   },
+   "condition": "ídem I50"
+  },
+  {
+   "id": "P15",
+   "stage": "P",
+   "parent": "punto I",
+   "set": {
+    "conversion.simInsideLogitOffset": 0.15
+   },
+   "condition": "punto I con eI > 0,05, ≥ 80 FGA inside de calidad normal por modelo en CAL y FG%_DET_normal_inside − FG%_SIM_normal_inside > 0,03"
+  },
+  {
+   "id": "P30",
+   "stage": "P",
+   "parent": "punto I",
+   "set": {
+    "conversion.simInsideLogitOffset": 0.3
+   },
+   "condition": "ídem P15"
+  }
+ ],
+ "fixed": [
+  {
+   "path": "volume.neutralSecondsPerControl",
+   "value": 19.5
+  },
+  {
+   "path": "shotMix.threeWeightFactor",
+   "value": 0.7
+  },
+  {
+   "path": "assist.eligibleFinalPassP0",
+   "value": 0.9
+  },
+  {
+   "path": "energy.costPerLiveMinute",
+   "value": 3
+  },
+  {
+   "path": "assist.receivedAdvantageP0",
+   "value": 0
+  }
+ ],
+ "budget": {
+  "maxAdditionalVectors": 8,
+  "note": "no es el producto cartesiano; una etapa omitida no concede intentos extra"
+ },
+ "identities": {
+  "DET": "detallado congelado de MOTOR-18C (83–98, 6.684 sorteos), mismas entradas",
+  "B04B": "código real de 04B (48bcdef, 0.3.1-SIMMOTOR04B) con la candidata 19,5 / 0,70 / 0,90 / 3 y las otras filas neutrales",
+  "N04C": "código de 04C con las filas nuevas neutrales y los mismos cuatro valores (control de neutralidad)",
+  "C04C-*": "vectores completos de búsqueda limitada",
+  "C04C-FINAL-PROVISIONAL": "vector elegido por estas reglas SOLO con CAL, pendiente de Dennis"
+ },
+ "selectionRulesSha256": "8be137b9d65ee586996ae85df96ea04d95bbcec091e5a06bcf2c4b435c5290b6"
+}

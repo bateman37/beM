@@ -1,0 +1,541 @@
+{
+ "schema": "beM-sim04-val-reading/1",
+ "note": "estados DESCRIPTIVOS separados; una diferencia pequeña no es significación estadística; VAL no reabre la selección ni reentrena",
+ "cal": {
+  "losses": {
+   "R0": {
+    "comparableCases": 16,
+    "L_V": {
+     "value": 0.3365480132394121,
+     "evaluated": true,
+     "parts": {
+      "pts": 0.06706631697264887,
+      "fga": 0.2694816962667632
+     }
+    },
+    "L_Z": {
+     "value": 0.21559166361773116,
+     "evaluated": true,
+     "parts": {
+      "rim": -0.1077958318088656,
+      "inside": 0.004593933402072953,
+      "midrange": 0.02865479436029128,
+      "three": 0.07454710404650133
+     }
+    },
+    "L_A": {
+     "value": 0.3126707507748121,
+     "evaluated": true,
+     "parts": {
+      "sim": 0.39200761179828736,
+      "det": 0.7046783625730995
+     }
+    }
+   },
+   "R1": {
+    "comparableCases": 16,
+    "L_V": {
+     "value": 0.35705523705177655,
+     "evaluated": true,
+     "parts": {
+      "pts": 0.0901711002872485,
+      "fga": 0.26688413676452805
+     }
+    },
+    "L_Z": {
+     "value": 0.2203732689897608,
+     "evaluated": true,
+     "parts": {
+      "rim": -0.11018663449488042,
+      "inside": 0.010678232472055238,
+      "midrange": 0.028042315002996893,
+      "three": 0.07146608701982826
+     }
+    },
+    "L_A": {
+     "value": 0.3194249063519013,
+     "evaluated": true,
+     "parts": {
+      "sim": 0.38525345622119817,
+      "det": 0.7046783625730995
+     }
+    }
+   },
+   "C04-E1": {
+    "comparableCases": 16,
+    "L_V": {
+     "value": 0.1519451107319877,
+     "evaluated": true,
+     "parts": {
+      "pts": -0.09129511677282387,
+      "fga": 0.06064999395916382
+     }
+    },
+    "L_Z": {
+     "value": 0.1934533623752821,
+     "evaluated": true,
+     "parts": {
+      "rim": -0.09672668118764105,
+      "inside": 0.01888498195588756,
+      "midrange": 0.04306842221779883,
+      "three": 0.03477327701395466
+     }
+    },
+    "L_A": {
+     "value": 0.18879665392030642,
+     "evaluated": true,
+     "parts": {
+      "sim": 0.515881708652793,
+      "det": 0.7046783625730995
+     }
+    }
+   }
+  },
+  "freq40": {
+   "R0": {
+    "teamPerformances": 110,
+    "withFortyMinutes": 93,
+    "frequency": 0.8454545454545455
+   },
+   "R1": {
+    "teamPerformances": 108,
+    "withFortyMinutes": 98,
+    "frequency": 0.9074074074074074
+   },
+   "C04-E1": {
+    "teamPerformances": 106,
+    "withFortyMinutes": 63,
+    "frequency": 0.5943396226415094
+   }
+  },
+  "states": {
+   "V_vs_R1": "mejora",
+   "V_vs_R0": "mejora",
+   "Z_vs_R1": "mejora",
+   "Z_vs_R0": "mejora",
+   "A_vs_R1": "mejora",
+   "A_vs_R0": "mejora",
+   "frecuencia_40min_vs_R1": "mejora",
+   "frecuencia_40min_vs_R0": "mejora"
+  }
+ },
+ "val": {
+  "losses": {
+   "R0": {
+    "comparableCases": 16,
+    "L_V": {
+     "value": 0.43122098297539546,
+     "evaluated": true,
+     "parts": {
+      "pts": 0.16791111111111112,
+      "fga": 0.26330987186428434
+     }
+    },
+    "L_Z": {
+     "value": 0.20223821363428493,
+     "evaluated": true,
+     "parts": {
+      "rim": -0.10111910681714248,
+      "inside": 0.004108975731697745,
+      "midrange": 0.012167404137040816,
+      "three": 0.08484272694840389
+     }
+    },
+    "L_A": {
+     "value": 0.2859037702031818,
+     "evaluated": true,
+     "parts": {
+      "sim": 0.4048507462686567,
+      "det": 0.6907545164718385
+     }
+    }
+   },
+   "R1": {
+    "comparableCases": 16,
+    "L_V": {
+     "value": 0.458244721169464,
+     "evaluated": true,
+     "parts": {
+      "pts": 0.17399999999999993,
+      "fga": 0.2842447211694641
+     }
+    },
+    "L_Z": {
+     "value": 0.21464002972780252,
+     "evaluated": true,
+     "parts": {
+      "rim": -0.10312470612295954,
+      "inside": -0.004195308740941733,
+      "midrange": 0.04326166766033246,
+      "three": 0.06405834720356879
+     }
+    },
+    "L_A": {
+     "value": 0.30390005637794176,
+     "evaluated": true,
+     "parts": {
+      "sim": 0.38685446009389673,
+      "det": 0.6907545164718385
+     }
+    }
+   },
+   "FINAL": {
+    "comparableCases": 16,
+    "L_V": {
+     "value": 0.0734471756000723,
+     "evaluated": true,
+     "parts": {
+      "pts": -0.04102222222222229,
+      "fga": 0.03242495337785001
+     }
+    },
+    "L_Z": {
+     "value": 0.17147115770932952,
+     "evaluated": true,
+     "parts": {
+      "rim": -0.08573557885466476,
+      "inside": 0.0034506632024891293,
+      "midrange": 0.04042281886186114,
+      "three": 0.041862096790314496
+     }
+    },
+    "L_A": {
+     "value": 0.14280931099238647,
+     "evaluated": true,
+     "parts": {
+      "sim": 0.547945205479452,
+      "det": 0.6907545164718385
+     }
+    }
+   }
+  },
+  "freq40": {
+   "R0": {
+    "teamPerformances": 106,
+    "withFortyMinutes": 98,
+    "frequency": 0.9245283018867925
+   },
+   "R1": {
+    "teamPerformances": 110,
+    "withFortyMinutes": 99,
+    "frequency": 0.9
+   },
+   "FINAL": {
+    "teamPerformances": 110,
+    "withFortyMinutes": 69,
+    "frequency": 0.6272727272727273
+   }
+  },
+  "states": {
+   "V_vs_R1": "mejora",
+   "V_vs_R0": "mejora",
+   "Z_vs_R1": "mejora",
+   "Z_vs_R0": "mejora",
+   "A_vs_R1": "mejora",
+   "A_vs_R0": "mejora",
+   "frecuencia_40min_vs_R1": "mejora",
+   "frecuencia_40min_vs_R0": "mejora"
+  }
+ },
+ "contradictionsCALvsVAL": [],
+ "valContradictsCal": false,
+ "note2": "VAL prueba semillas nuevas sobre las mismas ocho plantillas principales; no acredita generalización a jugadores o países no representados",
+ "selectedVector": [
+  {
+   "path": "volume.neutralSecondsPerControl",
+   "value": 19.5
+  },
+  {
+   "path": "shotMix.threeWeightFactor",
+   "value": 0.7
+  },
+  {
+   "path": "assist.eligibleFinalPassP0",
+   "value": 0.9
+  },
+  {
+   "path": "energy.costPerLiveMinute",
+   "value": 3
+  }
+ ],
+ "hierarchy": {
+  "VAL": {
+   "R0": [
+    {
+     "team": "EQ12",
+     "wins": 12,
+     "games": 14,
+     "diff": 244
+    },
+    {
+     "team": "EQ02",
+     "wins": 9,
+     "games": 14,
+     "diff": 53
+    },
+    {
+     "team": "EQ09",
+     "wins": 8,
+     "games": 14,
+     "diff": 60
+    },
+    {
+     "team": "EQ05",
+     "wins": 6,
+     "games": 14,
+     "diff": -23
+    },
+    {
+     "team": "EQ01",
+     "wins": 6,
+     "games": 14,
+     "diff": -58
+    },
+    {
+     "team": "EQ04",
+     "wins": 5,
+     "games": 14,
+     "diff": -43
+    },
+    {
+     "team": "EQ08",
+     "wins": 5,
+     "games": 14,
+     "diff": -105
+    },
+    {
+     "team": "EQ03",
+     "wins": 5,
+     "games": 14,
+     "diff": -128
+    }
+   ],
+   "R1": [
+    {
+     "team": "EQ12",
+     "wins": 11,
+     "games": 14,
+     "diff": 195
+    },
+    {
+     "team": "EQ03",
+     "wins": 11,
+     "games": 14,
+     "diff": 93
+    },
+    {
+     "team": "EQ05",
+     "wins": 8,
+     "games": 14,
+     "diff": 0
+    },
+    {
+     "team": "EQ09",
+     "wins": 6,
+     "games": 14,
+     "diff": -53
+    },
+    {
+     "team": "EQ08",
+     "wins": 6,
+     "games": 14,
+     "diff": -101
+    },
+    {
+     "team": "EQ02",
+     "wins": 5,
+     "games": 14,
+     "diff": -3
+    },
+    {
+     "team": "EQ04",
+     "wins": 5,
+     "games": 14,
+     "diff": -41
+    },
+    {
+     "team": "EQ01",
+     "wins": 4,
+     "games": 14,
+     "diff": -90
+    }
+   ],
+   "FINAL": [
+    {
+     "team": "EQ12",
+     "wins": 11,
+     "games": 14,
+     "diff": 127
+    },
+    {
+     "team": "EQ02",
+     "wins": 10,
+     "games": 14,
+     "diff": 102
+    },
+    {
+     "team": "EQ03",
+     "wins": 7,
+     "games": 14,
+     "diff": 12
+    },
+    {
+     "team": "EQ01",
+     "wins": 7,
+     "games": 14,
+     "diff": -55
+    },
+    {
+     "team": "EQ04",
+     "wins": 6,
+     "games": 14,
+     "diff": 16
+    },
+    {
+     "team": "EQ05",
+     "wins": 6,
+     "games": 14,
+     "diff": -100
+    },
+    {
+     "team": "EQ09",
+     "wins": 5,
+     "games": 14,
+     "diff": -45
+    },
+    {
+     "team": "EQ08",
+     "wins": 4,
+     "games": 14,
+     "diff": -57
+    }
+   ]
+  },
+  "note": "orden de los ocho equipos principales por victorias y diferencia (56 partidos: cada equipo juega 14); es una muestra de laboratorio, no una clasificación de competición",
+  "spearman": {
+   "R0_vs_FINAL": 0.429,
+   "R1_vs_FINAL": 0.238,
+   "R0_vs_R1": 0.19,
+   "n": 8,
+   "note": "correlación de rangos entre ordenaciones de ocho equipos; tamaño de muestra declarado"
+  }
+ },
+ "hierarchyCalVal": {
+  "gamesPerTeam": 28,
+  "meanDiff": {
+   "R0": [
+    {
+     "team": "EQ12",
+     "meanDiff": 12.679
+    },
+    {
+     "team": "EQ09",
+     "meanDiff": 4.821
+    },
+    {
+     "team": "EQ02",
+     "meanDiff": 4.786
+    },
+    {
+     "team": "EQ05",
+     "meanDiff": -2.036
+    },
+    {
+     "team": "EQ01",
+     "meanDiff": -2.429
+    },
+    {
+     "team": "EQ08",
+     "meanDiff": -3.857
+    },
+    {
+     "team": "EQ04",
+     "meanDiff": -5.5
+    },
+    {
+     "team": "EQ03",
+     "meanDiff": -8.464
+    }
+   ],
+   "R1": [
+    {
+     "team": "EQ12",
+     "meanDiff": 16.714
+    },
+    {
+     "team": "EQ02",
+     "meanDiff": 2.536
+    },
+    {
+     "team": "EQ05",
+     "meanDiff": 0.321
+    },
+    {
+     "team": "EQ09",
+     "meanDiff": -2.393
+    },
+    {
+     "team": "EQ03",
+     "meanDiff": -2.5
+    },
+    {
+     "team": "EQ08",
+     "meanDiff": -3.179
+    },
+    {
+     "team": "EQ01",
+     "meanDiff": -5.429
+    },
+    {
+     "team": "EQ04",
+     "meanDiff": -6.071
+    }
+   ],
+   "FINAL": [
+    {
+     "team": "EQ12",
+     "meanDiff": 8.607
+    },
+    {
+     "team": "EQ02",
+     "meanDiff": 4.607
+    },
+    {
+     "team": "EQ03",
+     "meanDiff": -0.321
+    },
+    {
+     "team": "EQ04",
+     "meanDiff": -0.464
+    },
+    {
+     "team": "EQ09",
+     "meanDiff": -1.464
+    },
+    {
+     "team": "EQ08",
+     "meanDiff": -2.643
+    },
+    {
+     "team": "EQ01",
+     "meanDiff": -3.964
+    },
+    {
+     "team": "EQ05",
+     "meanDiff": -4.357
+    }
+   ]
+  },
+  "spearman": {
+   "R0_vs_FINAL": 0.238,
+   "R1_vs_FINAL": 0.452,
+   "R0_vs_R1": 0.762
+  },
+  "pearsonMeanDiff": {
+   "R0_vs_FINAL": 0.733,
+   "R1_vs_FINAL": 0.837,
+   "R0_vs_R1": 0.826
+  },
+  "note": "con 28 partidos por equipo y diseño equilibrado; una correlación baja con n=8 equipos no es una conclusión universal"
+ }
+}
