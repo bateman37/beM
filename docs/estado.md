@@ -1,6 +1,6 @@
 # Estado del proyecto
 
-Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANGELOG.md)). Última actualización: 2026-10-24, entrega SIM-MOTOR-04C (convergencia estadística; incluye 04B, 04, 03, 02B, 02 y 01).
+Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANGELOG.md)). Última actualización: 2026-10-24, entrega SIM-MOTOR-04D (acta y tiro; incluye 04C, 04B, 04, 03, 02B, 02 y 01).
 
 ## Qué hay realmente en el repositorio
 
@@ -8,6 +8,16 @@ Fotografía breve y actual (no es un changelog; ver [`../CHANGELOG.md`](../CHANG
 - **Diseño funcional del motor y del primer laboratorio**, organizado por temas en [`motor/`](motor/README.md) (34 capítulos). Es **especificación**: está *definida*, no implementada.
 - **Copia original congelada** del funcional unificado y **exportado completo vigente** generado: ver [`historico/`](historico/README.md) y [`exportados/`](exportados/README.md).
 - **Utilidades documentales** en `scripts/docs/` (Python 3, librería estándar).
+
+## SIM-MOTOR-04D (ejecutado; aproximación del acta al detallado, candidata = control de 04C sin vector admisible; pendiente de Dennis)
+
+- **Qué es**: intenta acercar las **actas completas** de SIM al detallado (±5 % relativo en conteos normalizados a 40 minutos, ±3 pp en acierto, guarda funcional provisional de ±3 pp por cuota de zona). Corrige lecturas (la continuación inmediata tras rebote es la familia `putback`, no una ficha POS: 166 → 451 FGA en DEV; asistencia acreditada en el auxiliar), instrumenta oportunidades y créditos de rebote, universos de AST y el denominador elegible del robo, y añade **seis filas SIM neutrales** (mezcla de media, offset de aro, pérdida ordinaria, robo condicionado, falta en tiro, odds de entrega espontánea) y reabre `assist.receivedAdvantageP0` en [0, 1].
+- **Versiones**: aplicación `SIM-MOTOR-04D`, SIM `0.3.3-SIMMOTOR04D`, perfil `…+SEM-SIM04D-20261024`, cobertura `COV-SIM04D-R1`, conciliación `RECON-SIM04D-R1`, resultado `beM-sim-match/3`, guardado `beM-sim-snapshot/2` (los de 04C se rechazan con explicación). Detallado **sin cambio** (83–98, 6.684 sorteos; 79 archivos).
+- **Búsqueda conjunta** de 36 vectores completos (9 × 4) sobre DEV conocido (las 48 entradas VAL de 04C), con reglas y vectores congelados antes (`74f3fdb`): **ningún vector admisible**, se conserva el control Z0-A0 (= vector de 04C con mecanismos neutrales, trayectoria idéntica 48/48 a los registros auténticos de 04C). `C04D-FINAL-PROVISIONAL` = Z0-A0, no activada por defecto. Mejores descartados con su causa (guardas: cuota inside, FGA, 3P%, faltas) en `11-SELECCION-DEV.json`.
+- **VAL04D** (96 encuentros nuevos, 12 equipos, 16 actuaciones por equipo): `M04D_comparable` 4,59 (dominante tapones, 22,9 %); **M04D > 1: siguen incumplidas** 23 de 31 métricas (20 de 28 en el cuadro comparable) (incluye puntos −6,0 %, FTA −16,8 %, AST −21,9 %, pérdidas +20,0 %, 2P% −5,5 pp, aro −5,1 pp, cuota media +3,7 pp). Rebotes: discrepancia de criterio de crédito (tapón con balón vivo y expiración sin crédito en el detallado) → ORB/DREB/total fuera de `M04D_comparable`; criterio **pendiente de decisión**; P(ORB | rebote acreditado) 27,6 % frente a 28,4 %.
+- **Rendimiento** (3.000 ejecuciones, 2.000 clubes, máquina más lenta que en 04C): lote 13,9 s (control) y 14,0 s (candidata), publicación máxima 2,31 s, RSS 1.548,7 MiB: **ningún objetivo cumplido**.
+- **Comprobado por Claude**: S04D-01…08 (8/8); suite completa `npm test` **358/360** tras el último cambio de implementación (dos expectativas de identidad del perfil sin actualizar: S01-05 y S04-08; corregidas y reejecutados solo esos cinco archivos: 45/45, **no** una segunda suite completa); `data:check`; comprobador documental en copia limpia; Chromium (16 pasos, consola 0, red 0); TECH (12 SIM iguales entre recorridos y con DEV); jornada mixta; historia/aprendizaje; comprobador offline de la entrega (38/38; 4 elementos «no evaluado» declarados).
+- **No cerrado / siguiente objetivo**: aceptación deportiva y manual (Dennis); decisiones de §9 de [`tecnico/sim-motor04d.md`](tecnico/sim-motor04d.md) (criterio de rebote tras tapón y expiración, referencia provisional frente a otra ronda con guardas distintas, rendimiento con miles de clubes). Guía: [`prompts/SIM-MOTOR-04D-recorrido-manual.md`](prompts/SIM-MOTOR-04D-recorrido-manual.md).
 
 ## SIM-MOTOR-04C (ejecutado; convergencia estadística con el detallado, candidata provisional sin activar; pendiente de Dennis)
 

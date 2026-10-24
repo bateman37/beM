@@ -1,0 +1,13 @@
+// SIM-MOTOR-04D · copia la evidencia PEQUEÑA y reproducible de la entrega a docs/tecnico/evidencia-sim-motor04d/ (el resto vive fuera de Git en out/). Lee de la preparación del paquete rápido (out/sim-motor04d/stage/rapida).
+//   node scripts/sim04d/evidence.js
+import { readFileSync, writeFileSync, copyFileSync, mkdirSync } from 'node:fs';
+import { join } from 'node:path';
+const root = new URL('../..', import.meta.url).pathname.replace(/\/$/, ''); const S = join(root, 'out/sim-motor04d/stage/rapida'); const D = join(root, 'docs/tecnico/evidencia-sim-motor04d'); mkdirSync(D, { recursive: true });
+const sel = JSON.parse(readFileSync(join(S, '11-SELECCION-DEV.json'), 'utf8'));
+const slim = (e) => ({ id: e.id, comparableCases: e.comparableCases, invariantsOk: e.invariantsOk, M04D: { M: e.M04D.M, partialM: e.M04D.partialM, dominant: e.M04D.dominant }, M04D_comparable: { M: e.M04D_comparable.M, dominant: e.M04D_comparable.dominant }, eZ: e.eZ, outOfBandComparable: e.outOfBandComparable, errors: e.errors.map((x) => ({ id: x.id, kind: x.kind, sim: x.sim, det: x.det, error: x.error, band: x.band, status: x.status })) });
+writeFileSync(join(D, '11-SELECCION-DEV.json'), JSON.stringify({ schema: 'beM-sim04d-dev-selection-slim/1', note: 'versión compacta (sin numeradores); los numeradores completos están en la revisión rápida fuera de Git', selectionRulesSha256: sel.selectionRulesSha256, populations: sel.populations, evaluations: Object.fromEntries(Object.entries(sel.evaluations).map(([k, v]) => [k, slim(v)])), c0_04C: slim(sel.c0_04C), selection: sel.selection, finalProvisional: { id: sel.finalProvisional.id, basedOn: sel.finalProvisional.basedOn, overrides: sel.finalProvisional.overrides, note: sel.finalProvisional.note } }, null, 1));
+const filt = (name, out, keep) => { const t = readFileSync(join(S, name), 'utf8').split('\n'); const h = t[0]; const hs = h.split(','); const bi = hs.indexOf('block'); writeFileSync(join(D, out), [h, ...t.slice(1).filter((l) => l && keep(l.split(',')[bi]))].join('\n') + '\n'); };
+filt('06-COMPARATIVA-ACTA.csv', '06-COMPARATIVA-ACTA-VAL.csv', (b) => b === 'VAL'); filt('08-REBOTES-Y-RECUPERACIONES.csv', '08-REBOTES-Y-RECUPERACIONES-VAL.csv', (b) => b === 'VAL'); filt('09-ASISTENCIAS.csv', '09-ASISTENCIAS-VAL.csv', (b) => b === 'VAL');
+const m = JSON.parse(readFileSync(join(S, '06b-M04D.json'), 'utf8')); writeFileSync(join(D, '06b-M04D-VAL.json'), JSON.stringify({ ...m, byBlockAndCondition: Object.fromEntries(Object.entries(m.byBlockAndCondition).filter(([k]) => k.startsWith('VAL|'))) }, null, 1));
+for (const f of ['12-RENDIMIENTO.json', '13-COMPROBACIONES.json', '14-LIMITES-Y-DECISIONES.md']) copyFileSync(join(S, f), join(D, f));
+console.log(JSON.stringify({ evidence: D }));

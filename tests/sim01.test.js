@@ -100,7 +100,7 @@ test('S01-05 las 32 capacidades alteran magnitudes (contraste +1/+3/+5 a context
   const base = buildSimProfile(profile); const cand = applyOverrides(base, [{ path: 'volume.neutralSecondsPerControl', value: 12 }]); assert.deepEqual(diffProfile(base, cand), [{ path: 'volume.neutralSecondsPerControl', base: 16, candidate: 12 }]); assert.equal(base.v.volume.neutralSecondsPerControl, 16);
   const pv = probeVector(makeContext(profile, [{ path: 'volume.neutralSecondsPerControl', value: 12 }]), inp).vector; assert.ok(pv['pace.sec.0'] < probeVector(ctx, inp).vector['pace.sec.0']);
   assert.ok(validateOverrides(base, [{ path: 'no.existe', value: 1 }, { path: 'segment.normalSeconds', value: -1 }, { path: 'shots.three.p0', value: 1.2 }, { path: 'volume.secondsPerControlBounds', value: [10] }]).length === 4, 'rutas desconocidas, valores no válidos y formas incorrectas se rechazan con causa');
-  assert.ok(base.rows.every((r) => ['heredada', 'derivada', 'SEM-SIM01', 'SEM-SIM02', 'SEM-SIM04', 'SEM-SIM04B', 'SEM-SIM04C'].includes(r.origin) && r.unit && r.effect), 'toda fila declara procedencia, unidad y efecto'); assert.equal(base.rows.filter((r) => r.origin === 'SEM-SIM01').length, 8);
+  assert.ok(base.rows.every((r) => ['heredada', 'derivada', 'SEM-SIM01', 'SEM-SIM02', 'SEM-SIM04', 'SEM-SIM04B', 'SEM-SIM04C', 'SEM-SIM04D'].includes(r.origin) && r.unit && r.effect), 'toda fila declara procedencia, unidad y efecto'); assert.equal(base.rows.filter((r) => r.origin === 'SEM-SIM01').length, 8);
 });
 
 test('S01-06 familiaridad congelada y sin efecto inmediato de Polivalencia: conocimiento bajo/alto cambia la calidad antes del sorteo; sin conocimiento explícito o todo al máximo = neutral; el encuentro no cambia conocimiento', () => {
