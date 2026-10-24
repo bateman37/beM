@@ -1,0 +1,2320 @@
+{
+ "schema": "beM-sim04d-m04d/1",
+ "rules": "SEL-SIM04D-R1",
+ "rulesSha256": "e5fa2d6c052a9747acf14fdcdef31de91e65d5491ddbd4b153f576c0d75555a4",
+ "note": "M04D > 1 implica que alguna banda sigue incumplida; M04D completo = no evaluable por la discrepancia de criterio de rebote (ver 14); M04D_comparable excluye ORB, DREB y rebotes totales",
+ "byBlockAndCondition": {
+  "VAL|C0_04C": {
+   "M04D": {
+    "M": 5.8248299319727925,
+    "dominant": "oreb",
+    "comps": [
+     {
+      "id": "pts",
+      "kind": "count",
+      "error": 0.06037662589788406,
+      "band": 0.05,
+      "ratio": 1.2075325179576812
+     },
+     {
+      "id": "fgm",
+      "kind": "count",
+      "error": 0.05436332327290916,
+      "band": 0.05,
+      "ratio": 1.0872664654581832
+     },
+     {
+      "id": "fga",
+      "kind": "count",
+      "error": 0.031125775162982983,
+      "band": 0.05,
+      "ratio": 0.6225155032596597
+     },
+     {
+      "id": "fg2m",
+      "kind": "count",
+      "error": 0.08738467917487303,
+      "band": 0.05,
+      "ratio": 1.7476935834974605
+     },
+     {
+      "id": "fg2a",
+      "kind": "count",
+      "error": 0.004469221545696511,
+      "band": 0.05,
+      "ratio": 0.08938443091393022
+     },
+     {
+      "id": "fg3m",
+      "kind": "count",
+      "error": 0.028276801348985137,
+      "band": 0.05,
+      "ratio": 0.5655360269797027
+     },
+     {
+      "id": "fg3a",
+      "kind": "count",
+      "error": 0.07814431290685842,
+      "band": 0.05,
+      "ratio": 1.5628862581371683
+     },
+     {
+      "id": "ftm",
+      "kind": "count",
+      "error": 0.15734551574897815,
+      "band": 0.05,
+      "ratio": 3.146910314979563
+     },
+     {
+      "id": "fta",
+      "kind": "count",
+      "error": 0.16811085089773636,
+      "band": 0.05,
+      "ratio": 3.3622170179547273
+     },
+     {
+      "id": "oreb",
+      "kind": "count",
+      "error": 0.2912414965986396,
+      "band": 0.05,
+      "ratio": 5.8248299319727925
+     },
+     {
+      "id": "dreb",
+      "kind": "count",
+      "error": 0.24370238288215296,
+      "band": 0.05,
+      "ratio": 4.874047657643059
+     },
+     {
+      "id": "reb",
+      "kind": "count",
+      "error": 0.25682431639478964,
+      "band": 0.05,
+      "ratio": 5.136486327895793
+     },
+     {
+      "id": "ast_fg",
+      "kind": "count",
+      "error": 0.2187621968218567,
+      "band": 0.05,
+      "ratio": 4.375243936437134
+     },
+     {
+      "id": "ast_ft",
+      "kind": "count",
+      "error": 0.12959381044487428,
+      "band": 0.05,
+      "ratio": 2.5918762088974856
+     },
+     {
+      "id": "ast_total",
+      "kind": "count",
+      "error": 0.2105902909671049,
+      "band": 0.05,
+      "ratio": 4.211805819342098
+     },
+     {
+      "id": "tov",
+      "kind": "count",
+      "error": 0.20010840108401062,
+      "band": 0.05,
+      "ratio": 4.0021680216802125
+     },
+     {
+      "id": "stl",
+      "kind": "count",
+      "error": 0.16227150134851653,
+      "band": 0.05,
+      "ratio": 3.2454300269703307
+     },
+     {
+      "id": "blk",
+      "kind": "count",
+      "error": 0.22935779816513802,
+      "band": 0.05,
+      "ratio": 4.58715596330276
+     },
+     {
+      "id": "pf",
+      "kind": "count",
+      "error": 0.0738839091462885,
+      "band": 0.05,
+      "ratio": 1.4776781829257701
+     },
+     {
+      "id": "pfd",
+      "kind": "count",
+      "error": 0.07388390914628828,
+      "band": 0.05,
+      "ratio": 1.4776781829257657
+     },
+     {
+      "id": "fg_pct",
+      "kind": "rate",
+      "error": 0.04448994631140346,
+      "band": 0.03,
+      "ratio": 1.4829982103801154
+     },
+     {
+      "id": "two_pct",
+      "kind": "rate",
+      "error": 0.05492627250112658,
+      "band": 0.03,
+      "ratio": 1.8308757500375528
+     },
+     {
+      "id": "three_pct",
+      "kind": "rate",
+      "error": 0.01977353318194447,
+      "band": 0.03,
+      "ratio": 0.6591177727314823
+     },
+     {
+      "id": "ft_pct",
+      "kind": "rate",
+      "error": 0.01012791510471811,
+      "band": 0.03,
+      "ratio": 0.33759717015727037
+     },
+     {
+      "id": "rim_pct",
+      "kind": "rate",
+      "error": 0.050848491936824725,
+      "band": 0.03,
+      "ratio": 1.6949497312274908
+     },
+     {
+      "id": "inside_pct",
+      "kind": "rate",
+      "error": 0.024100406703106758,
+      "band": 0.03,
+      "ratio": 0.8033468901035586
+     },
+     {
+      "id": "mid_pct",
+      "kind": "rate",
+      "error": 0.04810480653711058,
+      "band": 0.03,
+      "ratio": 1.6034935512370194
+     },
+     {
+      "id": "rim_share",
+      "kind": "share",
+      "error": 0.03896776464830909,
+      "band": 0.03,
+      "ratio": 1.2989254882769696
+     },
+     {
+      "id": "inside_share",
+      "kind": "share",
+      "error": 0.014442716104045156,
+      "band": 0.03,
+      "ratio": 0.48142387013483856
+     },
+     {
+      "id": "mid_share",
+      "kind": "share",
+      "error": 0.0372751192406917,
+      "band": 0.03,
+      "ratio": 1.2425039746897233
+     },
+     {
+      "id": "three_share",
+      "kind": "share",
+      "error": 0.01613536151166256,
+      "band": 0.03,
+      "ratio": 0.5378453837220853
+     }
+    ],
+    "missing": [],
+    "partialM": 5.8248299319727925
+   },
+   "M04D_comparable": {
+    "M": 4.58715596330276,
+    "dominant": "blk",
+    "comps": [
+     {
+      "id": "pts",
+      "kind": "count",
+      "error": 0.06037662589788406,
+      "band": 0.05,
+      "ratio": 1.2075325179576812
+     },
+     {
+      "id": "fgm",
+      "kind": "count",
+      "error": 0.05436332327290916,
+      "band": 0.05,
+      "ratio": 1.0872664654581832
+     },
+     {
+      "id": "fga",
+      "kind": "count",
+      "error": 0.031125775162982983,
+      "band": 0.05,
+      "ratio": 0.6225155032596597
+     },
+     {
+      "id": "fg2m",
+      "kind": "count",
+      "error": 0.08738467917487303,
+      "band": 0.05,
+      "ratio": 1.7476935834974605
+     },
+     {
+      "id": "fg2a",
+      "kind": "count",
+      "error": 0.004469221545696511,
+      "band": 0.05,
+      "ratio": 0.08938443091393022
+     },
+     {
+      "id": "fg3m",
+      "kind": "count",
+      "error": 0.028276801348985137,
+      "band": 0.05,
+      "ratio": 0.5655360269797027
+     },
+     {
+      "id": "fg3a",
+      "kind": "count",
+      "error": 0.07814431290685842,
+      "band": 0.05,
+      "ratio": 1.5628862581371683
+     },
+     {
+      "id": "ftm",
+      "kind": "count",
+      "error": 0.15734551574897815,
+      "band": 0.05,
+      "ratio": 3.146910314979563
+     },
+     {
+      "id": "fta",
+      "kind": "count",
+      "error": 0.16811085089773636,
+      "band": 0.05,
+      "ratio": 3.3622170179547273
+     },
+     {
+      "id": "ast_fg",
+      "kind": "count",
+      "error": 0.2187621968218567,
+      "band": 0.05,
+      "ratio": 4.375243936437134
+     },
+     {
+      "id": "ast_ft",
+      "kind": "count",
+      "error": 0.12959381044487428,
+      "band": 0.05,
+      "ratio": 2.5918762088974856
+     },
+     {
+      "id": "ast_total",
+      "kind": "count",
+      "error": 0.2105902909671049,
+      "band": 0.05,
+      "ratio": 4.211805819342098
+     },
+     {
+      "id": "tov",
+      "kind": "count",
+      "error": 0.20010840108401062,
+      "band": 0.05,
+      "ratio": 4.0021680216802125
+     },
+     {
+      "id": "stl",
+      "kind": "count",
+      "error": 0.16227150134851653,
+      "band": 0.05,
+      "ratio": 3.2454300269703307
+     },
+     {
+      "id": "blk",
+      "kind": "count",
+      "error": 0.22935779816513802,
+      "band": 0.05,
+      "ratio": 4.58715596330276
+     },
+     {
+      "id": "pf",
+      "kind": "count",
+      "error": 0.0738839091462885,
+      "band": 0.05,
+      "ratio": 1.4776781829257701
+     },
+     {
+      "id": "pfd",
+      "kind": "count",
+      "error": 0.07388390914628828,
+      "band": 0.05,
+      "ratio": 1.4776781829257657
+     },
+     {
+      "id": "fg_pct",
+      "kind": "rate",
+      "error": 0.04448994631140346,
+      "band": 0.03,
+      "ratio": 1.4829982103801154
+     },
+     {
+      "id": "two_pct",
+      "kind": "rate",
+      "error": 0.05492627250112658,
+      "band": 0.03,
+      "ratio": 1.8308757500375528
+     },
+     {
+      "id": "three_pct",
+      "kind": "rate",
+      "error": 0.01977353318194447,
+      "band": 0.03,
+      "ratio": 0.6591177727314823
+     },
+     {
+      "id": "ft_pct",
+      "kind": "rate",
+      "error": 0.01012791510471811,
+      "band": 0.03,
+      "ratio": 0.33759717015727037
+     },
+     {
+      "id": "rim_pct",
+      "kind": "rate",
+      "error": 0.050848491936824725,
+      "band": 0.03,
+      "ratio": 1.6949497312274908
+     },
+     {
+      "id": "inside_pct",
+      "kind": "rate",
+      "error": 0.024100406703106758,
+      "band": 0.03,
+      "ratio": 0.8033468901035586
+     },
+     {
+      "id": "mid_pct",
+      "kind": "rate",
+      "error": 0.04810480653711058,
+      "band": 0.03,
+      "ratio": 1.6034935512370194
+     },
+     {
+      "id": "rim_share",
+      "kind": "share",
+      "error": 0.03896776464830909,
+      "band": 0.03,
+      "ratio": 1.2989254882769696
+     },
+     {
+      "id": "inside_share",
+      "kind": "share",
+      "error": 0.014442716104045156,
+      "band": 0.03,
+      "ratio": 0.48142387013483856
+     },
+     {
+      "id": "mid_share",
+      "kind": "share",
+      "error": 0.0372751192406917,
+      "band": 0.03,
+      "ratio": 1.2425039746897233
+     },
+     {
+      "id": "three_share",
+      "kind": "share",
+      "error": 0.01613536151166256,
+      "band": 0.03,
+      "ratio": 0.5378453837220853
+     }
+    ],
+    "missing": [],
+    "partialM": 4.58715596330276
+   },
+   "eZ": 0.1068209615047085,
+   "outOfBand": [
+    {
+     "id": "pts",
+     "kind": "count",
+     "error": 0.06037662589788406,
+     "band": 0.05,
+     "short": "1.04 puntos relativos"
+    },
+    {
+     "id": "fgm",
+     "kind": "count",
+     "error": 0.05436332327290916,
+     "band": 0.05,
+     "short": "0.44 puntos relativos"
+    },
+    {
+     "id": "fg2m",
+     "kind": "count",
+     "error": 0.08738467917487303,
+     "band": 0.05,
+     "short": "3.74 puntos relativos"
+    },
+    {
+     "id": "fg3a",
+     "kind": "count",
+     "error": 0.07814431290685842,
+     "band": 0.05,
+     "short": "2.81 puntos relativos"
+    },
+    {
+     "id": "ftm",
+     "kind": "count",
+     "error": 0.15734551574897815,
+     "band": 0.05,
+     "short": "10.73 puntos relativos"
+    },
+    {
+     "id": "fta",
+     "kind": "count",
+     "error": 0.16811085089773636,
+     "band": 0.05,
+     "short": "11.81 puntos relativos"
+    },
+    {
+     "id": "oreb",
+     "kind": "count",
+     "error": 0.2912414965986396,
+     "band": 0.05,
+     "short": "24.12 puntos relativos"
+    },
+    {
+     "id": "dreb",
+     "kind": "count",
+     "error": 0.24370238288215296,
+     "band": 0.05,
+     "short": "19.37 puntos relativos"
+    },
+    {
+     "id": "reb",
+     "kind": "count",
+     "error": 0.25682431639478964,
+     "band": 0.05,
+     "short": "20.68 puntos relativos"
+    },
+    {
+     "id": "ast_fg",
+     "kind": "count",
+     "error": 0.2187621968218567,
+     "band": 0.05,
+     "short": "16.88 puntos relativos"
+    },
+    {
+     "id": "ast_ft",
+     "kind": "count",
+     "error": 0.12959381044487428,
+     "band": 0.05,
+     "short": "7.96 puntos relativos"
+    },
+    {
+     "id": "ast_total",
+     "kind": "count",
+     "error": 0.2105902909671049,
+     "band": 0.05,
+     "short": "16.06 puntos relativos"
+    },
+    {
+     "id": "tov",
+     "kind": "count",
+     "error": 0.20010840108401062,
+     "band": 0.05,
+     "short": "15.01 puntos relativos"
+    },
+    {
+     "id": "stl",
+     "kind": "count",
+     "error": 0.16227150134851653,
+     "band": 0.05,
+     "short": "11.23 puntos relativos"
+    },
+    {
+     "id": "blk",
+     "kind": "count",
+     "error": 0.22935779816513802,
+     "band": 0.05,
+     "short": "17.94 puntos relativos"
+    },
+    {
+     "id": "pf",
+     "kind": "count",
+     "error": 0.0738839091462885,
+     "band": 0.05,
+     "short": "2.39 puntos relativos"
+    },
+    {
+     "id": "pfd",
+     "kind": "count",
+     "error": 0.07388390914628828,
+     "band": 0.05,
+     "short": "2.39 puntos relativos"
+    },
+    {
+     "id": "fg_pct",
+     "kind": "rate",
+     "error": 0.04448994631140346,
+     "band": 0.03,
+     "short": "1.45 pp"
+    },
+    {
+     "id": "two_pct",
+     "kind": "rate",
+     "error": 0.05492627250112658,
+     "band": 0.03,
+     "short": "2.49 pp"
+    },
+    {
+     "id": "rim_pct",
+     "kind": "rate",
+     "error": 0.050848491936824725,
+     "band": 0.03,
+     "short": "2.08 pp"
+    },
+    {
+     "id": "mid_pct",
+     "kind": "rate",
+     "error": 0.04810480653711058,
+     "band": 0.03,
+     "short": "1.81 pp"
+    },
+    {
+     "id": "rim_share",
+     "kind": "share",
+     "error": 0.03896776464830909,
+     "band": 0.03,
+     "short": "0.90 pp"
+    },
+    {
+     "id": "mid_share",
+     "kind": "share",
+     "error": 0.0372751192406917,
+     "band": 0.03,
+     "short": "0.73 pp"
+    }
+   ],
+   "outOfBandComparable": [
+    {
+     "id": "pts",
+     "kind": "count",
+     "error": 0.06037662589788406,
+     "band": 0.05,
+     "short": "1.04 puntos relativos"
+    },
+    {
+     "id": "fgm",
+     "kind": "count",
+     "error": 0.05436332327290916,
+     "band": 0.05,
+     "short": "0.44 puntos relativos"
+    },
+    {
+     "id": "fg2m",
+     "kind": "count",
+     "error": 0.08738467917487303,
+     "band": 0.05,
+     "short": "3.74 puntos relativos"
+    },
+    {
+     "id": "fg3a",
+     "kind": "count",
+     "error": 0.07814431290685842,
+     "band": 0.05,
+     "short": "2.81 puntos relativos"
+    },
+    {
+     "id": "ftm",
+     "kind": "count",
+     "error": 0.15734551574897815,
+     "band": 0.05,
+     "short": "10.73 puntos relativos"
+    },
+    {
+     "id": "fta",
+     "kind": "count",
+     "error": 0.16811085089773636,
+     "band": 0.05,
+     "short": "11.81 puntos relativos"
+    },
+    {
+     "id": "ast_fg",
+     "kind": "count",
+     "error": 0.2187621968218567,
+     "band": 0.05,
+     "short": "16.88 puntos relativos"
+    },
+    {
+     "id": "ast_ft",
+     "kind": "count",
+     "error": 0.12959381044487428,
+     "band": 0.05,
+     "short": "7.96 puntos relativos"
+    },
+    {
+     "id": "ast_total",
+     "kind": "count",
+     "error": 0.2105902909671049,
+     "band": 0.05,
+     "short": "16.06 puntos relativos"
+    },
+    {
+     "id": "tov",
+     "kind": "count",
+     "error": 0.20010840108401062,
+     "band": 0.05,
+     "short": "15.01 puntos relativos"
+    },
+    {
+     "id": "stl",
+     "kind": "count",
+     "error": 0.16227150134851653,
+     "band": 0.05,
+     "short": "11.23 puntos relativos"
+    },
+    {
+     "id": "blk",
+     "kind": "count",
+     "error": 0.22935779816513802,
+     "band": 0.05,
+     "short": "17.94 puntos relativos"
+    },
+    {
+     "id": "pf",
+     "kind": "count",
+     "error": 0.0738839091462885,
+     "band": 0.05,
+     "short": "2.39 puntos relativos"
+    },
+    {
+     "id": "pfd",
+     "kind": "count",
+     "error": 0.07388390914628828,
+     "band": 0.05,
+     "short": "2.39 puntos relativos"
+    },
+    {
+     "id": "fg_pct",
+     "kind": "rate",
+     "error": 0.04448994631140346,
+     "band": 0.03,
+     "short": "1.45 pp"
+    },
+    {
+     "id": "two_pct",
+     "kind": "rate",
+     "error": 0.05492627250112658,
+     "band": 0.03,
+     "short": "2.49 pp"
+    },
+    {
+     "id": "rim_pct",
+     "kind": "rate",
+     "error": 0.050848491936824725,
+     "band": 0.03,
+     "short": "2.08 pp"
+    },
+    {
+     "id": "mid_pct",
+     "kind": "rate",
+     "error": 0.04810480653711058,
+     "band": 0.03,
+     "short": "1.81 pp"
+    },
+    {
+     "id": "rim_share",
+     "kind": "share",
+     "error": 0.03896776464830909,
+     "band": 0.03,
+     "short": "0.90 pp"
+    },
+    {
+     "id": "mid_share",
+     "kind": "share",
+     "error": 0.0372751192406917,
+     "band": 0.03,
+     "short": "0.73 pp"
+    }
+   ],
+   "cases": 96,
+   "teamGames": 192,
+   "errors": [
+    {
+     "id": "pts",
+     "kind": "count",
+     "sim": 78.42592592592592,
+     "det": 83.46527777777779,
+     "simNum": null,
+     "simDen": null,
+     "detNum": null,
+     "detDen": null,
+     "error": 0.06037662589788406,
+     "band": 0.05,
+     "status": "ok"
+    },
+    {
+     "id": "fgm",
+     "kind": "count",
+     "sim": 29.55497685185185,
+     "det": 31.254050925925927,
+     "simNum": null,
+     "simDen": null,
+     "detNum": null,
+     "detDen": null,
+     "error": 0.05436332327290916,
+     "band": 0.05,
+     "status": "ok"
+    },
+    {
+     "id": "fga",
+     "kind": "count",
+     "sim": 60.04398148148149,
+     "det": 58.23148148148149,
+     "simNum": null,
+     "simDen": null,
+     "detNum": null,
+     "detDen": null,
+     "error": 0.031125775162982983,
+     "band": 0.05,
+     "status": "ok"
+    },
+    {
+     "id": "fg2m",
+     "kind": "count",
+     "sim": 20.37962962962963,
+     "det": 22.33101851851852,
+     "simNum": null,
+     "simDen": null,
+     "detNum": null,
+     "detDen": null,
+     "error": 0.08738467917487303,
+     "band": 0.05,
+     "status": "ok"
+    },
+    {
+     "id": "fg2a",
+     "kind": "count",
+     "sim": 37.3287037037037,
+     "det": 37.16261574074074,
+     "simNum": null,
+     "simDen": null,
+     "detNum": null,
+     "detDen": null,
+     "error": 0.004469221545696511,
+     "band": 0.05,
+     "status": "ok"
+    },
+    {
+     "id": "fg3m",
+     "kind": "count",
+     "sim": 9.175347222222221,
+     "det": 8.923032407407407,
+     "simNum": null,
+     "simDen": null,
+     "detNum": null,
+     "detDen": null,
+     "error": 0.028276801348985137,
+     "band": 0.05,
+     "status": "ok"
+    },
+    {
+     "id": "fg3a",
+     "kind": "count",
+     "sim": 22.715277777777775,
+     "det": 21.06886574074074,
+     "simNum": null,
+     "simDen": null,
+     "detNum": null,
+     "detDen": null,
+     "error": 0.07814431290685842,
+     "band": 0.05,
+     "status": "ok"
+    },
+    {
+     "id": "ftm",
+     "kind": "count",
+     "sim": 10.140625,
+     "det": 12.034143518518519,
+     "simNum": null,
+     "simDen": null,
+     "detNum": null,
+     "detDen": null,
+     "error": 0.15734551574897815,
+     "band": 0.05,
+     "status": "ok"
+    },
+    {
+     "id": "fta",
+     "kind": "count",
+     "sim": 12.333912037037036,
+     "det": 14.826388888888891,
+     "simNum": null,
+     "simDen": null,
+     "detNum": null,
+     "detDen": null,
+     "error": 0.16811085089773636,
+     "band": 0.05,
+     "status": "ok"
+    },
+    {
+     "id": "oreb",
+     "kind": "count",
+     "sim": 8.78761574074074,
+     "det": 6.8055555555555545,
+     "simNum": null,
+     "simDen": null,
+     "detNum": null,
+     "detDen": null,
+     "error": 0.2912414965986396,
+     "band": 0.05,
+     "status": "ok"
+    },
+    {
+     "id": "dreb",
+     "kind": "count",
+     "sim": 22.200231481481485,
+     "det": 17.85011574074074,
+     "simNum": null,
+     "simDen": null,
+     "detNum": null,
+     "detDen": null,
+     "error": 0.24370238288215296,
+     "band": 0.05,
+     "status": "ok"
+    },
+    {
+     "id": "reb",
+     "kind": "count",
+     "sim": 30.987847222222225,
+     "det": 24.655671296296294,
+     "simNum": null,
+     "simDen": null,
+     "detNum": null,
+     "detDen": null,
+     "error": 0.25682431639478964,
+     "band": 0.05,
+     "status": "ok"
+    },
+    {
+     "id": "ast_fg",
+     "kind": "count",
+     "sim": 16.21701388888889,
+     "det": 20.75810185185185,
+     "simNum": null,
+     "simDen": null,
+     "detNum": null,
+     "detDen": null,
+     "error": 0.2187621968218567,
+     "band": 0.05,
+     "status": "ok"
+    },
+    {
+     "id": "ast_ft",
+     "kind": "count",
+     "sim": 1.8229166666666667,
+     "det": 2.0943287037037037,
+     "simNum": null,
+     "simDen": null,
+     "detNum": null,
+     "detDen": null,
+     "error": 0.12959381044487428,
+     "band": 0.05,
+     "status": "ok"
+    },
+    {
+     "id": "ast_total",
+     "kind": "count",
+     "sim": 18.039930555555554,
+     "det": 22.852430555555557,
+     "simNum": null,
+     "simDen": null,
+     "detNum": null,
+     "detDen": null,
+     "error": 0.2105902909671049,
+     "band": 0.05,
+     "status": "ok"
+    },
+    {
+     "id": "tov",
+     "kind": "count",
+     "sim": 12.813657407407407,
+     "det": 10.677083333333334,
+     "simNum": null,
+     "simDen": null,
+     "detNum": null,
+     "detDen": null,
+     "error": 0.20010840108401062,
+     "band": 0.05,
+     "status": "ok"
+    },
+    {
+     "id": "stl",
+     "kind": "count",
+     "sim": 6.471064814814814,
+     "det": 7.724537037037035,
+     "simNum": null,
+     "simDen": null,
+     "detNum": null,
+     "detDen": null,
+     "error": 0.16227150134851653,
+     "band": 0.05,
+     "status": "ok"
+    },
+    {
+     "id": "blk",
+     "kind": "count",
+     "sim": 2.559027777777778,
+     "det": 2.081597222222222,
+     "simNum": null,
+     "simDen": null,
+     "detNum": null,
+     "detDen": null,
+     "error": 0.22935779816513802,
+     "band": 0.05,
+     "status": "ok"
+    },
+    {
+     "id": "pf",
+     "kind": "count",
+     "sim": 12.317129629629628,
+     "det": 13.299768518518519,
+     "simNum": null,
+     "simDen": null,
+     "detNum": null,
+     "detDen": null,
+     "error": 0.0738839091462885,
+     "band": 0.05,
+     "status": "ok"
+    },
+    {
+     "id": "pfd",
+     "kind": "count",
+     "sim": 12.317129629629632,
+     "det": 13.299768518518519,
+     "simNum": null,
+     "simDen": null,
+     "detNum": null,
+     "detDen": null,
+     "error": 0.07388390914628828,
+     "band": 0.05,
+     "status": "ok"
+    },
+    {
+     "id": "fg_pct",
+     "kind": "rate",
+     "sim": 0.49211711711711714,
+     "det": 0.5366070634285206,
+     "simNum": 5681,
+     "simDen": 11544,
+     "detNum": 6032,
+     "detDen": 11241,
+     "error": 0.04448994631140346,
+     "band": 0.03,
+     "status": "ok"
+    },
+    {
+     "id": "two_pct",
+     "kind": "rate",
+     "sim": 0.5459105475825554,
+     "det": 0.600836820083682,
+     "simNum": 3918,
+     "simDen": 7177,
+     "detNum": 4308,
+     "detDen": 7170,
+     "error": 0.05492627250112658,
+     "band": 0.03,
+     "status": "ok"
+    },
+    {
+     "id": "three_pct",
+     "kind": "rate",
+     "sim": 0.4037096404854591,
+     "det": 0.42348317366740357,
+     "simNum": 1763,
+     "simDen": 4367,
+     "detNum": 1724,
+     "detDen": 4071,
+     "error": 0.01977353318194447,
+     "band": 0.03,
+     "status": "ok"
+    },
+    {
+     "id": "ft_pct",
+     "kind": "rate",
+     "sim": 0.82201602699283,
+     "det": 0.8118881118881119,
+     "simNum": 1949,
+     "simDen": 2371,
+     "detNum": 2322,
+     "detDen": 2860,
+     "error": 0.01012791510471811,
+     "band": 0.03,
+     "status": "ok"
+    },
+    {
+     "id": "rim_pct",
+     "kind": "rate",
+     "sim": 0.6002163916689207,
+     "det": 0.6510648836057454,
+     "simNum": 2219,
+     "simDen": 3697,
+     "detNum": 2629,
+     "detDen": 4038,
+     "error": 0.050848491936824725,
+     "band": 0.03,
+     "status": "ok"
+    },
+    {
+     "id": "inside_pct",
+     "kind": "rate",
+     "sim": 0.5505720823798627,
+     "det": 0.5746724890829694,
+     "simNum": 1203,
+     "simDen": 2185,
+     "detNum": 1316,
+     "detDen": 2290,
+     "error": 0.024100406703106758,
+     "band": 0.03,
+     "status": "ok"
+    },
+    {
+     "id": "mid_pct",
+     "kind": "rate",
+     "sim": 0.383011583011583,
+     "det": 0.4311163895486936,
+     "simNum": 496,
+     "simDen": 1295,
+     "detNum": 363,
+     "detDen": 842,
+     "error": 0.04810480653711058,
+     "band": 0.03,
+     "status": "ok"
+    },
+    {
+     "id": "rim_share",
+     "kind": "share",
+     "sim": 0.32025294525294523,
+     "det": 0.3592207099012543,
+     "simNum": 3697,
+     "simDen": 11544,
+     "detNum": 4038,
+     "detDen": 11241,
+     "error": 0.03896776464830909,
+     "band": 0.03,
+     "status": "ok"
+    },
+    {
+     "id": "inside_share",
+     "kind": "share",
+     "sim": 0.18927581427581427,
+     "det": 0.20371853037985943,
+     "simNum": 2185,
+     "simDen": 11544,
+     "detNum": 2290,
+     "detDen": 11241,
+     "error": 0.014442716104045156,
+     "band": 0.03,
+     "status": "ok"
+    },
+    {
+     "id": "mid_share",
+     "kind": "share",
+     "sim": 0.11217948717948718,
+     "det": 0.07490436793879549,
+     "simNum": 1295,
+     "simDen": 11544,
+     "detNum": 842,
+     "detDen": 11241,
+     "error": 0.0372751192406917,
+     "band": 0.03,
+     "status": "ok"
+    },
+    {
+     "id": "three_share",
+     "kind": "share",
+     "sim": 0.3782917532917533,
+     "det": 0.36215639178009074,
+     "simNum": 4367,
+     "simDen": 11544,
+     "detNum": 4071,
+     "detDen": 11241,
+     "error": 0.01613536151166256,
+     "band": 0.03,
+     "status": "ok"
+    },
+    {
+     "id": "forced_rim",
+     "kind": "forced",
+     "sim": 0.10224506356505275,
+     "det": 0.06265477959385835,
+     "simNum": 378,
+     "simDen": 3697,
+     "detNum": 253,
+     "detDen": 4038,
+     "error": 0.03959028397119441,
+     "band": null,
+     "status": "ok"
+    },
+    {
+     "id": "forced_inside",
+     "kind": "forced",
+     "sim": 0.12356979405034325,
+     "det": 0.00611353711790393,
+     "simNum": 270,
+     "simDen": 2185,
+     "detNum": 14,
+     "detDen": 2290,
+     "error": 0.11745625693243933,
+     "band": null,
+     "status": "ok"
+    }
+   ]
+  },
+  "VAL|C0_AUTH_04C": {
+   "M04D": {
+    "M": 8.333333333333332,
+    "dominant": "blk",
+    "comps": [
+     {
+      "id": "pts",
+      "kind": "count",
+      "error": 0.02377414561664193,
+      "band": 0.05,
+      "ratio": 0.47548291233283857
+     },
+     {
+      "id": "fgm",
+      "kind": "count",
+      "error": 0.03515625,
+      "band": 0.05,
+      "ratio": 0.703125
+     },
+     {
+      "id": "fga",
+      "kind": "count",
+      "error": 0.03687635574837311,
+      "band": 0.05,
+      "ratio": 0.7375271149674623
+     },
+     {
+      "id": "fg2m",
+      "kind": "count",
+      "error": 0.08947368421052626,
+      "band": 0.05,
+      "ratio": 1.7894736842105252
+     },
+     {
+      "id": "fg2a",
+      "kind": "count",
+      "error": 0.04498269896193774,
+      "band": 0.05,
+      "ratio": 0.8996539792387548
+     },
+     {
+      "id": "fg3m",
+      "kind": "count",
+      "error": 0.1212121212121211,
+      "band": 0.05,
+      "ratio": 2.424242424242422
+     },
+     {
+      "id": "fg3a",
+      "kind": "count",
+      "error": 0.023255813953488413,
+      "band": 0.05,
+      "ratio": 0.46511627906976827
+     },
+     {
+      "id": "ftm",
+      "kind": "count",
+      "error": 0.06315789473684208,
+      "band": 0.05,
+      "ratio": 1.2631578947368416
+     },
+     {
+      "id": "fta",
+      "kind": "count",
+      "error": 0,
+      "band": 0.05,
+      "ratio": 0
+     },
+     {
+      "id": "oreb",
+      "kind": "count",
+      "error": 0.37037037037037046,
+      "band": 0.05,
+      "ratio": 7.407407407407409
+     },
+     {
+      "id": "dreb",
+      "kind": "count",
+      "error": 0.26315789473684204,
+      "band": 0.05,
+      "ratio": 5.263157894736841
+     },
+     {
+      "id": "reb",
+      "kind": "count",
+      "error": 0.2941176470588236,
+      "band": 0.05,
+      "ratio": 5.882352941176472
+     },
+     {
+      "id": "ast_fg",
+      "kind": "count",
+      "error": 0.25142857142857145,
+      "band": 0.05,
+      "ratio": 5.0285714285714285
+     },
+     {
+      "id": "ast_ft",
+      "kind": "count",
+      "error": 0.3076923076923077,
+      "band": 0.05,
+      "ratio": 6.153846153846154
+     },
+     {
+      "id": "ast_total",
+      "kind": "count",
+      "error": 0.25531914893617025,
+      "band": 0.05,
+      "ratio": 5.1063829787234045
+     },
+     {
+      "id": "tov",
+      "kind": "count",
+      "error": 0.14634146341463405,
+      "band": 0.05,
+      "ratio": 2.926829268292681
+     },
+     {
+      "id": "stl",
+      "kind": "count",
+      "error": 0.23076923076923073,
+      "band": 0.05,
+      "ratio": 4.615384615384614
+     },
+     {
+      "id": "blk",
+      "kind": "count",
+      "error": 0.41666666666666663,
+      "band": 0.05,
+      "ratio": 8.333333333333332
+     },
+     {
+      "id": "pf",
+      "kind": "count",
+      "error": 0,
+      "band": 0.05,
+      "ratio": 0
+     },
+     {
+      "id": "pfd",
+      "kind": "count",
+      "error": 0,
+      "band": 0.05,
+      "ratio": 0
+     },
+     {
+      "id": "fg_pct",
+      "kind": "rate",
+      "error": 0.03857813194891946,
+      "band": 0.03,
+      "ratio": 1.2859377316306486
+     },
+     {
+      "id": "two_pct",
+      "kind": "rate",
+      "error": 0.08459176424757664,
+      "band": 0.03,
+      "ratio": 2.8197254749192213
+     },
+     {
+      "id": "three_pct",
+      "kind": "rate",
+      "error": 0.036733615221987315,
+      "band": 0.03,
+      "ratio": 1.2244538407329106
+     },
+     {
+      "id": "ft_pct",
+      "kind": "rate",
+      "error": 0.05504587155963303,
+      "band": 0.03,
+      "ratio": 1.834862385321101
+     },
+     {
+      "id": "rim_pct",
+      "kind": "rate",
+      "error": 0.08581354950781706,
+      "band": 0.03,
+      "ratio": 2.860451650260569
+     },
+     {
+      "id": "inside_pct",
+      "kind": "rate",
+      "error": 0.0756181713628522,
+      "band": 0.03,
+      "ratio": 2.520605712095074
+     },
+     {
+      "id": "mid_pct",
+      "kind": "rate",
+      "error": 0.04553990610328634,
+      "band": 0.03,
+      "ratio": 1.5179968701095448
+     },
+     {
+      "id": "rim_share",
+      "kind": "share",
+      "error": 0.029465687653727146,
+      "band": 0.03,
+      "ratio": 0.9821895884575715
+     },
+     {
+      "id": "inside_share",
+      "kind": "share",
+      "error": 0.04909283983336207,
+      "band": 0.03,
+      "ratio": 1.6364279944454025
+     },
+     {
+      "id": "mid_share",
+      "kind": "share",
+      "error": 0.08345964294466278,
+      "band": 0.03,
+      "ratio": 2.781988098155426
+     },
+     {
+      "id": "three_share",
+      "kind": "share",
+      "error": 0.004901115457573546,
+      "band": 0.03,
+      "ratio": 0.16337051525245155
+     }
+    ],
+    "missing": [],
+    "partialM": 8.333333333333332
+   },
+   "M04D_comparable": {
+    "M": 8.333333333333332,
+    "dominant": "blk",
+    "comps": [
+     {
+      "id": "pts",
+      "kind": "count",
+      "error": 0.02377414561664193,
+      "band": 0.05,
+      "ratio": 0.47548291233283857
+     },
+     {
+      "id": "fgm",
+      "kind": "count",
+      "error": 0.03515625,
+      "band": 0.05,
+      "ratio": 0.703125
+     },
+     {
+      "id": "fga",
+      "kind": "count",
+      "error": 0.03687635574837311,
+      "band": 0.05,
+      "ratio": 0.7375271149674623
+     },
+     {
+      "id": "fg2m",
+      "kind": "count",
+      "error": 0.08947368421052626,
+      "band": 0.05,
+      "ratio": 1.7894736842105252
+     },
+     {
+      "id": "fg2a",
+      "kind": "count",
+      "error": 0.04498269896193774,
+      "band": 0.05,
+      "ratio": 0.8996539792387548
+     },
+     {
+      "id": "fg3m",
+      "kind": "count",
+      "error": 0.1212121212121211,
+      "band": 0.05,
+      "ratio": 2.424242424242422
+     },
+     {
+      "id": "fg3a",
+      "kind": "count",
+      "error": 0.023255813953488413,
+      "band": 0.05,
+      "ratio": 0.46511627906976827
+     },
+     {
+      "id": "ftm",
+      "kind": "count",
+      "error": 0.06315789473684208,
+      "band": 0.05,
+      "ratio": 1.2631578947368416
+     },
+     {
+      "id": "fta",
+      "kind": "count",
+      "error": 0,
+      "band": 0.05,
+      "ratio": 0
+     },
+     {
+      "id": "ast_fg",
+      "kind": "count",
+      "error": 0.25142857142857145,
+      "band": 0.05,
+      "ratio": 5.0285714285714285
+     },
+     {
+      "id": "ast_ft",
+      "kind": "count",
+      "error": 0.3076923076923077,
+      "band": 0.05,
+      "ratio": 6.153846153846154
+     },
+     {
+      "id": "ast_total",
+      "kind": "count",
+      "error": 0.25531914893617025,
+      "band": 0.05,
+      "ratio": 5.1063829787234045
+     },
+     {
+      "id": "tov",
+      "kind": "count",
+      "error": 0.14634146341463405,
+      "band": 0.05,
+      "ratio": 2.926829268292681
+     },
+     {
+      "id": "stl",
+      "kind": "count",
+      "error": 0.23076923076923073,
+      "band": 0.05,
+      "ratio": 4.615384615384614
+     },
+     {
+      "id": "blk",
+      "kind": "count",
+      "error": 0.41666666666666663,
+      "band": 0.05,
+      "ratio": 8.333333333333332
+     },
+     {
+      "id": "pf",
+      "kind": "count",
+      "error": 0,
+      "band": 0.05,
+      "ratio": 0
+     },
+     {
+      "id": "pfd",
+      "kind": "count",
+      "error": 0,
+      "band": 0.05,
+      "ratio": 0
+     },
+     {
+      "id": "fg_pct",
+      "kind": "rate",
+      "error": 0.03857813194891946,
+      "band": 0.03,
+      "ratio": 1.2859377316306486
+     },
+     {
+      "id": "two_pct",
+      "kind": "rate",
+      "error": 0.08459176424757664,
+      "band": 0.03,
+      "ratio": 2.8197254749192213
+     },
+     {
+      "id": "three_pct",
+      "kind": "rate",
+      "error": 0.036733615221987315,
+      "band": 0.03,
+      "ratio": 1.2244538407329106
+     },
+     {
+      "id": "ft_pct",
+      "kind": "rate",
+      "error": 0.05504587155963303,
+      "band": 0.03,
+      "ratio": 1.834862385321101
+     },
+     {
+      "id": "rim_pct",
+      "kind": "rate",
+      "error": 0.08581354950781706,
+      "band": 0.03,
+      "ratio": 2.860451650260569
+     },
+     {
+      "id": "inside_pct",
+      "kind": "rate",
+      "error": 0.0756181713628522,
+      "band": 0.03,
+      "ratio": 2.520605712095074
+     },
+     {
+      "id": "mid_pct",
+      "kind": "rate",
+      "error": 0.04553990610328634,
+      "band": 0.03,
+      "ratio": 1.5179968701095448
+     },
+     {
+      "id": "rim_share",
+      "kind": "share",
+      "error": 0.029465687653727146,
+      "band": 0.03,
+      "ratio": 0.9821895884575715
+     },
+     {
+      "id": "inside_share",
+      "kind": "share",
+      "error": 0.04909283983336207,
+      "band": 0.03,
+      "ratio": 1.6364279944454025
+     },
+     {
+      "id": "mid_share",
+      "kind": "share",
+      "error": 0.08345964294466278,
+      "band": 0.03,
+      "ratio": 2.781988098155426
+     },
+     {
+      "id": "three_share",
+      "kind": "share",
+      "error": 0.004901115457573546,
+      "band": 0.03,
+      "ratio": 0.16337051525245155
+     }
+    ],
+    "missing": [],
+    "partialM": 8.333333333333332
+   },
+   "eZ": 0.16691928588932553,
+   "outOfBand": [
+    {
+     "id": "fg2m",
+     "kind": "count",
+     "error": 0.08947368421052626,
+     "band": 0.05,
+     "short": "3.95 puntos relativos"
+    },
+    {
+     "id": "fg3m",
+     "kind": "count",
+     "error": 0.1212121212121211,
+     "band": 0.05,
+     "short": "7.12 puntos relativos"
+    },
+    {
+     "id": "ftm",
+     "kind": "count",
+     "error": 0.06315789473684208,
+     "band": 0.05,
+     "short": "1.32 puntos relativos"
+    },
+    {
+     "id": "oreb",
+     "kind": "count",
+     "error": 0.37037037037037046,
+     "band": 0.05,
+     "short": "32.04 puntos relativos"
+    },
+    {
+     "id": "dreb",
+     "kind": "count",
+     "error": 0.26315789473684204,
+     "band": 0.05,
+     "short": "21.32 puntos relativos"
+    },
+    {
+     "id": "reb",
+     "kind": "count",
+     "error": 0.2941176470588236,
+     "band": 0.05,
+     "short": "24.41 puntos relativos"
+    },
+    {
+     "id": "ast_fg",
+     "kind": "count",
+     "error": 0.25142857142857145,
+     "band": 0.05,
+     "short": "20.14 puntos relativos"
+    },
+    {
+     "id": "ast_ft",
+     "kind": "count",
+     "error": 0.3076923076923077,
+     "band": 0.05,
+     "short": "25.77 puntos relativos"
+    },
+    {
+     "id": "ast_total",
+     "kind": "count",
+     "error": 0.25531914893617025,
+     "band": 0.05,
+     "short": "20.53 puntos relativos"
+    },
+    {
+     "id": "tov",
+     "kind": "count",
+     "error": 0.14634146341463405,
+     "band": 0.05,
+     "short": "9.63 puntos relativos"
+    },
+    {
+     "id": "stl",
+     "kind": "count",
+     "error": 0.23076923076923073,
+     "band": 0.05,
+     "short": "18.08 puntos relativos"
+    },
+    {
+     "id": "blk",
+     "kind": "count",
+     "error": 0.41666666666666663,
+     "band": 0.05,
+     "short": "36.67 puntos relativos"
+    },
+    {
+     "id": "fg_pct",
+     "kind": "rate",
+     "error": 0.03857813194891946,
+     "band": 0.03,
+     "short": "0.86 pp"
+    },
+    {
+     "id": "two_pct",
+     "kind": "rate",
+     "error": 0.08459176424757664,
+     "band": 0.03,
+     "short": "5.46 pp"
+    },
+    {
+     "id": "three_pct",
+     "kind": "rate",
+     "error": 0.036733615221987315,
+     "band": 0.03,
+     "short": "0.67 pp"
+    },
+    {
+     "id": "ft_pct",
+     "kind": "rate",
+     "error": 0.05504587155963303,
+     "band": 0.03,
+     "short": "2.50 pp"
+    },
+    {
+     "id": "rim_pct",
+     "kind": "rate",
+     "error": 0.08581354950781706,
+     "band": 0.03,
+     "short": "5.58 pp"
+    },
+    {
+     "id": "inside_pct",
+     "kind": "rate",
+     "error": 0.0756181713628522,
+     "band": 0.03,
+     "short": "4.56 pp"
+    },
+    {
+     "id": "mid_pct",
+     "kind": "rate",
+     "error": 0.04553990610328634,
+     "band": 0.03,
+     "short": "1.55 pp"
+    },
+    {
+     "id": "inside_share",
+     "kind": "share",
+     "error": 0.04909283983336207,
+     "band": 0.03,
+     "short": "1.91 pp"
+    },
+    {
+     "id": "mid_share",
+     "kind": "share",
+     "error": 0.08345964294466278,
+     "band": 0.03,
+     "short": "5.35 pp"
+    }
+   ],
+   "outOfBandComparable": [
+    {
+     "id": "fg2m",
+     "kind": "count",
+     "error": 0.08947368421052626,
+     "band": 0.05,
+     "short": "3.95 puntos relativos"
+    },
+    {
+     "id": "fg3m",
+     "kind": "count",
+     "error": 0.1212121212121211,
+     "band": 0.05,
+     "short": "7.12 puntos relativos"
+    },
+    {
+     "id": "ftm",
+     "kind": "count",
+     "error": 0.06315789473684208,
+     "band": 0.05,
+     "short": "1.32 puntos relativos"
+    },
+    {
+     "id": "ast_fg",
+     "kind": "count",
+     "error": 0.25142857142857145,
+     "band": 0.05,
+     "short": "20.14 puntos relativos"
+    },
+    {
+     "id": "ast_ft",
+     "kind": "count",
+     "error": 0.3076923076923077,
+     "band": 0.05,
+     "short": "25.77 puntos relativos"
+    },
+    {
+     "id": "ast_total",
+     "kind": "count",
+     "error": 0.25531914893617025,
+     "band": 0.05,
+     "short": "20.53 puntos relativos"
+    },
+    {
+     "id": "tov",
+     "kind": "count",
+     "error": 0.14634146341463405,
+     "band": 0.05,
+     "short": "9.63 puntos relativos"
+    },
+    {
+     "id": "stl",
+     "kind": "count",
+     "error": 0.23076923076923073,
+     "band": 0.05,
+     "short": "18.08 puntos relativos"
+    },
+    {
+     "id": "blk",
+     "kind": "count",
+     "error": 0.41666666666666663,
+     "band": 0.05,
+     "short": "36.67 puntos relativos"
+    },
+    {
+     "id": "fg_pct",
+     "kind": "rate",
+     "error": 0.03857813194891946,
+     "band": 0.03,
+     "short": "0.86 pp"
+    },
+    {
+     "id": "two_pct",
+     "kind": "rate",
+     "error": 0.08459176424757664,
+     "band": 0.03,
+     "short": "5.46 pp"
+    },
+    {
+     "id": "three_pct",
+     "kind": "rate",
+     "error": 0.036733615221987315,
+     "band": 0.03,
+     "short": "0.67 pp"
+    },
+    {
+     "id": "ft_pct",
+     "kind": "rate",
+     "error": 0.05504587155963303,
+     "band": 0.03,
+     "short": "2.50 pp"
+    },
+    {
+     "id": "rim_pct",
+     "kind": "rate",
+     "error": 0.08581354950781706,
+     "band": 0.03,
+     "short": "5.58 pp"
+    },
+    {
+     "id": "inside_pct",
+     "kind": "rate",
+     "error": 0.0756181713628522,
+     "band": 0.03,
+     "short": "4.56 pp"
+    },
+    {
+     "id": "mid_pct",
+     "kind": "rate",
+     "error": 0.04553990610328634,
+     "band": 0.03,
+     "short": "1.55 pp"
+    },
+    {
+     "id": "inside_share",
+     "kind": "share",
+     "error": 0.04909283983336207,
+     "band": 0.03,
+     "short": "1.91 pp"
+    },
+    {
+     "id": "mid_share",
+     "kind": "share",
+     "error": 0.08345964294466278,
+     "band": 0.03,
+     "short": "5.35 pp"
+    }
+   ],
+   "cases": 4,
+   "teamGames": 8,
+   "errors": [
+    {
+     "id": "pts",
+     "kind": "count",
+     "sim": 82.125,
+     "det": 84.125,
+     "simNum": null,
+     "simDen": null,
+     "detNum": null,
+     "detDen": null,
+     "error": 0.02377414561664193,
+     "band": 0.05,
+     "status": "ok"
+    },
+    {
+     "id": "fgm",
+     "kind": "count",
+     "sim": 30.875,
+     "det": 32,
+     "simNum": null,
+     "simDen": null,
+     "detNum": null,
+     "detDen": null,
+     "error": 0.03515625,
+     "band": 0.05,
+     "status": "ok"
+    },
+    {
+     "id": "fga",
+     "kind": "count",
+     "sim": 59.75,
+     "det": 57.625,
+     "simNum": null,
+     "simDen": null,
+     "detNum": null,
+     "detDen": null,
+     "error": 0.03687635574837311,
+     "band": 0.05,
+     "status": "ok"
+    },
+    {
+     "id": "fg2m",
+     "kind": "count",
+     "sim": 21.625,
+     "det": 23.75,
+     "simNum": null,
+     "simDen": null,
+     "detNum": null,
+     "detDen": null,
+     "error": 0.08947368421052626,
+     "band": 0.05,
+     "status": "ok"
+    },
+    {
+     "id": "fg2a",
+     "kind": "count",
+     "sim": 37.75,
+     "det": 36.125,
+     "simNum": null,
+     "simDen": null,
+     "detNum": null,
+     "detDen": null,
+     "error": 0.04498269896193774,
+     "band": 0.05,
+     "status": "ok"
+    },
+    {
+     "id": "fg3m",
+     "kind": "count",
+     "sim": 9.25,
+     "det": 8.25,
+     "simNum": null,
+     "simDen": null,
+     "detNum": null,
+     "detDen": null,
+     "error": 0.1212121212121211,
+     "band": 0.05,
+     "status": "ok"
+    },
+    {
+     "id": "fg3a",
+     "kind": "count",
+     "sim": 22,
+     "det": 21.5,
+     "simNum": null,
+     "simDen": null,
+     "detNum": null,
+     "detDen": null,
+     "error": 0.023255813953488413,
+     "band": 0.05,
+     "status": "ok"
+    },
+    {
+     "id": "ftm",
+     "kind": "count",
+     "sim": 11.125,
+     "det": 11.875,
+     "simNum": null,
+     "simDen": null,
+     "detNum": null,
+     "detDen": null,
+     "error": 0.06315789473684208,
+     "band": 0.05,
+     "status": "ok"
+    },
+    {
+     "id": "fta",
+     "kind": "count",
+     "sim": 13.625,
+     "det": 13.625,
+     "simNum": null,
+     "simDen": null,
+     "detNum": null,
+     "detDen": null,
+     "error": 0,
+     "band": 0.05,
+     "status": "ok"
+    },
+    {
+     "id": "oreb",
+     "kind": "count",
+     "sim": 9.25,
+     "det": 6.75,
+     "simNum": null,
+     "simDen": null,
+     "detNum": null,
+     "detDen": null,
+     "error": 0.37037037037037046,
+     "band": 0.05,
+     "status": "ok"
+    },
+    {
+     "id": "dreb",
+     "kind": "count",
+     "sim": 21,
+     "det": 16.625,
+     "simNum": null,
+     "simDen": null,
+     "detNum": null,
+     "detDen": null,
+     "error": 0.26315789473684204,
+     "band": 0.05,
+     "status": "ok"
+    },
+    {
+     "id": "reb",
+     "kind": "count",
+     "sim": 30.25,
+     "det": 23.375,
+     "simNum": null,
+     "simDen": null,
+     "detNum": null,
+     "detDen": null,
+     "error": 0.2941176470588236,
+     "band": 0.05,
+     "status": "ok"
+    },
+    {
+     "id": "ast_fg",
+     "kind": "count",
+     "sim": 16.375,
+     "det": 21.875,
+     "simNum": null,
+     "simDen": null,
+     "detNum": null,
+     "detDen": null,
+     "error": 0.25142857142857145,
+     "band": 0.05,
+     "status": "ok"
+    },
+    {
+     "id": "ast_ft",
+     "kind": "count",
+     "sim": 1.125,
+     "det": 1.625,
+     "simNum": null,
+     "simDen": null,
+     "detNum": null,
+     "detDen": null,
+     "error": 0.3076923076923077,
+     "band": 0.05,
+     "status": "ok"
+    },
+    {
+     "id": "ast_total",
+     "kind": "count",
+     "sim": 17.5,
+     "det": 23.5,
+     "simNum": null,
+     "simDen": null,
+     "detNum": null,
+     "detDen": null,
+     "error": 0.25531914893617025,
+     "band": 0.05,
+     "status": "ok"
+    },
+    {
+     "id": "tov",
+     "kind": "count",
+     "sim": 11.75,
+     "det": 10.25,
+     "simNum": null,
+     "simDen": null,
+     "detNum": null,
+     "detDen": null,
+     "error": 0.14634146341463405,
+     "band": 0.05,
+     "status": "ok"
+    },
+    {
+     "id": "stl",
+     "kind": "count",
+     "sim": 6.25,
+     "det": 8.125,
+     "simNum": null,
+     "simDen": null,
+     "detNum": null,
+     "detDen": null,
+     "error": 0.23076923076923073,
+     "band": 0.05,
+     "status": "ok"
+    },
+    {
+     "id": "blk",
+     "kind": "count",
+     "sim": 0.875,
+     "det": 1.5,
+     "simNum": null,
+     "simDen": null,
+     "detNum": null,
+     "detDen": null,
+     "error": 0.41666666666666663,
+     "band": 0.05,
+     "status": "ok"
+    },
+    {
+     "id": "pf",
+     "kind": "count",
+     "sim": 12.625,
+     "det": 12.625,
+     "simNum": null,
+     "simDen": null,
+     "detNum": null,
+     "detDen": null,
+     "error": 0,
+     "band": 0.05,
+     "status": "ok"
+    },
+    {
+     "id": "pfd",
+     "kind": "count",
+     "sim": 12.625,
+     "det": 12.625,
+     "simNum": null,
+     "simDen": null,
+     "detNum": null,
+     "detDen": null,
+     "error": 0,
+     "band": 0.05,
+     "status": "ok"
+    },
+    {
+     "id": "fg_pct",
+     "kind": "rate",
+     "sim": 0.5167364016736402,
+     "det": 0.5553145336225597,
+     "simNum": 247,
+     "simDen": 478,
+     "detNum": 256,
+     "detDen": 461,
+     "error": 0.03857813194891946,
+     "band": 0.03,
+     "status": "ok"
+    },
+    {
+     "id": "two_pct",
+     "kind": "rate",
+     "sim": 0.5728476821192053,
+     "det": 0.657439446366782,
+     "simNum": 173,
+     "simDen": 302,
+     "detNum": 190,
+     "detDen": 289,
+     "error": 0.08459176424757664,
+     "band": 0.03,
+     "status": "ok"
+    },
+    {
+     "id": "three_pct",
+     "kind": "rate",
+     "sim": 0.42045454545454547,
+     "det": 0.38372093023255816,
+     "simNum": 74,
+     "simDen": 176,
+     "detNum": 66,
+     "detDen": 172,
+     "error": 0.036733615221987315,
+     "band": 0.03,
+     "status": "ok"
+    },
+    {
+     "id": "ft_pct",
+     "kind": "rate",
+     "sim": 0.8165137614678899,
+     "det": 0.8715596330275229,
+     "simNum": 89,
+     "simDen": 109,
+     "detNum": 95,
+     "detDen": 109,
+     "error": 0.05504587155963303,
+     "band": 0.03,
+     "status": "ok"
+    },
+    {
+     "id": "rim_pct",
+     "kind": "rate",
+     "sim": 0.6050955414012739,
+     "det": 0.6909090909090909,
+     "simNum": 95,
+     "simDen": 157,
+     "detNum": 114,
+     "detDen": 165,
+     "error": 0.08581354950781706,
+     "band": 0.03,
+     "status": "ok"
+    },
+    {
+     "id": "inside_pct",
+     "kind": "rate",
+     "sim": 0.5945945945945946,
+     "det": 0.6702127659574468,
+     "simNum": 44,
+     "simDen": 74,
+     "detNum": 63,
+     "detDen": 94,
+     "error": 0.0756181713628522,
+     "band": 0.03,
+     "status": "ok"
+    },
+    {
+     "id": "mid_pct",
+     "kind": "rate",
+     "sim": 0.4788732394366197,
+     "det": 0.43333333333333335,
+     "simNum": 34,
+     "simDen": 71,
+     "detNum": 13,
+     "detDen": 30,
+     "error": 0.04553990610328634,
+     "band": 0.03,
+     "status": "ok"
+    },
+    {
+     "id": "rim_share",
+     "kind": "share",
+     "sim": 0.3284518828451883,
+     "det": 0.3579175704989154,
+     "simNum": 157,
+     "simDen": 478,
+     "detNum": 165,
+     "detDen": 461,
+     "error": 0.029465687653727146,
+     "band": 0.03,
+     "status": "ok"
+    },
+    {
+     "id": "inside_share",
+     "kind": "share",
+     "sim": 0.15481171548117154,
+     "det": 0.2039045553145336,
+     "simNum": 74,
+     "simDen": 478,
+     "detNum": 94,
+     "detDen": 461,
+     "error": 0.04909283983336207,
+     "band": 0.03,
+     "status": "ok"
+    },
+    {
+     "id": "mid_share",
+     "kind": "share",
+     "sim": 0.14853556485355648,
+     "det": 0.0650759219088937,
+     "simNum": 71,
+     "simDen": 478,
+     "detNum": 30,
+     "detDen": 461,
+     "error": 0.08345964294466278,
+     "band": 0.03,
+     "status": "ok"
+    },
+    {
+     "id": "three_share",
+     "kind": "share",
+     "sim": 0.3682008368200837,
+     "det": 0.37310195227765725,
+     "simNum": 176,
+     "simDen": 478,
+     "detNum": 172,
+     "detDen": 461,
+     "error": 0.004901115457573546,
+     "band": 0.03,
+     "status": "ok"
+    },
+    {
+     "id": "forced_rim",
+     "kind": "forced",
+     "sim": 0.08917197452229299,
+     "det": 0.03636363636363636,
+     "simNum": 14,
+     "simDen": 157,
+     "detNum": 6,
+     "detDen": 165,
+     "error": 0.052808338158656626,
+     "band": null,
+     "status": "ok"
+    },
+    {
+     "id": "forced_inside",
+     "kind": "forced",
+     "sim": 0.10810810810810811,
+     "det": 0,
+     "simNum": 8,
+     "simDen": 74,
+     "detNum": 0,
+     "detDen": 94,
+     "error": 0.10810810810810811,
+     "band": null,
+     "status": "ok"
+    }
+   ]
+  }
+ }
+}

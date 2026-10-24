@@ -100,7 +100,7 @@ test('S01-05 las 32 capacidades alteran magnitudes (contraste +1/+3/+5 a context
   const base = buildSimProfile(profile); const cand = applyOverrides(base, [{ path: 'volume.neutralSecondsPerControl', value: 12 }]); assert.deepEqual(diffProfile(base, cand), [{ path: 'volume.neutralSecondsPerControl', base: 16, candidate: 12 }]); assert.equal(base.v.volume.neutralSecondsPerControl, 16);
   const pv = probeVector(makeContext(profile, [{ path: 'volume.neutralSecondsPerControl', value: 12 }]), inp).vector; assert.ok(pv['pace.sec.0'] < probeVector(ctx, inp).vector['pace.sec.0']);
   assert.ok(validateOverrides(base, [{ path: 'no.existe', value: 1 }, { path: 'segment.normalSeconds', value: -1 }, { path: 'shots.three.p0', value: 1.2 }, { path: 'volume.secondsPerControlBounds', value: [10] }]).length === 4, 'rutas desconocidas, valores no válidos y formas incorrectas se rechazan con causa');
-  assert.ok(base.rows.every((r) => ['heredada', 'derivada', 'SEM-SIM01', 'SEM-SIM02', 'SEM-SIM04', 'SEM-SIM04B', 'SEM-SIM04C'].includes(r.origin) && r.unit && r.effect), 'toda fila declara procedencia, unidad y efecto'); assert.equal(base.rows.filter((r) => r.origin === 'SEM-SIM01').length, 8);
+  assert.ok(base.rows.every((r) => ['heredada', 'derivada', 'SEM-SIM01', 'SEM-SIM02', 'SEM-SIM04', 'SEM-SIM04B', 'SEM-SIM04C', 'SEM-SIM04D'].includes(r.origin) && r.unit && r.effect), 'toda fila declara procedencia, unidad y efecto'); assert.equal(base.rows.filter((r) => r.origin === 'SEM-SIM01').length, 8);
 });
 
 test('S01-06 familiaridad congelada y sin efecto inmediato de Polivalencia: conocimiento bajo/alto cambia la calidad antes del sorteo; sin conocimiento explícito o todo al máximo = neutral; el encuentro no cambia conocimiento', () => {
@@ -143,5 +143,5 @@ test('S01-10 el modelo no llama al detallado y la referencia detallada permanece
   const { readFileSync, readdirSync } = await import('node:fs'); const files = readdirSync(new URL('../src/sim/', import.meta.url)).filter((f) => f.endsWith('.js'));
   for (const f of files) { const src = readFileSync(new URL(`../src/sim/${f}`, import.meta.url), 'utf8'); assert.ok(!/from '\.\.\/match\/(core|flow|actions|defense|plays|states|coach|memory|orders|throwin|rotation|spontaneous|familiarity|availability|incident-admin|correction-admin)\.js'/.test(src), `${f} no importa el resolutor detallado`); assert.ok(!/createMatch|runMatch|MatchCore/.test(src.replace(/\/\/.*$/gm, '')), `${f} no ejecuta el detallado`); }
   const { buildMatchInput, runMatch } = await import('../src/match/index.js'); const res = runMatch(buildMatchInput(profile, players, { seed: 20261016 }), profile, { detail: 'full' });
-  assert.deepEqual(res.score, [83, 98]); assert.equal(res.diagnostics.sportingDraws, 6684);
+  const ref = JSON.parse(readFileSync(new URL('./fixtures/baseline-sim04e.json', import.meta.url), 'utf8'))['20261016']; assert.deepEqual(res.score, ref.score); assert.equal(res.diagnostics.sportingDraws, ref.draws); // 04E: referencia nueva (la histórica de 04D era 83–98, 6.684)
 });

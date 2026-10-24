@@ -295,6 +295,8 @@ El catálogo debe distinguir:
 
 El manual de referencia contiene excepciones relevantes para libres no finales y finales de periodo. Por ello no se adopta la igualdad universal «todo fallo = un rebote». La conciliación usa fallos con oportunidad de rebote y excepciones declaradas.
 
+**Criterio común vigente (SIM-MOTOR-04E, política `REBCRED-SIM04E-R1`, compartida por el detallado y SIM).** La recuperación controlada tras un tapón con balón vivo acredita rebote individual (ofensivo o defensivo según el equipo que recupera, con el recuperador que el motor ya resuelve); un tapón que sale fuera deja el derecho de saque al ataque y se acredita como rebote **colectivo** ofensivo, sin jugador inventado. No se acredita rebote con balón muerto por una parada, al acabar el periodo antes del control ni ante la violación aplicable antes de recuperar. Las violaciones de reloj son pérdidas de equipo. Un tapón no se reclasifica como robo ni se suma un segundo rebote al que ya existe. Referencia: FIBA Statisticians’ Manual 2024 (capítulos 4, 5 y 8), contrastada por ChatGPT.
+
 <a id="src-md04-l0553"></a>
 
 #### 20.13.3. Ofensivo y defensivo

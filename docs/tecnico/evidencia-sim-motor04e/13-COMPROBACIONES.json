@@ -1,0 +1,776 @@
+{
+ "schema": "beM-sim04e-checks-all/1",
+ "mechanical": {
+  "schema": "beM-sim04e-checks/1",
+  "tech": {
+   "cases": {
+    "DEV-EQ01-EQ03-R1": {
+     "fingerprints": [
+      "d8b53955b3ab8bef",
+      "d8b53955b3ab8bef",
+      "d8b53955b3ab8bef"
+     ],
+     "routesEqual": true,
+     "equalToDevVector": true,
+     "consults": [
+      0,
+      4,
+      1
+     ],
+     "restores": [
+      0,
+      0,
+      1
+     ]
+    },
+    "DEV-EQ01-EQ03-R2": {
+     "fingerprints": [
+      "d53a8130617295bc",
+      "d53a8130617295bc",
+      "d53a8130617295bc"
+     ],
+     "routesEqual": true,
+     "equalToDevVector": true,
+     "consults": [
+      0,
+      5,
+      2
+     ],
+     "restores": [
+      0,
+      0,
+      2
+     ]
+    },
+    "DEV-EQ03-EQ01-R1": {
+     "fingerprints": [
+      "51ca2511ef4a1069",
+      "51ca2511ef4a1069",
+      "51ca2511ef4a1069"
+     ],
+     "routesEqual": true,
+     "equalToDevVector": true,
+     "consults": [
+      0,
+      4,
+      1
+     ],
+     "restores": [
+      0,
+      0,
+      1
+     ]
+    },
+    "DEV-EQ03-EQ01-R2": {
+     "fingerprints": [
+      "afdb55ad7ffe4a46",
+      "afdb55ad7ffe4a46",
+      "afdb55ad7ffe4a46"
+     ],
+     "routesEqual": true,
+     "equalToDevVector": true,
+     "consults": [
+      0,
+      6,
+      1
+     ],
+     "restores": [
+      0,
+      0,
+      1
+     ]
+    }
+   },
+   "allEqual": true,
+   "vectorRef": "V-c886b2edcac9"
+  },
+  "reconciliation": {
+   "detailed:DET": {
+    "records": 176,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:SIM_04E_BASE": {
+    "records": 112,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:SIM_04E_EXP": {
+    "records": 96,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:TECH-auto": {
+    "records": 4,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:TECH-recover": {
+    "records": 4,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:TECH-steps": {
+    "records": 4,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-04a072885515": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-0685a34beb58": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-06c2956c5190": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-0b5e009de8d8": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-0c2cca1633f2": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-0f482591f841": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-16ff68ddff2d": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-178b72f6f91c": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-1d4047e643d1": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-262f670d0414": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-2820920dc2a0": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-2b59c994a159": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-35baeb739bc5": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-3ba49bb784b0": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-40be0163debe": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-41f1dae52b80": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-439daf39ac6f": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-43ec8fbd892b": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-44eda068a3ee": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-471f7f73a494": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-4ad787e77bf5": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-4b8f004ebc0e": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-4df4dfb21f79": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-52b8604cbe36": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-573444399e41": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-594099da62de": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-5fc1086534d6": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-69ce1a4a9dba": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-6b6509554ca1": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-6b6aa95e03b4": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-6ff4092c30a6": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-6ffe4a2b9203": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-73f44dab46a5": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-754503543bb4": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-75491468d9d2": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-7b0ba7824761": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-7c19fbc6be75": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-7d27797b4c6e": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-7d907b23dac9": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-85175eb83492": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-8545c72116d6": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-8760618dc398": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-96034e17476c": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-9909449436fe": {
+    "records": 72,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-9ba7bb1adf8c": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-9d0b7818fd5c": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-a4fed568430c": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-a59e74fab3f7": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-a5a5045a809b": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-a72bb8f1775e": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-a86184a31211": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-a8971c500e83": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-aae05eb05fec": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-abb2dc2ee9fe": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-af4e47154c2b": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-b0b702378a92": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-b0be9dd551ea": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-b1888565fba6": {
+    "records": 72,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-b5531bf25b44": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-b5df1a6dadf8": {
+    "records": 72,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-b6c836a442dd": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-b8190c46f85b": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-b9b738569c08": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-ba3c4dd194b8": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-bec3fabb51ea": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-c4f69eeb023d": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-c5fb237ed6e5": {
+    "records": 72,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-c886b2edcac9": {
+    "records": 72,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-ced0a04c3644": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-cf218d97db83": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-cf8a2445d3c0": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-d160505a29f0": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-d337d3e4d83c": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-d5db47d1b05d": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-d69a852529ed": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-d728aec885e1": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-d7e633e9e916": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-da09109a302c": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-dc484b47d377": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-dd709388b51d": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-e3aad05cbb46": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-e424fd19ace8": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-e86e429aa767": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-ea7c466d124d": {
+    "records": 72,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-ed99f82e0b46": {
+    "records": 72,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-f7936e4bd63d": {
+    "records": 72,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   },
+   "sim:V-fba937b68c64": {
+    "records": 48,
+    "invalidOrFailed": 0,
+    "notEvaluatedItems": 0
+   }
+  },
+  "inputs": {
+   "runsChecked": 4764,
+   "mismatches": []
+  },
+  "bridge": {
+   "entries": 8,
+   "creditKeepsDynamics": 8,
+   "falseExpiry04D": 24,
+   "falseExpiryCredit": 24,
+   "falseExpiryClock": 0,
+   "clockChangesTrajectory": 8
+  },
+  "alias": {
+   "candidateIsBase": true,
+   "candidateVectorId": "V-c886b2edcac9",
+   "baseVectorId": "V-c886b2edcac9",
+   "valConditions": [
+    "sim:SIM_04E_BASE",
+    "sim:SIM_04E_EXP"
+   ]
+  },
+  "ok": true
+ },
+ "history": {
+  "allChecksOk": true,
+  "scheduled": 24,
+  "missingResults": 0,
+  "ledgers": {
+   "sim": {
+    "accepted": 24,
+    "rejected": 0,
+    "stints": 116,
+    "reconciliation": true,
+    "checks": true,
+    "resolvers": {
+     "sim": 24
+    }
+   },
+   "mixed": {
+    "accepted": 24,
+    "rejected": 0,
+    "stints": 116,
+    "reconciliation": true,
+    "checks": true,
+    "resolvers": {
+     "detailed": 4,
+     "sim": 20
+    }
+   }
+  },
+  "learning": {
+   "pairs": 6,
+   "rows": 642,
+   "checks": [
+    {
+     "name": "nadie sin participación recibe dosis por estar en la plantilla",
+     "ok": true
+    },
+    {
+     "name": "misma exposición normalizada ⇒ misma propuesta con las funciones comunes (sin importar el adaptador)",
+     "ok": true
+    },
+    {
+     "name": "más eventos (créditos ×7) no conceden más presupuesto ni dosis",
+     "ok": true
+    },
+    {
+     "name": "aplicación sobre copia: una vez; segunda aplicación de la misma fuente rechazada; deshacer restaura el estado previo",
+     "ok": true
+    },
+    {
+     "name": "guarda por encuentro lógico: reintento (intento distinto) rechazado; M1 ≠ M10",
+     "ok": true
+    }
+   ]
+  }
+ },
+ "matchday": {
+  "allEqual": true,
+  "comparison": {
+   "A_vs_B": {
+    "log": true,
+    "results": true,
+    "table": true,
+    "decisions": true,
+    "contexts": true
+   },
+   "A_vs_C": {
+    "log": true,
+    "results": true,
+    "table": true,
+    "decisions": true,
+    "contexts": true
+   },
+   "A_vs_D_recargado": {
+    "log": true,
+    "results": true,
+    "table": true,
+    "decisions": true,
+    "contexts": true
+   },
+   "A_vs_D_sin_recargar": {
+    "log": true,
+    "results": true,
+    "table": true,
+    "decisions": true,
+    "contexts": true
+   }
+  }
+ },
+ "browser": {
+  "summary": {
+   "steps": 12,
+   "failed": 0,
+   "consoleErrors": 0,
+   "networkErrors": 0,
+   "notRun": [],
+   "downloads": 5,
+   "note": "recorrido automático de Claude (≈ 10 pasos significativos); el recorrido manual completo es de Dennis"
+  },
+  "steps": [
+   {
+    "n": 1,
+    "route": "Selector",
+    "action": "la selección de motor muestra la versión de aplicación SIM-MOTOR-04E",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "route": "SIM",
+    "action": "cabecera: aplicación, detallado, SIM, política de acta y crédito de rebote por separado",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "route": "SIM · Parámetros",
+    "action": "las candidatas de 04E se muestran como provisional (alias de la base) y EXPERIMENTAL (no recomendada) y no se activan solas",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "route": "SIM · Parámetros",
+    "action": "cargar la candidata es una acción explícita y deja un borrador",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "route": "SIM · Parámetros",
+    "action": "descargar la candidata experimental (22 filas) por sus bytes",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "route": "SIM · Parámetros",
+    "action": "restaurar la base devuelve el perfil sin filas editadas",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "route": "SIM · Partido",
+    "action": "partido completo con conciliación 27/27 y contrato beM-sim-match/3",
+    "ok": true
+   },
+   {
+    "n": 8,
+    "route": "SIM · Ataque",
+    "action": "las familias muestran `putback` como familia propia (continuación inmediata) y las fichas solo ejecuciones organizadas",
+    "ok": true
+   },
+   {
+    "n": 9,
+    "route": "SIM · descargas",
+    "action": "cuatro descargas REALES (JSON, CSV, Markdown y guardado continuable) validadas por sus bytes",
+    "ok": true
+   },
+   {
+    "n": 10,
+    "route": "SIM · guardado",
+    "action": "cargar un guardado válido de esta revisión lo restaura y continúa",
+    "ok": true
+   },
+   {
+    "n": 11,
+    "route": "SIM · guardado",
+    "action": "un guardado REAL de SIM-MOTOR-04D se rechaza con su explicación y sin tocar el archivo",
+    "ok": true
+   },
+   {
+    "n": 12,
+    "route": "SIM · Jornada",
+    "action": "la pestaña Jornada se abre sin errores",
+    "ok": true
+   }
+  ]
+ },
+ "suite": {
+  "command": "npm test",
+  "tests": 369,
+  "pass": 369,
+  "fail": 0,
+  "cancelled": 0,
+  "skipped": 0,
+  "durationMs": 121798,
+  "head": "762d4d09e225ff7a81b804dc09d82b77a703073e",
+  "note": "una suite completa sobre el código final (src/ sin cambios posteriores); data:check correcto"
+ },
+ "frozen": {
+  "devVerifiedAtVal": true,
+  "valVerifiedAtEnd": {
+   "ok": false,
+   "changedTools": [
+    "scripts/sim04e/tables.js",
+    "scripts/sim04e/val.js"
+   ]
+  }
+ },
+ "notEvaluatedOrNotRun": [
+  "auditoría de cada una de las 32 capacidades fuera de las sondas existentes (suite: sim03-probes)",
+  "navegadores y versiones de Node adicionales",
+  "rendimiento a 1.000 partidos y 2.000 clubes",
+  "aceptación deportiva y manual (Dennis)"
+ ]
+}

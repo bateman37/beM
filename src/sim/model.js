@@ -219,7 +219,11 @@ export function attackModel(S, T, sides, k, ctx) {
   let wTo = base.turnover * Math.exp(zTo) * (1 - stealShare + stealShare * pAtt / p0s);
   const pFoulStyle = 1 + (pAtt - p0s) + (pClose - p0c); // riesgo de robo y presión cercana aumentan también las faltas defensivas
   let wDn = base.defensiveNonShootingFoul * Math.exp(zFoulD) * pFoulStyle; let wSf = base.shootingFoul * Math.exp(zFoulD) * pFoulStyle;
+  // 04D §6.1: factor ÚNICO sobre el peso de la falta en el tiro, antes de normalizar los terminales (la razón de faltas no terminales usa el mismo total). Con 1, aritmética anterior exacta.
+  const fSf = S.outcomes.simShootingFoulWeightFactor ?? 1; if (fSf !== 1) wSf *= fSf;
   wTo *= 1 + (pClose - p0c); // presión al balón: más pérdidas, compensada por más faltas defensivas y mejor calidad cuando el avance se supera
+  // 04D §6.1: factor ÚNICO sobre la pérdida ORDINARIA (antes del peso adicional de la presión adelantada y de normalizar los terminales). Con 1, aritmética anterior exacta.
+  const fTo = S.outcomes.simOrdinaryTurnoverWeightFactor ?? 1; if (fTo !== 1) wTo *= fTo;
   if (pressFx) {
     const pw = S.defense.pressure.newAdvancedInteractionBaseWeights; let wPress = pw.turnover * closeOR; M.flags.pressed = true;
     // C04-04: familiaridad de la presión adelantada (FAM:press_break en ataque; PRESS y organización en defensa). Un único ajuste sobre el peso ADICIONAL de pérdida que crea la presión; la pérdida ordinaria no se toca
@@ -240,7 +244,7 @@ export function attackModel(S, T, sides, k, ctx) {
   probs = perturbCategories(probs, ['fs', 'sf'], ZcT, S.moment.probabilityAlphaByTask.offensiveControl);
   M.term = probs; M.termOrder = ['to', 'of', 'bv', 'sf', 'fs', 'lb']; M.dnRatio = wDn / tTot;
   // ---- robo dentro de pérdidas elegibles
-  M.pSteal = sigmoid(logit(stealShare) + O.controlSensitivity * (DefSteal - N)); M.pStealOob = S.outcomes.turnoverOutOfBoundsIfNotSteal;
+  M.pSteal = sigmoid(logit(stealShare) + O.controlSensitivity * (DefSteal - N) + (O.simStealGivenEligibleTurnoverLogit ?? 0)); M.pStealOob = S.outcomes.turnoverOutOfBoundsIfNotSteal; // 04D §6.1: desplazamiento ÚNICO del robo condicionado a pérdida elegible (neutral 0 ⇒ operación anterior exacta)
   const ct = S.roles.creditTags; M.stealW = dv.players.map((p) => Math.max(0.01, taskFor(S, 'TAR07', 'defense', 'interceptor', p) / N) * defRoleBias(S, T, p, ct.steal));
   M.ofRecvW = dv.players.map((p) => Math.max(0.05, taskFor(S, 'TAR06', 'defense', 'primary', p) / N) * defRoleBias(S, T, p, ct.offensiveFoulReceiver));
   M.toW = av.players.map((p) => Math.max(0.05, 1 / Math.max(1, taskFor(S, 'TAR06', 'attack', 'handler', p)) * N) * (0.5 + p.init));
@@ -311,7 +315,7 @@ export function shotCells(S, T, sides, k, M, ctx) {
   for (let ci = 0; ci < nc; ci++) {
     const c = comp.cells[ci]; const p = comp.plays[c.pi]; if (!p.available) continue;
     const sh = S.shots[c.zone]; const qd = qc[c.pi];
-    const fw = finisherWeights(S, T, av, p.play, c, plan); if (fw.pref === undefined) { let pf = 0; for (let i = 0; i < fw.length; i++) pf += fw[i].w0; fw.pref = pf / Math.max(1, fw.length); fw.pEst = estP(S, sh, fw, N, false, viewCache(S, av).A[c.zone], c.zone === 'inside' ? (S.conversion?.simInsideLogitOffset ?? 0) : 0); }
+    const fw = finisherWeights(S, T, av, p.play, c, plan); if (fw.pref === undefined) { let pf = 0; for (let i = 0; i < fw.length; i++) pf += fw[i].w0; fw.pref = pf / Math.max(1, fw.length); fw.pEst = estP(S, sh, fw, N, false, viewCache(S, av).A[c.zone], c.zone === 'inside' ? (S.conversion?.simInsideLogitOffset ?? 0) : c.zone === 'rim' ? (S.conversion?.simRimLogitOffset ?? 0) : 0); }
     if (c.zone === 'midrange') { hasMid[ci] = 1; md[ci] = mp === 'avoid' ? mpPol.avoidWeight : mp === 'openOnly' ? qd.comfortable * mpPol.openOnlyComfortableWeight + (1 - qd.comfortable) * mpPol.openOnlyOtherWeight : seekMid; }
     const orient = c.zone === 'three' ? orientOut : (c.zone === 'rim' || c.zone === 'inside') ? orientIn : 1; const risk = c.exec === 'none' ? 0 : c.exec === 'dribble' ? riskD : c.exec === 'pass' ? riskP : riskN;
     const V = Math.max(sel.candidateRead.minimumUtility, sh.points * fw.pEst - sel.candidateRead.expectedTurnoverCostPoints * risk);
@@ -328,14 +332,19 @@ export function shotCells(S, T, sides, k, M, ctx) {
   const tz = S.derived.transition.zoneWeights; const trq = transitionQuality(S, T, sides, k, M); const spz = spontaneousZones(S, T, av, plan, M); const spq = spontaneousQuality(S, T, sides, k, M);
   const trqR = dq !== 0 ? transitionQuality(S, T, sides, k, M, dq) : null; const spqR = dq !== 0 ? spontaneousQuality(S, T, sides, k, M, dq) : null;
   const trqI = di !== 0 ? transitionQuality(S, T, sides, k, M, di) : null; const spqI = di !== 0 ? spontaneousQuality(S, T, sides, k, M, di) : null;
+  // 04D §6.1: odds de entrega elegible de la finalización ESPONTÁNEA (odds(p') = odds(p) × factor; extremos intactos). Transición y continuación tras rebote no la usan.
+  const spPass = scaleOdds(S.derived.spontaneous.passShare, S.assist.spontaneousPassOddsFactor ?? 1);
   for (const o of comp.trans) { o.w = M.tau * tz[o.cell.zone]; o.q = trqR && o.cell.zone === 'rim' ? trqR : trqI && o.cell.zone === 'inside' ? trqI : trq; o.cell.passShare = S.derived.transition.passShare; o.cell.movedShare = S.derived.transition.movedShare; }
-  for (const o of comp.spont) { o.w = M.sigma * spz[o.cell.zone]; o.q = spqR && o.cell.zone === 'rim' ? spqR : spqI && o.cell.zone === 'inside' ? spqI : spq; o.cell.passShare = S.derived.spontaneous.passShare; o.cell.movedShare = S.derived.spontaneous.movedShare; }
+  for (const o of comp.spont) { o.w = M.sigma * spz[o.cell.zone]; o.q = spqR && o.cell.zone === 'rim' ? spqR : spqI && o.cell.zone === 'inside' ? spqI : spq; o.cell.passShare = spPass; o.cell.movedShare = S.derived.spontaneous.movedShare; }
   // §7.2: ajuste de MEZCLA (no de acierto). Una vez por contexto representado (organizado, transición, espontáneo): multiplica el peso de las celdas de triple y renormaliza dentro del contexto conservando su masa previa. Con 1, identidad exacta.
   const f3 = S.shotMix?.threeWeightFactor ?? 1;
   if (f3 !== 1) for (const grp of [cells, comp.trans, comp.spont]) { let m0 = 0; let m1 = 0; for (const o of grp) { m0 += o.w; if (o.cell.zone === 'three') o.w *= f3; m1 += o.w; } if (m1 > 0 && m0 > 0) { const r = m0 / m1; for (const o of grp) o.w *= r; } }
   // 04B §7.2: mismo mecanismo para el aro ya representado (una vez por contexto, masa previa conservada, sin crear celdas): con 1, identidad exacta.
   const fR = S.shotMix?.rimWeightFactor ?? 1;
   if (fR !== 1) for (const grp of [cells, comp.trans, comp.spont]) { let m0 = 0; let m1 = 0; for (const o of grp) { m0 += o.w; if (o.cell.zone === 'rim') o.w *= fR; m1 += o.w; } if (m1 > 0 && m0 > 0) { const r = m0 / m1; for (const o of grp) o.w *= r; } }
+  // 04D §6.1: mismo mecanismo para la media distancia ya representada (una vez por contexto, masa previa conservada, sin crear celdas): con 1, identidad exacta.
+  const fM = S.shotMix?.midrangeWeightFactor ?? 1;
+  if (fM !== 1) for (const grp of [cells, comp.trans, comp.spont]) { let m0 = 0; let m1 = 0; for (const o of grp) { m0 += o.w; if (o.cell.zone === 'midrange') o.w *= fM; m1 += o.w; } if (m1 > 0 && m0 > 0) { const r = m0 / m1; for (const o of grp) o.w *= r; } }
   const all = comp.all; let tw = 0; for (let i = 0; i < all.length; i++) tw += all[i].w; if (tw > 0) for (let i = 0; i < all.length; i++) all[i].w /= tw;
   // protección del tiro rival: desplaza la mezcla entre interior y exterior (peso de elección ↑ ⇒ menos intentos en esa zona)
   tw = 0; for (let i = 0; i < all.length; i++) { const z = all[i].cell.zone; all[i].w *= (z === 'rim' || z === 'inside') ? 1 / M.protect.inside : z === 'three' ? 1 / M.protect.outside : 1; tw += all[i].w; }
@@ -343,6 +352,7 @@ export function shotCells(S, T, sides, k, M, ctx) {
   M.famQuality = famCache; if (sides.fam) M.famCtx = { transition: famContextDelta(S, T, A, D, 'transition'), spontaneous: famContextDelta(S, T, A, D, 'spontaneous') };
   return all;
 }
+export function scaleOdds(p, f) { if (f === 1 || !(p > 0) || !(p < 1)) return p; const o = p / (1 - p) * f; return o / (1 + o); }
 const INTERIOR_DEF = new Set(['screenMarker', 'postMarker', 'lowMarker', 'shortMarker', 'hubMarker']);
 // Calidad previa de la oportunidad con el momento colectivo/individual ya aplicado: misma aritmética que `qualityDistributionPure` + `perturbCategories` (grupo favorable = «cómoda»), sin objetos intermedios.
 function qualityFast(S, ca, cd, kctx, extraZ, Z) {
@@ -483,7 +493,8 @@ export function shotProbs(S, T, sides, k, M, cellInfo, shooter, qIdx, zoneOverri
   const K = S.opportunity.qualityShotLogit[QUALS[qIdx]] + (interior ? S.opportunity.helperQualityLogit * M.pHelp : 0) - prep + shooter.form * S.form.taskMaxLogit.shot
     - pressureLossLogit(S, 'shot', M.pressure, ea(S, shooter, 'MEN07', 0)) - mean(D.view.players.map((p) => p.form)) * S.form.taskMaxLogit.defenseDispute + (cellInfo.kind === 'play' ? covK(S, T, c, D.plan.coverage, T.plays[c.playId]) : 0);
   // 04C §6.3: `delta_sim_inside` se suma UNA vez al logit ya formado del tiro de la zona inside (antes de la logística y de la perturbación de momento); neutral 0 ⇒ operación anterior exacta.
-  const dIn = zone === 'inside' ? (S.conversion?.simInsideLogitOffset ?? 0) : 0;
+  // 04D §6.1: igual para la zona rim (`simRimLogitOffset`), UNA vez en el mismo punto; inside, media y triple no reciben este desplazamiento.
+  const dIn = zone === 'inside' ? (S.conversion?.simInsideLogitOffset ?? 0) : zone === 'rim' ? (S.conversion?.simRimLogitOffset ?? 0) : 0;
   const pBase = sigmoid(logit(sh.p0) + sh.sA * (Aatt - N) - (Dv != null ? sD * (Dv - N) : 0) + K + dIn);
   const Z = clamp(0.5 * shooter.M.TIR - 0.5 * mean(D.view.players.map((p) => p.M.DEF)), -1, 1);
   return { p: perturbBinary(pBase, Z, S.moment.probabilityAlphaByTask.shot), pBase, A: Aatt, D: Dv, K, dIn };

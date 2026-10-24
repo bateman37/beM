@@ -1,0 +1,59 @@
+{
+ "20261016": {
+  "score": [
+   87,
+   108
+  ],
+  "periodScores": [
+   [
+    15,
+    32
+   ],
+   [
+    20,
+    21
+   ],
+   [
+    20,
+    27
+   ],
+   [
+    32,
+    28
+   ]
+  ],
+  "draws": 6733,
+  "sha256": "fc7739a4072f8faa2a371f761946c8c54a1eff79a0e39a8e32dff0143218e226",
+  "trajectorySha256": "edbb0d8b564c061f70e61ff7d606d82bf7d0807876d9f83941199a738b8cdf92",
+  "note": "Referencia de SIM-MOTOR-04E (motor beM-motor-0.18.2-SIM04E, pol\u00edtica de acta ACTA-SIM04E-R1). Es una referencia NUEVA y no se recalibr\u00f3 para volver a 83\u201398: cambia la trayectoria por la correcci\u00f3n de la frontera reloj/rebote/control (el reloj de posesi\u00f3n deja de limitar el rebote tras contacto con el aro, reinicio a 14 s/24 s, siguiente posesi\u00f3n consumida una vez) y el acta por la pol\u00edtica com\u00fan de cr\u00e9dito de rebote (REBCRED-SIM04E-R1). El paso de cr\u00e9dito conserva la din\u00e1mica (tests/fixtures/sim04e-bridge-*.json).",
+  "previous": {
+   "file": "baseline-motor17b.json",
+   "score": [
+    83,
+    98
+   ],
+   "periodScores": [
+    [
+     28,
+     24
+    ],
+    [
+     12,
+     25
+    ],
+    [
+     17,
+     28
+    ],
+    [
+     26,
+     21
+    ]
+   ],
+   "draws": 6684,
+   "sha256": "61e289ab4da0be2b2329f22b6b3858b0aa21a4031725ff7180d799d70b43fb66",
+   "trajectorySha256": "ea9a1ef5ba909d00d6217ca2196df7da235479ffded519786bbf2827f8f049d4",
+   "note": "referencia hist\u00f3rica DET_04D_HIST (83\u201398, 6.684 sorteos)"
+  }
+ }
+}

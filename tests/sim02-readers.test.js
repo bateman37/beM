@@ -1,5 +1,6 @@
 // SIM-MOTOR-02: lectores sobre hechos SIM, audiencias y neutralidad entre variantes de registro/avance/guardado (§6, §12.1 «Neutralidad»).
 import test from 'node:test';
+import { readFileSync } from 'node:fs';
 import assert from 'node:assert/strict';
 import { data } from './helpers.js';
 import { makeContext, buildReferenceInput, SimMatch, buildSimResult } from '../src/sim/index.js';
@@ -40,6 +41,6 @@ test('S02-14 neutralidad: registro (hechos/resumen/esencial), avance (final, bar
   }
   const { SimPool } = await import('../src/sim/pool.js'); const { contextToJSON } = await import('../src/sim/context.js'); const { referenceTeamMap } = await import('../src/sim/teams.js'); const { runCase } = await import('../src/sim/cases.js'); const { buildAgenda } = await import('../src/sim/schedule.js'); const tm = referenceTeamMap(profile, players); const ag = buildAgenda().slice(0, 8); const direct = ag.map((c) => runCase(ctx, tm, c).fp);
   for (const workers of [1, 3]) { const pool = new SimPool({ workers }); await pool.start(contextToJSON(ctx), ctx.sp.fingerprint, tm, []); try { const r = await pool.run(ag, { chunk: 3 }); assert.deepEqual(r.results.map((x) => x.fp), direct, `${workers} trabajador(es)`); } finally { await pool.close(); } }
-  // detallado congelado: referencia 83–98 con 6.684 sorteos y huella intacta
-  const { buildMatchInput, runMatch } = await import('../src/match/index.js'); const res = runMatch(buildMatchInput(profile, players, { seed: 20261016 }), profile, { detail: 'full' }); assert.deepEqual(res.score, [83, 98]); assert.equal(res.diagnostics.sportingDraws, 6684);
+  // detallado: referencia de 04E (nueva; la histórica de 04D era 83–98 con 6.684 sorteos) reproducida
+  const { buildMatchInput, runMatch } = await import('../src/match/index.js'); const res = runMatch(buildMatchInput(profile, players, { seed: 20261016 }), profile, { detail: 'full' }); const ref = JSON.parse(readFileSync(new URL('./fixtures/baseline-sim04e.json', import.meta.url), 'utf8'))['20261016']; assert.deepEqual(res.score, ref.score); assert.equal(res.diagnostics.sportingDraws, ref.draws);
 });

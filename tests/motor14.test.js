@@ -32,7 +32,7 @@ import { terminate } from '../src/match/regs.js';
 import { reconcileAnalysis } from '../src/analysis/reconcile.js';
 
 const { profile, players } = data; const REF = 20261016;
-const baseline = JSON.parse(readFileSync(new URL('./fixtures/baseline-motor17b.json', import.meta.url), 'utf8'))[String(REF)];
+const baseline = JSON.parse(readFileSync(new URL('./fixtures/baseline-sim04e.json', import.meta.url), 'utf8'))[String(REF)];
 const root = mkdtempSync(join(tmpdir(), 'bem-m14-'));
 const SCRIPT = [
   { period: 1, label: 'guion P1', specs: [{ team: 0, type: 'styles', styles: { freedom: 5, organizedPace: 4 } }] },
@@ -55,7 +55,7 @@ const gz = (o) => JSON.parse(JSON.stringify(o));
 
 // ------------------------------------------------------------------------------------------------------------------------------ 1
 test('1 · las siete capacidades se registran sin cambiar el deporte y su contraste usa las operaciones puras', () => {
-  // neutralidad: la referencia vigente (MOTOR-15: 83–98, 6.684 sorteos; la de MOTOR-14 era 83–103, 6.505) y MISMA huella de trayectoria con registro completo y reducido
+  // neutralidad: la referencia vigente (04E: ver baseline-sim04e.json; la histórica de 04D era 83–98, 6.684 sorteos) y MISMA huella de trayectoria con registro completo y reducido
   for (const m of [FULL, REDUCED]) { assert.deepEqual(m.res.score, baseline.score); assert.equal(m.rng.count, baseline.draws); assert.equal(trajectoryFingerprint(m.res), baseline.trajectorySha256); }
   // el reducido no construye el material diagnóstico (no hay recetas ni cálculos)
   assert.ok(REDUCED.res.events.every((e) => e.calc === undefined));

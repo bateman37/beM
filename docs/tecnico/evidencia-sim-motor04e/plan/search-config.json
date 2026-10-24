@@ -1,0 +1,296 @@
+{
+ "schema": "beM-sim04e-search-config/1",
+ "frozenBeforeSearch": true,
+ "rules": {
+  "id": "SRCH-SIM04E-R1",
+  "selectionRules": "SEL-SIM04E-R1",
+  "precision": 1e-9,
+  "objective": "L_search = mean(max(r_i − 1, 0)²) + 0,05 × mean(r_i²), r_i = error_i / banda_i, sobre las 31 métricas evaluables de DEV; auxiliar de exploración: no modifica bandas, no sustituye a M y no concede aceptación",
+  "bands": {
+   "counts": 0.05,
+   "rates": 0.03,
+   "shares": 0.03
+  },
+  "coordinates": {
+   "V": {
+    "path": "volume.neutralSecondsPerControl",
+    "lo": 18,
+    "hi": 22,
+    "step": 0.5
+   },
+   "R": {
+    "path": "shotMix.rimWeightFactor",
+    "lo": 0.75,
+    "hi": 2.5,
+    "step": 0.25
+   },
+   "M": {
+    "path": "shotMix.midrangeWeightFactor",
+    "lo": 0.3,
+    "hi": 1.2,
+    "step": 0.15
+   },
+   "T": {
+    "path": "shotMix.threeWeightFactor",
+    "lo": 0.35,
+    "hi": 0.95,
+    "step": 0.1
+   },
+   "O": {
+    "path": "rebound.organizedResetP0",
+    "lo": 0.25,
+    "hi": 0.95,
+    "step": 0.15
+   },
+   "A": {
+    "path": "assist.receivedAdvantageP0",
+    "lo": 0,
+    "hi": 1,
+    "step": 0.25
+   },
+   "S": {
+    "path": "assist.spontaneousPassOddsFactor",
+    "lo": 1,
+    "hi": 2,
+    "step": 0.25
+   },
+   "L": {
+    "path": "outcomes.simOrdinaryTurnoverWeightFactor",
+    "lo": 0.6,
+    "hi": 1.2,
+    "step": 0.1
+   },
+   "E": {
+    "path": "outcomes.simStealGivenEligibleTurnoverLogit",
+    "lo": 0,
+    "hi": 1,
+    "step": 0.2
+   },
+   "F": {
+    "path": "outcomes.simShootingFoulWeightFactor",
+    "lo": 0.8,
+    "hi": 1.3,
+    "step": 0.1
+   },
+   "C": {
+    "path": "conversion.simRimLogitOffset",
+    "lo": 0,
+    "hi": 0.25,
+    "step": 0.05
+   },
+   "P3": {
+    "path": "shots.three.p0",
+    "lo": 0.32999999999999996,
+    "hi": 0.37,
+    "step": 0.01
+   },
+   "P2": {
+    "path": "shots.midrange.p0",
+    "lo": 0.37,
+    "hi": 0.41000000000000003,
+    "step": 0.01
+   },
+   "B": {
+    "path": "shots.{rim,inside,midrange,three}.blockP0 × factor",
+    "lo": 0.75,
+    "hi": 1.25,
+    "step": 0.1
+   }
+  },
+  "coordinateOrder": [
+   "V",
+   "R",
+   "M",
+   "T",
+   "O",
+   "A",
+   "S",
+   "L",
+   "E",
+   "F",
+   "C",
+   "P3",
+   "P2",
+   "B"
+  ],
+  "fixed": [
+   {
+    "path": "assist.eligibleFinalPassP0",
+    "value": 0.9
+   },
+   {
+    "path": "energy.costPerLiveMinute",
+    "value": 3
+   },
+   {
+    "path": "opportunity.simRimQualityLogit",
+    "value": 0.5
+   },
+   {
+    "path": "opportunity.simInsideQualityLogit",
+    "value": 0.5
+   },
+   {
+    "path": "conversion.simInsideLogitOffset",
+    "value": 0.3
+   }
+  ],
+  "base": {
+   "p3": 0.35,
+   "p2": 0.39,
+   "block": {
+    "rim": 0.06,
+    "inside": 0.05,
+    "midrange": 0.015,
+    "three": 0.008
+   }
+  },
+  "startVectors": {
+   "S0": {
+    "V": 19.5,
+    "R": 1.5,
+    "M": 1,
+    "T": 0.7,
+    "O": 0.35,
+    "A": 0,
+    "S": 1,
+    "L": 1,
+    "E": 0,
+    "F": 1,
+    "C": 0,
+    "P3": 0.35,
+    "P2": 0.39,
+    "B": 1
+   },
+   "S1": {
+    "V": 19.5,
+    "R": 2.5,
+    "M": 0.7,
+    "T": 0.6,
+    "O": 0.85,
+    "A": 1,
+    "S": 2,
+    "L": 0.8,
+    "E": 0.7,
+    "F": 1.1,
+    "C": 0.15,
+    "P3": 0.35,
+    "P2": 0.39,
+    "B": 1
+   },
+   "S2": "S0 con reequilibrio de zonas u_z = sqrt(d_z/s_z), referencia inside",
+   "S3": "S1 con el mismo reequilibrio"
+  },
+  "sets": {
+   "devA": "48 entradas de desarrollo de 04D (VAL04C)",
+   "devB": "24 entradas de VAL04D: (01,04),(07,10),(02,05),(08,11),(03,06),(09,12), ambas orientaciones, réplicas 1 y 2",
+   "joint": "72 entradas (DEV-A + DEV-B), mismo peso por actuación"
+  },
+  "phases": {
+   "A": "S0, S1, S2, S3 (≤ 4 perfiles distintos)",
+   "B": "dos centros (menor L_search y menor M), una pasada secuencial por catorce coordenadas, vecinos ±paso desde el centro vigente (≤ 56)",
+   "C": "cuatro movimientos conjuntos desde el punto sellado: reequilibrio · V+paso y L−paso · L−paso y E+paso · F+paso y L−paso",
+   "D": "mejor centro por L_search, otra pasada con medio paso (≤ 28)",
+   "improvement": "diferencia de L_search > 1e−9; los empates conservan el centro",
+   "neighborOrder": "coordenada de la tabla; signo negativo antes del positivo; sin duplicar neutros ni límites"
+  },
+  "budget": {
+   "devAProfiles": 92,
+   "devASims": 4416,
+   "shortListSims": 120,
+   "repairsSims": 288,
+   "totalSimsMax": 4824
+  },
+  "shortList": "hasta 4 alternativas distintas + S0, sin leer DEV-B: menor M, menor L_search, menos bandas incumplidas y mejor alternativa que cumpla guardas; completar por menor L_search",
+  "repairs": {
+   "R1": "reequilibrio de zonas (u_z sobre el desarrollo conjunto)",
+   "R2": "V × clip(FGA_SIM40/FGA_DET40; 0,95; 1,05)",
+   "R3": "L × clip(TOV_DET40/TOV_SIM40; 0,90; 1,10); F × clip(FTA_DET40/FTA_SIM40; 0,90; 1,10); E + clip(log(STL_DET40/STL_SIM40); −0,10; 0,10)",
+   "R4": "S × clip(AST_FG_DET40/AST_FG_SIM40; 0,90; 1,10); A ± 0,05 según falten o sobren AST",
+   "rule": "una sola pasada R1→R4 desde el mejor perfil de la lista por M conjunto; si mejora L_search pasa a ser el centro de la siguiente"
+  },
+  "guards": "frente a S0 sobre las mismas 72 entradas: conteo e ≤ max(0,05; e0 + 0,02) · acierto e ≤ max(0,03; e0 + 0,005) · cuota e ≤ max(0,03; e0 + 0,01) · calidad forzada de aro e inside no empeora > 0,02 · invariantes sin tolerancia (no se aplican a los vecinos intermedios)",
+  "final": "menor M entre los admisibles; empate 1e−9: menor L_search, menos filas modificadas, menor distancia normalizada a S0 por dominios, ID; sustitución solo con mejora relativa de M ≥ 5 % (y si S0 ya tiene M ≤ 1, la alternativa también); sin admisible se conserva S0 como recomendada y la mejor experimental se entrega aparte con sus guardas incumplidas; nunca se activa",
+  "valUse": "VAL04E no participa en ninguna decisión: el buscador, la lista corta, las reparaciones y la elección final solo leen DEV-A y DEV-B"
+ },
+ "agenda": {
+  "devA": [
+   "DEV-EQ01-EQ03-R1",
+   "DEV-EQ01-EQ03-R2",
+   "DEV-EQ03-EQ01-R1",
+   "DEV-EQ03-EQ01-R2",
+   "DEV-EQ03-EQ05-R1",
+   "DEV-EQ03-EQ05-R2",
+   "DEV-EQ05-EQ03-R1",
+   "DEV-EQ05-EQ03-R2",
+   "DEV-EQ05-EQ07-R1",
+   "DEV-EQ05-EQ07-R2",
+   "DEV-EQ07-EQ05-R1",
+   "DEV-EQ07-EQ05-R2",
+   "DEV-EQ07-EQ09-R1",
+   "DEV-EQ07-EQ09-R2",
+   "DEV-EQ09-EQ07-R1",
+   "DEV-EQ09-EQ07-R2",
+   "DEV-EQ09-EQ11-R1",
+   "DEV-EQ09-EQ11-R2",
+   "DEV-EQ11-EQ09-R1",
+   "DEV-EQ11-EQ09-R2",
+   "DEV-EQ11-EQ01-R1",
+   "DEV-EQ11-EQ01-R2",
+   "DEV-EQ01-EQ11-R1",
+   "DEV-EQ01-EQ11-R2",
+   "DEV-EQ02-EQ04-R1",
+   "DEV-EQ02-EQ04-R2",
+   "DEV-EQ04-EQ02-R1",
+   "DEV-EQ04-EQ02-R2",
+   "DEV-EQ04-EQ06-R1",
+   "DEV-EQ04-EQ06-R2",
+   "DEV-EQ06-EQ04-R1",
+   "DEV-EQ06-EQ04-R2",
+   "DEV-EQ06-EQ08-R1",
+   "DEV-EQ06-EQ08-R2",
+   "DEV-EQ08-EQ06-R1",
+   "DEV-EQ08-EQ06-R2",
+   "DEV-EQ08-EQ10-R1",
+   "DEV-EQ08-EQ10-R2",
+   "DEV-EQ10-EQ08-R1",
+   "DEV-EQ10-EQ08-R2",
+   "DEV-EQ10-EQ12-R1",
+   "DEV-EQ10-EQ12-R2",
+   "DEV-EQ12-EQ10-R1",
+   "DEV-EQ12-EQ10-R2",
+   "DEV-EQ12-EQ02-R1",
+   "DEV-EQ12-EQ02-R2",
+   "DEV-EQ02-EQ12-R1",
+   "DEV-EQ02-EQ12-R2"
+  ],
+  "devB": [
+   "DEVB-EQ01-EQ04-R1",
+   "DEVB-EQ01-EQ04-R2",
+   "DEVB-EQ04-EQ01-R1",
+   "DEVB-EQ04-EQ01-R2",
+   "DEVB-EQ07-EQ10-R1",
+   "DEVB-EQ07-EQ10-R2",
+   "DEVB-EQ10-EQ07-R1",
+   "DEVB-EQ10-EQ07-R2",
+   "DEVB-EQ02-EQ05-R1",
+   "DEVB-EQ02-EQ05-R2",
+   "DEVB-EQ05-EQ02-R1",
+   "DEVB-EQ05-EQ02-R2",
+   "DEVB-EQ08-EQ11-R1",
+   "DEVB-EQ08-EQ11-R2",
+   "DEVB-EQ11-EQ08-R1",
+   "DEVB-EQ11-EQ08-R2",
+   "DEVB-EQ03-EQ06-R1",
+   "DEVB-EQ03-EQ06-R2",
+   "DEVB-EQ06-EQ03-R1",
+   "DEVB-EQ06-EQ03-R2",
+   "DEVB-EQ09-EQ12-R1",
+   "DEVB-EQ09-EQ12-R2",
+   "DEVB-EQ12-EQ09-R1",
+   "DEVB-EQ12-EQ09-R2"
+  ]
+ },
+ "rulesSha256": "0c10b02a90d24ee1ec836d6c0b27cb5bb474b0085662bb2b63b601f1cf58710f",
+ "vectorIdFunction": "V-<12 hex SHA-256 de [ruta, valor] de las filas efectivas completas>"
+}

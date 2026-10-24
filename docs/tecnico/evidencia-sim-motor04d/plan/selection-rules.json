@@ -1,0 +1,2833 @@
+{
+ "schema": "beM-sim04d-selection-rules/1",
+ "frozenBeforeDEV": true,
+ "rules": {
+  "id": "SEL-SIM04D-R1",
+  "precision": 1e-9,
+  "minRelativeImprovement": 0.05,
+  "controlId": "Z0-A0",
+  "vectors": 36,
+  "simulationsMax": 1728,
+  "bands": {
+   "counts": 0.05,
+   "rates": 0.03,
+   "shares": 0.03
+  },
+  "errors": {
+   "count": "error_relativo = abs(media_SIM40 / media_DET40 − 1) sobre medias por actuación de equipo normalizadas a 40 minutos (valor × 2400 / duración deportiva del partido)",
+   "rate": "error_tiro = abs(aciertos_SIM / intentos_SIM − aciertos_DET / intentos_DET) con sumas completas de numeradores y denominadores (puntos porcentuales/100)",
+   "share": "error_cuota_zona = abs(FGA_z_SIM / FGA_SIM − FGA_z_DET / FGA_DET) (guarda funcional provisional de ±3 pp; NO es un ±3 % relativo fijado por Dennis)",
+   "eZ": "métrica histórica Σ_z abs(cuota_SIM[z] − cuota_DET[z]); se publica pero no entra en M04D",
+   "forcedQuality": "diferencia de la proporción de intentos en calidad forzada (aro e inside sin aro) frente al detallado",
+   "nullPolicy": "denominador inexistente → null con causa; DET = 0 y SIM = 0 → igualdad de ceros (sin error relativo inventado); DET = 0 y SIM ≠ 0 → diferencia absoluta y no evaluado relativo (nunca aprobado por omisión)"
+  },
+  "M04D": "M04D = max(error_relativo_conteos / 0,05 ; error_acierto / 0,03 ; error_cuota_zona / 0,03); máximo, no suma; se publican todos los componentes y el dominante",
+  "M04D_comparable": "mismo máximo sin las métricas del inventario de exclusiones (rebotes absolutos: ORB, DREB y totales) por la discrepancia demostrada de criterio de crédito; M04D completo se conserva como NO EVALUABLE y se publica aparte",
+  "exclusions": [
+   {
+    "id": "oreb",
+    "reason": "discrepancia de criterio de crédito de rebote (tapón con balón vivo y expiración tras fallo: sin crédito en el detallado, con crédito en SIM)"
+   },
+   {
+    "id": "dreb",
+    "reason": "ídem"
+   },
+   {
+    "id": "reb",
+    "reason": "ídem"
+   }
+  ],
+  "guards": "siempre frente al control Z0-A0: conteo e ≤ max(0,05; e0 + 0,02) · acierto e ≤ max(0,03; e0 + 0,005) · cuota por zona e ≤ max(0,03; e0 + 0,01) · calidad forzada de aro e inside: |diferencia| ≤ |diferencia del control| + 0,02",
+  "invariants": "créditos causales, ausencia de sujetos fantasma, identidad, aprendizaje e información pública no admiten tolerancia; un vector con algún caso fallido, no válido o sin DET comparable no es admisible",
+  "final": "1) descartar vectores con una guarda incumplida, métricas necesarias no evaluadas o invariantes rotos; 2) menor M04D_comparable entre los admisibles; proponer sustitución solo con mejora relativa ≥ 5 % frente al control; 3) empate (1e-9): menos filas modificadas respecto al control, menor distancia normalizada por rangos declarados e identificador lexicográfico; 4) sin mejora admisible se conserva el control y se entregan los mejores descartados con su causa",
+  "valUse": "VAL04D no elige ni reajusta: ninguna regla lee resultados de VAL",
+  "comparableDecisionNote": "Si ningún vector mejora de forma admisible, no hay rondas adicionales ni se combinan ganadores después de mirar VAL.",
+  "rows": [
+   {
+    "path": "shotMix.rimWeightFactor",
+    "control": 1.5,
+    "range": 1,
+    "note": "rango de búsqueda [1,5; 2,5]"
+   },
+   {
+    "path": "rebound.organizedResetP0",
+    "control": 0.35,
+    "range": 0.5,
+    "note": "[0,35; 0,85]"
+   },
+   {
+    "path": "shotMix.midrangeWeightFactor",
+    "control": 1,
+    "range": 1.75,
+    "note": "rango de edición [0,25; 2]"
+   },
+   {
+    "path": "shotMix.threeWeightFactor",
+    "control": 0.7,
+    "range": 0.1,
+    "note": "[0,60; 0,70]"
+   },
+   {
+    "path": "conversion.simRimLogitOffset",
+    "control": 0,
+    "range": 0.25,
+    "note": "[0; 0,25] logit"
+   },
+   {
+    "path": "assist.receivedAdvantageP0",
+    "control": 0,
+    "range": 1,
+    "note": "[0; 1]"
+   },
+   {
+    "path": "assist.spontaneousPassOddsFactor",
+    "control": 1,
+    "range": 1,
+    "note": "[1; 2]"
+   },
+   {
+    "path": "outcomes.simOrdinaryTurnoverWeightFactor",
+    "control": 1,
+    "range": 0.6,
+    "note": "[0,6; 1,2]"
+   },
+   {
+    "path": "outcomes.simStealGivenEligibleTurnoverLogit",
+    "control": 0,
+    "range": 1,
+    "note": "[0; 1] logit"
+   },
+   {
+    "path": "outcomes.simShootingFoulWeightFactor",
+    "control": 1,
+    "range": 0.5,
+    "note": "[0,8; 1,3]"
+   }
+  ],
+  "fixed": [
+   {
+    "path": "volume.neutralSecondsPerControl",
+    "value": 19.5
+   },
+   {
+    "path": "assist.eligibleFinalPassP0",
+    "value": 0.9
+   },
+   {
+    "path": "energy.costPerLiveMinute",
+    "value": 3
+   },
+   {
+    "path": "opportunity.simRimQualityLogit",
+    "value": 0.5
+   },
+   {
+    "path": "opportunity.simInsideQualityLogit",
+    "value": 0.5
+   },
+   {
+    "path": "conversion.simInsideLogitOffset",
+    "value": 0.3
+   }
+  ],
+  "zs": [
+   {
+    "id": "Z0",
+    "set": {
+     "shotMix.rimWeightFactor": 1.5,
+     "rebound.organizedResetP0": 0.35,
+     "shotMix.midrangeWeightFactor": 1,
+     "shotMix.threeWeightFactor": 0.7,
+     "conversion.simRimLogitOffset": 0
+    }
+   },
+   {
+    "id": "Z1",
+    "set": {
+     "shotMix.rimWeightFactor": 2,
+     "rebound.organizedResetP0": 0.65,
+     "shotMix.midrangeWeightFactor": 1,
+     "shotMix.threeWeightFactor": 0.7,
+     "conversion.simRimLogitOffset": 0
+    }
+   },
+   {
+    "id": "Z2",
+    "set": {
+     "shotMix.rimWeightFactor": 2,
+     "rebound.organizedResetP0": 0.85,
+     "shotMix.midrangeWeightFactor": 1,
+     "shotMix.threeWeightFactor": 0.7,
+     "conversion.simRimLogitOffset": 0
+    }
+   },
+   {
+    "id": "Z3",
+    "set": {
+     "shotMix.rimWeightFactor": 2,
+     "rebound.organizedResetP0": 0.65,
+     "shotMix.midrangeWeightFactor": 0.7,
+     "shotMix.threeWeightFactor": 0.7,
+     "conversion.simRimLogitOffset": 0.15
+    }
+   },
+   {
+    "id": "Z4",
+    "set": {
+     "shotMix.rimWeightFactor": 2,
+     "rebound.organizedResetP0": 0.85,
+     "shotMix.midrangeWeightFactor": 0.7,
+     "shotMix.threeWeightFactor": 0.7,
+     "conversion.simRimLogitOffset": 0.15
+    }
+   },
+   {
+    "id": "Z5",
+    "set": {
+     "shotMix.rimWeightFactor": 2,
+     "rebound.organizedResetP0": 0.65,
+     "shotMix.midrangeWeightFactor": 0.7,
+     "shotMix.threeWeightFactor": 0.6,
+     "conversion.simRimLogitOffset": 0.15
+    }
+   },
+   {
+    "id": "Z6",
+    "set": {
+     "shotMix.rimWeightFactor": 2,
+     "rebound.organizedResetP0": 0.85,
+     "shotMix.midrangeWeightFactor": 0.7,
+     "shotMix.threeWeightFactor": 0.6,
+     "conversion.simRimLogitOffset": 0.15
+    }
+   },
+   {
+    "id": "Z7",
+    "set": {
+     "shotMix.rimWeightFactor": 2.5,
+     "rebound.organizedResetP0": 0.65,
+     "shotMix.midrangeWeightFactor": 0.7,
+     "shotMix.threeWeightFactor": 0.6,
+     "conversion.simRimLogitOffset": 0.15
+    }
+   },
+   {
+    "id": "Z8",
+    "set": {
+     "shotMix.rimWeightFactor": 2.5,
+     "rebound.organizedResetP0": 0.85,
+     "shotMix.midrangeWeightFactor": 0.7,
+     "shotMix.threeWeightFactor": 0.6,
+     "conversion.simRimLogitOffset": 0.15
+    }
+   }
+  ],
+  "as": [
+   {
+    "id": "A0",
+    "set": {
+     "assist.receivedAdvantageP0": 0,
+     "assist.spontaneousPassOddsFactor": 1,
+     "outcomes.simOrdinaryTurnoverWeightFactor": 1,
+     "outcomes.simStealGivenEligibleTurnoverLogit": 0,
+     "outcomes.simShootingFoulWeightFactor": 1
+    }
+   },
+   {
+    "id": "A1",
+    "set": {
+     "assist.receivedAdvantageP0": 0.5,
+     "assist.spontaneousPassOddsFactor": 1.5,
+     "outcomes.simOrdinaryTurnoverWeightFactor": 0.85,
+     "outcomes.simStealGivenEligibleTurnoverLogit": 0.5,
+     "outcomes.simShootingFoulWeightFactor": 1.1
+    }
+   },
+   {
+    "id": "A2",
+    "set": {
+     "assist.receivedAdvantageP0": 1,
+     "assist.spontaneousPassOddsFactor": 2,
+     "outcomes.simOrdinaryTurnoverWeightFactor": 0.8,
+     "outcomes.simStealGivenEligibleTurnoverLogit": 0.7,
+     "outcomes.simShootingFoulWeightFactor": 1.1
+    }
+   },
+   {
+    "id": "A3",
+    "set": {
+     "assist.receivedAdvantageP0": 1,
+     "assist.spontaneousPassOddsFactor": 2,
+     "outcomes.simOrdinaryTurnoverWeightFactor": 0.85,
+     "outcomes.simStealGivenEligibleTurnoverLogit": 0.9,
+     "outcomes.simShootingFoulWeightFactor": 1.2
+    }
+   }
+  ]
+ },
+ "vectors": [
+  {
+   "id": "Z0-A0",
+   "z": "Z0",
+   "a": "A0",
+   "overrides": [
+    {
+     "path": "volume.neutralSecondsPerControl",
+     "value": 19.5
+    },
+    {
+     "path": "assist.eligibleFinalPassP0",
+     "value": 0.9
+    },
+    {
+     "path": "energy.costPerLiveMinute",
+     "value": 3
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "opportunity.simInsideQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "conversion.simInsideLogitOffset",
+     "value": 0.3
+    },
+    {
+     "path": "shotMix.rimWeightFactor",
+     "value": 1.5
+    },
+    {
+     "path": "rebound.organizedResetP0",
+     "value": 0.35
+    },
+    {
+     "path": "shotMix.midrangeWeightFactor",
+     "value": 1
+    },
+    {
+     "path": "shotMix.threeWeightFactor",
+     "value": 0.7
+    },
+    {
+     "path": "conversion.simRimLogitOffset",
+     "value": 0
+    },
+    {
+     "path": "assist.receivedAdvantageP0",
+     "value": 0
+    },
+    {
+     "path": "assist.spontaneousPassOddsFactor",
+     "value": 1
+    },
+    {
+     "path": "outcomes.simOrdinaryTurnoverWeightFactor",
+     "value": 1
+    },
+    {
+     "path": "outcomes.simStealGivenEligibleTurnoverLogit",
+     "value": 0
+    },
+    {
+     "path": "outcomes.simShootingFoulWeightFactor",
+     "value": 1
+    }
+   ]
+  },
+  {
+   "id": "Z0-A1",
+   "z": "Z0",
+   "a": "A1",
+   "overrides": [
+    {
+     "path": "volume.neutralSecondsPerControl",
+     "value": 19.5
+    },
+    {
+     "path": "assist.eligibleFinalPassP0",
+     "value": 0.9
+    },
+    {
+     "path": "energy.costPerLiveMinute",
+     "value": 3
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "opportunity.simInsideQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "conversion.simInsideLogitOffset",
+     "value": 0.3
+    },
+    {
+     "path": "shotMix.rimWeightFactor",
+     "value": 1.5
+    },
+    {
+     "path": "rebound.organizedResetP0",
+     "value": 0.35
+    },
+    {
+     "path": "shotMix.midrangeWeightFactor",
+     "value": 1
+    },
+    {
+     "path": "shotMix.threeWeightFactor",
+     "value": 0.7
+    },
+    {
+     "path": "conversion.simRimLogitOffset",
+     "value": 0
+    },
+    {
+     "path": "assist.receivedAdvantageP0",
+     "value": 0.5
+    },
+    {
+     "path": "assist.spontaneousPassOddsFactor",
+     "value": 1.5
+    },
+    {
+     "path": "outcomes.simOrdinaryTurnoverWeightFactor",
+     "value": 0.85
+    },
+    {
+     "path": "outcomes.simStealGivenEligibleTurnoverLogit",
+     "value": 0.5
+    },
+    {
+     "path": "outcomes.simShootingFoulWeightFactor",
+     "value": 1.1
+    }
+   ]
+  },
+  {
+   "id": "Z0-A2",
+   "z": "Z0",
+   "a": "A2",
+   "overrides": [
+    {
+     "path": "volume.neutralSecondsPerControl",
+     "value": 19.5
+    },
+    {
+     "path": "assist.eligibleFinalPassP0",
+     "value": 0.9
+    },
+    {
+     "path": "energy.costPerLiveMinute",
+     "value": 3
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "opportunity.simInsideQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "conversion.simInsideLogitOffset",
+     "value": 0.3
+    },
+    {
+     "path": "shotMix.rimWeightFactor",
+     "value": 1.5
+    },
+    {
+     "path": "rebound.organizedResetP0",
+     "value": 0.35
+    },
+    {
+     "path": "shotMix.midrangeWeightFactor",
+     "value": 1
+    },
+    {
+     "path": "shotMix.threeWeightFactor",
+     "value": 0.7
+    },
+    {
+     "path": "conversion.simRimLogitOffset",
+     "value": 0
+    },
+    {
+     "path": "assist.receivedAdvantageP0",
+     "value": 1
+    },
+    {
+     "path": "assist.spontaneousPassOddsFactor",
+     "value": 2
+    },
+    {
+     "path": "outcomes.simOrdinaryTurnoverWeightFactor",
+     "value": 0.8
+    },
+    {
+     "path": "outcomes.simStealGivenEligibleTurnoverLogit",
+     "value": 0.7
+    },
+    {
+     "path": "outcomes.simShootingFoulWeightFactor",
+     "value": 1.1
+    }
+   ]
+  },
+  {
+   "id": "Z0-A3",
+   "z": "Z0",
+   "a": "A3",
+   "overrides": [
+    {
+     "path": "volume.neutralSecondsPerControl",
+     "value": 19.5
+    },
+    {
+     "path": "assist.eligibleFinalPassP0",
+     "value": 0.9
+    },
+    {
+     "path": "energy.costPerLiveMinute",
+     "value": 3
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "opportunity.simInsideQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "conversion.simInsideLogitOffset",
+     "value": 0.3
+    },
+    {
+     "path": "shotMix.rimWeightFactor",
+     "value": 1.5
+    },
+    {
+     "path": "rebound.organizedResetP0",
+     "value": 0.35
+    },
+    {
+     "path": "shotMix.midrangeWeightFactor",
+     "value": 1
+    },
+    {
+     "path": "shotMix.threeWeightFactor",
+     "value": 0.7
+    },
+    {
+     "path": "conversion.simRimLogitOffset",
+     "value": 0
+    },
+    {
+     "path": "assist.receivedAdvantageP0",
+     "value": 1
+    },
+    {
+     "path": "assist.spontaneousPassOddsFactor",
+     "value": 2
+    },
+    {
+     "path": "outcomes.simOrdinaryTurnoverWeightFactor",
+     "value": 0.85
+    },
+    {
+     "path": "outcomes.simStealGivenEligibleTurnoverLogit",
+     "value": 0.9
+    },
+    {
+     "path": "outcomes.simShootingFoulWeightFactor",
+     "value": 1.2
+    }
+   ]
+  },
+  {
+   "id": "Z1-A0",
+   "z": "Z1",
+   "a": "A0",
+   "overrides": [
+    {
+     "path": "volume.neutralSecondsPerControl",
+     "value": 19.5
+    },
+    {
+     "path": "assist.eligibleFinalPassP0",
+     "value": 0.9
+    },
+    {
+     "path": "energy.costPerLiveMinute",
+     "value": 3
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "opportunity.simInsideQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "conversion.simInsideLogitOffset",
+     "value": 0.3
+    },
+    {
+     "path": "shotMix.rimWeightFactor",
+     "value": 2
+    },
+    {
+     "path": "rebound.organizedResetP0",
+     "value": 0.65
+    },
+    {
+     "path": "shotMix.midrangeWeightFactor",
+     "value": 1
+    },
+    {
+     "path": "shotMix.threeWeightFactor",
+     "value": 0.7
+    },
+    {
+     "path": "conversion.simRimLogitOffset",
+     "value": 0
+    },
+    {
+     "path": "assist.receivedAdvantageP0",
+     "value": 0
+    },
+    {
+     "path": "assist.spontaneousPassOddsFactor",
+     "value": 1
+    },
+    {
+     "path": "outcomes.simOrdinaryTurnoverWeightFactor",
+     "value": 1
+    },
+    {
+     "path": "outcomes.simStealGivenEligibleTurnoverLogit",
+     "value": 0
+    },
+    {
+     "path": "outcomes.simShootingFoulWeightFactor",
+     "value": 1
+    }
+   ]
+  },
+  {
+   "id": "Z1-A1",
+   "z": "Z1",
+   "a": "A1",
+   "overrides": [
+    {
+     "path": "volume.neutralSecondsPerControl",
+     "value": 19.5
+    },
+    {
+     "path": "assist.eligibleFinalPassP0",
+     "value": 0.9
+    },
+    {
+     "path": "energy.costPerLiveMinute",
+     "value": 3
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "opportunity.simInsideQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "conversion.simInsideLogitOffset",
+     "value": 0.3
+    },
+    {
+     "path": "shotMix.rimWeightFactor",
+     "value": 2
+    },
+    {
+     "path": "rebound.organizedResetP0",
+     "value": 0.65
+    },
+    {
+     "path": "shotMix.midrangeWeightFactor",
+     "value": 1
+    },
+    {
+     "path": "shotMix.threeWeightFactor",
+     "value": 0.7
+    },
+    {
+     "path": "conversion.simRimLogitOffset",
+     "value": 0
+    },
+    {
+     "path": "assist.receivedAdvantageP0",
+     "value": 0.5
+    },
+    {
+     "path": "assist.spontaneousPassOddsFactor",
+     "value": 1.5
+    },
+    {
+     "path": "outcomes.simOrdinaryTurnoverWeightFactor",
+     "value": 0.85
+    },
+    {
+     "path": "outcomes.simStealGivenEligibleTurnoverLogit",
+     "value": 0.5
+    },
+    {
+     "path": "outcomes.simShootingFoulWeightFactor",
+     "value": 1.1
+    }
+   ]
+  },
+  {
+   "id": "Z1-A2",
+   "z": "Z1",
+   "a": "A2",
+   "overrides": [
+    {
+     "path": "volume.neutralSecondsPerControl",
+     "value": 19.5
+    },
+    {
+     "path": "assist.eligibleFinalPassP0",
+     "value": 0.9
+    },
+    {
+     "path": "energy.costPerLiveMinute",
+     "value": 3
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "opportunity.simInsideQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "conversion.simInsideLogitOffset",
+     "value": 0.3
+    },
+    {
+     "path": "shotMix.rimWeightFactor",
+     "value": 2
+    },
+    {
+     "path": "rebound.organizedResetP0",
+     "value": 0.65
+    },
+    {
+     "path": "shotMix.midrangeWeightFactor",
+     "value": 1
+    },
+    {
+     "path": "shotMix.threeWeightFactor",
+     "value": 0.7
+    },
+    {
+     "path": "conversion.simRimLogitOffset",
+     "value": 0
+    },
+    {
+     "path": "assist.receivedAdvantageP0",
+     "value": 1
+    },
+    {
+     "path": "assist.spontaneousPassOddsFactor",
+     "value": 2
+    },
+    {
+     "path": "outcomes.simOrdinaryTurnoverWeightFactor",
+     "value": 0.8
+    },
+    {
+     "path": "outcomes.simStealGivenEligibleTurnoverLogit",
+     "value": 0.7
+    },
+    {
+     "path": "outcomes.simShootingFoulWeightFactor",
+     "value": 1.1
+    }
+   ]
+  },
+  {
+   "id": "Z1-A3",
+   "z": "Z1",
+   "a": "A3",
+   "overrides": [
+    {
+     "path": "volume.neutralSecondsPerControl",
+     "value": 19.5
+    },
+    {
+     "path": "assist.eligibleFinalPassP0",
+     "value": 0.9
+    },
+    {
+     "path": "energy.costPerLiveMinute",
+     "value": 3
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "opportunity.simInsideQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "conversion.simInsideLogitOffset",
+     "value": 0.3
+    },
+    {
+     "path": "shotMix.rimWeightFactor",
+     "value": 2
+    },
+    {
+     "path": "rebound.organizedResetP0",
+     "value": 0.65
+    },
+    {
+     "path": "shotMix.midrangeWeightFactor",
+     "value": 1
+    },
+    {
+     "path": "shotMix.threeWeightFactor",
+     "value": 0.7
+    },
+    {
+     "path": "conversion.simRimLogitOffset",
+     "value": 0
+    },
+    {
+     "path": "assist.receivedAdvantageP0",
+     "value": 1
+    },
+    {
+     "path": "assist.spontaneousPassOddsFactor",
+     "value": 2
+    },
+    {
+     "path": "outcomes.simOrdinaryTurnoverWeightFactor",
+     "value": 0.85
+    },
+    {
+     "path": "outcomes.simStealGivenEligibleTurnoverLogit",
+     "value": 0.9
+    },
+    {
+     "path": "outcomes.simShootingFoulWeightFactor",
+     "value": 1.2
+    }
+   ]
+  },
+  {
+   "id": "Z2-A0",
+   "z": "Z2",
+   "a": "A0",
+   "overrides": [
+    {
+     "path": "volume.neutralSecondsPerControl",
+     "value": 19.5
+    },
+    {
+     "path": "assist.eligibleFinalPassP0",
+     "value": 0.9
+    },
+    {
+     "path": "energy.costPerLiveMinute",
+     "value": 3
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "opportunity.simInsideQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "conversion.simInsideLogitOffset",
+     "value": 0.3
+    },
+    {
+     "path": "shotMix.rimWeightFactor",
+     "value": 2
+    },
+    {
+     "path": "rebound.organizedResetP0",
+     "value": 0.85
+    },
+    {
+     "path": "shotMix.midrangeWeightFactor",
+     "value": 1
+    },
+    {
+     "path": "shotMix.threeWeightFactor",
+     "value": 0.7
+    },
+    {
+     "path": "conversion.simRimLogitOffset",
+     "value": 0
+    },
+    {
+     "path": "assist.receivedAdvantageP0",
+     "value": 0
+    },
+    {
+     "path": "assist.spontaneousPassOddsFactor",
+     "value": 1
+    },
+    {
+     "path": "outcomes.simOrdinaryTurnoverWeightFactor",
+     "value": 1
+    },
+    {
+     "path": "outcomes.simStealGivenEligibleTurnoverLogit",
+     "value": 0
+    },
+    {
+     "path": "outcomes.simShootingFoulWeightFactor",
+     "value": 1
+    }
+   ]
+  },
+  {
+   "id": "Z2-A1",
+   "z": "Z2",
+   "a": "A1",
+   "overrides": [
+    {
+     "path": "volume.neutralSecondsPerControl",
+     "value": 19.5
+    },
+    {
+     "path": "assist.eligibleFinalPassP0",
+     "value": 0.9
+    },
+    {
+     "path": "energy.costPerLiveMinute",
+     "value": 3
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "opportunity.simInsideQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "conversion.simInsideLogitOffset",
+     "value": 0.3
+    },
+    {
+     "path": "shotMix.rimWeightFactor",
+     "value": 2
+    },
+    {
+     "path": "rebound.organizedResetP0",
+     "value": 0.85
+    },
+    {
+     "path": "shotMix.midrangeWeightFactor",
+     "value": 1
+    },
+    {
+     "path": "shotMix.threeWeightFactor",
+     "value": 0.7
+    },
+    {
+     "path": "conversion.simRimLogitOffset",
+     "value": 0
+    },
+    {
+     "path": "assist.receivedAdvantageP0",
+     "value": 0.5
+    },
+    {
+     "path": "assist.spontaneousPassOddsFactor",
+     "value": 1.5
+    },
+    {
+     "path": "outcomes.simOrdinaryTurnoverWeightFactor",
+     "value": 0.85
+    },
+    {
+     "path": "outcomes.simStealGivenEligibleTurnoverLogit",
+     "value": 0.5
+    },
+    {
+     "path": "outcomes.simShootingFoulWeightFactor",
+     "value": 1.1
+    }
+   ]
+  },
+  {
+   "id": "Z2-A2",
+   "z": "Z2",
+   "a": "A2",
+   "overrides": [
+    {
+     "path": "volume.neutralSecondsPerControl",
+     "value": 19.5
+    },
+    {
+     "path": "assist.eligibleFinalPassP0",
+     "value": 0.9
+    },
+    {
+     "path": "energy.costPerLiveMinute",
+     "value": 3
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "opportunity.simInsideQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "conversion.simInsideLogitOffset",
+     "value": 0.3
+    },
+    {
+     "path": "shotMix.rimWeightFactor",
+     "value": 2
+    },
+    {
+     "path": "rebound.organizedResetP0",
+     "value": 0.85
+    },
+    {
+     "path": "shotMix.midrangeWeightFactor",
+     "value": 1
+    },
+    {
+     "path": "shotMix.threeWeightFactor",
+     "value": 0.7
+    },
+    {
+     "path": "conversion.simRimLogitOffset",
+     "value": 0
+    },
+    {
+     "path": "assist.receivedAdvantageP0",
+     "value": 1
+    },
+    {
+     "path": "assist.spontaneousPassOddsFactor",
+     "value": 2
+    },
+    {
+     "path": "outcomes.simOrdinaryTurnoverWeightFactor",
+     "value": 0.8
+    },
+    {
+     "path": "outcomes.simStealGivenEligibleTurnoverLogit",
+     "value": 0.7
+    },
+    {
+     "path": "outcomes.simShootingFoulWeightFactor",
+     "value": 1.1
+    }
+   ]
+  },
+  {
+   "id": "Z2-A3",
+   "z": "Z2",
+   "a": "A3",
+   "overrides": [
+    {
+     "path": "volume.neutralSecondsPerControl",
+     "value": 19.5
+    },
+    {
+     "path": "assist.eligibleFinalPassP0",
+     "value": 0.9
+    },
+    {
+     "path": "energy.costPerLiveMinute",
+     "value": 3
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "opportunity.simInsideQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "conversion.simInsideLogitOffset",
+     "value": 0.3
+    },
+    {
+     "path": "shotMix.rimWeightFactor",
+     "value": 2
+    },
+    {
+     "path": "rebound.organizedResetP0",
+     "value": 0.85
+    },
+    {
+     "path": "shotMix.midrangeWeightFactor",
+     "value": 1
+    },
+    {
+     "path": "shotMix.threeWeightFactor",
+     "value": 0.7
+    },
+    {
+     "path": "conversion.simRimLogitOffset",
+     "value": 0
+    },
+    {
+     "path": "assist.receivedAdvantageP0",
+     "value": 1
+    },
+    {
+     "path": "assist.spontaneousPassOddsFactor",
+     "value": 2
+    },
+    {
+     "path": "outcomes.simOrdinaryTurnoverWeightFactor",
+     "value": 0.85
+    },
+    {
+     "path": "outcomes.simStealGivenEligibleTurnoverLogit",
+     "value": 0.9
+    },
+    {
+     "path": "outcomes.simShootingFoulWeightFactor",
+     "value": 1.2
+    }
+   ]
+  },
+  {
+   "id": "Z3-A0",
+   "z": "Z3",
+   "a": "A0",
+   "overrides": [
+    {
+     "path": "volume.neutralSecondsPerControl",
+     "value": 19.5
+    },
+    {
+     "path": "assist.eligibleFinalPassP0",
+     "value": 0.9
+    },
+    {
+     "path": "energy.costPerLiveMinute",
+     "value": 3
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "opportunity.simInsideQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "conversion.simInsideLogitOffset",
+     "value": 0.3
+    },
+    {
+     "path": "shotMix.rimWeightFactor",
+     "value": 2
+    },
+    {
+     "path": "rebound.organizedResetP0",
+     "value": 0.65
+    },
+    {
+     "path": "shotMix.midrangeWeightFactor",
+     "value": 0.7
+    },
+    {
+     "path": "shotMix.threeWeightFactor",
+     "value": 0.7
+    },
+    {
+     "path": "conversion.simRimLogitOffset",
+     "value": 0.15
+    },
+    {
+     "path": "assist.receivedAdvantageP0",
+     "value": 0
+    },
+    {
+     "path": "assist.spontaneousPassOddsFactor",
+     "value": 1
+    },
+    {
+     "path": "outcomes.simOrdinaryTurnoverWeightFactor",
+     "value": 1
+    },
+    {
+     "path": "outcomes.simStealGivenEligibleTurnoverLogit",
+     "value": 0
+    },
+    {
+     "path": "outcomes.simShootingFoulWeightFactor",
+     "value": 1
+    }
+   ]
+  },
+  {
+   "id": "Z3-A1",
+   "z": "Z3",
+   "a": "A1",
+   "overrides": [
+    {
+     "path": "volume.neutralSecondsPerControl",
+     "value": 19.5
+    },
+    {
+     "path": "assist.eligibleFinalPassP0",
+     "value": 0.9
+    },
+    {
+     "path": "energy.costPerLiveMinute",
+     "value": 3
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "opportunity.simInsideQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "conversion.simInsideLogitOffset",
+     "value": 0.3
+    },
+    {
+     "path": "shotMix.rimWeightFactor",
+     "value": 2
+    },
+    {
+     "path": "rebound.organizedResetP0",
+     "value": 0.65
+    },
+    {
+     "path": "shotMix.midrangeWeightFactor",
+     "value": 0.7
+    },
+    {
+     "path": "shotMix.threeWeightFactor",
+     "value": 0.7
+    },
+    {
+     "path": "conversion.simRimLogitOffset",
+     "value": 0.15
+    },
+    {
+     "path": "assist.receivedAdvantageP0",
+     "value": 0.5
+    },
+    {
+     "path": "assist.spontaneousPassOddsFactor",
+     "value": 1.5
+    },
+    {
+     "path": "outcomes.simOrdinaryTurnoverWeightFactor",
+     "value": 0.85
+    },
+    {
+     "path": "outcomes.simStealGivenEligibleTurnoverLogit",
+     "value": 0.5
+    },
+    {
+     "path": "outcomes.simShootingFoulWeightFactor",
+     "value": 1.1
+    }
+   ]
+  },
+  {
+   "id": "Z3-A2",
+   "z": "Z3",
+   "a": "A2",
+   "overrides": [
+    {
+     "path": "volume.neutralSecondsPerControl",
+     "value": 19.5
+    },
+    {
+     "path": "assist.eligibleFinalPassP0",
+     "value": 0.9
+    },
+    {
+     "path": "energy.costPerLiveMinute",
+     "value": 3
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "opportunity.simInsideQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "conversion.simInsideLogitOffset",
+     "value": 0.3
+    },
+    {
+     "path": "shotMix.rimWeightFactor",
+     "value": 2
+    },
+    {
+     "path": "rebound.organizedResetP0",
+     "value": 0.65
+    },
+    {
+     "path": "shotMix.midrangeWeightFactor",
+     "value": 0.7
+    },
+    {
+     "path": "shotMix.threeWeightFactor",
+     "value": 0.7
+    },
+    {
+     "path": "conversion.simRimLogitOffset",
+     "value": 0.15
+    },
+    {
+     "path": "assist.receivedAdvantageP0",
+     "value": 1
+    },
+    {
+     "path": "assist.spontaneousPassOddsFactor",
+     "value": 2
+    },
+    {
+     "path": "outcomes.simOrdinaryTurnoverWeightFactor",
+     "value": 0.8
+    },
+    {
+     "path": "outcomes.simStealGivenEligibleTurnoverLogit",
+     "value": 0.7
+    },
+    {
+     "path": "outcomes.simShootingFoulWeightFactor",
+     "value": 1.1
+    }
+   ]
+  },
+  {
+   "id": "Z3-A3",
+   "z": "Z3",
+   "a": "A3",
+   "overrides": [
+    {
+     "path": "volume.neutralSecondsPerControl",
+     "value": 19.5
+    },
+    {
+     "path": "assist.eligibleFinalPassP0",
+     "value": 0.9
+    },
+    {
+     "path": "energy.costPerLiveMinute",
+     "value": 3
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "opportunity.simInsideQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "conversion.simInsideLogitOffset",
+     "value": 0.3
+    },
+    {
+     "path": "shotMix.rimWeightFactor",
+     "value": 2
+    },
+    {
+     "path": "rebound.organizedResetP0",
+     "value": 0.65
+    },
+    {
+     "path": "shotMix.midrangeWeightFactor",
+     "value": 0.7
+    },
+    {
+     "path": "shotMix.threeWeightFactor",
+     "value": 0.7
+    },
+    {
+     "path": "conversion.simRimLogitOffset",
+     "value": 0.15
+    },
+    {
+     "path": "assist.receivedAdvantageP0",
+     "value": 1
+    },
+    {
+     "path": "assist.spontaneousPassOddsFactor",
+     "value": 2
+    },
+    {
+     "path": "outcomes.simOrdinaryTurnoverWeightFactor",
+     "value": 0.85
+    },
+    {
+     "path": "outcomes.simStealGivenEligibleTurnoverLogit",
+     "value": 0.9
+    },
+    {
+     "path": "outcomes.simShootingFoulWeightFactor",
+     "value": 1.2
+    }
+   ]
+  },
+  {
+   "id": "Z4-A0",
+   "z": "Z4",
+   "a": "A0",
+   "overrides": [
+    {
+     "path": "volume.neutralSecondsPerControl",
+     "value": 19.5
+    },
+    {
+     "path": "assist.eligibleFinalPassP0",
+     "value": 0.9
+    },
+    {
+     "path": "energy.costPerLiveMinute",
+     "value": 3
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "opportunity.simInsideQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "conversion.simInsideLogitOffset",
+     "value": 0.3
+    },
+    {
+     "path": "shotMix.rimWeightFactor",
+     "value": 2
+    },
+    {
+     "path": "rebound.organizedResetP0",
+     "value": 0.85
+    },
+    {
+     "path": "shotMix.midrangeWeightFactor",
+     "value": 0.7
+    },
+    {
+     "path": "shotMix.threeWeightFactor",
+     "value": 0.7
+    },
+    {
+     "path": "conversion.simRimLogitOffset",
+     "value": 0.15
+    },
+    {
+     "path": "assist.receivedAdvantageP0",
+     "value": 0
+    },
+    {
+     "path": "assist.spontaneousPassOddsFactor",
+     "value": 1
+    },
+    {
+     "path": "outcomes.simOrdinaryTurnoverWeightFactor",
+     "value": 1
+    },
+    {
+     "path": "outcomes.simStealGivenEligibleTurnoverLogit",
+     "value": 0
+    },
+    {
+     "path": "outcomes.simShootingFoulWeightFactor",
+     "value": 1
+    }
+   ]
+  },
+  {
+   "id": "Z4-A1",
+   "z": "Z4",
+   "a": "A1",
+   "overrides": [
+    {
+     "path": "volume.neutralSecondsPerControl",
+     "value": 19.5
+    },
+    {
+     "path": "assist.eligibleFinalPassP0",
+     "value": 0.9
+    },
+    {
+     "path": "energy.costPerLiveMinute",
+     "value": 3
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "opportunity.simInsideQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "conversion.simInsideLogitOffset",
+     "value": 0.3
+    },
+    {
+     "path": "shotMix.rimWeightFactor",
+     "value": 2
+    },
+    {
+     "path": "rebound.organizedResetP0",
+     "value": 0.85
+    },
+    {
+     "path": "shotMix.midrangeWeightFactor",
+     "value": 0.7
+    },
+    {
+     "path": "shotMix.threeWeightFactor",
+     "value": 0.7
+    },
+    {
+     "path": "conversion.simRimLogitOffset",
+     "value": 0.15
+    },
+    {
+     "path": "assist.receivedAdvantageP0",
+     "value": 0.5
+    },
+    {
+     "path": "assist.spontaneousPassOddsFactor",
+     "value": 1.5
+    },
+    {
+     "path": "outcomes.simOrdinaryTurnoverWeightFactor",
+     "value": 0.85
+    },
+    {
+     "path": "outcomes.simStealGivenEligibleTurnoverLogit",
+     "value": 0.5
+    },
+    {
+     "path": "outcomes.simShootingFoulWeightFactor",
+     "value": 1.1
+    }
+   ]
+  },
+  {
+   "id": "Z4-A2",
+   "z": "Z4",
+   "a": "A2",
+   "overrides": [
+    {
+     "path": "volume.neutralSecondsPerControl",
+     "value": 19.5
+    },
+    {
+     "path": "assist.eligibleFinalPassP0",
+     "value": 0.9
+    },
+    {
+     "path": "energy.costPerLiveMinute",
+     "value": 3
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "opportunity.simInsideQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "conversion.simInsideLogitOffset",
+     "value": 0.3
+    },
+    {
+     "path": "shotMix.rimWeightFactor",
+     "value": 2
+    },
+    {
+     "path": "rebound.organizedResetP0",
+     "value": 0.85
+    },
+    {
+     "path": "shotMix.midrangeWeightFactor",
+     "value": 0.7
+    },
+    {
+     "path": "shotMix.threeWeightFactor",
+     "value": 0.7
+    },
+    {
+     "path": "conversion.simRimLogitOffset",
+     "value": 0.15
+    },
+    {
+     "path": "assist.receivedAdvantageP0",
+     "value": 1
+    },
+    {
+     "path": "assist.spontaneousPassOddsFactor",
+     "value": 2
+    },
+    {
+     "path": "outcomes.simOrdinaryTurnoverWeightFactor",
+     "value": 0.8
+    },
+    {
+     "path": "outcomes.simStealGivenEligibleTurnoverLogit",
+     "value": 0.7
+    },
+    {
+     "path": "outcomes.simShootingFoulWeightFactor",
+     "value": 1.1
+    }
+   ]
+  },
+  {
+   "id": "Z4-A3",
+   "z": "Z4",
+   "a": "A3",
+   "overrides": [
+    {
+     "path": "volume.neutralSecondsPerControl",
+     "value": 19.5
+    },
+    {
+     "path": "assist.eligibleFinalPassP0",
+     "value": 0.9
+    },
+    {
+     "path": "energy.costPerLiveMinute",
+     "value": 3
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "opportunity.simInsideQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "conversion.simInsideLogitOffset",
+     "value": 0.3
+    },
+    {
+     "path": "shotMix.rimWeightFactor",
+     "value": 2
+    },
+    {
+     "path": "rebound.organizedResetP0",
+     "value": 0.85
+    },
+    {
+     "path": "shotMix.midrangeWeightFactor",
+     "value": 0.7
+    },
+    {
+     "path": "shotMix.threeWeightFactor",
+     "value": 0.7
+    },
+    {
+     "path": "conversion.simRimLogitOffset",
+     "value": 0.15
+    },
+    {
+     "path": "assist.receivedAdvantageP0",
+     "value": 1
+    },
+    {
+     "path": "assist.spontaneousPassOddsFactor",
+     "value": 2
+    },
+    {
+     "path": "outcomes.simOrdinaryTurnoverWeightFactor",
+     "value": 0.85
+    },
+    {
+     "path": "outcomes.simStealGivenEligibleTurnoverLogit",
+     "value": 0.9
+    },
+    {
+     "path": "outcomes.simShootingFoulWeightFactor",
+     "value": 1.2
+    }
+   ]
+  },
+  {
+   "id": "Z5-A0",
+   "z": "Z5",
+   "a": "A0",
+   "overrides": [
+    {
+     "path": "volume.neutralSecondsPerControl",
+     "value": 19.5
+    },
+    {
+     "path": "assist.eligibleFinalPassP0",
+     "value": 0.9
+    },
+    {
+     "path": "energy.costPerLiveMinute",
+     "value": 3
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "opportunity.simInsideQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "conversion.simInsideLogitOffset",
+     "value": 0.3
+    },
+    {
+     "path": "shotMix.rimWeightFactor",
+     "value": 2
+    },
+    {
+     "path": "rebound.organizedResetP0",
+     "value": 0.65
+    },
+    {
+     "path": "shotMix.midrangeWeightFactor",
+     "value": 0.7
+    },
+    {
+     "path": "shotMix.threeWeightFactor",
+     "value": 0.6
+    },
+    {
+     "path": "conversion.simRimLogitOffset",
+     "value": 0.15
+    },
+    {
+     "path": "assist.receivedAdvantageP0",
+     "value": 0
+    },
+    {
+     "path": "assist.spontaneousPassOddsFactor",
+     "value": 1
+    },
+    {
+     "path": "outcomes.simOrdinaryTurnoverWeightFactor",
+     "value": 1
+    },
+    {
+     "path": "outcomes.simStealGivenEligibleTurnoverLogit",
+     "value": 0
+    },
+    {
+     "path": "outcomes.simShootingFoulWeightFactor",
+     "value": 1
+    }
+   ]
+  },
+  {
+   "id": "Z5-A1",
+   "z": "Z5",
+   "a": "A1",
+   "overrides": [
+    {
+     "path": "volume.neutralSecondsPerControl",
+     "value": 19.5
+    },
+    {
+     "path": "assist.eligibleFinalPassP0",
+     "value": 0.9
+    },
+    {
+     "path": "energy.costPerLiveMinute",
+     "value": 3
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "opportunity.simInsideQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "conversion.simInsideLogitOffset",
+     "value": 0.3
+    },
+    {
+     "path": "shotMix.rimWeightFactor",
+     "value": 2
+    },
+    {
+     "path": "rebound.organizedResetP0",
+     "value": 0.65
+    },
+    {
+     "path": "shotMix.midrangeWeightFactor",
+     "value": 0.7
+    },
+    {
+     "path": "shotMix.threeWeightFactor",
+     "value": 0.6
+    },
+    {
+     "path": "conversion.simRimLogitOffset",
+     "value": 0.15
+    },
+    {
+     "path": "assist.receivedAdvantageP0",
+     "value": 0.5
+    },
+    {
+     "path": "assist.spontaneousPassOddsFactor",
+     "value": 1.5
+    },
+    {
+     "path": "outcomes.simOrdinaryTurnoverWeightFactor",
+     "value": 0.85
+    },
+    {
+     "path": "outcomes.simStealGivenEligibleTurnoverLogit",
+     "value": 0.5
+    },
+    {
+     "path": "outcomes.simShootingFoulWeightFactor",
+     "value": 1.1
+    }
+   ]
+  },
+  {
+   "id": "Z5-A2",
+   "z": "Z5",
+   "a": "A2",
+   "overrides": [
+    {
+     "path": "volume.neutralSecondsPerControl",
+     "value": 19.5
+    },
+    {
+     "path": "assist.eligibleFinalPassP0",
+     "value": 0.9
+    },
+    {
+     "path": "energy.costPerLiveMinute",
+     "value": 3
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "opportunity.simInsideQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "conversion.simInsideLogitOffset",
+     "value": 0.3
+    },
+    {
+     "path": "shotMix.rimWeightFactor",
+     "value": 2
+    },
+    {
+     "path": "rebound.organizedResetP0",
+     "value": 0.65
+    },
+    {
+     "path": "shotMix.midrangeWeightFactor",
+     "value": 0.7
+    },
+    {
+     "path": "shotMix.threeWeightFactor",
+     "value": 0.6
+    },
+    {
+     "path": "conversion.simRimLogitOffset",
+     "value": 0.15
+    },
+    {
+     "path": "assist.receivedAdvantageP0",
+     "value": 1
+    },
+    {
+     "path": "assist.spontaneousPassOddsFactor",
+     "value": 2
+    },
+    {
+     "path": "outcomes.simOrdinaryTurnoverWeightFactor",
+     "value": 0.8
+    },
+    {
+     "path": "outcomes.simStealGivenEligibleTurnoverLogit",
+     "value": 0.7
+    },
+    {
+     "path": "outcomes.simShootingFoulWeightFactor",
+     "value": 1.1
+    }
+   ]
+  },
+  {
+   "id": "Z5-A3",
+   "z": "Z5",
+   "a": "A3",
+   "overrides": [
+    {
+     "path": "volume.neutralSecondsPerControl",
+     "value": 19.5
+    },
+    {
+     "path": "assist.eligibleFinalPassP0",
+     "value": 0.9
+    },
+    {
+     "path": "energy.costPerLiveMinute",
+     "value": 3
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "opportunity.simInsideQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "conversion.simInsideLogitOffset",
+     "value": 0.3
+    },
+    {
+     "path": "shotMix.rimWeightFactor",
+     "value": 2
+    },
+    {
+     "path": "rebound.organizedResetP0",
+     "value": 0.65
+    },
+    {
+     "path": "shotMix.midrangeWeightFactor",
+     "value": 0.7
+    },
+    {
+     "path": "shotMix.threeWeightFactor",
+     "value": 0.6
+    },
+    {
+     "path": "conversion.simRimLogitOffset",
+     "value": 0.15
+    },
+    {
+     "path": "assist.receivedAdvantageP0",
+     "value": 1
+    },
+    {
+     "path": "assist.spontaneousPassOddsFactor",
+     "value": 2
+    },
+    {
+     "path": "outcomes.simOrdinaryTurnoverWeightFactor",
+     "value": 0.85
+    },
+    {
+     "path": "outcomes.simStealGivenEligibleTurnoverLogit",
+     "value": 0.9
+    },
+    {
+     "path": "outcomes.simShootingFoulWeightFactor",
+     "value": 1.2
+    }
+   ]
+  },
+  {
+   "id": "Z6-A0",
+   "z": "Z6",
+   "a": "A0",
+   "overrides": [
+    {
+     "path": "volume.neutralSecondsPerControl",
+     "value": 19.5
+    },
+    {
+     "path": "assist.eligibleFinalPassP0",
+     "value": 0.9
+    },
+    {
+     "path": "energy.costPerLiveMinute",
+     "value": 3
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "opportunity.simInsideQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "conversion.simInsideLogitOffset",
+     "value": 0.3
+    },
+    {
+     "path": "shotMix.rimWeightFactor",
+     "value": 2
+    },
+    {
+     "path": "rebound.organizedResetP0",
+     "value": 0.85
+    },
+    {
+     "path": "shotMix.midrangeWeightFactor",
+     "value": 0.7
+    },
+    {
+     "path": "shotMix.threeWeightFactor",
+     "value": 0.6
+    },
+    {
+     "path": "conversion.simRimLogitOffset",
+     "value": 0.15
+    },
+    {
+     "path": "assist.receivedAdvantageP0",
+     "value": 0
+    },
+    {
+     "path": "assist.spontaneousPassOddsFactor",
+     "value": 1
+    },
+    {
+     "path": "outcomes.simOrdinaryTurnoverWeightFactor",
+     "value": 1
+    },
+    {
+     "path": "outcomes.simStealGivenEligibleTurnoverLogit",
+     "value": 0
+    },
+    {
+     "path": "outcomes.simShootingFoulWeightFactor",
+     "value": 1
+    }
+   ]
+  },
+  {
+   "id": "Z6-A1",
+   "z": "Z6",
+   "a": "A1",
+   "overrides": [
+    {
+     "path": "volume.neutralSecondsPerControl",
+     "value": 19.5
+    },
+    {
+     "path": "assist.eligibleFinalPassP0",
+     "value": 0.9
+    },
+    {
+     "path": "energy.costPerLiveMinute",
+     "value": 3
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "opportunity.simInsideQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "conversion.simInsideLogitOffset",
+     "value": 0.3
+    },
+    {
+     "path": "shotMix.rimWeightFactor",
+     "value": 2
+    },
+    {
+     "path": "rebound.organizedResetP0",
+     "value": 0.85
+    },
+    {
+     "path": "shotMix.midrangeWeightFactor",
+     "value": 0.7
+    },
+    {
+     "path": "shotMix.threeWeightFactor",
+     "value": 0.6
+    },
+    {
+     "path": "conversion.simRimLogitOffset",
+     "value": 0.15
+    },
+    {
+     "path": "assist.receivedAdvantageP0",
+     "value": 0.5
+    },
+    {
+     "path": "assist.spontaneousPassOddsFactor",
+     "value": 1.5
+    },
+    {
+     "path": "outcomes.simOrdinaryTurnoverWeightFactor",
+     "value": 0.85
+    },
+    {
+     "path": "outcomes.simStealGivenEligibleTurnoverLogit",
+     "value": 0.5
+    },
+    {
+     "path": "outcomes.simShootingFoulWeightFactor",
+     "value": 1.1
+    }
+   ]
+  },
+  {
+   "id": "Z6-A2",
+   "z": "Z6",
+   "a": "A2",
+   "overrides": [
+    {
+     "path": "volume.neutralSecondsPerControl",
+     "value": 19.5
+    },
+    {
+     "path": "assist.eligibleFinalPassP0",
+     "value": 0.9
+    },
+    {
+     "path": "energy.costPerLiveMinute",
+     "value": 3
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "opportunity.simInsideQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "conversion.simInsideLogitOffset",
+     "value": 0.3
+    },
+    {
+     "path": "shotMix.rimWeightFactor",
+     "value": 2
+    },
+    {
+     "path": "rebound.organizedResetP0",
+     "value": 0.85
+    },
+    {
+     "path": "shotMix.midrangeWeightFactor",
+     "value": 0.7
+    },
+    {
+     "path": "shotMix.threeWeightFactor",
+     "value": 0.6
+    },
+    {
+     "path": "conversion.simRimLogitOffset",
+     "value": 0.15
+    },
+    {
+     "path": "assist.receivedAdvantageP0",
+     "value": 1
+    },
+    {
+     "path": "assist.spontaneousPassOddsFactor",
+     "value": 2
+    },
+    {
+     "path": "outcomes.simOrdinaryTurnoverWeightFactor",
+     "value": 0.8
+    },
+    {
+     "path": "outcomes.simStealGivenEligibleTurnoverLogit",
+     "value": 0.7
+    },
+    {
+     "path": "outcomes.simShootingFoulWeightFactor",
+     "value": 1.1
+    }
+   ]
+  },
+  {
+   "id": "Z6-A3",
+   "z": "Z6",
+   "a": "A3",
+   "overrides": [
+    {
+     "path": "volume.neutralSecondsPerControl",
+     "value": 19.5
+    },
+    {
+     "path": "assist.eligibleFinalPassP0",
+     "value": 0.9
+    },
+    {
+     "path": "energy.costPerLiveMinute",
+     "value": 3
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "opportunity.simInsideQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "conversion.simInsideLogitOffset",
+     "value": 0.3
+    },
+    {
+     "path": "shotMix.rimWeightFactor",
+     "value": 2
+    },
+    {
+     "path": "rebound.organizedResetP0",
+     "value": 0.85
+    },
+    {
+     "path": "shotMix.midrangeWeightFactor",
+     "value": 0.7
+    },
+    {
+     "path": "shotMix.threeWeightFactor",
+     "value": 0.6
+    },
+    {
+     "path": "conversion.simRimLogitOffset",
+     "value": 0.15
+    },
+    {
+     "path": "assist.receivedAdvantageP0",
+     "value": 1
+    },
+    {
+     "path": "assist.spontaneousPassOddsFactor",
+     "value": 2
+    },
+    {
+     "path": "outcomes.simOrdinaryTurnoverWeightFactor",
+     "value": 0.85
+    },
+    {
+     "path": "outcomes.simStealGivenEligibleTurnoverLogit",
+     "value": 0.9
+    },
+    {
+     "path": "outcomes.simShootingFoulWeightFactor",
+     "value": 1.2
+    }
+   ]
+  },
+  {
+   "id": "Z7-A0",
+   "z": "Z7",
+   "a": "A0",
+   "overrides": [
+    {
+     "path": "volume.neutralSecondsPerControl",
+     "value": 19.5
+    },
+    {
+     "path": "assist.eligibleFinalPassP0",
+     "value": 0.9
+    },
+    {
+     "path": "energy.costPerLiveMinute",
+     "value": 3
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "opportunity.simInsideQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "conversion.simInsideLogitOffset",
+     "value": 0.3
+    },
+    {
+     "path": "shotMix.rimWeightFactor",
+     "value": 2.5
+    },
+    {
+     "path": "rebound.organizedResetP0",
+     "value": 0.65
+    },
+    {
+     "path": "shotMix.midrangeWeightFactor",
+     "value": 0.7
+    },
+    {
+     "path": "shotMix.threeWeightFactor",
+     "value": 0.6
+    },
+    {
+     "path": "conversion.simRimLogitOffset",
+     "value": 0.15
+    },
+    {
+     "path": "assist.receivedAdvantageP0",
+     "value": 0
+    },
+    {
+     "path": "assist.spontaneousPassOddsFactor",
+     "value": 1
+    },
+    {
+     "path": "outcomes.simOrdinaryTurnoverWeightFactor",
+     "value": 1
+    },
+    {
+     "path": "outcomes.simStealGivenEligibleTurnoverLogit",
+     "value": 0
+    },
+    {
+     "path": "outcomes.simShootingFoulWeightFactor",
+     "value": 1
+    }
+   ]
+  },
+  {
+   "id": "Z7-A1",
+   "z": "Z7",
+   "a": "A1",
+   "overrides": [
+    {
+     "path": "volume.neutralSecondsPerControl",
+     "value": 19.5
+    },
+    {
+     "path": "assist.eligibleFinalPassP0",
+     "value": 0.9
+    },
+    {
+     "path": "energy.costPerLiveMinute",
+     "value": 3
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "opportunity.simInsideQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "conversion.simInsideLogitOffset",
+     "value": 0.3
+    },
+    {
+     "path": "shotMix.rimWeightFactor",
+     "value": 2.5
+    },
+    {
+     "path": "rebound.organizedResetP0",
+     "value": 0.65
+    },
+    {
+     "path": "shotMix.midrangeWeightFactor",
+     "value": 0.7
+    },
+    {
+     "path": "shotMix.threeWeightFactor",
+     "value": 0.6
+    },
+    {
+     "path": "conversion.simRimLogitOffset",
+     "value": 0.15
+    },
+    {
+     "path": "assist.receivedAdvantageP0",
+     "value": 0.5
+    },
+    {
+     "path": "assist.spontaneousPassOddsFactor",
+     "value": 1.5
+    },
+    {
+     "path": "outcomes.simOrdinaryTurnoverWeightFactor",
+     "value": 0.85
+    },
+    {
+     "path": "outcomes.simStealGivenEligibleTurnoverLogit",
+     "value": 0.5
+    },
+    {
+     "path": "outcomes.simShootingFoulWeightFactor",
+     "value": 1.1
+    }
+   ]
+  },
+  {
+   "id": "Z7-A2",
+   "z": "Z7",
+   "a": "A2",
+   "overrides": [
+    {
+     "path": "volume.neutralSecondsPerControl",
+     "value": 19.5
+    },
+    {
+     "path": "assist.eligibleFinalPassP0",
+     "value": 0.9
+    },
+    {
+     "path": "energy.costPerLiveMinute",
+     "value": 3
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "opportunity.simInsideQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "conversion.simInsideLogitOffset",
+     "value": 0.3
+    },
+    {
+     "path": "shotMix.rimWeightFactor",
+     "value": 2.5
+    },
+    {
+     "path": "rebound.organizedResetP0",
+     "value": 0.65
+    },
+    {
+     "path": "shotMix.midrangeWeightFactor",
+     "value": 0.7
+    },
+    {
+     "path": "shotMix.threeWeightFactor",
+     "value": 0.6
+    },
+    {
+     "path": "conversion.simRimLogitOffset",
+     "value": 0.15
+    },
+    {
+     "path": "assist.receivedAdvantageP0",
+     "value": 1
+    },
+    {
+     "path": "assist.spontaneousPassOddsFactor",
+     "value": 2
+    },
+    {
+     "path": "outcomes.simOrdinaryTurnoverWeightFactor",
+     "value": 0.8
+    },
+    {
+     "path": "outcomes.simStealGivenEligibleTurnoverLogit",
+     "value": 0.7
+    },
+    {
+     "path": "outcomes.simShootingFoulWeightFactor",
+     "value": 1.1
+    }
+   ]
+  },
+  {
+   "id": "Z7-A3",
+   "z": "Z7",
+   "a": "A3",
+   "overrides": [
+    {
+     "path": "volume.neutralSecondsPerControl",
+     "value": 19.5
+    },
+    {
+     "path": "assist.eligibleFinalPassP0",
+     "value": 0.9
+    },
+    {
+     "path": "energy.costPerLiveMinute",
+     "value": 3
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "opportunity.simInsideQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "conversion.simInsideLogitOffset",
+     "value": 0.3
+    },
+    {
+     "path": "shotMix.rimWeightFactor",
+     "value": 2.5
+    },
+    {
+     "path": "rebound.organizedResetP0",
+     "value": 0.65
+    },
+    {
+     "path": "shotMix.midrangeWeightFactor",
+     "value": 0.7
+    },
+    {
+     "path": "shotMix.threeWeightFactor",
+     "value": 0.6
+    },
+    {
+     "path": "conversion.simRimLogitOffset",
+     "value": 0.15
+    },
+    {
+     "path": "assist.receivedAdvantageP0",
+     "value": 1
+    },
+    {
+     "path": "assist.spontaneousPassOddsFactor",
+     "value": 2
+    },
+    {
+     "path": "outcomes.simOrdinaryTurnoverWeightFactor",
+     "value": 0.85
+    },
+    {
+     "path": "outcomes.simStealGivenEligibleTurnoverLogit",
+     "value": 0.9
+    },
+    {
+     "path": "outcomes.simShootingFoulWeightFactor",
+     "value": 1.2
+    }
+   ]
+  },
+  {
+   "id": "Z8-A0",
+   "z": "Z8",
+   "a": "A0",
+   "overrides": [
+    {
+     "path": "volume.neutralSecondsPerControl",
+     "value": 19.5
+    },
+    {
+     "path": "assist.eligibleFinalPassP0",
+     "value": 0.9
+    },
+    {
+     "path": "energy.costPerLiveMinute",
+     "value": 3
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "opportunity.simInsideQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "conversion.simInsideLogitOffset",
+     "value": 0.3
+    },
+    {
+     "path": "shotMix.rimWeightFactor",
+     "value": 2.5
+    },
+    {
+     "path": "rebound.organizedResetP0",
+     "value": 0.85
+    },
+    {
+     "path": "shotMix.midrangeWeightFactor",
+     "value": 0.7
+    },
+    {
+     "path": "shotMix.threeWeightFactor",
+     "value": 0.6
+    },
+    {
+     "path": "conversion.simRimLogitOffset",
+     "value": 0.15
+    },
+    {
+     "path": "assist.receivedAdvantageP0",
+     "value": 0
+    },
+    {
+     "path": "assist.spontaneousPassOddsFactor",
+     "value": 1
+    },
+    {
+     "path": "outcomes.simOrdinaryTurnoverWeightFactor",
+     "value": 1
+    },
+    {
+     "path": "outcomes.simStealGivenEligibleTurnoverLogit",
+     "value": 0
+    },
+    {
+     "path": "outcomes.simShootingFoulWeightFactor",
+     "value": 1
+    }
+   ]
+  },
+  {
+   "id": "Z8-A1",
+   "z": "Z8",
+   "a": "A1",
+   "overrides": [
+    {
+     "path": "volume.neutralSecondsPerControl",
+     "value": 19.5
+    },
+    {
+     "path": "assist.eligibleFinalPassP0",
+     "value": 0.9
+    },
+    {
+     "path": "energy.costPerLiveMinute",
+     "value": 3
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "opportunity.simInsideQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "conversion.simInsideLogitOffset",
+     "value": 0.3
+    },
+    {
+     "path": "shotMix.rimWeightFactor",
+     "value": 2.5
+    },
+    {
+     "path": "rebound.organizedResetP0",
+     "value": 0.85
+    },
+    {
+     "path": "shotMix.midrangeWeightFactor",
+     "value": 0.7
+    },
+    {
+     "path": "shotMix.threeWeightFactor",
+     "value": 0.6
+    },
+    {
+     "path": "conversion.simRimLogitOffset",
+     "value": 0.15
+    },
+    {
+     "path": "assist.receivedAdvantageP0",
+     "value": 0.5
+    },
+    {
+     "path": "assist.spontaneousPassOddsFactor",
+     "value": 1.5
+    },
+    {
+     "path": "outcomes.simOrdinaryTurnoverWeightFactor",
+     "value": 0.85
+    },
+    {
+     "path": "outcomes.simStealGivenEligibleTurnoverLogit",
+     "value": 0.5
+    },
+    {
+     "path": "outcomes.simShootingFoulWeightFactor",
+     "value": 1.1
+    }
+   ]
+  },
+  {
+   "id": "Z8-A2",
+   "z": "Z8",
+   "a": "A2",
+   "overrides": [
+    {
+     "path": "volume.neutralSecondsPerControl",
+     "value": 19.5
+    },
+    {
+     "path": "assist.eligibleFinalPassP0",
+     "value": 0.9
+    },
+    {
+     "path": "energy.costPerLiveMinute",
+     "value": 3
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "opportunity.simInsideQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "conversion.simInsideLogitOffset",
+     "value": 0.3
+    },
+    {
+     "path": "shotMix.rimWeightFactor",
+     "value": 2.5
+    },
+    {
+     "path": "rebound.organizedResetP0",
+     "value": 0.85
+    },
+    {
+     "path": "shotMix.midrangeWeightFactor",
+     "value": 0.7
+    },
+    {
+     "path": "shotMix.threeWeightFactor",
+     "value": 0.6
+    },
+    {
+     "path": "conversion.simRimLogitOffset",
+     "value": 0.15
+    },
+    {
+     "path": "assist.receivedAdvantageP0",
+     "value": 1
+    },
+    {
+     "path": "assist.spontaneousPassOddsFactor",
+     "value": 2
+    },
+    {
+     "path": "outcomes.simOrdinaryTurnoverWeightFactor",
+     "value": 0.8
+    },
+    {
+     "path": "outcomes.simStealGivenEligibleTurnoverLogit",
+     "value": 0.7
+    },
+    {
+     "path": "outcomes.simShootingFoulWeightFactor",
+     "value": 1.1
+    }
+   ]
+  },
+  {
+   "id": "Z8-A3",
+   "z": "Z8",
+   "a": "A3",
+   "overrides": [
+    {
+     "path": "volume.neutralSecondsPerControl",
+     "value": 19.5
+    },
+    {
+     "path": "assist.eligibleFinalPassP0",
+     "value": 0.9
+    },
+    {
+     "path": "energy.costPerLiveMinute",
+     "value": 3
+    },
+    {
+     "path": "opportunity.simRimQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "opportunity.simInsideQualityLogit",
+     "value": 0.5
+    },
+    {
+     "path": "conversion.simInsideLogitOffset",
+     "value": 0.3
+    },
+    {
+     "path": "shotMix.rimWeightFactor",
+     "value": 2.5
+    },
+    {
+     "path": "rebound.organizedResetP0",
+     "value": 0.85
+    },
+    {
+     "path": "shotMix.midrangeWeightFactor",
+     "value": 0.7
+    },
+    {
+     "path": "shotMix.threeWeightFactor",
+     "value": 0.6
+    },
+    {
+     "path": "conversion.simRimLogitOffset",
+     "value": 0.15
+    },
+    {
+     "path": "assist.receivedAdvantageP0",
+     "value": 1
+    },
+    {
+     "path": "assist.spontaneousPassOddsFactor",
+     "value": 2
+    },
+    {
+     "path": "outcomes.simOrdinaryTurnoverWeightFactor",
+     "value": 0.85
+    },
+    {
+     "path": "outcomes.simStealGivenEligibleTurnoverLogit",
+     "value": 0.9
+    },
+    {
+     "path": "outcomes.simShootingFoulWeightFactor",
+     "value": 1.2
+    }
+   ]
+  }
+ ],
+ "identities": {
+  "DET": "detallado congelado (referencia 20261016, 83–98 y 6.684 sorteos), mismas entradas; reutilizado de 04C",
+  "C0_04C": "código y perfil de 04C: candidata C04C-FINAL-PROVISIONAL (registros auténticos de 04C reutilizados sobre DEV)",
+  "Z0-A0": "D0_04D: código de 04D con los seis mecanismos nuevos neutrales y el vector de 04C (control de la selección)",
+  "Zi-Aj": "vectores completos de la búsqueda conjunta"
+ },
+ "selectionRulesSha256": "e5fa2d6c052a9747acf14fdcdef31de91e65d5491ddbd4b153f576c0d75555a4"
+}

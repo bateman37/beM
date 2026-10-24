@@ -15,7 +15,7 @@ test('funciones reglamentarias puras: libres por falta de tiro, penalización, p
   assert.equal(foulPeriodKey(5, rules), 4); assert.equal(foulPeriodKey(2, rules), 2);
   assert.equal(clockStopsAfterGoal(4, 1200, rules), true); assert.equal(clockStopsAfterGoal(4, 1201, rules), false);
   assert.equal(clockStopsAfterGoal(2, 100, rules), false); assert.equal(clockStopsAfterGoal(5, 600, rules), true);
-  assert.equal(shotClockAfterRingContact(80, rules), 140); assert.equal(shotClockAfterRingContact(200, rules), 200);
+  assert.equal(shotClockAfterRingContact(rules, true), 140, 'rebote ofensivo tras contacto con el aro: 14 s con independencia del reloj previo'); assert.equal(shotClockAfterRingContact(rules, false), 240, 'control rival tras contacto con el aro: 24 s');
 });
 
 test('serie de libres ligada a una falta de tiro: quinta falta, exclusión y sustitución legal antes del primer libre', () => {

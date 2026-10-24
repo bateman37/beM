@@ -2,6 +2,22 @@
 
 Registro breve de entregas. Una entrada por entrega; las más recientes primero.
 
+## SIM-MOTOR-04E — Corrección de reloj y rebotes, referencia coherente y ajuste final acotado de SIM — 2026-10-24
+
+- **Detallado (excepción a su congelación)**: el rebote tras contacto con el aro ya no queda limitado por el reloj de posesión previo (reinicio a 14 s/24 s); sin contacto rige el reloj de posesión; la instrucción de siguiente posesión se consume una vez. Falsas expiraciones «de periodo» (E0070/E0071): 514 en 176 detallados → 0. Referencia 20261016: 83–98 (6.684) → 87–108 (6.733), sin recalibrar. Motor `0.18.2-SIM04E`, acta `ACTA-SIM04E-R1`.
+- **Crédito de rebote común** `REBCRED-SIM04E-R1` (detallado y SIM): individual tras tapón con balón vivo, colectivo tras tapón fuera, ausencias con causa; paso observacional con dinámica idéntica a 04D (8 entradas). SIM `0.3.4-SIMMOTOR04E`; los guardados de 04D se rechazan con explicación.
+- **Ajuste SIM** (`SRCH-SIM04E-R1`, reglas con hash congeladas antes; 14 coordenadas, 84 perfiles en DEV-A, lista corta, reparaciones R1–R4; 4.368 SIM): **ninguna alternativa admisible**; recomendada = S0 (alias), `C04E-EXPERIMENTAL` aparte. VAL04E nueva (96 entradas): M 4,38 base (17/31 fuera) y 5,40 experimental (12/31); la mejora de DEV-A no generaliza (tapones).
+- **Campaña**: 72 DET + 87 perfiles SIM (DEV), 96 DET + 192 SIM (VAL04E), CONTRAST 8 DET + 16 SIM, TECH 12 SIM; 0 fallos. Suite completa 369/369; Chromium 12 pasos (consola 0, red 0); ensayo de coste de 200 (la escala de 1.000 queda pendiente).
+- Pendiente de Dennis: [recorrido manual](docs/prompts/SIM-MOTOR-04E-recorrido-manual.md). Ver [`docs/tecnico/sim-motor04e.md`](docs/tecnico/sim-motor04e.md).
+
+## SIM-MOTOR-04D — Aproximación del acta al detallado: ±5 % en estadísticas y ±3 pp en acierto — 2026-10-24
+
+- **Lectura**: la continuación inmediata tras rebote ofensivo es la familia `putback` y no una ficha POS (DEV: 166 → 451 FGA, 285 desplazados; sin cambio deportivo); asistencia acreditada en el auxiliar; instrumentos de oportunidades y créditos de rebote, universos de AST y denominador elegible del robo. Rebote: diferencia de criterio documentada (tapón con balón vivo y expiración sin crédito en el detallado), sin corrección deportiva; ORB/DREB/total fuera de `M04D_comparable`.
+- **Mecanismos** (seis filas `SEM04D` neutrales, no activas por defecto): `shotMix.midrangeWeightFactor`, `conversion.simRimLogitOffset`, `outcomes.simOrdinaryTurnoverWeightFactor`, `outcomes.simStealGivenEligibleTurnoverLogit`, `outcomes.simShootingFoulWeightFactor`, `assist.spontaneousPassOddsFactor`; `assist.receivedAdvantageP0` reabierta en [0, 1]. Con las filas neutrales la trayectoria es idéntica a la de 04C (48/48 DEV). SIM `0.3.3-SIMMOTOR04D`; los guardados de 04C se rechazan con explicación.
+- **Búsqueda** (reglas y 36 vectores congelados antes; DEV conocido): ningún vector admisible, se conserva el control (`C04D-FINAL-PROVISIONAL` = Z0-A0). `M04D_comparable` 4,79 (DEV) y 4,59 (VAL04D nueva, 96 encuentros): **siguen incumplidas** las bandas de la mayoría de métricas.
+- **Campaña**: DEV 1.728 SIM (48 DET y 48 SIM de 04C reutilizados), VAL04D 96 DET + 96 SIM, CONTRAST 16 SIM (8 DET reutilizados), TECH 12 SIM; 0 fallos. Detallado intacto (83–98, 6.684 sorteos). Suite completa 358/360 (dos expectativas de identidad del perfil corregidas; reejecución parcial 45/45, no una segunda suite completa); Chromium 16 pasos, consola 0, red 0. Rendimiento (2.000 clubes, 3.000 ejecuciones): ningún objetivo cumplido.
+- Pendiente de Dennis: [recorrido manual](docs/prompts/SIM-MOTOR-04D-recorrido-manual.md). Ver [`docs/tecnico/sim-motor04d.md`](docs/tecnico/sim-motor04d.md).
+
 ## SIM-MOTOR-04C — Convergencia estadística con el detallado: rebote ofensivo, oportunidad interior y asistencias — 2026-10-24
 
 - **Lectura**: canastas con pasador ≠ asistencias acreditadas (el detallado se lee del acta; CAL DET 1.017 acreditadas); versión visible `SIM-MOTOR-04C`; benchmark sin turnos de espera de otro control. SIM `0.3.2-SIMMOTOR04C`; los guardados de 04B se rechazan con explicación.

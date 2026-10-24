@@ -4,6 +4,7 @@
 import { SIM_MODEL, SIM_RESULT_SCHEMA, SIM_VERSION, SIM_COVERAGE_ID, SIM_STATS_POLICY_ID } from './version.js';
 import { fpString } from './fp.js';
 import { reconcileResult } from './reconcile.js';
+import { attributedPlay } from './attribution.js';
 import { moduleExposure, pressExposure, assistTables, reboundFunnel } from './exposure.js';
 import { buildAnalysis } from './analysis.js';
 
@@ -19,7 +20,7 @@ export function sportDigest(m) {
   const ids = new Map(); const ix = (id) => { if (id == null) return 0; let v = ids.get(id); if (v === undefined) { v = ids.size + 1; ids.set(id, v); } return v; };
   const str = (s) => { if (s == null) return 0; let x = 0; for (let i = 0; i < s.length; i++) x = Math.imul(x ^ s.charCodeAt(i), 16777619); return x; };
   put(m.norm.seed); put(m.score[0]); put(m.score[1]);
-  for (const e of m.events) { if (e.t > m.published + 1e-9) break; put(TYPES[e.ty] ?? 0); put(e.tm ?? -1); put(ix(e.pl)); put(str(e.zone)); put(e.q ?? -1); put(e.made === true ? 1 : e.made === false ? 0 : -1); put(ix(e.blk)); put(ix(e.passer)); put(ix(e.stl)); put(str(e.kind)); put(str(e.cause)); put(e.off === true ? 1 : 0); put(e.k ?? 0); put(ix(e.drawn)); put(ix(e.victim)); put(Math.round(e.t * 10)); put(e.p); put(str(e.src)); put(str(e.play)); put(e.and1 ? 1 : 0); put(e.bonus ? 1 : 0); put(e.fin ?? 0); put(e.pfN ?? 0); put(ix(e.dir)); put(ix(e.scr)); put(e.scrSrc ?? -1); put(e.elig ?? -1); put(str(e.cont)); }
+  for (const e of m.events) { if (e.t > m.published + 1e-9) break; if (e.coll === true) continue; /* SIM-MOTOR-04E: el crédito colectivo de rebote tras tapón fuera es un campo observacional añadido: no forma parte de la huella deportiva (no hay hecho deportivo nuevo) */ put(TYPES[e.ty] ?? 0); put(e.tm ?? -1); put(ix(e.pl)); put(str(e.zone)); put(e.q ?? -1); put(e.made === true ? 1 : e.made === false ? 0 : -1); put(ix(e.blk)); put(ix(e.passer)); put(ix(e.stl)); put(str(e.kind)); put(str(e.cause)); put(e.off === true ? 1 : 0); put(e.k ?? 0); put(ix(e.drawn)); put(ix(e.victim)); put(Math.round(e.t * 10)); put(e.p); put(str(e.src)); put(str(e.play)); put(e.and1 ? 1 : 0); put(e.bonus ? 1 : 0); put(e.fin ?? 0); put(e.pfN ?? 0); put(ix(e.dir)); put(ix(e.scr)); put(e.scrSrc ?? -1); put(e.elig ?? -1); put(str(e.cont)); }
   // C04-04: la presión adelantada del tramo (altura, ajuste de familiaridad y controles alcanzados) forma parte de la huella deportiva
   for (const sg of m.segments ?? []) { if (sg.start > m.published + 1e-9) break; if (sg.press) for (const k of [0, 1]) { const p = sg.press[k]; if (p) { put(k); put(str(p.height)); put(Math.round(p.delta * 1e6)); put(ix(p.director)); } } }
   h1 = Math.imul(h1 ^ (h2 >>> 16), 0x85ebca6b); h2 = Math.imul(h2 ^ (h1 >>> 13), 0xc2b2ae35);
@@ -63,11 +64,11 @@ export function buildSimResult(m, opts = {}) {
     if (e.ty === 'shot') {
       const r = byId[e.pl]; const z = r.zones[e.zone]; z.a += 1; z.q[e.q] += 1; z.byPeriod[e.p] = z.byPeriod[e.p] ?? [0, 0]; z.byPeriod[e.p][0] += 1;
       const three = e.zone === 'three'; if (three) r.fg3a++; else r.fg2a++; qk.fga++; if (three) qk.fg3a++;
-      const f = famRow(e.tm, e.src, e.play); f.fga++; f.q[e.q]++; if (e.moved) f.moved++; noteFin(e.tm, e, f); fdn[e.tm].fga++;
+      const f = famRow(e.tm, e.src, attributedPlay(e)); f.fga++; f.q[e.q]++; if (e.moved) f.moved++; noteFin(e.tm, e, f); fdn[e.tm].fga++;
       if (e.made) { z.m += 1; z.byPeriod[e.p][1] += 1; if (three) { r.fg3m++; qk.fg3m++; } else r.fg2m++; qk.fgm++; r.pts += e.pts; r.fgPts += e.pts; f.fgm++; f.fgPts += e.pts; f.pts += e.pts; fdn[e.tm].fgm++; fdn[e.tm].fgPts += e.pts; addPts(e.tm, e.pts, seg, e.p); if (e.and1) { f.and1++; fdn[e.tm].and1++; } if (e.passer) { byId[e.passer].astC++; f.ast++; qk.ast++; } }
       else if (e.blk) { byId[e.blk].blk++; r.blkAgainst++; quint(1 - e.tm, seg).blk++; }
     } else if (e.ty === 'ft') {
-      const r = byId[e.pl]; r.fta++; qk.fta++; const f = famRow(e.tm, e.src ?? 'bonus_sin_familia', e.play ?? null); f.fta++; fdn[e.tm].fta++; noteFin(e.tm, e, f); if (e.cause === 'bonus') fdn[e.tm].bonusFta++;
+      const r = byId[e.pl]; r.fta++; qk.fta++; const f = famRow(e.tm, e.src ?? 'bonus_sin_familia', attributedPlay(e)); f.fta++; fdn[e.tm].fta++; noteFin(e.tm, e, f); if (e.cause === 'bonus') fdn[e.tm].bonusFta++;
       if (e.made) { r.ftm++; qk.ftm++; r.pts += 1; r.ftPts += 1; f.ftm++; f.ftPts += 1; f.pts += 1; fdn[e.tm].ftm++; fdn[e.tm].ftPts++; if (e.cause === 'bonus') fdn[e.tm].bonusFtm++; addPts(e.tm, 1, seg, e.p); }
       if (e.assist) { byId[e.assist].astL++; }
     } else if (e.ty === 'tov') {
@@ -78,7 +79,7 @@ export function buildSimResult(m, opts = {}) {
       qk[e.off ? 'oreb' : 'dreb']++;
     } else if (e.ty === 'foul') { byId[e.pl].pf++; if (e.drawn) byId[e.drawn].pfd++; }
     else if (e.ty === 'shootfoul') { byId[e.pl].pf++; byId[e.victim].pfd++; }
-    if (e.ty === 'shootfoul') { const f = famRow(1 - e.tm, e.src, e.play); f.sf++; fdn[1 - e.tm].sf++; noteFin(1 - e.tm, e, f); }
+    if (e.ty === 'shootfoul') { const f = famRow(1 - e.tm, e.src, attributedPlay(e)); f.sf++; fdn[1 - e.tm].sf++; noteFin(1 - e.tm, e, f); }
     if (seg && !lean) perSeg.set(e.sg, [sc[0], sc[1]]);
   }
   // evolución compacta: marcador al final de cada tramo (o del prefijo) con sus quintetos

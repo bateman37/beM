@@ -1,0 +1,21 @@
+{
+ "mode": "verify",
+ "ok": true,
+ "codeCommitFrozen": "74f3fdbff4c7d2c44e42a93dc0874ce98a54c2ff",
+ "headNow": "b39aee2949c5b3d39adcf548408cffa0701749ef",
+ "files": {
+  "changed": [],
+  "added": [],
+  "removed": []
+ },
+ "plan": {
+  "changed": [],
+  "added": [],
+  "removed": []
+ },
+ "detailed": {
+  "changed": [],
+  "added": [],
+  "removed": []
+ }
+}

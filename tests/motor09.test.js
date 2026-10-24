@@ -62,7 +62,7 @@ test('2. faltas y contadores: personal, bonus, prórroga, categorías 2026, excl
   // descalificación acumulada por categoría (flagrantes y técnicas de categoría 1), distinta de los cinco personales
   assert.equal(m.disqualifies('EQ02-J04'), false);
   m.sanctions('EQ02-J04').flagrant = 1; m.sanctions('EQ02-J04').technicalCat1 = 1; assert.equal(m.disqualifies('EQ02-J04'), true);
-  assert.equal(shotClockAfterRingContact(80, R), 140); assert.equal(shotClockAfterRingContact(200, R), 200);
+  assert.equal(shotClockAfterRingContact(R, true), 140); assert.equal(shotClockAfterRingContact(R, false), 240);
   // falta en tiro del motor: libres coherentes con la matriz o error identificable
   assert.throws(() => freshMatch(7).foulAdmin('EQ02-J04', 'EQ01-J03', { shooting: true, ftCount: 2, shotTeam: 0, shotMade: false, shotPoints: 3 }), /incoherentes con la matriz/); // 2 libres por un triple fallado: la incoherencia no se acepta en silencio
   assert.throws(() => freshMatch(7).foulAdmin('EQ02-J04', 'EQ01-J03', { shooting: true, ftCount: 3, shotTeam: 0, shotMade: false }), /sin valor del intento/);

@@ -1,6 +1,7 @@
 // Generador estadístico por tramos (SIM-MOTOR-01). Unidad de resolución: un tramo con quintetos estables. Sobre un presupuesto conjunto de controles se generan flujos agregados
 // (multinomiales de categorías terminales, reparto de celdas de finalización, cadenas de rebote ofensivo) y después se materializan sus registros con participantes e instantes.
 // No usa el resolutor detallado ni simula posesiones, pases o desplazamientos. Sin DOM, reloj de pared ni estado global: cada encuentro posee su flujo de azar y su estado.
+import { classifyReboundCredit } from '../match/rebound-credit.js';
 import { Rng } from './rng.js';
 import { ATTR_ORDER } from './profile.js';
 import { SIM_MODEL, SIM_RESULT_SCHEMA, SIM_VERSION } from './version.js';
@@ -290,7 +291,13 @@ export class SimMatch {
     if (made) return;
     // oportunidad de rebote o causa terminal explícita
     // Tapón fuera: el último toque es del defensor, de modo que el control NO pasa al rival; la misma continuidad se reanuda de forma compacta (sin saque táctico ni rebote inventado).
-    if (base.blk != null && rng.bernoulli(S.block.outOfBoundsGivenBlock)) { shot.ev.end = 'block_out_of_bounds'; this._continue(rec, k, depth, 'block_out_of_bounds', false); return; }
+    if (base.blk != null && rng.bernoulli(S.block.outOfBoundsGivenBlock)) {
+      shot.ev.end = 'block_out_of_bounds';
+      // SIM-MOTOR-04E (E02): derecho de saque del ataque antes de control individual = rebote colectivo ofensivo (política común `REBCRED-SIM04E-R1`); sujeto de equipo, sin jugador inventado, sin sorteo ni rama nueva
+      const cr = classifyReboundCredit({ shooterTeam: k, miss: 'blocked', ball: 'outOfBounds', control: { team: k, player: null } });
+      rec.chain.push({ reb: { ty: 'reb', tm: cr.team, off: cr.off, pl: null, cause: 'block_out_of_bounds', rbb: null, coll: true }, parent: shot });
+      this._continue(rec, k, depth, 'block_out_of_bounds', false); return;
+    }
     this._rebound(rec, k, shooter, zone, shot, base.blk != null ? 'block' : 'field', depth);
   }
   // Reanuda la misma continuidad ofensiva (rebote ofensivo, tapón fuera): un nuevo registro terminal del mismo equipo dentro del MISMO control.

@@ -1,0 +1,5352 @@
+{
+ "schema": "beM-sim04e-m04d/1",
+ "rules": "SEL-SIM04E-R1",
+ "rulesSha256": "0c10b02a90d24ee1ec836d6c0b27cb5bb474b0085662bb2b63b601f1cf58710f",
+ "note": "M > 1 implica que alguna banda sigue incumplida; con la política común de crédito de rebote (REBCRED-SIM04E-R1) ORB, DREB y rebotes totales vuelven a ser comparables y no hay exclusiones (M completo = M comparable)",
+ "byBlockAndCondition": {
+  "DEV|SIM_04E_BASE": {
+   "M04E": {
+    "M": 6.087260034904016,
+    "partialM": 6.087260034904016,
+    "dominant": "tov",
+    "comps": [
+     {
+      "id": "pts",
+      "kind": "count",
+      "error": 0.05338379844085417,
+      "band": 0.05,
+      "ratio": 1.0676759688170834
+     },
+     {
+      "id": "fgm",
+      "kind": "count",
+      "error": 0.06865638603999125,
+      "band": 0.05,
+      "ratio": 1.373127720799825
+     },
+     {
+      "id": "fga",
+      "kind": "count",
+      "error": 0.011591827176394842,
+      "band": 0.05,
+      "ratio": 0.23183654352789684
+     },
+     {
+      "id": "fg2m",
+      "kind": "count",
+      "error": 0.11741174117411723,
+      "band": 0.05,
+      "ratio": 2.3482348234823447
+     },
+     {
+      "id": "fg2a",
+      "kind": "count",
+      "error": 0.043779696978752725,
+      "band": 0.05,
+      "ratio": 0.8755939395750545
+     },
+     {
+      "id": "fg3m",
+      "kind": "count",
+      "error": 0.0685143500281371,
+      "band": 0.05,
+      "ratio": 1.370287000562742
+     },
+     {
+      "id": "fg3a",
+      "kind": "count",
+      "error": 0.11580427446569197,
+      "band": 0.05,
+      "ratio": 2.3160854893138394
+     },
+     {
+      "id": "ftm",
+      "kind": "count",
+      "error": 0.05744097807757165,
+      "band": 0.05,
+      "ratio": 1.148819561551433
+     },
+     {
+      "id": "fta",
+      "kind": "count",
+      "error": 0.08403716216216206,
+      "band": 0.05,
+      "ratio": 1.6807432432432412
+     },
+     {
+      "id": "oreb",
+      "kind": "count",
+      "error": 0.011022657685242021,
+      "band": 0.05,
+      "ratio": 0.22045315370484042
+     },
+     {
+      "id": "dreb",
+      "kind": "count",
+      "error": 0.14508196721311473,
+      "band": 0.05,
+      "ratio": 2.9016393442622945
+     },
+     {
+      "id": "reb",
+      "kind": "count",
+      "error": 0.0945929887106356,
+      "band": 0.05,
+      "ratio": 1.891859774212712
+     },
+     {
+      "id": "ast_fg",
+      "kind": "count",
+      "error": 0.23757849509749918,
+      "band": 0.05,
+      "ratio": 4.751569901949983
+     },
+     {
+      "id": "ast_ft",
+      "kind": "count",
+      "error": 0.10575342465753446,
+      "band": 0.05,
+      "ratio": 2.115068493150689
+     },
+     {
+      "id": "ast_total",
+      "kind": "count",
+      "error": 0.2255368136543371,
+      "band": 0.05,
+      "ratio": 4.510736273086741
+     },
+     {
+      "id": "tov",
+      "kind": "count",
+      "error": 0.3043630017452008,
+      "band": 0.05,
+      "ratio": 6.087260034904016
+     },
+     {
+      "id": "stl",
+      "kind": "count",
+      "error": 0.021897810218978075,
+      "band": 0.05,
+      "ratio": 0.4379562043795615
+     },
+     {
+      "id": "blk",
+      "kind": "count",
+      "error": 0.13883847549909267,
+      "band": 0.05,
+      "ratio": 2.7767695099818535
+     },
+     {
+      "id": "pf",
+      "kind": "count",
+      "error": 0.003006953580153904,
+      "band": 0.05,
+      "ratio": 0.060139071603078076
+     },
+     {
+      "id": "pfd",
+      "kind": "count",
+      "error": 0.0021630772124516806,
+      "band": 0.05,
+      "ratio": 0.04326154424903361
+     },
+     {
+      "id": "fg_pct",
+      "kind": "rate",
+      "error": 0.0423078505400184,
+      "band": 0.03,
+      "ratio": 1.41026168466728
+     },
+     {
+      "id": "two_pct",
+      "kind": "rate",
+      "error": 0.04649493906143465,
+      "band": 0.03,
+      "ratio": 1.5498313020478216
+     },
+     {
+      "id": "three_pct",
+      "kind": "rate",
+      "error": 0.017256410460317118,
+      "band": 0.03,
+      "ratio": 0.5752136820105707
+     },
+     {
+      "id": "ft_pct",
+      "kind": "rate",
+      "error": 0.023283954467487877,
+      "band": 0.03,
+      "ratio": 0.7761318155829293
+     },
+     {
+      "id": "rim_pct",
+      "kind": "rate",
+      "error": 0.06496789549812954,
+      "band": 0.03,
+      "ratio": 2.165596516604318
+     },
+     {
+      "id": "inside_pct",
+      "kind": "rate",
+      "error": 0.011475964818252749,
+      "band": 0.03,
+      "ratio": 0.382532160608425
+     },
+     {
+      "id": "mid_pct",
+      "kind": "rate",
+      "error": 0.019501821306085965,
+      "band": 0.03,
+      "ratio": 0.6500607102028655
+     },
+     {
+      "id": "rim_share",
+      "kind": "share",
+      "error": 0.048520232763536175,
+      "band": 0.03,
+      "ratio": 1.6173410921178726
+     },
+     {
+      "id": "inside_share",
+      "kind": "share",
+      "error": 0.023181274916091538,
+      "band": 0.03,
+      "ratio": 0.772709163869718
+     },
+     {
+      "id": "mid_share",
+      "kind": "share",
+      "error": 0.03627481995639842,
+      "band": 0.03,
+      "ratio": 1.2091606652132807
+     },
+     {
+      "id": "three_share",
+      "kind": "share",
+      "error": 0.03542668772322938,
+      "band": 0.03,
+      "ratio": 1.1808895907743127
+     }
+    ],
+    "missing": [],
+    "violated": 20,
+    "n": 31,
+    "L": 2.412423392245315
+   },
+   "M04E_comparable": {
+    "M": 6.087260034904016,
+    "partialM": 6.087260034904016,
+    "dominant": "tov",
+    "comps": [
+     {
+      "id": "pts",
+      "kind": "count",
+      "error": 0.05338379844085417,
+      "band": 0.05,
+      "ratio": 1.0676759688170834
+     },
+     {
+      "id": "fgm",
+      "kind": "count",
+      "error": 0.06865638603999125,
+      "band": 0.05,
+      "ratio": 1.373127720799825
+     },
+     {
+      "id": "fga",
+      "kind": "count",
+      "error": 0.011591827176394842,
+      "band": 0.05,
+      "ratio": 0.23183654352789684
+     },
+     {
+      "id": "fg2m",
+      "kind": "count",
+      "error": 0.11741174117411723,
+      "band": 0.05,
+      "ratio": 2.3482348234823447
+     },
+     {
+      "id": "fg2a",
+      "kind": "count",
+      "error": 0.043779696978752725,
+      "band": 0.05,
+      "ratio": 0.8755939395750545
+     },
+     {
+      "id": "fg3m",
+      "kind": "count",
+      "error": 0.0685143500281371,
+      "band": 0.05,
+      "ratio": 1.370287000562742
+     },
+     {
+      "id": "fg3a",
+      "kind": "count",
+      "error": 0.11580427446569197,
+      "band": 0.05,
+      "ratio": 2.3160854893138394
+     },
+     {
+      "id": "ftm",
+      "kind": "count",
+      "error": 0.05744097807757165,
+      "band": 0.05,
+      "ratio": 1.148819561551433
+     },
+     {
+      "id": "fta",
+      "kind": "count",
+      "error": 0.08403716216216206,
+      "band": 0.05,
+      "ratio": 1.6807432432432412
+     },
+     {
+      "id": "oreb",
+      "kind": "count",
+      "error": 0.011022657685242021,
+      "band": 0.05,
+      "ratio": 0.22045315370484042
+     },
+     {
+      "id": "dreb",
+      "kind": "count",
+      "error": 0.14508196721311473,
+      "band": 0.05,
+      "ratio": 2.9016393442622945
+     },
+     {
+      "id": "reb",
+      "kind": "count",
+      "error": 0.0945929887106356,
+      "band": 0.05,
+      "ratio": 1.891859774212712
+     },
+     {
+      "id": "ast_fg",
+      "kind": "count",
+      "error": 0.23757849509749918,
+      "band": 0.05,
+      "ratio": 4.751569901949983
+     },
+     {
+      "id": "ast_ft",
+      "kind": "count",
+      "error": 0.10575342465753446,
+      "band": 0.05,
+      "ratio": 2.115068493150689
+     },
+     {
+      "id": "ast_total",
+      "kind": "count",
+      "error": 0.2255368136543371,
+      "band": 0.05,
+      "ratio": 4.510736273086741
+     },
+     {
+      "id": "tov",
+      "kind": "count",
+      "error": 0.3043630017452008,
+      "band": 0.05,
+      "ratio": 6.087260034904016
+     },
+     {
+      "id": "stl",
+      "kind": "count",
+      "error": 0.021897810218978075,
+      "band": 0.05,
+      "ratio": 0.4379562043795615
+     },
+     {
+      "id": "blk",
+      "kind": "count",
+      "error": 0.13883847549909267,
+      "band": 0.05,
+      "ratio": 2.7767695099818535
+     },
+     {
+      "id": "pf",
+      "kind": "count",
+      "error": 0.003006953580153904,
+      "band": 0.05,
+      "ratio": 0.060139071603078076
+     },
+     {
+      "id": "pfd",
+      "kind": "count",
+      "error": 0.0021630772124516806,
+      "band": 0.05,
+      "ratio": 0.04326154424903361
+     },
+     {
+      "id": "fg_pct",
+      "kind": "rate",
+      "error": 0.0423078505400184,
+      "band": 0.03,
+      "ratio": 1.41026168466728
+     },
+     {
+      "id": "two_pct",
+      "kind": "rate",
+      "error": 0.04649493906143465,
+      "band": 0.03,
+      "ratio": 1.5498313020478216
+     },
+     {
+      "id": "three_pct",
+      "kind": "rate",
+      "error": 0.017256410460317118,
+      "band": 0.03,
+      "ratio": 0.5752136820105707
+     },
+     {
+      "id": "ft_pct",
+      "kind": "rate",
+      "error": 0.023283954467487877,
+      "band": 0.03,
+      "ratio": 0.7761318155829293
+     },
+     {
+      "id": "rim_pct",
+      "kind": "rate",
+      "error": 0.06496789549812954,
+      "band": 0.03,
+      "ratio": 2.165596516604318
+     },
+     {
+      "id": "inside_pct",
+      "kind": "rate",
+      "error": 0.011475964818252749,
+      "band": 0.03,
+      "ratio": 0.382532160608425
+     },
+     {
+      "id": "mid_pct",
+      "kind": "rate",
+      "error": 0.019501821306085965,
+      "band": 0.03,
+      "ratio": 0.6500607102028655
+     },
+     {
+      "id": "rim_share",
+      "kind": "share",
+      "error": 0.048520232763536175,
+      "band": 0.03,
+      "ratio": 1.6173410921178726
+     },
+     {
+      "id": "inside_share",
+      "kind": "share",
+      "error": 0.023181274916091538,
+      "band": 0.03,
+      "ratio": 0.772709163869718
+     },
+     {
+      "id": "mid_share",
+      "kind": "share",
+      "error": 0.03627481995639842,
+      "band": 0.03,
+      "ratio": 1.2091606652132807
+     },
+     {
+      "id": "three_share",
+      "kind": "share",
+      "error": 0.03542668772322938,
+      "band": 0.03,
+      "ratio": 1.1808895907743127
+     }
+    ],
+    "missing": [],
+    "violated": 20,
+    "n": 31,
+    "L": 2.412423392245315
+   },
+   "eZ": 0.1434030153592555,
+   "outOfBand": [
+    {
+     "id": "pts",
+     "kind": "count",
+     "error": 0.05338379844085417,
+     "band": 0.05,
+     "short": "0.34 puntos relativos"
+    },
+    {
+     "id": "fgm",
+     "kind": "count",
+     "error": 0.06865638603999125,
+     "band": 0.05,
+     "short": "1.87 puntos relativos"
+    },
+    {
+     "id": "fg2m",
+     "kind": "count",
+     "error": 0.11741174117411723,
+     "band": 0.05,
+     "short": "6.74 puntos relativos"
+    },
+    {
+     "id": "fg3m",
+     "kind": "count",
+     "error": 0.0685143500281371,
+     "band": 0.05,
+     "short": "1.85 puntos relativos"
+    },
+    {
+     "id": "fg3a",
+     "kind": "count",
+     "error": 0.11580427446569197,
+     "band": 0.05,
+     "short": "6.58 puntos relativos"
+    },
+    {
+     "id": "ftm",
+     "kind": "count",
+     "error": 0.05744097807757165,
+     "band": 0.05,
+     "short": "0.74 puntos relativos"
+    },
+    {
+     "id": "fta",
+     "kind": "count",
+     "error": 0.08403716216216206,
+     "band": 0.05,
+     "short": "3.40 puntos relativos"
+    },
+    {
+     "id": "dreb",
+     "kind": "count",
+     "error": 0.14508196721311473,
+     "band": 0.05,
+     "short": "9.51 puntos relativos"
+    },
+    {
+     "id": "reb",
+     "kind": "count",
+     "error": 0.0945929887106356,
+     "band": 0.05,
+     "short": "4.46 puntos relativos"
+    },
+    {
+     "id": "ast_fg",
+     "kind": "count",
+     "error": 0.23757849509749918,
+     "band": 0.05,
+     "short": "18.76 puntos relativos"
+    },
+    {
+     "id": "ast_ft",
+     "kind": "count",
+     "error": 0.10575342465753446,
+     "band": 0.05,
+     "short": "5.58 puntos relativos"
+    },
+    {
+     "id": "ast_total",
+     "kind": "count",
+     "error": 0.2255368136543371,
+     "band": 0.05,
+     "short": "17.55 puntos relativos"
+    },
+    {
+     "id": "tov",
+     "kind": "count",
+     "error": 0.3043630017452008,
+     "band": 0.05,
+     "short": "25.44 puntos relativos"
+    },
+    {
+     "id": "blk",
+     "kind": "count",
+     "error": 0.13883847549909267,
+     "band": 0.05,
+     "short": "8.88 puntos relativos"
+    },
+    {
+     "id": "fg_pct",
+     "kind": "rate",
+     "error": 0.0423078505400184,
+     "band": 0.03,
+     "short": "1.23 pp"
+    },
+    {
+     "id": "two_pct",
+     "kind": "rate",
+     "error": 0.04649493906143465,
+     "band": 0.03,
+     "short": "1.65 pp"
+    },
+    {
+     "id": "rim_pct",
+     "kind": "rate",
+     "error": 0.06496789549812954,
+     "band": 0.03,
+     "short": "3.50 pp"
+    },
+    {
+     "id": "rim_share",
+     "kind": "share",
+     "error": 0.048520232763536175,
+     "band": 0.03,
+     "short": "1.85 pp"
+    },
+    {
+     "id": "mid_share",
+     "kind": "share",
+     "error": 0.03627481995639842,
+     "band": 0.03,
+     "short": "0.63 pp"
+    },
+    {
+     "id": "three_share",
+     "kind": "share",
+     "error": 0.03542668772322938,
+     "band": 0.03,
+     "short": "0.54 pp"
+    }
+   ],
+   "outOfBandComparable": [
+    {
+     "id": "pts",
+     "kind": "count",
+     "error": 0.05338379844085417,
+     "band": 0.05,
+     "short": "0.34 puntos relativos"
+    },
+    {
+     "id": "fgm",
+     "kind": "count",
+     "error": 0.06865638603999125,
+     "band": 0.05,
+     "short": "1.87 puntos relativos"
+    },
+    {
+     "id": "fg2m",
+     "kind": "count",
+     "error": 0.11741174117411723,
+     "band": 0.05,
+     "short": "6.74 puntos relativos"
+    },
+    {
+     "id": "fg3m",
+     "kind": "count",
+     "error": 0.0685143500281371,
+     "band": 0.05,
+     "short": "1.85 puntos relativos"
+    },
+    {
+     "id": "fg3a",
+     "kind": "count",
+     "error": 0.11580427446569197,
+     "band": 0.05,
+     "short": "6.58 puntos relativos"
+    },
+    {
+     "id": "ftm",
+     "kind": "count",
+     "error": 0.05744097807757165,
+     "band": 0.05,
+     "short": "0.74 puntos relativos"
+    },
+    {
+     "id": "fta",
+     "kind": "count",
+     "error": 0.08403716216216206,
+     "band": 0.05,
+     "short": "3.40 puntos relativos"
+    },
+    {
+     "id": "dreb",
+     "kind": "count",
+     "error": 0.14508196721311473,
+     "band": 0.05,
+     "short": "9.51 puntos relativos"
+    },
+    {
+     "id": "reb",
+     "kind": "count",
+     "error": 0.0945929887106356,
+     "band": 0.05,
+     "short": "4.46 puntos relativos"
+    },
+    {
+     "id": "ast_fg",
+     "kind": "count",
+     "error": 0.23757849509749918,
+     "band": 0.05,
+     "short": "18.76 puntos relativos"
+    },
+    {
+     "id": "ast_ft",
+     "kind": "count",
+     "error": 0.10575342465753446,
+     "band": 0.05,
+     "short": "5.58 puntos relativos"
+    },
+    {
+     "id": "ast_total",
+     "kind": "count",
+     "error": 0.2255368136543371,
+     "band": 0.05,
+     "short": "17.55 puntos relativos"
+    },
+    {
+     "id": "tov",
+     "kind": "count",
+     "error": 0.3043630017452008,
+     "band": 0.05,
+     "short": "25.44 puntos relativos"
+    },
+    {
+     "id": "blk",
+     "kind": "count",
+     "error": 0.13883847549909267,
+     "band": 0.05,
+     "short": "8.88 puntos relativos"
+    },
+    {
+     "id": "fg_pct",
+     "kind": "rate",
+     "error": 0.0423078505400184,
+     "band": 0.03,
+     "short": "1.23 pp"
+    },
+    {
+     "id": "two_pct",
+     "kind": "rate",
+     "error": 0.04649493906143465,
+     "band": 0.03,
+     "short": "1.65 pp"
+    },
+    {
+     "id": "rim_pct",
+     "kind": "rate",
+     "error": 0.06496789549812954,
+     "band": 0.03,
+     "short": "3.50 pp"
+    },
+    {
+     "id": "rim_share",
+     "kind": "share",
+     "error": 0.048520232763536175,
+     "band": 0.03,
+     "short": "1.85 pp"
+    },
+    {
+     "id": "mid_share",
+     "kind": "share",
+     "error": 0.03627481995639842,
+     "band": 0.03,
+     "short": "0.63 pp"
+    },
+    {
+     "id": "three_share",
+     "kind": "share",
+     "error": 0.03542668772322938,
+     "band": 0.03,
+     "short": "0.54 pp"
+    }
+   ],
+   "cases": 48,
+   "teamGames": 96
+  },
+  "DEV|SIM_04E_EXP": {
+   "M04E": {
+    "M": 1.8693284936479126,
+    "partialM": 1.8693284936479126,
+    "dominant": "blk",
+    "comps": [
+     {
+      "id": "pts",
+      "kind": "count",
+      "error": 0.008205287538131323,
+      "band": 0.05,
+      "ratio": 0.16410575076262646
+     },
+     {
+      "id": "fgm",
+      "kind": "count",
+      "error": 0.002730022873164595,
+      "band": 0.05,
+      "ratio": 0.054600457463291896
+     },
+     {
+      "id": "fga",
+      "kind": "count",
+      "error": 0.01129910426790004,
+      "band": 0.05,
+      "ratio": 0.2259820853580008
+     },
+     {
+      "id": "fg2m",
+      "kind": "count",
+      "error": 0.032403240324032634,
+      "band": 0.05,
+      "ratio": 0.6480648064806527
+     },
+     {
+      "id": "fg2a",
+      "kind": "count",
+      "error": 0.035472013866060914,
+      "band": 0.05,
+      "ratio": 0.7094402773212183
+     },
+     {
+      "id": "fg3m",
+      "kind": "count",
+      "error": 0.08075407990996075,
+      "band": 0.05,
+      "ratio": 1.615081598199215
+     },
+     {
+      "id": "fg3a",
+      "kind": "count",
+      "error": 0.03419572553430816,
+      "band": 0.05,
+      "ratio": 0.6839145106861633
+     },
+     {
+      "id": "ftm",
+      "kind": "count",
+      "error": 0.016336424957841378,
+      "band": 0.05,
+      "ratio": 0.32672849915682756
+     },
+     {
+      "id": "fta",
+      "kind": "count",
+      "error": 0.019425675675675547,
+      "band": 0.05,
+      "ratio": 0.38851351351351093
+     },
+     {
+      "id": "oreb",
+      "kind": "count",
+      "error": 0.06748315982853659,
+      "band": 0.05,
+      "ratio": 1.3496631965707317
+     },
+     {
+      "id": "dreb",
+      "kind": "count",
+      "error": 0.07862997658079629,
+      "band": 0.05,
+      "ratio": 1.5725995316159258
+     },
+     {
+      "id": "reb",
+      "kind": "count",
+      "error": 0.03137254901960773,
+      "band": 0.05,
+      "ratio": 0.6274509803921546
+     },
+     {
+      "id": "ast_fg",
+      "kind": "count",
+      "error": 0.01244904704197436,
+      "band": 0.05,
+      "ratio": 0.24898094083948719
+     },
+     {
+      "id": "ast_ft",
+      "kind": "count",
+      "error": 0.04328767123287669,
+      "band": 0.05,
+      "ratio": 0.8657534246575338
+     },
+     {
+      "id": "ast_total",
+      "kind": "count",
+      "error": 0.015266029330797348,
+      "band": 0.05,
+      "ratio": 0.30532058661594697
+     },
+     {
+      "id": "tov",
+      "kind": "count",
+      "error": 0.08272251308900547,
+      "band": 0.05,
+      "ratio": 1.6544502617801093
+     },
+     {
+      "id": "stl",
+      "kind": "count",
+      "error": 0.010427528675703845,
+      "band": 0.05,
+      "ratio": 0.2085505735140769
+     },
+     {
+      "id": "blk",
+      "kind": "count",
+      "error": 0.09346642468239563,
+      "band": 0.05,
+      "ratio": 1.8693284936479126
+     },
+     {
+      "id": "pf",
+      "kind": "count",
+      "error": 0.05121217816199963,
+      "band": 0.05,
+      "ratio": 1.0242435632399927
+     },
+     {
+      "id": "pfd",
+      "kind": "count",
+      "error": 0.0521019467694912,
+      "band": 0.05,
+      "ratio": 1.042038935389824
+     },
+     {
+      "id": "fg_pct",
+      "kind": "rate",
+      "error": 0.004605463642589069,
+      "band": 0.03,
+      "ratio": 0.153515454752969
+     },
+     {
+      "id": "two_pct",
+      "kind": "rate",
+      "error": 0.0018539169609833595,
+      "band": 0.03,
+      "ratio": 0.06179723203277865
+     },
+     {
+      "id": "three_pct",
+      "kind": "rate",
+      "error": 0.019597509598554108,
+      "band": 0.03,
+      "ratio": 0.6532503199518036
+     },
+     {
+      "id": "ft_pct",
+      "kind": "rate",
+      "error": 0.0023665350299839627,
+      "band": 0.03,
+      "ratio": 0.07888450099946542
+     },
+     {
+      "id": "rim_pct",
+      "kind": "rate",
+      "error": 0.011476687754216841,
+      "band": 0.03,
+      "ratio": 0.38255625847389474
+     },
+     {
+      "id": "inside_pct",
+      "kind": "rate",
+      "error": 0.026327449966767613,
+      "band": 0.03,
+      "ratio": 0.8775816655589205
+     },
+     {
+      "id": "mid_pct",
+      "kind": "rate",
+      "error": 0.02893867966170527,
+      "band": 0.03,
+      "ratio": 0.9646226553901757
+     },
+     {
+      "id": "rim_share",
+      "kind": "share",
+      "error": 0.047991392841096214,
+      "band": 0.03,
+      "ratio": 1.5997130947032072
+     },
+     {
+      "id": "inside_share",
+      "kind": "share",
+      "error": 0.04698304866252981,
+      "band": 0.03,
+      "ratio": 1.566101622084327
+     },
+     {
+      "id": "mid_share",
+      "kind": "share",
+      "error": 0.014822125331464181,
+      "band": 0.03,
+      "ratio": 0.4940708443821394
+     },
+     {
+      "id": "three_share",
+      "kind": "share",
+      "error": 0.01583046951003053,
+      "band": 0.03,
+      "ratio": 0.5276823170010178
+     }
+    ],
+    "missing": [],
+    "violated": 9,
+    "n": 31,
+    "L": 0.12916537127756184
+   },
+   "M04E_comparable": {
+    "M": 1.8693284936479126,
+    "partialM": 1.8693284936479126,
+    "dominant": "blk",
+    "comps": [
+     {
+      "id": "pts",
+      "kind": "count",
+      "error": 0.008205287538131323,
+      "band": 0.05,
+      "ratio": 0.16410575076262646
+     },
+     {
+      "id": "fgm",
+      "kind": "count",
+      "error": 0.002730022873164595,
+      "band": 0.05,
+      "ratio": 0.054600457463291896
+     },
+     {
+      "id": "fga",
+      "kind": "count",
+      "error": 0.01129910426790004,
+      "band": 0.05,
+      "ratio": 0.2259820853580008
+     },
+     {
+      "id": "fg2m",
+      "kind": "count",
+      "error": 0.032403240324032634,
+      "band": 0.05,
+      "ratio": 0.6480648064806527
+     },
+     {
+      "id": "fg2a",
+      "kind": "count",
+      "error": 0.035472013866060914,
+      "band": 0.05,
+      "ratio": 0.7094402773212183
+     },
+     {
+      "id": "fg3m",
+      "kind": "count",
+      "error": 0.08075407990996075,
+      "band": 0.05,
+      "ratio": 1.615081598199215
+     },
+     {
+      "id": "fg3a",
+      "kind": "count",
+      "error": 0.03419572553430816,
+      "band": 0.05,
+      "ratio": 0.6839145106861633
+     },
+     {
+      "id": "ftm",
+      "kind": "count",
+      "error": 0.016336424957841378,
+      "band": 0.05,
+      "ratio": 0.32672849915682756
+     },
+     {
+      "id": "fta",
+      "kind": "count",
+      "error": 0.019425675675675547,
+      "band": 0.05,
+      "ratio": 0.38851351351351093
+     },
+     {
+      "id": "oreb",
+      "kind": "count",
+      "error": 0.06748315982853659,
+      "band": 0.05,
+      "ratio": 1.3496631965707317
+     },
+     {
+      "id": "dreb",
+      "kind": "count",
+      "error": 0.07862997658079629,
+      "band": 0.05,
+      "ratio": 1.5725995316159258
+     },
+     {
+      "id": "reb",
+      "kind": "count",
+      "error": 0.03137254901960773,
+      "band": 0.05,
+      "ratio": 0.6274509803921546
+     },
+     {
+      "id": "ast_fg",
+      "kind": "count",
+      "error": 0.01244904704197436,
+      "band": 0.05,
+      "ratio": 0.24898094083948719
+     },
+     {
+      "id": "ast_ft",
+      "kind": "count",
+      "error": 0.04328767123287669,
+      "band": 0.05,
+      "ratio": 0.8657534246575338
+     },
+     {
+      "id": "ast_total",
+      "kind": "count",
+      "error": 0.015266029330797348,
+      "band": 0.05,
+      "ratio": 0.30532058661594697
+     },
+     {
+      "id": "tov",
+      "kind": "count",
+      "error": 0.08272251308900547,
+      "band": 0.05,
+      "ratio": 1.6544502617801093
+     },
+     {
+      "id": "stl",
+      "kind": "count",
+      "error": 0.010427528675703845,
+      "band": 0.05,
+      "ratio": 0.2085505735140769
+     },
+     {
+      "id": "blk",
+      "kind": "count",
+      "error": 0.09346642468239563,
+      "band": 0.05,
+      "ratio": 1.8693284936479126
+     },
+     {
+      "id": "pf",
+      "kind": "count",
+      "error": 0.05121217816199963,
+      "band": 0.05,
+      "ratio": 1.0242435632399927
+     },
+     {
+      "id": "pfd",
+      "kind": "count",
+      "error": 0.0521019467694912,
+      "band": 0.05,
+      "ratio": 1.042038935389824
+     },
+     {
+      "id": "fg_pct",
+      "kind": "rate",
+      "error": 0.004605463642589069,
+      "band": 0.03,
+      "ratio": 0.153515454752969
+     },
+     {
+      "id": "two_pct",
+      "kind": "rate",
+      "error": 0.0018539169609833595,
+      "band": 0.03,
+      "ratio": 0.06179723203277865
+     },
+     {
+      "id": "three_pct",
+      "kind": "rate",
+      "error": 0.019597509598554108,
+      "band": 0.03,
+      "ratio": 0.6532503199518036
+     },
+     {
+      "id": "ft_pct",
+      "kind": "rate",
+      "error": 0.0023665350299839627,
+      "band": 0.03,
+      "ratio": 0.07888450099946542
+     },
+     {
+      "id": "rim_pct",
+      "kind": "rate",
+      "error": 0.011476687754216841,
+      "band": 0.03,
+      "ratio": 0.38255625847389474
+     },
+     {
+      "id": "inside_pct",
+      "kind": "rate",
+      "error": 0.026327449966767613,
+      "band": 0.03,
+      "ratio": 0.8775816655589205
+     },
+     {
+      "id": "mid_pct",
+      "kind": "rate",
+      "error": 0.02893867966170527,
+      "band": 0.03,
+      "ratio": 0.9646226553901757
+     },
+     {
+      "id": "rim_share",
+      "kind": "share",
+      "error": 0.047991392841096214,
+      "band": 0.03,
+      "ratio": 1.5997130947032072
+     },
+     {
+      "id": "inside_share",
+      "kind": "share",
+      "error": 0.04698304866252981,
+      "band": 0.03,
+      "ratio": 1.566101622084327
+     },
+     {
+      "id": "mid_share",
+      "kind": "share",
+      "error": 0.014822125331464181,
+      "band": 0.03,
+      "ratio": 0.4940708443821394
+     },
+     {
+      "id": "three_share",
+      "kind": "share",
+      "error": 0.01583046951003053,
+      "band": 0.03,
+      "ratio": 0.5276823170010178
+     }
+    ],
+    "missing": [],
+    "violated": 9,
+    "n": 31,
+    "L": 0.12916537127756184
+   },
+   "eZ": 0.12562703634512074,
+   "outOfBand": [
+    {
+     "id": "fg3m",
+     "kind": "count",
+     "error": 0.08075407990996075,
+     "band": 0.05,
+     "short": "3.08 puntos relativos"
+    },
+    {
+     "id": "oreb",
+     "kind": "count",
+     "error": 0.06748315982853659,
+     "band": 0.05,
+     "short": "1.75 puntos relativos"
+    },
+    {
+     "id": "dreb",
+     "kind": "count",
+     "error": 0.07862997658079629,
+     "band": 0.05,
+     "short": "2.86 puntos relativos"
+    },
+    {
+     "id": "tov",
+     "kind": "count",
+     "error": 0.08272251308900547,
+     "band": 0.05,
+     "short": "3.27 puntos relativos"
+    },
+    {
+     "id": "blk",
+     "kind": "count",
+     "error": 0.09346642468239563,
+     "band": 0.05,
+     "short": "4.35 puntos relativos"
+    },
+    {
+     "id": "pf",
+     "kind": "count",
+     "error": 0.05121217816199963,
+     "band": 0.05,
+     "short": "0.12 puntos relativos"
+    },
+    {
+     "id": "pfd",
+     "kind": "count",
+     "error": 0.0521019467694912,
+     "band": 0.05,
+     "short": "0.21 puntos relativos"
+    },
+    {
+     "id": "rim_share",
+     "kind": "share",
+     "error": 0.047991392841096214,
+     "band": 0.03,
+     "short": "1.80 pp"
+    },
+    {
+     "id": "inside_share",
+     "kind": "share",
+     "error": 0.04698304866252981,
+     "band": 0.03,
+     "short": "1.70 pp"
+    }
+   ],
+   "outOfBandComparable": [
+    {
+     "id": "fg3m",
+     "kind": "count",
+     "error": 0.08075407990996075,
+     "band": 0.05,
+     "short": "3.08 puntos relativos"
+    },
+    {
+     "id": "oreb",
+     "kind": "count",
+     "error": 0.06748315982853659,
+     "band": 0.05,
+     "short": "1.75 puntos relativos"
+    },
+    {
+     "id": "dreb",
+     "kind": "count",
+     "error": 0.07862997658079629,
+     "band": 0.05,
+     "short": "2.86 puntos relativos"
+    },
+    {
+     "id": "tov",
+     "kind": "count",
+     "error": 0.08272251308900547,
+     "band": 0.05,
+     "short": "3.27 puntos relativos"
+    },
+    {
+     "id": "blk",
+     "kind": "count",
+     "error": 0.09346642468239563,
+     "band": 0.05,
+     "short": "4.35 puntos relativos"
+    },
+    {
+     "id": "pf",
+     "kind": "count",
+     "error": 0.05121217816199963,
+     "band": 0.05,
+     "short": "0.12 puntos relativos"
+    },
+    {
+     "id": "pfd",
+     "kind": "count",
+     "error": 0.0521019467694912,
+     "band": 0.05,
+     "short": "0.21 puntos relativos"
+    },
+    {
+     "id": "rim_share",
+     "kind": "share",
+     "error": 0.047991392841096214,
+     "band": 0.03,
+     "short": "1.80 pp"
+    },
+    {
+     "id": "inside_share",
+     "kind": "share",
+     "error": 0.04698304866252981,
+     "band": 0.03,
+     "short": "1.70 pp"
+    }
+   ],
+   "cases": 48,
+   "teamGames": 96
+  },
+  "DEVB|SIM_04E_BASE": {
+   "M04E": {
+    "M": 5.332152347209922,
+    "partialM": 5.332152347209922,
+    "dominant": "stl",
+    "comps": [
+     {
+      "id": "pts",
+      "kind": "count",
+      "error": 0.05039052658100285,
+      "band": 0.05,
+      "ratio": 1.007810531620057
+     },
+     {
+      "id": "fgm",
+      "kind": "count",
+      "error": 0.0484669375692649,
+      "band": 0.05,
+      "ratio": 0.969338751385298
+     },
+     {
+      "id": "fga",
+      "kind": "count",
+      "error": 0.02657070608830958,
+      "band": 0.05,
+      "ratio": 0.5314141217661916
+     },
+     {
+      "id": "fg2m",
+      "kind": "count",
+      "error": 0.0781671159029651,
+      "band": 0.05,
+      "ratio": 1.563342318059302
+     },
+     {
+      "id": "fg2a",
+      "kind": "count",
+      "error": 0.009376723662437803,
+      "band": 0.05,
+      "ratio": 0.18753447324875605
+     },
+     {
+      "id": "fg3m",
+      "kind": "count",
+      "error": 0.025199280020570702,
+      "band": 0.05,
+      "ratio": 0.503985600411414
+     },
+     {
+      "id": "fg3a",
+      "kind": "count",
+      "error": 0.05645504899872167,
+      "band": 0.05,
+      "ratio": 1.1291009799744334
+     },
+     {
+      "id": "ftm",
+      "kind": "count",
+      "error": 0.12305753884922299,
+      "band": 0.05,
+      "ratio": 2.46115077698446
+     },
+     {
+      "id": "fta",
+      "kind": "count",
+      "error": 0.1445154777927321,
+      "band": 0.05,
+      "ratio": 2.890309555854642
+     },
+     {
+      "id": "oreb",
+      "kind": "count",
+      "error": 0.0012278978388997608,
+      "band": 0.05,
+      "ratio": 0.024557956777995216
+     },
+     {
+      "id": "dreb",
+      "kind": "count",
+      "error": 0.12992398064961996,
+      "band": 0.05,
+      "ratio": 2.5984796129923993
+     },
+     {
+      "id": "reb",
+      "kind": "count",
+      "error": 0.08883487533322887,
+      "band": 0.05,
+      "ratio": 1.7766975066645774
+     },
+     {
+      "id": "ast_fg",
+      "kind": "count",
+      "error": 0.21328323571665375,
+      "band": 0.05,
+      "ratio": 4.265664714333075
+     },
+     {
+      "id": "ast_ft",
+      "kind": "count",
+      "error": 0.03952569169960474,
+      "band": 0.05,
+      "ratio": 0.7905138339920947
+     },
+     {
+      "id": "ast_total",
+      "kind": "count",
+      "error": 0.19983686786296906,
+      "band": 0.05,
+      "ratio": 3.996737357259381
+     },
+     {
+      "id": "tov",
+      "kind": "count",
+      "error": 0.1468812877263581,
+      "band": 0.05,
+      "ratio": 2.9376257545271622
+     },
+     {
+      "id": "stl",
+      "kind": "count",
+      "error": 0.2666076173604961,
+      "band": 0.05,
+      "ratio": 5.332152347209922
+     },
+     {
+      "id": "blk",
+      "kind": "count",
+      "error": 0.04532577903682711,
+      "band": 0.05,
+      "ratio": 0.9065155807365421
+     },
+     {
+      "id": "pf",
+      "kind": "count",
+      "error": 0.06834335702569694,
+      "band": 0.05,
+      "ratio": 1.3668671405139388
+     },
+     {
+      "id": "pfd",
+      "kind": "count",
+      "error": 0.06834335702569694,
+      "band": 0.05,
+      "ratio": 1.3668671405139388
+     },
+     {
+      "id": "fg_pct",
+      "kind": "rate",
+      "error": 0.03823470153385006,
+      "band": 0.03,
+      "ratio": 1.2744900511283352
+     },
+     {
+      "id": "two_pct",
+      "kind": "rate",
+      "error": 0.05121796140672896,
+      "band": 0.03,
+      "ratio": 1.7072653802242987
+     },
+     {
+      "id": "three_pct",
+      "kind": "rate",
+      "error": 0.01173098915396048,
+      "band": 0.03,
+      "ratio": 0.3910329717986827
+     },
+     {
+      "id": "ft_pct",
+      "kind": "rate",
+      "error": 0.02033396067753168,
+      "band": 0.03,
+      "ratio": 0.6777986892510561
+     },
+     {
+      "id": "rim_pct",
+      "kind": "rate",
+      "error": 0.034976839444146646,
+      "band": 0.03,
+      "ratio": 1.1658946481382215
+     },
+     {
+      "id": "inside_pct",
+      "kind": "rate",
+      "error": 0.039961903767873896,
+      "band": 0.03,
+      "ratio": 1.33206345892913
+     },
+     {
+      "id": "mid_pct",
+      "kind": "rate",
+      "error": 0.02723633832231115,
+      "band": 0.03,
+      "ratio": 0.9078779440770384
+     },
+     {
+      "id": "rim_share",
+      "kind": "share",
+      "error": 0.038275686250471064,
+      "band": 0.03,
+      "ratio": 1.2758562083490355
+     },
+     {
+      "id": "inside_share",
+      "kind": "share",
+      "error": 0.016423348125846116,
+      "band": 0.03,
+      "ratio": 0.5474449375282039
+     },
+     {
+      "id": "mid_share",
+      "kind": "share",
+      "error": 0.04422429117823576,
+      "band": 0.03,
+      "ratio": 1.4741430392745254
+     },
+     {
+      "id": "three_share",
+      "kind": "share",
+      "error": 0.010474743198081393,
+      "band": 0.03,
+      "ratio": 0.3491581066027131
+     }
+    ],
+    "missing": [],
+    "violated": 19,
+    "n": 31,
+    "L": 1.8924753297072747
+   },
+   "M04E_comparable": {
+    "M": 5.332152347209922,
+    "partialM": 5.332152347209922,
+    "dominant": "stl",
+    "comps": [
+     {
+      "id": "pts",
+      "kind": "count",
+      "error": 0.05039052658100285,
+      "band": 0.05,
+      "ratio": 1.007810531620057
+     },
+     {
+      "id": "fgm",
+      "kind": "count",
+      "error": 0.0484669375692649,
+      "band": 0.05,
+      "ratio": 0.969338751385298
+     },
+     {
+      "id": "fga",
+      "kind": "count",
+      "error": 0.02657070608830958,
+      "band": 0.05,
+      "ratio": 0.5314141217661916
+     },
+     {
+      "id": "fg2m",
+      "kind": "count",
+      "error": 0.0781671159029651,
+      "band": 0.05,
+      "ratio": 1.563342318059302
+     },
+     {
+      "id": "fg2a",
+      "kind": "count",
+      "error": 0.009376723662437803,
+      "band": 0.05,
+      "ratio": 0.18753447324875605
+     },
+     {
+      "id": "fg3m",
+      "kind": "count",
+      "error": 0.025199280020570702,
+      "band": 0.05,
+      "ratio": 0.503985600411414
+     },
+     {
+      "id": "fg3a",
+      "kind": "count",
+      "error": 0.05645504899872167,
+      "band": 0.05,
+      "ratio": 1.1291009799744334
+     },
+     {
+      "id": "ftm",
+      "kind": "count",
+      "error": 0.12305753884922299,
+      "band": 0.05,
+      "ratio": 2.46115077698446
+     },
+     {
+      "id": "fta",
+      "kind": "count",
+      "error": 0.1445154777927321,
+      "band": 0.05,
+      "ratio": 2.890309555854642
+     },
+     {
+      "id": "oreb",
+      "kind": "count",
+      "error": 0.0012278978388997608,
+      "band": 0.05,
+      "ratio": 0.024557956777995216
+     },
+     {
+      "id": "dreb",
+      "kind": "count",
+      "error": 0.12992398064961996,
+      "band": 0.05,
+      "ratio": 2.5984796129923993
+     },
+     {
+      "id": "reb",
+      "kind": "count",
+      "error": 0.08883487533322887,
+      "band": 0.05,
+      "ratio": 1.7766975066645774
+     },
+     {
+      "id": "ast_fg",
+      "kind": "count",
+      "error": 0.21328323571665375,
+      "band": 0.05,
+      "ratio": 4.265664714333075
+     },
+     {
+      "id": "ast_ft",
+      "kind": "count",
+      "error": 0.03952569169960474,
+      "band": 0.05,
+      "ratio": 0.7905138339920947
+     },
+     {
+      "id": "ast_total",
+      "kind": "count",
+      "error": 0.19983686786296906,
+      "band": 0.05,
+      "ratio": 3.996737357259381
+     },
+     {
+      "id": "tov",
+      "kind": "count",
+      "error": 0.1468812877263581,
+      "band": 0.05,
+      "ratio": 2.9376257545271622
+     },
+     {
+      "id": "stl",
+      "kind": "count",
+      "error": 0.2666076173604961,
+      "band": 0.05,
+      "ratio": 5.332152347209922
+     },
+     {
+      "id": "blk",
+      "kind": "count",
+      "error": 0.04532577903682711,
+      "band": 0.05,
+      "ratio": 0.9065155807365421
+     },
+     {
+      "id": "pf",
+      "kind": "count",
+      "error": 0.06834335702569694,
+      "band": 0.05,
+      "ratio": 1.3668671405139388
+     },
+     {
+      "id": "pfd",
+      "kind": "count",
+      "error": 0.06834335702569694,
+      "band": 0.05,
+      "ratio": 1.3668671405139388
+     },
+     {
+      "id": "fg_pct",
+      "kind": "rate",
+      "error": 0.03823470153385006,
+      "band": 0.03,
+      "ratio": 1.2744900511283352
+     },
+     {
+      "id": "two_pct",
+      "kind": "rate",
+      "error": 0.05121796140672896,
+      "band": 0.03,
+      "ratio": 1.7072653802242987
+     },
+     {
+      "id": "three_pct",
+      "kind": "rate",
+      "error": 0.01173098915396048,
+      "band": 0.03,
+      "ratio": 0.3910329717986827
+     },
+     {
+      "id": "ft_pct",
+      "kind": "rate",
+      "error": 0.02033396067753168,
+      "band": 0.03,
+      "ratio": 0.6777986892510561
+     },
+     {
+      "id": "rim_pct",
+      "kind": "rate",
+      "error": 0.034976839444146646,
+      "band": 0.03,
+      "ratio": 1.1658946481382215
+     },
+     {
+      "id": "inside_pct",
+      "kind": "rate",
+      "error": 0.039961903767873896,
+      "band": 0.03,
+      "ratio": 1.33206345892913
+     },
+     {
+      "id": "mid_pct",
+      "kind": "rate",
+      "error": 0.02723633832231115,
+      "band": 0.03,
+      "ratio": 0.9078779440770384
+     },
+     {
+      "id": "rim_share",
+      "kind": "share",
+      "error": 0.038275686250471064,
+      "band": 0.03,
+      "ratio": 1.2758562083490355
+     },
+     {
+      "id": "inside_share",
+      "kind": "share",
+      "error": 0.016423348125846116,
+      "band": 0.03,
+      "ratio": 0.5474449375282039
+     },
+     {
+      "id": "mid_share",
+      "kind": "share",
+      "error": 0.04422429117823576,
+      "band": 0.03,
+      "ratio": 1.4741430392745254
+     },
+     {
+      "id": "three_share",
+      "kind": "share",
+      "error": 0.010474743198081393,
+      "band": 0.03,
+      "ratio": 0.3491581066027131
+     }
+    ],
+    "missing": [],
+    "violated": 19,
+    "n": 31,
+    "L": 1.8924753297072747
+   },
+   "eZ": 0.10939806875263433,
+   "outOfBand": [
+    {
+     "id": "pts",
+     "kind": "count",
+     "error": 0.05039052658100285,
+     "band": 0.05,
+     "short": "0.04 puntos relativos"
+    },
+    {
+     "id": "fg2m",
+     "kind": "count",
+     "error": 0.0781671159029651,
+     "band": 0.05,
+     "short": "2.82 puntos relativos"
+    },
+    {
+     "id": "fg3a",
+     "kind": "count",
+     "error": 0.05645504899872167,
+     "band": 0.05,
+     "short": "0.65 puntos relativos"
+    },
+    {
+     "id": "ftm",
+     "kind": "count",
+     "error": 0.12305753884922299,
+     "band": 0.05,
+     "short": "7.31 puntos relativos"
+    },
+    {
+     "id": "fta",
+     "kind": "count",
+     "error": 0.1445154777927321,
+     "band": 0.05,
+     "short": "9.45 puntos relativos"
+    },
+    {
+     "id": "dreb",
+     "kind": "count",
+     "error": 0.12992398064961996,
+     "band": 0.05,
+     "short": "7.99 puntos relativos"
+    },
+    {
+     "id": "reb",
+     "kind": "count",
+     "error": 0.08883487533322887,
+     "band": 0.05,
+     "short": "3.88 puntos relativos"
+    },
+    {
+     "id": "ast_fg",
+     "kind": "count",
+     "error": 0.21328323571665375,
+     "band": 0.05,
+     "short": "16.33 puntos relativos"
+    },
+    {
+     "id": "ast_total",
+     "kind": "count",
+     "error": 0.19983686786296906,
+     "band": 0.05,
+     "short": "14.98 puntos relativos"
+    },
+    {
+     "id": "tov",
+     "kind": "count",
+     "error": 0.1468812877263581,
+     "band": 0.05,
+     "short": "9.69 puntos relativos"
+    },
+    {
+     "id": "stl",
+     "kind": "count",
+     "error": 0.2666076173604961,
+     "band": 0.05,
+     "short": "21.66 puntos relativos"
+    },
+    {
+     "id": "pf",
+     "kind": "count",
+     "error": 0.06834335702569694,
+     "band": 0.05,
+     "short": "1.83 puntos relativos"
+    },
+    {
+     "id": "pfd",
+     "kind": "count",
+     "error": 0.06834335702569694,
+     "band": 0.05,
+     "short": "1.83 puntos relativos"
+    },
+    {
+     "id": "fg_pct",
+     "kind": "rate",
+     "error": 0.03823470153385006,
+     "band": 0.03,
+     "short": "0.82 pp"
+    },
+    {
+     "id": "two_pct",
+     "kind": "rate",
+     "error": 0.05121796140672896,
+     "band": 0.03,
+     "short": "2.12 pp"
+    },
+    {
+     "id": "rim_pct",
+     "kind": "rate",
+     "error": 0.034976839444146646,
+     "band": 0.03,
+     "short": "0.50 pp"
+    },
+    {
+     "id": "inside_pct",
+     "kind": "rate",
+     "error": 0.039961903767873896,
+     "band": 0.03,
+     "short": "1.00 pp"
+    },
+    {
+     "id": "rim_share",
+     "kind": "share",
+     "error": 0.038275686250471064,
+     "band": 0.03,
+     "short": "0.83 pp"
+    },
+    {
+     "id": "mid_share",
+     "kind": "share",
+     "error": 0.04422429117823576,
+     "band": 0.03,
+     "short": "1.42 pp"
+    }
+   ],
+   "outOfBandComparable": [
+    {
+     "id": "pts",
+     "kind": "count",
+     "error": 0.05039052658100285,
+     "band": 0.05,
+     "short": "0.04 puntos relativos"
+    },
+    {
+     "id": "fg2m",
+     "kind": "count",
+     "error": 0.0781671159029651,
+     "band": 0.05,
+     "short": "2.82 puntos relativos"
+    },
+    {
+     "id": "fg3a",
+     "kind": "count",
+     "error": 0.05645504899872167,
+     "band": 0.05,
+     "short": "0.65 puntos relativos"
+    },
+    {
+     "id": "ftm",
+     "kind": "count",
+     "error": 0.12305753884922299,
+     "band": 0.05,
+     "short": "7.31 puntos relativos"
+    },
+    {
+     "id": "fta",
+     "kind": "count",
+     "error": 0.1445154777927321,
+     "band": 0.05,
+     "short": "9.45 puntos relativos"
+    },
+    {
+     "id": "dreb",
+     "kind": "count",
+     "error": 0.12992398064961996,
+     "band": 0.05,
+     "short": "7.99 puntos relativos"
+    },
+    {
+     "id": "reb",
+     "kind": "count",
+     "error": 0.08883487533322887,
+     "band": 0.05,
+     "short": "3.88 puntos relativos"
+    },
+    {
+     "id": "ast_fg",
+     "kind": "count",
+     "error": 0.21328323571665375,
+     "band": 0.05,
+     "short": "16.33 puntos relativos"
+    },
+    {
+     "id": "ast_total",
+     "kind": "count",
+     "error": 0.19983686786296906,
+     "band": 0.05,
+     "short": "14.98 puntos relativos"
+    },
+    {
+     "id": "tov",
+     "kind": "count",
+     "error": 0.1468812877263581,
+     "band": 0.05,
+     "short": "9.69 puntos relativos"
+    },
+    {
+     "id": "stl",
+     "kind": "count",
+     "error": 0.2666076173604961,
+     "band": 0.05,
+     "short": "21.66 puntos relativos"
+    },
+    {
+     "id": "pf",
+     "kind": "count",
+     "error": 0.06834335702569694,
+     "band": 0.05,
+     "short": "1.83 puntos relativos"
+    },
+    {
+     "id": "pfd",
+     "kind": "count",
+     "error": 0.06834335702569694,
+     "band": 0.05,
+     "short": "1.83 puntos relativos"
+    },
+    {
+     "id": "fg_pct",
+     "kind": "rate",
+     "error": 0.03823470153385006,
+     "band": 0.03,
+     "short": "0.82 pp"
+    },
+    {
+     "id": "two_pct",
+     "kind": "rate",
+     "error": 0.05121796140672896,
+     "band": 0.03,
+     "short": "2.12 pp"
+    },
+    {
+     "id": "rim_pct",
+     "kind": "rate",
+     "error": 0.034976839444146646,
+     "band": 0.03,
+     "short": "0.50 pp"
+    },
+    {
+     "id": "inside_pct",
+     "kind": "rate",
+     "error": 0.039961903767873896,
+     "band": 0.03,
+     "short": "1.00 pp"
+    },
+    {
+     "id": "rim_share",
+     "kind": "share",
+     "error": 0.038275686250471064,
+     "band": 0.03,
+     "short": "0.83 pp"
+    },
+    {
+     "id": "mid_share",
+     "kind": "share",
+     "error": 0.04422429117823576,
+     "band": 0.03,
+     "short": "1.42 pp"
+    }
+   ],
+   "cases": 24,
+   "teamGames": 48
+  },
+  "DEVB|SIM_04E_EXP": {
+   "M04E": {
+    "M": 5.665722379603402,
+    "partialM": 5.665722379603402,
+    "dominant": "blk",
+    "comps": [
+     {
+      "id": "pts",
+      "kind": "count",
+      "error": 0.0022675736961451642,
+      "band": 0.05,
+      "ratio": 0.045351473922903285
+     },
+     {
+      "id": "fgm",
+      "kind": "count",
+      "error": 0.014037680088659021,
+      "band": 0.05,
+      "ratio": 0.28075360177318043
+     },
+     {
+      "id": "fga",
+      "kind": "count",
+      "error": 0.02026843026648506,
+      "band": 0.05,
+      "ratio": 0.4053686053297012
+     },
+     {
+      "id": "fg2m",
+      "kind": "count",
+      "error": 0.046858801575782705,
+      "band": 0.05,
+      "ratio": 0.9371760315156541
+     },
+     {
+      "id": "fg2a",
+      "kind": "count",
+      "error": 0.06894649751792592,
+      "band": 0.05,
+      "ratio": 1.3789299503585184
+     },
+     {
+      "id": "fg3m",
+      "kind": "count",
+      "error": 0.06736950372846484,
+      "band": 0.05,
+      "ratio": 1.3473900745692968
+     },
+     {
+      "id": "fg3a",
+      "kind": "count",
+      "error": 0.0643374520664679,
+      "band": 0.05,
+      "ratio": 1.286749041329358
+     },
+     {
+      "id": "ftm",
+      "kind": "count",
+      "error": 0.041789164216715524,
+      "band": 0.05,
+      "ratio": 0.8357832843343105
+     },
+     {
+      "id": "fta",
+      "kind": "count",
+      "error": 0.08092193808882908,
+      "band": 0.05,
+      "ratio": 1.6184387617765816
+     },
+     {
+      "id": "oreb",
+      "kind": "count",
+      "error": 0.06286836935166984,
+      "band": 0.05,
+      "ratio": 1.2573673870333968
+     },
+     {
+      "id": "dreb",
+      "kind": "count",
+      "error": 0.06565307532826559,
+      "band": 0.05,
+      "ratio": 1.3130615065653117
+     },
+     {
+      "id": "reb",
+      "kind": "count",
+      "error": 0.024619727144425285,
+      "band": 0.05,
+      "ratio": 0.4923945428885057
+     },
+     {
+      "id": "ast_fg",
+      "kind": "count",
+      "error": 0.008398718090396828,
+      "band": 0.05,
+      "ratio": 0.16797436180793657
+     },
+     {
+      "id": "ast_ft",
+      "kind": "count",
+      "error": 0.18577075098814233,
+      "band": 0.05,
+      "ratio": 3.7154150197628466
+     },
+     {
+      "id": "ast_total",
+      "kind": "count",
+      "error": 0.006627243066884114,
+      "band": 0.05,
+      "ratio": 0.13254486133768228
+     },
+     {
+      "id": "tov",
+      "kind": "count",
+      "error": 0.026156941649899457,
+      "band": 0.05,
+      "ratio": 0.5231388329979891
+     },
+     {
+      "id": "stl",
+      "kind": "count",
+      "error": 0.1523472099202836,
+      "band": 0.05,
+      "ratio": 3.046944198405672
+     },
+     {
+      "id": "blk",
+      "kind": "count",
+      "error": 0.2832861189801701,
+      "band": 0.05,
+      "ratio": 5.665722379603402
+     },
+     {
+      "id": "pf",
+      "kind": "count",
+      "error": 0.012575177692728201,
+      "band": 0.05,
+      "ratio": 0.251503553854564
+     },
+     {
+      "id": "pfd",
+      "kind": "count",
+      "error": 0.012575177692728201,
+      "band": 0.05,
+      "ratio": 0.251503553854564
+     },
+     {
+      "id": "fg_pct",
+      "kind": "rate",
+      "error": 0.002961836192612699,
+      "band": 0.03,
+      "ratio": 0.09872787308708997
+     },
+     {
+      "id": "two_pct",
+      "kind": "rate",
+      "error": 0.01216130336818999,
+      "band": 0.03,
+      "ratio": 0.4053767789396664
+     },
+     {
+      "id": "three_pct",
+      "kind": "rate",
+      "error": 0.0008175233243213897,
+      "band": 0.03,
+      "ratio": 0.02725077747737966
+     },
+     {
+      "id": "ft_pct",
+      "kind": "rate",
+      "error": 0.03435037682542286,
+      "band": 0.03,
+      "ratio": 1.1450125608474286
+     },
+     {
+      "id": "rim_pct",
+      "kind": "rate",
+      "error": 0.02842055162113588,
+      "band": 0.03,
+      "ratio": 0.9473517207045294
+     },
+     {
+      "id": "inside_pct",
+      "kind": "rate",
+      "error": 0.005941269885492928,
+      "band": 0.03,
+      "ratio": 0.19804232951643094
+     },
+     {
+      "id": "mid_pct",
+      "kind": "rate",
+      "error": 0.0678858259170827,
+      "band": 0.03,
+      "ratio": 2.2628608639027568
+     },
+     {
+      "id": "rim_share",
+      "kind": "share",
+      "error": 0.035461112437895126,
+      "band": 0.03,
+      "ratio": 1.1820370812631709
+     },
+     {
+      "id": "inside_share",
+      "kind": "share",
+      "error": 0.02696192512300244,
+      "band": 0.03,
+      "ratio": 0.8987308374334146
+     },
+     {
+      "id": "mid_share",
+      "kind": "share",
+      "error": 0.021943932257992793,
+      "band": 0.03,
+      "ratio": 0.7314644085997598
+     },
+     {
+      "id": "three_share",
+      "kind": "share",
+      "error": 0.03044311957288548,
+      "band": 0.03,
+      "ratio": 1.0147706524295161
+     }
+    ],
+    "missing": [],
+    "violated": 13,
+    "n": 31,
+    "L": 1.2867831975129425
+   },
+   "M04E_comparable": {
+    "M": 5.665722379603402,
+    "partialM": 5.665722379603402,
+    "dominant": "blk",
+    "comps": [
+     {
+      "id": "pts",
+      "kind": "count",
+      "error": 0.0022675736961451642,
+      "band": 0.05,
+      "ratio": 0.045351473922903285
+     },
+     {
+      "id": "fgm",
+      "kind": "count",
+      "error": 0.014037680088659021,
+      "band": 0.05,
+      "ratio": 0.28075360177318043
+     },
+     {
+      "id": "fga",
+      "kind": "count",
+      "error": 0.02026843026648506,
+      "band": 0.05,
+      "ratio": 0.4053686053297012
+     },
+     {
+      "id": "fg2m",
+      "kind": "count",
+      "error": 0.046858801575782705,
+      "band": 0.05,
+      "ratio": 0.9371760315156541
+     },
+     {
+      "id": "fg2a",
+      "kind": "count",
+      "error": 0.06894649751792592,
+      "band": 0.05,
+      "ratio": 1.3789299503585184
+     },
+     {
+      "id": "fg3m",
+      "kind": "count",
+      "error": 0.06736950372846484,
+      "band": 0.05,
+      "ratio": 1.3473900745692968
+     },
+     {
+      "id": "fg3a",
+      "kind": "count",
+      "error": 0.0643374520664679,
+      "band": 0.05,
+      "ratio": 1.286749041329358
+     },
+     {
+      "id": "ftm",
+      "kind": "count",
+      "error": 0.041789164216715524,
+      "band": 0.05,
+      "ratio": 0.8357832843343105
+     },
+     {
+      "id": "fta",
+      "kind": "count",
+      "error": 0.08092193808882908,
+      "band": 0.05,
+      "ratio": 1.6184387617765816
+     },
+     {
+      "id": "oreb",
+      "kind": "count",
+      "error": 0.06286836935166984,
+      "band": 0.05,
+      "ratio": 1.2573673870333968
+     },
+     {
+      "id": "dreb",
+      "kind": "count",
+      "error": 0.06565307532826559,
+      "band": 0.05,
+      "ratio": 1.3130615065653117
+     },
+     {
+      "id": "reb",
+      "kind": "count",
+      "error": 0.024619727144425285,
+      "band": 0.05,
+      "ratio": 0.4923945428885057
+     },
+     {
+      "id": "ast_fg",
+      "kind": "count",
+      "error": 0.008398718090396828,
+      "band": 0.05,
+      "ratio": 0.16797436180793657
+     },
+     {
+      "id": "ast_ft",
+      "kind": "count",
+      "error": 0.18577075098814233,
+      "band": 0.05,
+      "ratio": 3.7154150197628466
+     },
+     {
+      "id": "ast_total",
+      "kind": "count",
+      "error": 0.006627243066884114,
+      "band": 0.05,
+      "ratio": 0.13254486133768228
+     },
+     {
+      "id": "tov",
+      "kind": "count",
+      "error": 0.026156941649899457,
+      "band": 0.05,
+      "ratio": 0.5231388329979891
+     },
+     {
+      "id": "stl",
+      "kind": "count",
+      "error": 0.1523472099202836,
+      "band": 0.05,
+      "ratio": 3.046944198405672
+     },
+     {
+      "id": "blk",
+      "kind": "count",
+      "error": 0.2832861189801701,
+      "band": 0.05,
+      "ratio": 5.665722379603402
+     },
+     {
+      "id": "pf",
+      "kind": "count",
+      "error": 0.012575177692728201,
+      "band": 0.05,
+      "ratio": 0.251503553854564
+     },
+     {
+      "id": "pfd",
+      "kind": "count",
+      "error": 0.012575177692728201,
+      "band": 0.05,
+      "ratio": 0.251503553854564
+     },
+     {
+      "id": "fg_pct",
+      "kind": "rate",
+      "error": 0.002961836192612699,
+      "band": 0.03,
+      "ratio": 0.09872787308708997
+     },
+     {
+      "id": "two_pct",
+      "kind": "rate",
+      "error": 0.01216130336818999,
+      "band": 0.03,
+      "ratio": 0.4053767789396664
+     },
+     {
+      "id": "three_pct",
+      "kind": "rate",
+      "error": 0.0008175233243213897,
+      "band": 0.03,
+      "ratio": 0.02725077747737966
+     },
+     {
+      "id": "ft_pct",
+      "kind": "rate",
+      "error": 0.03435037682542286,
+      "band": 0.03,
+      "ratio": 1.1450125608474286
+     },
+     {
+      "id": "rim_pct",
+      "kind": "rate",
+      "error": 0.02842055162113588,
+      "band": 0.03,
+      "ratio": 0.9473517207045294
+     },
+     {
+      "id": "inside_pct",
+      "kind": "rate",
+      "error": 0.005941269885492928,
+      "band": 0.03,
+      "ratio": 0.19804232951643094
+     },
+     {
+      "id": "mid_pct",
+      "kind": "rate",
+      "error": 0.0678858259170827,
+      "band": 0.03,
+      "ratio": 2.2628608639027568
+     },
+     {
+      "id": "rim_share",
+      "kind": "share",
+      "error": 0.035461112437895126,
+      "band": 0.03,
+      "ratio": 1.1820370812631709
+     },
+     {
+      "id": "inside_share",
+      "kind": "share",
+      "error": 0.02696192512300244,
+      "band": 0.03,
+      "ratio": 0.8987308374334146
+     },
+     {
+      "id": "mid_share",
+      "kind": "share",
+      "error": 0.021943932257992793,
+      "band": 0.03,
+      "ratio": 0.7314644085997598
+     },
+     {
+      "id": "three_share",
+      "kind": "share",
+      "error": 0.03044311957288548,
+      "band": 0.03,
+      "ratio": 1.0147706524295161
+     }
+    ],
+    "missing": [],
+    "violated": 13,
+    "n": 31,
+    "L": 1.2867831975129425
+   },
+   "eZ": 0.11481008939177584,
+   "outOfBand": [
+    {
+     "id": "fg2a",
+     "kind": "count",
+     "error": 0.06894649751792592,
+     "band": 0.05,
+     "short": "1.89 puntos relativos"
+    },
+    {
+     "id": "fg3m",
+     "kind": "count",
+     "error": 0.06736950372846484,
+     "band": 0.05,
+     "short": "1.74 puntos relativos"
+    },
+    {
+     "id": "fg3a",
+     "kind": "count",
+     "error": 0.0643374520664679,
+     "band": 0.05,
+     "short": "1.43 puntos relativos"
+    },
+    {
+     "id": "fta",
+     "kind": "count",
+     "error": 0.08092193808882908,
+     "band": 0.05,
+     "short": "3.09 puntos relativos"
+    },
+    {
+     "id": "oreb",
+     "kind": "count",
+     "error": 0.06286836935166984,
+     "band": 0.05,
+     "short": "1.29 puntos relativos"
+    },
+    {
+     "id": "dreb",
+     "kind": "count",
+     "error": 0.06565307532826559,
+     "band": 0.05,
+     "short": "1.57 puntos relativos"
+    },
+    {
+     "id": "ast_ft",
+     "kind": "count",
+     "error": 0.18577075098814233,
+     "band": 0.05,
+     "short": "13.58 puntos relativos"
+    },
+    {
+     "id": "stl",
+     "kind": "count",
+     "error": 0.1523472099202836,
+     "band": 0.05,
+     "short": "10.23 puntos relativos"
+    },
+    {
+     "id": "blk",
+     "kind": "count",
+     "error": 0.2832861189801701,
+     "band": 0.05,
+     "short": "23.33 puntos relativos"
+    },
+    {
+     "id": "ft_pct",
+     "kind": "rate",
+     "error": 0.03435037682542286,
+     "band": 0.03,
+     "short": "0.44 pp"
+    },
+    {
+     "id": "mid_pct",
+     "kind": "rate",
+     "error": 0.0678858259170827,
+     "band": 0.03,
+     "short": "3.79 pp"
+    },
+    {
+     "id": "rim_share",
+     "kind": "share",
+     "error": 0.035461112437895126,
+     "band": 0.03,
+     "short": "0.55 pp"
+    },
+    {
+     "id": "three_share",
+     "kind": "share",
+     "error": 0.03044311957288548,
+     "band": 0.03,
+     "short": "0.04 pp"
+    }
+   ],
+   "outOfBandComparable": [
+    {
+     "id": "fg2a",
+     "kind": "count",
+     "error": 0.06894649751792592,
+     "band": 0.05,
+     "short": "1.89 puntos relativos"
+    },
+    {
+     "id": "fg3m",
+     "kind": "count",
+     "error": 0.06736950372846484,
+     "band": 0.05,
+     "short": "1.74 puntos relativos"
+    },
+    {
+     "id": "fg3a",
+     "kind": "count",
+     "error": 0.0643374520664679,
+     "band": 0.05,
+     "short": "1.43 puntos relativos"
+    },
+    {
+     "id": "fta",
+     "kind": "count",
+     "error": 0.08092193808882908,
+     "band": 0.05,
+     "short": "3.09 puntos relativos"
+    },
+    {
+     "id": "oreb",
+     "kind": "count",
+     "error": 0.06286836935166984,
+     "band": 0.05,
+     "short": "1.29 puntos relativos"
+    },
+    {
+     "id": "dreb",
+     "kind": "count",
+     "error": 0.06565307532826559,
+     "band": 0.05,
+     "short": "1.57 puntos relativos"
+    },
+    {
+     "id": "ast_ft",
+     "kind": "count",
+     "error": 0.18577075098814233,
+     "band": 0.05,
+     "short": "13.58 puntos relativos"
+    },
+    {
+     "id": "stl",
+     "kind": "count",
+     "error": 0.1523472099202836,
+     "band": 0.05,
+     "short": "10.23 puntos relativos"
+    },
+    {
+     "id": "blk",
+     "kind": "count",
+     "error": 0.2832861189801701,
+     "band": 0.05,
+     "short": "23.33 puntos relativos"
+    },
+    {
+     "id": "ft_pct",
+     "kind": "rate",
+     "error": 0.03435037682542286,
+     "band": 0.03,
+     "short": "0.44 pp"
+    },
+    {
+     "id": "mid_pct",
+     "kind": "rate",
+     "error": 0.0678858259170827,
+     "band": 0.03,
+     "short": "3.79 pp"
+    },
+    {
+     "id": "rim_share",
+     "kind": "share",
+     "error": 0.035461112437895126,
+     "band": 0.03,
+     "short": "0.55 pp"
+    },
+    {
+     "id": "three_share",
+     "kind": "share",
+     "error": 0.03044311957288548,
+     "band": 0.03,
+     "short": "0.04 pp"
+    }
+   ],
+   "cases": 24,
+   "teamGames": 48
+  },
+  "JOINT|SIM_04E_BASE": {
+   "M04E": {
+    "M": 5.009182736455466,
+    "partialM": 5.009182736455466,
+    "dominant": "tov",
+    "comps": [
+     {
+      "id": "pts",
+      "kind": "count",
+      "error": 0.05238010307052543,
+      "band": 0.05,
+      "ratio": 1.0476020614105086
+     },
+     {
+      "id": "fgm",
+      "kind": "count",
+      "error": 0.0619325311877168,
+      "band": 0.05,
+      "ratio": 1.238650623754336
+     },
+     {
+      "id": "fga",
+      "kind": "count",
+      "error": 0.016595623018142325,
+      "band": 0.05,
+      "ratio": 0.3319124603628465
+     },
+     {
+      "id": "fg2m",
+      "kind": "count",
+      "error": 0.10464174875185517,
+      "band": 0.05,
+      "ratio": 2.0928349750371034
+     },
+     {
+      "id": "fg2a",
+      "kind": "count",
+      "error": 0.026355966251506713,
+      "band": 0.05,
+      "ratio": 0.5271193250301343
+     },
+     {
+      "id": "fg3m",
+      "kind": "count",
+      "error": 0.053196326270801064,
+      "band": 0.05,
+      "ratio": 1.0639265254160213
+     },
+     {
+      "id": "fg3a",
+      "kind": "count",
+      "error": 0.09529593639575973,
+      "band": 0.05,
+      "ratio": 1.9059187279151946
+     },
+     {
+      "id": "ftm",
+      "kind": "count",
+      "error": 0.07936842105263153,
+      "band": 0.05,
+      "ratio": 1.5873684210526307
+     },
+     {
+      "id": "fta",
+      "kind": "count",
+      "error": 0.10425101214574894,
+      "band": 0.05,
+      "ratio": 2.085020242914979
+     },
+     {
+      "id": "oreb",
+      "kind": "count",
+      "error": 0.006946146931437358,
+      "band": 0.05,
+      "ratio": 0.13892293862874716
+     },
+     {
+      "id": "dreb",
+      "kind": "count",
+      "error": 0.13997360453380936,
+      "band": 0.05,
+      "ratio": 2.799472090676187
+     },
+     {
+      "id": "reb",
+      "kind": "count",
+      "error": 0.09266033316666222,
+      "band": 0.05,
+      "ratio": 1.8532066633332445
+     },
+     {
+      "id": "ast_fg",
+      "kind": "count",
+      "error": 0.2294967466823512,
+      "band": 0.05,
+      "ratio": 4.589934933647024
+     },
+     {
+      "id": "ast_ft",
+      "kind": "count",
+      "error": 0.08630030959752322,
+      "band": 0.05,
+      "ratio": 1.7260061919504643
+     },
+     {
+      "id": "ast_total",
+      "kind": "count",
+      "error": 0.21707456272870707,
+      "band": 0.05,
+      "ratio": 4.341491254574141
+     },
+     {
+      "id": "tov",
+      "kind": "count",
+      "error": 0.2504591368227733,
+      "band": 0.05,
+      "ratio": 5.009182736455466
+     },
+     {
+      "id": "stl",
+      "kind": "count",
+      "error": 0.1125697407285855,
+      "band": 0.05,
+      "ratio": 2.25139481457171
+     },
+     {
+      "id": "blk",
+      "kind": "count",
+      "error": 0.07906834201654933,
+      "band": 0.05,
+      "ratio": 1.5813668403309866
+     },
+     {
+      "id": "pf",
+      "kind": "count",
+      "error": 0.0252340504681009,
+      "band": 0.05,
+      "ratio": 0.504681009362018
+     },
+     {
+      "id": "pfd",
+      "kind": "count",
+      "error": 0.024689826302729423,
+      "band": 0.05,
+      "ratio": 0.49379652605458846
+     },
+     {
+      "id": "fg_pct",
+      "kind": "rate",
+      "error": 0.040944411875315556,
+      "band": 0.03,
+      "ratio": 1.3648137291771854
+     },
+     {
+      "id": "two_pct",
+      "kind": "rate",
+      "error": 0.04816564649378108,
+      "band": 0.03,
+      "ratio": 1.6055215497927027
+     },
+     {
+      "id": "three_pct",
+      "kind": "rate",
+      "error": 0.01560184429395739,
+      "band": 0.03,
+      "ratio": 0.5200614764652464
+     },
+     {
+      "id": "ft_pct",
+      "kind": "rate",
+      "error": 0.022354124748490967,
+      "band": 0.03,
+      "ratio": 0.7451374916163656
+     },
+     {
+      "id": "rim_pct",
+      "kind": "rate",
+      "error": 0.05475747878467796,
+      "band": 0.03,
+      "ratio": 1.8252492928225987
+     },
+     {
+      "id": "inside_pct",
+      "kind": "rate",
+      "error": 0.005205855046285013,
+      "band": 0.03,
+      "ratio": 0.17352850154283378
+     },
+     {
+      "id": "mid_pct",
+      "kind": "rate",
+      "error": 0.022709010236523053,
+      "band": 0.03,
+      "ratio": 0.7569670078841018
+     },
+     {
+      "id": "rim_share",
+      "kind": "share",
+      "error": 0.04507077774733009,
+      "band": 0.03,
+      "ratio": 1.5023592582443366
+     },
+     {
+      "id": "inside_share",
+      "kind": "share",
+      "error": 0.02094304399858496,
+      "band": 0.03,
+      "ratio": 0.6981014666194987
+     },
+     {
+      "id": "mid_share",
+      "kind": "share",
+      "error": 0.038937254245508035,
+      "band": 0.03,
+      "ratio": 1.2979084748502678
+     },
+     {
+      "id": "three_share",
+      "kind": "share",
+      "error": 0.027076567500407045,
+      "band": 0.03,
+      "ratio": 0.9025522500135682
+     }
+    ],
+    "missing": [],
+    "violated": 20,
+    "n": 31,
+    "L": 1.8608833943205703
+   },
+   "M04E_comparable": {
+    "M": 5.009182736455466,
+    "partialM": 5.009182736455466,
+    "dominant": "tov",
+    "comps": [
+     {
+      "id": "pts",
+      "kind": "count",
+      "error": 0.05238010307052543,
+      "band": 0.05,
+      "ratio": 1.0476020614105086
+     },
+     {
+      "id": "fgm",
+      "kind": "count",
+      "error": 0.0619325311877168,
+      "band": 0.05,
+      "ratio": 1.238650623754336
+     },
+     {
+      "id": "fga",
+      "kind": "count",
+      "error": 0.016595623018142325,
+      "band": 0.05,
+      "ratio": 0.3319124603628465
+     },
+     {
+      "id": "fg2m",
+      "kind": "count",
+      "error": 0.10464174875185517,
+      "band": 0.05,
+      "ratio": 2.0928349750371034
+     },
+     {
+      "id": "fg2a",
+      "kind": "count",
+      "error": 0.026355966251506713,
+      "band": 0.05,
+      "ratio": 0.5271193250301343
+     },
+     {
+      "id": "fg3m",
+      "kind": "count",
+      "error": 0.053196326270801064,
+      "band": 0.05,
+      "ratio": 1.0639265254160213
+     },
+     {
+      "id": "fg3a",
+      "kind": "count",
+      "error": 0.09529593639575973,
+      "band": 0.05,
+      "ratio": 1.9059187279151946
+     },
+     {
+      "id": "ftm",
+      "kind": "count",
+      "error": 0.07936842105263153,
+      "band": 0.05,
+      "ratio": 1.5873684210526307
+     },
+     {
+      "id": "fta",
+      "kind": "count",
+      "error": 0.10425101214574894,
+      "band": 0.05,
+      "ratio": 2.085020242914979
+     },
+     {
+      "id": "oreb",
+      "kind": "count",
+      "error": 0.006946146931437358,
+      "band": 0.05,
+      "ratio": 0.13892293862874716
+     },
+     {
+      "id": "dreb",
+      "kind": "count",
+      "error": 0.13997360453380936,
+      "band": 0.05,
+      "ratio": 2.799472090676187
+     },
+     {
+      "id": "reb",
+      "kind": "count",
+      "error": 0.09266033316666222,
+      "band": 0.05,
+      "ratio": 1.8532066633332445
+     },
+     {
+      "id": "ast_fg",
+      "kind": "count",
+      "error": 0.2294967466823512,
+      "band": 0.05,
+      "ratio": 4.589934933647024
+     },
+     {
+      "id": "ast_ft",
+      "kind": "count",
+      "error": 0.08630030959752322,
+      "band": 0.05,
+      "ratio": 1.7260061919504643
+     },
+     {
+      "id": "ast_total",
+      "kind": "count",
+      "error": 0.21707456272870707,
+      "band": 0.05,
+      "ratio": 4.341491254574141
+     },
+     {
+      "id": "tov",
+      "kind": "count",
+      "error": 0.2504591368227733,
+      "band": 0.05,
+      "ratio": 5.009182736455466
+     },
+     {
+      "id": "stl",
+      "kind": "count",
+      "error": 0.1125697407285855,
+      "band": 0.05,
+      "ratio": 2.25139481457171
+     },
+     {
+      "id": "blk",
+      "kind": "count",
+      "error": 0.07906834201654933,
+      "band": 0.05,
+      "ratio": 1.5813668403309866
+     },
+     {
+      "id": "pf",
+      "kind": "count",
+      "error": 0.0252340504681009,
+      "band": 0.05,
+      "ratio": 0.504681009362018
+     },
+     {
+      "id": "pfd",
+      "kind": "count",
+      "error": 0.024689826302729423,
+      "band": 0.05,
+      "ratio": 0.49379652605458846
+     },
+     {
+      "id": "fg_pct",
+      "kind": "rate",
+      "error": 0.040944411875315556,
+      "band": 0.03,
+      "ratio": 1.3648137291771854
+     },
+     {
+      "id": "two_pct",
+      "kind": "rate",
+      "error": 0.04816564649378108,
+      "band": 0.03,
+      "ratio": 1.6055215497927027
+     },
+     {
+      "id": "three_pct",
+      "kind": "rate",
+      "error": 0.01560184429395739,
+      "band": 0.03,
+      "ratio": 0.5200614764652464
+     },
+     {
+      "id": "ft_pct",
+      "kind": "rate",
+      "error": 0.022354124748490967,
+      "band": 0.03,
+      "ratio": 0.7451374916163656
+     },
+     {
+      "id": "rim_pct",
+      "kind": "rate",
+      "error": 0.05475747878467796,
+      "band": 0.03,
+      "ratio": 1.8252492928225987
+     },
+     {
+      "id": "inside_pct",
+      "kind": "rate",
+      "error": 0.005205855046285013,
+      "band": 0.03,
+      "ratio": 0.17352850154283378
+     },
+     {
+      "id": "mid_pct",
+      "kind": "rate",
+      "error": 0.022709010236523053,
+      "band": 0.03,
+      "ratio": 0.7569670078841018
+     },
+     {
+      "id": "rim_share",
+      "kind": "share",
+      "error": 0.04507077774733009,
+      "band": 0.03,
+      "ratio": 1.5023592582443366
+     },
+     {
+      "id": "inside_share",
+      "kind": "share",
+      "error": 0.02094304399858496,
+      "band": 0.03,
+      "ratio": 0.6981014666194987
+     },
+     {
+      "id": "mid_share",
+      "kind": "share",
+      "error": 0.038937254245508035,
+      "band": 0.03,
+      "ratio": 1.2979084748502678
+     },
+     {
+      "id": "three_share",
+      "kind": "share",
+      "error": 0.027076567500407045,
+      "band": 0.03,
+      "ratio": 0.9025522500135682
+     }
+    ],
+    "missing": [],
+    "violated": 20,
+    "n": 31,
+    "L": 1.8608833943205703
+   },
+   "eZ": 0.13202764349183013,
+   "outOfBand": [
+    {
+     "id": "pts",
+     "kind": "count",
+     "error": 0.05238010307052543,
+     "band": 0.05,
+     "short": "0.24 puntos relativos"
+    },
+    {
+     "id": "fgm",
+     "kind": "count",
+     "error": 0.0619325311877168,
+     "band": 0.05,
+     "short": "1.19 puntos relativos"
+    },
+    {
+     "id": "fg2m",
+     "kind": "count",
+     "error": 0.10464174875185517,
+     "band": 0.05,
+     "short": "5.46 puntos relativos"
+    },
+    {
+     "id": "fg3m",
+     "kind": "count",
+     "error": 0.053196326270801064,
+     "band": 0.05,
+     "short": "0.32 puntos relativos"
+    },
+    {
+     "id": "fg3a",
+     "kind": "count",
+     "error": 0.09529593639575973,
+     "band": 0.05,
+     "short": "4.53 puntos relativos"
+    },
+    {
+     "id": "ftm",
+     "kind": "count",
+     "error": 0.07936842105263153,
+     "band": 0.05,
+     "short": "2.94 puntos relativos"
+    },
+    {
+     "id": "fta",
+     "kind": "count",
+     "error": 0.10425101214574894,
+     "band": 0.05,
+     "short": "5.43 puntos relativos"
+    },
+    {
+     "id": "dreb",
+     "kind": "count",
+     "error": 0.13997360453380936,
+     "band": 0.05,
+     "short": "9.00 puntos relativos"
+    },
+    {
+     "id": "reb",
+     "kind": "count",
+     "error": 0.09266033316666222,
+     "band": 0.05,
+     "short": "4.27 puntos relativos"
+    },
+    {
+     "id": "ast_fg",
+     "kind": "count",
+     "error": 0.2294967466823512,
+     "band": 0.05,
+     "short": "17.95 puntos relativos"
+    },
+    {
+     "id": "ast_ft",
+     "kind": "count",
+     "error": 0.08630030959752322,
+     "band": 0.05,
+     "short": "3.63 puntos relativos"
+    },
+    {
+     "id": "ast_total",
+     "kind": "count",
+     "error": 0.21707456272870707,
+     "band": 0.05,
+     "short": "16.71 puntos relativos"
+    },
+    {
+     "id": "tov",
+     "kind": "count",
+     "error": 0.2504591368227733,
+     "band": 0.05,
+     "short": "20.05 puntos relativos"
+    },
+    {
+     "id": "stl",
+     "kind": "count",
+     "error": 0.1125697407285855,
+     "band": 0.05,
+     "short": "6.26 puntos relativos"
+    },
+    {
+     "id": "blk",
+     "kind": "count",
+     "error": 0.07906834201654933,
+     "band": 0.05,
+     "short": "2.91 puntos relativos"
+    },
+    {
+     "id": "fg_pct",
+     "kind": "rate",
+     "error": 0.040944411875315556,
+     "band": 0.03,
+     "short": "1.09 pp"
+    },
+    {
+     "id": "two_pct",
+     "kind": "rate",
+     "error": 0.04816564649378108,
+     "band": 0.03,
+     "short": "1.82 pp"
+    },
+    {
+     "id": "rim_pct",
+     "kind": "rate",
+     "error": 0.05475747878467796,
+     "band": 0.03,
+     "short": "2.48 pp"
+    },
+    {
+     "id": "rim_share",
+     "kind": "share",
+     "error": 0.04507077774733009,
+     "band": 0.03,
+     "short": "1.51 pp"
+    },
+    {
+     "id": "mid_share",
+     "kind": "share",
+     "error": 0.038937254245508035,
+     "band": 0.03,
+     "short": "0.89 pp"
+    }
+   ],
+   "outOfBandComparable": [
+    {
+     "id": "pts",
+     "kind": "count",
+     "error": 0.05238010307052543,
+     "band": 0.05,
+     "short": "0.24 puntos relativos"
+    },
+    {
+     "id": "fgm",
+     "kind": "count",
+     "error": 0.0619325311877168,
+     "band": 0.05,
+     "short": "1.19 puntos relativos"
+    },
+    {
+     "id": "fg2m",
+     "kind": "count",
+     "error": 0.10464174875185517,
+     "band": 0.05,
+     "short": "5.46 puntos relativos"
+    },
+    {
+     "id": "fg3m",
+     "kind": "count",
+     "error": 0.053196326270801064,
+     "band": 0.05,
+     "short": "0.32 puntos relativos"
+    },
+    {
+     "id": "fg3a",
+     "kind": "count",
+     "error": 0.09529593639575973,
+     "band": 0.05,
+     "short": "4.53 puntos relativos"
+    },
+    {
+     "id": "ftm",
+     "kind": "count",
+     "error": 0.07936842105263153,
+     "band": 0.05,
+     "short": "2.94 puntos relativos"
+    },
+    {
+     "id": "fta",
+     "kind": "count",
+     "error": 0.10425101214574894,
+     "band": 0.05,
+     "short": "5.43 puntos relativos"
+    },
+    {
+     "id": "dreb",
+     "kind": "count",
+     "error": 0.13997360453380936,
+     "band": 0.05,
+     "short": "9.00 puntos relativos"
+    },
+    {
+     "id": "reb",
+     "kind": "count",
+     "error": 0.09266033316666222,
+     "band": 0.05,
+     "short": "4.27 puntos relativos"
+    },
+    {
+     "id": "ast_fg",
+     "kind": "count",
+     "error": 0.2294967466823512,
+     "band": 0.05,
+     "short": "17.95 puntos relativos"
+    },
+    {
+     "id": "ast_ft",
+     "kind": "count",
+     "error": 0.08630030959752322,
+     "band": 0.05,
+     "short": "3.63 puntos relativos"
+    },
+    {
+     "id": "ast_total",
+     "kind": "count",
+     "error": 0.21707456272870707,
+     "band": 0.05,
+     "short": "16.71 puntos relativos"
+    },
+    {
+     "id": "tov",
+     "kind": "count",
+     "error": 0.2504591368227733,
+     "band": 0.05,
+     "short": "20.05 puntos relativos"
+    },
+    {
+     "id": "stl",
+     "kind": "count",
+     "error": 0.1125697407285855,
+     "band": 0.05,
+     "short": "6.26 puntos relativos"
+    },
+    {
+     "id": "blk",
+     "kind": "count",
+     "error": 0.07906834201654933,
+     "band": 0.05,
+     "short": "2.91 puntos relativos"
+    },
+    {
+     "id": "fg_pct",
+     "kind": "rate",
+     "error": 0.040944411875315556,
+     "band": 0.03,
+     "short": "1.09 pp"
+    },
+    {
+     "id": "two_pct",
+     "kind": "rate",
+     "error": 0.04816564649378108,
+     "band": 0.03,
+     "short": "1.82 pp"
+    },
+    {
+     "id": "rim_pct",
+     "kind": "rate",
+     "error": 0.05475747878467796,
+     "band": 0.03,
+     "short": "2.48 pp"
+    },
+    {
+     "id": "rim_share",
+     "kind": "share",
+     "error": 0.04507077774733009,
+     "band": 0.03,
+     "short": "1.51 pp"
+    },
+    {
+     "id": "mid_share",
+     "kind": "share",
+     "error": 0.038937254245508035,
+     "band": 0.03,
+     "short": "0.89 pp"
+    }
+   ],
+   "cases": 72,
+   "teamGames": 144
+  },
+  "JOINT|SIM_04E_EXP": {
+   "M04E": {
+    "M": 1.520414658543241,
+    "partialM": 1.520414658543241,
+    "dominant": "fg3m",
+    "comps": [
+     {
+      "id": "pts",
+      "kind": "count",
+      "error": 0.006214270292596358,
+      "band": 0.05,
+      "ratio": 0.12428540585192716
+     },
+     {
+      "id": "fgm",
+      "kind": "count",
+      "error": 0.006495903151989335,
+      "band": 0.05,
+      "ratio": 0.1299180630397867
+     },
+     {
+      "id": "fga",
+      "kind": "count",
+      "error": 0.014295368300670575,
+      "band": 0.05,
+      "ratio": 0.2859073660134115
+     },
+     {
+      "id": "fg2m",
+      "kind": "count",
+      "error": 0.037107003103494796,
+      "band": 0.05,
+      "ratio": 0.7421400620698959
+     },
+     {
+      "id": "fg2a",
+      "kind": "count",
+      "error": 0.046444355162715834,
+      "band": 0.05,
+      "ratio": 0.9288871032543167
+     },
+     {
+      "id": "fg3m",
+      "kind": "count",
+      "error": 0.07602073292716205,
+      "band": 0.05,
+      "ratio": 1.520414658543241
+     },
+     {
+      "id": "fg3a",
+      "kind": "count",
+      "error": 0.04461130742049457,
+      "band": 0.05,
+      "ratio": 0.8922261484098915
+     },
+     {
+      "id": "ftm",
+      "kind": "count",
+      "error": 0.024842105263158,
+      "band": 0.05,
+      "ratio": 0.49684210526315997
+     },
+     {
+      "id": "fta",
+      "kind": "count",
+      "error": 0.03997975708502022,
+      "band": 0.05,
+      "ratio": 0.7995951417004044
+     },
+     {
+      "id": "oreb",
+      "kind": "count",
+      "error": 0.0659475361608235,
+      "band": 0.05,
+      "ratio": 1.31895072321647
+     },
+     {
+      "id": "dreb",
+      "kind": "count",
+      "error": 0.0742566570918406,
+      "band": 0.05,
+      "ratio": 1.4851331418368119
+     },
+     {
+      "id": "reb",
+      "kind": "count",
+      "error": 0.029106029106028997,
+      "band": 0.05,
+      "ratio": 0.5821205821205799
+     },
+     {
+      "id": "ast_fg",
+      "kind": "count",
+      "error": 0.01110171672242033,
+      "band": 0.05,
+      "ratio": 0.2220343344484066
+     },
+     {
+      "id": "ast_ft",
+      "kind": "count",
+      "error": 0.02399380804953566,
+      "band": 0.05,
+      "ratio": 0.4798761609907132
+     },
+     {
+      "id": "ast_total",
+      "kind": "count",
+      "error": 0.008057206163762598,
+      "band": 0.05,
+      "ratio": 0.16114412327525196
+     },
+     {
+      "id": "tov",
+      "kind": "count",
+      "error": 0.06336088154269959,
+      "band": 0.05,
+      "ratio": 1.2672176308539917
+     },
+     {
+      "id": "stl",
+      "kind": "count",
+      "error": 0.049885132917623976,
+      "band": 0.05,
+      "ratio": 0.9977026583524795
+     },
+     {
+      "id": "blk",
+      "kind": "count",
+      "error": 0.02880784554091309,
+      "band": 0.05,
+      "ratio": 0.5761569108182618
+     },
+     {
+      "id": "pf",
+      "kind": "count",
+      "error": 0.02951205902411802,
+      "band": 0.05,
+      "ratio": 0.5902411804823604
+     },
+     {
+      "id": "pfd",
+      "kind": "count",
+      "error": 0.03008684863523592,
+      "band": 0.05,
+      "ratio": 0.6017369727047184
+     },
+     {
+      "id": "fg_pct",
+      "kind": "rate",
+      "error": 0.004058627318295538,
+      "band": 0.03,
+      "ratio": 0.13528757727651794
+     },
+     {
+      "id": "two_pct",
+      "kind": "rate",
+      "error": 0.0053513703452167105,
+      "band": 0.03,
+      "ratio": 0.17837901150722368
+     },
+     {
+      "id": "three_pct",
+      "kind": "rate",
+      "error": 0.013338778851653466,
+      "band": 0.03,
+      "ratio": 0.4446259617217822
+     },
+     {
+      "id": "ft_pct",
+      "kind": "rate",
+      "error": 0.012608863513182467,
+      "band": 0.03,
+      "ratio": 0.4202954504394156
+     },
+     {
+      "id": "rim_pct",
+      "kind": "rate",
+      "error": 0.017001890797889385,
+      "band": 0.03,
+      "ratio": 0.5667296932629795
+     },
+     {
+      "id": "inside_pct",
+      "kind": "rate",
+      "error": 0.015479869152319803,
+      "band": 0.03,
+      "ratio": 0.5159956384106601
+     },
+     {
+      "id": "mid_pct",
+      "kind": "rate",
+      "error": 0.0036091664130104006,
+      "band": 0.03,
+      "ratio": 0.12030554710034669
+     },
+     {
+      "id": "rim_share",
+      "kind": "share",
+      "error": 0.04378572388528168,
+      "band": 0.03,
+      "ratio": 1.4595241295093895
+     },
+     {
+      "id": "inside_share",
+      "kind": "share",
+      "error": 0.040286463051970534,
+      "band": 0.03,
+      "ratio": 1.3428821017323511
+     },
+     {
+      "id": "mid_share",
+      "kind": "share",
+      "error": 0.01720588658353421,
+      "band": 0.03,
+      "ratio": 0.5735295527844737
+     },
+     {
+      "id": "three_share",
+      "kind": "share",
+      "error": 0.020705147416845315,
+      "band": 0.03,
+      "ratio": 0.6901715805615105
+     }
+    ],
+    "missing": [],
+    "violated": 6,
+    "n": 31,
+    "L": 0.06400185990261173
+   },
+   "M04E_comparable": {
+    "M": 1.520414658543241,
+    "partialM": 1.520414658543241,
+    "dominant": "fg3m",
+    "comps": [
+     {
+      "id": "pts",
+      "kind": "count",
+      "error": 0.006214270292596358,
+      "band": 0.05,
+      "ratio": 0.12428540585192716
+     },
+     {
+      "id": "fgm",
+      "kind": "count",
+      "error": 0.006495903151989335,
+      "band": 0.05,
+      "ratio": 0.1299180630397867
+     },
+     {
+      "id": "fga",
+      "kind": "count",
+      "error": 0.014295368300670575,
+      "band": 0.05,
+      "ratio": 0.2859073660134115
+     },
+     {
+      "id": "fg2m",
+      "kind": "count",
+      "error": 0.037107003103494796,
+      "band": 0.05,
+      "ratio": 0.7421400620698959
+     },
+     {
+      "id": "fg2a",
+      "kind": "count",
+      "error": 0.046444355162715834,
+      "band": 0.05,
+      "ratio": 0.9288871032543167
+     },
+     {
+      "id": "fg3m",
+      "kind": "count",
+      "error": 0.07602073292716205,
+      "band": 0.05,
+      "ratio": 1.520414658543241
+     },
+     {
+      "id": "fg3a",
+      "kind": "count",
+      "error": 0.04461130742049457,
+      "band": 0.05,
+      "ratio": 0.8922261484098915
+     },
+     {
+      "id": "ftm",
+      "kind": "count",
+      "error": 0.024842105263158,
+      "band": 0.05,
+      "ratio": 0.49684210526315997
+     },
+     {
+      "id": "fta",
+      "kind": "count",
+      "error": 0.03997975708502022,
+      "band": 0.05,
+      "ratio": 0.7995951417004044
+     },
+     {
+      "id": "oreb",
+      "kind": "count",
+      "error": 0.0659475361608235,
+      "band": 0.05,
+      "ratio": 1.31895072321647
+     },
+     {
+      "id": "dreb",
+      "kind": "count",
+      "error": 0.0742566570918406,
+      "band": 0.05,
+      "ratio": 1.4851331418368119
+     },
+     {
+      "id": "reb",
+      "kind": "count",
+      "error": 0.029106029106028997,
+      "band": 0.05,
+      "ratio": 0.5821205821205799
+     },
+     {
+      "id": "ast_fg",
+      "kind": "count",
+      "error": 0.01110171672242033,
+      "band": 0.05,
+      "ratio": 0.2220343344484066
+     },
+     {
+      "id": "ast_ft",
+      "kind": "count",
+      "error": 0.02399380804953566,
+      "band": 0.05,
+      "ratio": 0.4798761609907132
+     },
+     {
+      "id": "ast_total",
+      "kind": "count",
+      "error": 0.008057206163762598,
+      "band": 0.05,
+      "ratio": 0.16114412327525196
+     },
+     {
+      "id": "tov",
+      "kind": "count",
+      "error": 0.06336088154269959,
+      "band": 0.05,
+      "ratio": 1.2672176308539917
+     },
+     {
+      "id": "stl",
+      "kind": "count",
+      "error": 0.049885132917623976,
+      "band": 0.05,
+      "ratio": 0.9977026583524795
+     },
+     {
+      "id": "blk",
+      "kind": "count",
+      "error": 0.02880784554091309,
+      "band": 0.05,
+      "ratio": 0.5761569108182618
+     },
+     {
+      "id": "pf",
+      "kind": "count",
+      "error": 0.02951205902411802,
+      "band": 0.05,
+      "ratio": 0.5902411804823604
+     },
+     {
+      "id": "pfd",
+      "kind": "count",
+      "error": 0.03008684863523592,
+      "band": 0.05,
+      "ratio": 0.6017369727047184
+     },
+     {
+      "id": "fg_pct",
+      "kind": "rate",
+      "error": 0.004058627318295538,
+      "band": 0.03,
+      "ratio": 0.13528757727651794
+     },
+     {
+      "id": "two_pct",
+      "kind": "rate",
+      "error": 0.0053513703452167105,
+      "band": 0.03,
+      "ratio": 0.17837901150722368
+     },
+     {
+      "id": "three_pct",
+      "kind": "rate",
+      "error": 0.013338778851653466,
+      "band": 0.03,
+      "ratio": 0.4446259617217822
+     },
+     {
+      "id": "ft_pct",
+      "kind": "rate",
+      "error": 0.012608863513182467,
+      "band": 0.03,
+      "ratio": 0.4202954504394156
+     },
+     {
+      "id": "rim_pct",
+      "kind": "rate",
+      "error": 0.017001890797889385,
+      "band": 0.03,
+      "ratio": 0.5667296932629795
+     },
+     {
+      "id": "inside_pct",
+      "kind": "rate",
+      "error": 0.015479869152319803,
+      "band": 0.03,
+      "ratio": 0.5159956384106601
+     },
+     {
+      "id": "mid_pct",
+      "kind": "rate",
+      "error": 0.0036091664130104006,
+      "band": 0.03,
+      "ratio": 0.12030554710034669
+     },
+     {
+      "id": "rim_share",
+      "kind": "share",
+      "error": 0.04378572388528168,
+      "band": 0.03,
+      "ratio": 1.4595241295093895
+     },
+     {
+      "id": "inside_share",
+      "kind": "share",
+      "error": 0.040286463051970534,
+      "band": 0.03,
+      "ratio": 1.3428821017323511
+     },
+     {
+      "id": "mid_share",
+      "kind": "share",
+      "error": 0.01720588658353421,
+      "band": 0.03,
+      "ratio": 0.5735295527844737
+     },
+     {
+      "id": "three_share",
+      "kind": "share",
+      "error": 0.020705147416845315,
+      "band": 0.03,
+      "ratio": 0.6901715805615105
+     }
+    ],
+    "missing": [],
+    "violated": 6,
+    "n": 31,
+    "L": 0.06400185990261173
+   },
+   "eZ": 0.12198322093763174,
+   "outOfBand": [
+    {
+     "id": "fg3m",
+     "kind": "count",
+     "error": 0.07602073292716205,
+     "band": 0.05,
+     "short": "2.60 puntos relativos"
+    },
+    {
+     "id": "oreb",
+     "kind": "count",
+     "error": 0.0659475361608235,
+     "band": 0.05,
+     "short": "1.59 puntos relativos"
+    },
+    {
+     "id": "dreb",
+     "kind": "count",
+     "error": 0.0742566570918406,
+     "band": 0.05,
+     "short": "2.43 puntos relativos"
+    },
+    {
+     "id": "tov",
+     "kind": "count",
+     "error": 0.06336088154269959,
+     "band": 0.05,
+     "short": "1.34 puntos relativos"
+    },
+    {
+     "id": "rim_share",
+     "kind": "share",
+     "error": 0.04378572388528168,
+     "band": 0.03,
+     "short": "1.38 pp"
+    },
+    {
+     "id": "inside_share",
+     "kind": "share",
+     "error": 0.040286463051970534,
+     "band": 0.03,
+     "short": "1.03 pp"
+    }
+   ],
+   "outOfBandComparable": [
+    {
+     "id": "fg3m",
+     "kind": "count",
+     "error": 0.07602073292716205,
+     "band": 0.05,
+     "short": "2.60 puntos relativos"
+    },
+    {
+     "id": "oreb",
+     "kind": "count",
+     "error": 0.0659475361608235,
+     "band": 0.05,
+     "short": "1.59 puntos relativos"
+    },
+    {
+     "id": "dreb",
+     "kind": "count",
+     "error": 0.0742566570918406,
+     "band": 0.05,
+     "short": "2.43 puntos relativos"
+    },
+    {
+     "id": "tov",
+     "kind": "count",
+     "error": 0.06336088154269959,
+     "band": 0.05,
+     "short": "1.34 puntos relativos"
+    },
+    {
+     "id": "rim_share",
+     "kind": "share",
+     "error": 0.04378572388528168,
+     "band": 0.03,
+     "short": "1.38 pp"
+    },
+    {
+     "id": "inside_share",
+     "kind": "share",
+     "error": 0.040286463051970534,
+     "band": 0.03,
+     "short": "1.03 pp"
+    }
+   ],
+   "cases": 72,
+   "teamGames": 144
+  },
+  "VAL|SIM_04E_BASE": {
+   "M04E": {
+    "M": 4.380485991932925,
+    "partialM": 4.380485991932925,
+    "dominant": "tov",
+    "comps": [
+     {
+      "id": "pts",
+      "kind": "count",
+      "error": 0.06344599741661994,
+      "band": 0.05,
+      "ratio": 1.2689199483323987
+     },
+     {
+      "id": "fgm",
+      "kind": "count",
+      "error": 0.055454761165970146,
+      "band": 0.05,
+      "ratio": 1.109095223319403
+     },
+     {
+      "id": "fga",
+      "kind": "count",
+      "error": 0.010498462975213174,
+      "band": 0.05,
+      "ratio": 0.20996925950426348
+     },
+     {
+      "id": "fg2m",
+      "kind": "count",
+      "error": 0.058965847071400734,
+      "band": 0.05,
+      "ratio": 1.1793169414280147
+     },
+     {
+      "id": "fg2a",
+      "kind": "count",
+      "error": 0.018445477736968918,
+      "band": 0.05,
+      "ratio": 0.36890955473937836
+     },
+     {
+      "id": "fg3m",
+      "kind": "count",
+      "error": 0.046702876376989,
+      "band": 0.05,
+      "ratio": 0.93405752753978
+     },
+     {
+      "id": "fg3a",
+      "kind": "count",
+      "error": 0.06313543985873604,
+      "band": 0.05,
+      "ratio": 1.2627087971747208
+     },
+     {
+      "id": "ftm",
+      "kind": "count",
+      "error": 0.12132614664903907,
+      "band": 0.05,
+      "ratio": 2.4265229329807814
+     },
+     {
+      "id": "fta",
+      "kind": "count",
+      "error": 0.1294247335973543,
+      "band": 0.05,
+      "ratio": 2.588494671947086
+     },
+     {
+      "id": "oreb",
+      "kind": "count",
+      "error": 0.028680788590603967,
+      "band": 0.05,
+      "ratio": 0.5736157718120793
+     },
+     {
+      "id": "dreb",
+      "kind": "count",
+      "error": 0.10721381497958782,
+      "band": 0.05,
+      "ratio": 2.1442762995917564
+     },
+     {
+      "id": "reb",
+      "kind": "count",
+      "error": 0.08333897879564334,
+      "band": 0.05,
+      "ratio": 1.6667795759128667
+     },
+     {
+      "id": "ast_fg",
+      "kind": "count",
+      "error": 0.17716253614325406,
+      "band": 0.05,
+      "ratio": 3.543250722865081
+     },
+     {
+      "id": "ast_ft",
+      "kind": "count",
+      "error": 0.03703703703703709,
+      "band": 0.05,
+      "ratio": 0.7407407407407418
+     },
+     {
+      "id": "ast_total",
+      "kind": "count",
+      "error": 0.16568947583587335,
+      "band": 0.05,
+      "ratio": 3.313789516717467
+     },
+     {
+      "id": "tov",
+      "kind": "count",
+      "error": 0.21902429959664627,
+      "band": 0.05,
+      "ratio": 4.380485991932925
+     },
+     {
+      "id": "stl",
+      "kind": "count",
+      "error": 0.13210436060754516,
+      "band": 0.05,
+      "ratio": 2.642087212150903
+     },
+     {
+      "id": "blk",
+      "kind": "count",
+      "error": 0.04008554507567408,
+      "band": 0.05,
+      "ratio": 0.8017109015134816
+     },
+     {
+      "id": "pf",
+      "kind": "count",
+      "error": 0.03160161507402426,
+      "band": 0.05,
+      "ratio": 0.6320323014804852
+     },
+     {
+      "id": "pfd",
+      "kind": "count",
+      "error": 0.030818965517241503,
+      "band": 0.05,
+      "ratio": 0.6163793103448301
+     },
+     {
+      "id": "fg_pct",
+      "kind": "rate",
+      "error": 0.03486581396203542,
+      "band": 0.03,
+      "ratio": 1.1621937987345141
+     },
+     {
+      "id": "two_pct",
+      "kind": "rate",
+      "error": 0.024358856766793946,
+      "band": 0.03,
+      "ratio": 0.8119618922264649
+     },
+     {
+      "id": "three_pct",
+      "kind": "rate",
+      "error": 0.044486539136641634,
+      "band": 0.03,
+      "ratio": 1.4828846378880545
+     },
+     {
+      "id": "ft_pct",
+      "kind": "rate",
+      "error": 0.007830311884365893,
+      "band": 0.03,
+      "ratio": 0.2610103961455298
+     },
+     {
+      "id": "rim_pct",
+      "kind": "rate",
+      "error": 0.030091329331842886,
+      "band": 0.03,
+      "ratio": 1.0030443110614295
+     },
+     {
+      "id": "inside_pct",
+      "kind": "rate",
+      "error": 0.019387731759484828,
+      "band": 0.03,
+      "ratio": 0.646257725316161
+     },
+     {
+      "id": "mid_pct",
+      "kind": "rate",
+      "error": 0.019896509782093286,
+      "band": 0.03,
+      "ratio": 0.6632169927364429
+     },
+     {
+      "id": "rim_share",
+      "kind": "share",
+      "error": 0.04542937778600903,
+      "band": 0.03,
+      "ratio": 1.5143125928669676
+     },
+     {
+      "id": "inside_share",
+      "kind": "share",
+      "error": 0.006000556331040019,
+      "band": 0.03,
+      "ratio": 0.20001854436800065
+     },
+     {
+      "id": "mid_share",
+      "kind": "share",
+      "error": 0.03267150717909656,
+      "band": 0.03,
+      "ratio": 1.0890502393032186
+     },
+     {
+      "id": "three_share",
+      "kind": "share",
+      "error": 0.018758426937952544,
+      "band": 0.03,
+      "ratio": 0.6252808979317515
+     }
+    ],
+    "missing": [],
+    "violated": 17,
+    "n": 31,
+    "L": 1.2071088421518823
+   },
+   "M04E_comparable": {
+    "M": 4.380485991932925,
+    "partialM": 4.380485991932925,
+    "dominant": "tov",
+    "comps": [
+     {
+      "id": "pts",
+      "kind": "count",
+      "error": 0.06344599741661994,
+      "band": 0.05,
+      "ratio": 1.2689199483323987
+     },
+     {
+      "id": "fgm",
+      "kind": "count",
+      "error": 0.055454761165970146,
+      "band": 0.05,
+      "ratio": 1.109095223319403
+     },
+     {
+      "id": "fga",
+      "kind": "count",
+      "error": 0.010498462975213174,
+      "band": 0.05,
+      "ratio": 0.20996925950426348
+     },
+     {
+      "id": "fg2m",
+      "kind": "count",
+      "error": 0.058965847071400734,
+      "band": 0.05,
+      "ratio": 1.1793169414280147
+     },
+     {
+      "id": "fg2a",
+      "kind": "count",
+      "error": 0.018445477736968918,
+      "band": 0.05,
+      "ratio": 0.36890955473937836
+     },
+     {
+      "id": "fg3m",
+      "kind": "count",
+      "error": 0.046702876376989,
+      "band": 0.05,
+      "ratio": 0.93405752753978
+     },
+     {
+      "id": "fg3a",
+      "kind": "count",
+      "error": 0.06313543985873604,
+      "band": 0.05,
+      "ratio": 1.2627087971747208
+     },
+     {
+      "id": "ftm",
+      "kind": "count",
+      "error": 0.12132614664903907,
+      "band": 0.05,
+      "ratio": 2.4265229329807814
+     },
+     {
+      "id": "fta",
+      "kind": "count",
+      "error": 0.1294247335973543,
+      "band": 0.05,
+      "ratio": 2.588494671947086
+     },
+     {
+      "id": "oreb",
+      "kind": "count",
+      "error": 0.028680788590603967,
+      "band": 0.05,
+      "ratio": 0.5736157718120793
+     },
+     {
+      "id": "dreb",
+      "kind": "count",
+      "error": 0.10721381497958782,
+      "band": 0.05,
+      "ratio": 2.1442762995917564
+     },
+     {
+      "id": "reb",
+      "kind": "count",
+      "error": 0.08333897879564334,
+      "band": 0.05,
+      "ratio": 1.6667795759128667
+     },
+     {
+      "id": "ast_fg",
+      "kind": "count",
+      "error": 0.17716253614325406,
+      "band": 0.05,
+      "ratio": 3.543250722865081
+     },
+     {
+      "id": "ast_ft",
+      "kind": "count",
+      "error": 0.03703703703703709,
+      "band": 0.05,
+      "ratio": 0.7407407407407418
+     },
+     {
+      "id": "ast_total",
+      "kind": "count",
+      "error": 0.16568947583587335,
+      "band": 0.05,
+      "ratio": 3.313789516717467
+     },
+     {
+      "id": "tov",
+      "kind": "count",
+      "error": 0.21902429959664627,
+      "band": 0.05,
+      "ratio": 4.380485991932925
+     },
+     {
+      "id": "stl",
+      "kind": "count",
+      "error": 0.13210436060754516,
+      "band": 0.05,
+      "ratio": 2.642087212150903
+     },
+     {
+      "id": "blk",
+      "kind": "count",
+      "error": 0.04008554507567408,
+      "band": 0.05,
+      "ratio": 0.8017109015134816
+     },
+     {
+      "id": "pf",
+      "kind": "count",
+      "error": 0.03160161507402426,
+      "band": 0.05,
+      "ratio": 0.6320323014804852
+     },
+     {
+      "id": "pfd",
+      "kind": "count",
+      "error": 0.030818965517241503,
+      "band": 0.05,
+      "ratio": 0.6163793103448301
+     },
+     {
+      "id": "fg_pct",
+      "kind": "rate",
+      "error": 0.03486581396203542,
+      "band": 0.03,
+      "ratio": 1.1621937987345141
+     },
+     {
+      "id": "two_pct",
+      "kind": "rate",
+      "error": 0.024358856766793946,
+      "band": 0.03,
+      "ratio": 0.8119618922264649
+     },
+     {
+      "id": "three_pct",
+      "kind": "rate",
+      "error": 0.044486539136641634,
+      "band": 0.03,
+      "ratio": 1.4828846378880545
+     },
+     {
+      "id": "ft_pct",
+      "kind": "rate",
+      "error": 0.007830311884365893,
+      "band": 0.03,
+      "ratio": 0.2610103961455298
+     },
+     {
+      "id": "rim_pct",
+      "kind": "rate",
+      "error": 0.030091329331842886,
+      "band": 0.03,
+      "ratio": 1.0030443110614295
+     },
+     {
+      "id": "inside_pct",
+      "kind": "rate",
+      "error": 0.019387731759484828,
+      "band": 0.03,
+      "ratio": 0.646257725316161
+     },
+     {
+      "id": "mid_pct",
+      "kind": "rate",
+      "error": 0.019896509782093286,
+      "band": 0.03,
+      "ratio": 0.6632169927364429
+     },
+     {
+      "id": "rim_share",
+      "kind": "share",
+      "error": 0.04542937778600903,
+      "band": 0.03,
+      "ratio": 1.5143125928669676
+     },
+     {
+      "id": "inside_share",
+      "kind": "share",
+      "error": 0.006000556331040019,
+      "band": 0.03,
+      "ratio": 0.20001854436800065
+     },
+     {
+      "id": "mid_share",
+      "kind": "share",
+      "error": 0.03267150717909656,
+      "band": 0.03,
+      "ratio": 1.0890502393032186
+     },
+     {
+      "id": "three_share",
+      "kind": "share",
+      "error": 0.018758426937952544,
+      "band": 0.03,
+      "ratio": 0.6252808979317515
+     }
+    ],
+    "missing": [],
+    "violated": 17,
+    "n": 31,
+    "L": 1.2071088421518823
+   },
+   "eZ": 0.10285986823409815,
+   "outOfBand": [
+    {
+     "id": "pts",
+     "kind": "count",
+     "error": 0.06344599741661994,
+     "band": 0.05,
+     "short": "1.34 puntos relativos"
+    },
+    {
+     "id": "fgm",
+     "kind": "count",
+     "error": 0.055454761165970146,
+     "band": 0.05,
+     "short": "0.55 puntos relativos"
+    },
+    {
+     "id": "fg2m",
+     "kind": "count",
+     "error": 0.058965847071400734,
+     "band": 0.05,
+     "short": "0.90 puntos relativos"
+    },
+    {
+     "id": "fg3a",
+     "kind": "count",
+     "error": 0.06313543985873604,
+     "band": 0.05,
+     "short": "1.31 puntos relativos"
+    },
+    {
+     "id": "ftm",
+     "kind": "count",
+     "error": 0.12132614664903907,
+     "band": 0.05,
+     "short": "7.13 puntos relativos"
+    },
+    {
+     "id": "fta",
+     "kind": "count",
+     "error": 0.1294247335973543,
+     "band": 0.05,
+     "short": "7.94 puntos relativos"
+    },
+    {
+     "id": "dreb",
+     "kind": "count",
+     "error": 0.10721381497958782,
+     "band": 0.05,
+     "short": "5.72 puntos relativos"
+    },
+    {
+     "id": "reb",
+     "kind": "count",
+     "error": 0.08333897879564334,
+     "band": 0.05,
+     "short": "3.33 puntos relativos"
+    },
+    {
+     "id": "ast_fg",
+     "kind": "count",
+     "error": 0.17716253614325406,
+     "band": 0.05,
+     "short": "12.72 puntos relativos"
+    },
+    {
+     "id": "ast_total",
+     "kind": "count",
+     "error": 0.16568947583587335,
+     "band": 0.05,
+     "short": "11.57 puntos relativos"
+    },
+    {
+     "id": "tov",
+     "kind": "count",
+     "error": 0.21902429959664627,
+     "band": 0.05,
+     "short": "16.90 puntos relativos"
+    },
+    {
+     "id": "stl",
+     "kind": "count",
+     "error": 0.13210436060754516,
+     "band": 0.05,
+     "short": "8.21 puntos relativos"
+    },
+    {
+     "id": "fg_pct",
+     "kind": "rate",
+     "error": 0.03486581396203542,
+     "band": 0.03,
+     "short": "0.49 pp"
+    },
+    {
+     "id": "three_pct",
+     "kind": "rate",
+     "error": 0.044486539136641634,
+     "band": 0.03,
+     "short": "1.45 pp"
+    },
+    {
+     "id": "rim_pct",
+     "kind": "rate",
+     "error": 0.030091329331842886,
+     "band": 0.03,
+     "short": "0.01 pp"
+    },
+    {
+     "id": "rim_share",
+     "kind": "share",
+     "error": 0.04542937778600903,
+     "band": 0.03,
+     "short": "1.54 pp"
+    },
+    {
+     "id": "mid_share",
+     "kind": "share",
+     "error": 0.03267150717909656,
+     "band": 0.03,
+     "short": "0.27 pp"
+    }
+   ],
+   "outOfBandComparable": [
+    {
+     "id": "pts",
+     "kind": "count",
+     "error": 0.06344599741661994,
+     "band": 0.05,
+     "short": "1.34 puntos relativos"
+    },
+    {
+     "id": "fgm",
+     "kind": "count",
+     "error": 0.055454761165970146,
+     "band": 0.05,
+     "short": "0.55 puntos relativos"
+    },
+    {
+     "id": "fg2m",
+     "kind": "count",
+     "error": 0.058965847071400734,
+     "band": 0.05,
+     "short": "0.90 puntos relativos"
+    },
+    {
+     "id": "fg3a",
+     "kind": "count",
+     "error": 0.06313543985873604,
+     "band": 0.05,
+     "short": "1.31 puntos relativos"
+    },
+    {
+     "id": "ftm",
+     "kind": "count",
+     "error": 0.12132614664903907,
+     "band": 0.05,
+     "short": "7.13 puntos relativos"
+    },
+    {
+     "id": "fta",
+     "kind": "count",
+     "error": 0.1294247335973543,
+     "band": 0.05,
+     "short": "7.94 puntos relativos"
+    },
+    {
+     "id": "dreb",
+     "kind": "count",
+     "error": 0.10721381497958782,
+     "band": 0.05,
+     "short": "5.72 puntos relativos"
+    },
+    {
+     "id": "reb",
+     "kind": "count",
+     "error": 0.08333897879564334,
+     "band": 0.05,
+     "short": "3.33 puntos relativos"
+    },
+    {
+     "id": "ast_fg",
+     "kind": "count",
+     "error": 0.17716253614325406,
+     "band": 0.05,
+     "short": "12.72 puntos relativos"
+    },
+    {
+     "id": "ast_total",
+     "kind": "count",
+     "error": 0.16568947583587335,
+     "band": 0.05,
+     "short": "11.57 puntos relativos"
+    },
+    {
+     "id": "tov",
+     "kind": "count",
+     "error": 0.21902429959664627,
+     "band": 0.05,
+     "short": "16.90 puntos relativos"
+    },
+    {
+     "id": "stl",
+     "kind": "count",
+     "error": 0.13210436060754516,
+     "band": 0.05,
+     "short": "8.21 puntos relativos"
+    },
+    {
+     "id": "fg_pct",
+     "kind": "rate",
+     "error": 0.03486581396203542,
+     "band": 0.03,
+     "short": "0.49 pp"
+    },
+    {
+     "id": "three_pct",
+     "kind": "rate",
+     "error": 0.044486539136641634,
+     "band": 0.03,
+     "short": "1.45 pp"
+    },
+    {
+     "id": "rim_pct",
+     "kind": "rate",
+     "error": 0.030091329331842886,
+     "band": 0.03,
+     "short": "0.01 pp"
+    },
+    {
+     "id": "rim_share",
+     "kind": "share",
+     "error": 0.04542937778600903,
+     "band": 0.03,
+     "short": "1.54 pp"
+    },
+    {
+     "id": "mid_share",
+     "kind": "share",
+     "error": 0.03267150717909656,
+     "band": 0.03,
+     "short": "0.27 pp"
+    }
+   ],
+   "cases": 96,
+   "teamGames": 192
+  },
+  "VAL|SIM_04E_EXP": {
+   "M04E": {
+    "M": 5.400307084887026,
+    "partialM": 5.400307084887026,
+    "dominant": "blk",
+    "comps": [
+     {
+      "id": "pts",
+      "kind": "count",
+      "error": 0.033985526446527525,
+      "band": 0.05,
+      "ratio": 0.6797105289305505
+     },
+     {
+      "id": "fgm",
+      "kind": "count",
+      "error": 0.009819847774107049,
+      "band": 0.05,
+      "ratio": 0.19639695548214098
+     },
+     {
+      "id": "fga",
+      "kind": "count",
+      "error": 0.010632709443947341,
+      "band": 0.05,
+      "ratio": 0.21265418887894683
+     },
+     {
+      "id": "fg2m",
+      "kind": "count",
+      "error": 0.05627535127338179,
+      "band": 0.05,
+      "ratio": 1.1255070254676358
+     },
+     {
+      "id": "fg2a",
+      "kind": "count",
+      "error": 0.05542086567398208,
+      "band": 0.05,
+      "ratio": 1.1084173134796416
+     },
+     {
+      "id": "fg3m",
+      "kind": "count",
+      "error": 0.17457160342717248,
+      "band": 0.05,
+      "ratio": 3.4914320685434497
+     },
+     {
+      "id": "fg3a",
+      "kind": "count",
+      "error": 0.07081829847439614,
+      "band": 0.05,
+      "ratio": 1.4163659694879227
+     },
+     {
+      "id": "ftm",
+      "kind": "count",
+      "error": 0.05649344045560878,
+      "band": 0.05,
+      "ratio": 1.1298688091121756
+     },
+     {
+      "id": "fta",
+      "kind": "count",
+      "error": 0.0630384191401624,
+      "band": 0.05,
+      "ratio": 1.2607683828032479
+     },
+     {
+      "id": "oreb",
+      "kind": "count",
+      "error": 0.019754089765100513,
+      "band": 0.05,
+      "ratio": 0.39508179530201026
+     },
+     {
+      "id": "dreb",
+      "kind": "count",
+      "error": 0.04923533217674092,
+      "band": 0.05,
+      "ratio": 0.9847066435348184
+     },
+     {
+      "id": "reb",
+      "kind": "count",
+      "error": 0.04027273560506739,
+      "band": 0.05,
+      "ratio": 0.8054547121013478
+     },
+     {
+      "id": "ast_fg",
+      "kind": "count",
+      "error": 0.001302002604005148,
+      "band": 0.05,
+      "ratio": 0.02604005208010296
+     },
+     {
+      "id": "ast_ft",
+      "kind": "count",
+      "error": 0.05328024270003784,
+      "band": 0.05,
+      "ratio": 1.0656048540007568
+     },
+     {
+      "id": "ast_total",
+      "kind": "count",
+      "error": 0.005557826755191675,
+      "band": 0.05,
+      "ratio": 0.1111565351038335
+     },
+     {
+      "id": "tov",
+      "kind": "count",
+      "error": 0.03953740039132936,
+      "band": 0.05,
+      "ratio": 0.7907480078265872
+     },
+     {
+      "id": "stl",
+      "kind": "count",
+      "error": 0.12933304752572283,
+      "band": 0.05,
+      "ratio": 2.5866609505144567
+     },
+     {
+      "id": "blk",
+      "kind": "count",
+      "error": 0.2700153542443513,
+      "band": 0.05,
+      "ratio": 5.400307084887026
+     },
+     {
+      "id": "pf",
+      "kind": "count",
+      "error": 0.004262000897263141,
+      "band": 0.05,
+      "ratio": 0.08524001794526281
+     },
+     {
+      "id": "pfd",
+      "kind": "count",
+      "error": 0.005073635057470938,
+      "band": 0.05,
+      "ratio": 0.10147270114941875
+     },
+     {
+      "id": "fg_pct",
+      "kind": "rate",
+      "error": 0.0106866609957037,
+      "band": 0.03,
+      "ratio": 0.35622203319012335
+     },
+     {
+      "id": "two_pct",
+      "kind": "rate",
+      "error": 0.000600855192063654,
+      "band": 0.03,
+      "ratio": 0.020028506402121803
+     },
+     {
+      "id": "three_pct",
+      "kind": "rate",
+      "error": 0.047846262548565444,
+      "band": 0.03,
+      "ratio": 1.594875418285515
+     },
+     {
+      "id": "ft_pct",
+      "kind": "rate",
+      "error": 0.00575988166201713,
+      "band": 0.03,
+      "ratio": 0.19199605540057102
+     },
+     {
+      "id": "rim_pct",
+      "kind": "rate",
+      "error": 0.011915431146852451,
+      "band": 0.03,
+      "ratio": 0.39718103822841505
+     },
+     {
+      "id": "inside_pct",
+      "kind": "rate",
+      "error": 0.02693802052600236,
+      "band": 0.03,
+      "ratio": 0.8979340175334121
+     },
+     {
+      "id": "mid_pct",
+      "kind": "rate",
+      "error": 0.017919672660708486,
+      "band": 0.03,
+      "ratio": 0.5973224220236162
+     },
+     {
+      "id": "rim_share",
+      "kind": "share",
+      "error": 0.05700707136194455,
+      "band": 0.03,
+      "ratio": 1.9002357120648183
+     },
+     {
+      "id": "inside_share",
+      "kind": "share",
+      "error": 0.03506871541490908,
+      "band": 0.03,
+      "ratio": 1.1689571804969694
+     },
+     {
+      "id": "mid_share",
+      "kind": "share",
+      "error": 0.006410986506082919,
+      "band": 0.03,
+      "ratio": 0.213699550202764
+     },
+     {
+      "id": "three_share",
+      "kind": "share",
+      "error": 0.028349342453118376,
+      "band": 0.03,
+      "ratio": 0.9449780817706126
+     }
+    ],
+    "missing": [],
+    "violated": 12,
+    "n": 31,
+    "L": 1.0659264602562795
+   },
+   "M04E_comparable": {
+    "M": 5.400307084887026,
+    "partialM": 5.400307084887026,
+    "dominant": "blk",
+    "comps": [
+     {
+      "id": "pts",
+      "kind": "count",
+      "error": 0.033985526446527525,
+      "band": 0.05,
+      "ratio": 0.6797105289305505
+     },
+     {
+      "id": "fgm",
+      "kind": "count",
+      "error": 0.009819847774107049,
+      "band": 0.05,
+      "ratio": 0.19639695548214098
+     },
+     {
+      "id": "fga",
+      "kind": "count",
+      "error": 0.010632709443947341,
+      "band": 0.05,
+      "ratio": 0.21265418887894683
+     },
+     {
+      "id": "fg2m",
+      "kind": "count",
+      "error": 0.05627535127338179,
+      "band": 0.05,
+      "ratio": 1.1255070254676358
+     },
+     {
+      "id": "fg2a",
+      "kind": "count",
+      "error": 0.05542086567398208,
+      "band": 0.05,
+      "ratio": 1.1084173134796416
+     },
+     {
+      "id": "fg3m",
+      "kind": "count",
+      "error": 0.17457160342717248,
+      "band": 0.05,
+      "ratio": 3.4914320685434497
+     },
+     {
+      "id": "fg3a",
+      "kind": "count",
+      "error": 0.07081829847439614,
+      "band": 0.05,
+      "ratio": 1.4163659694879227
+     },
+     {
+      "id": "ftm",
+      "kind": "count",
+      "error": 0.05649344045560878,
+      "band": 0.05,
+      "ratio": 1.1298688091121756
+     },
+     {
+      "id": "fta",
+      "kind": "count",
+      "error": 0.0630384191401624,
+      "band": 0.05,
+      "ratio": 1.2607683828032479
+     },
+     {
+      "id": "oreb",
+      "kind": "count",
+      "error": 0.019754089765100513,
+      "band": 0.05,
+      "ratio": 0.39508179530201026
+     },
+     {
+      "id": "dreb",
+      "kind": "count",
+      "error": 0.04923533217674092,
+      "band": 0.05,
+      "ratio": 0.9847066435348184
+     },
+     {
+      "id": "reb",
+      "kind": "count",
+      "error": 0.04027273560506739,
+      "band": 0.05,
+      "ratio": 0.8054547121013478
+     },
+     {
+      "id": "ast_fg",
+      "kind": "count",
+      "error": 0.001302002604005148,
+      "band": 0.05,
+      "ratio": 0.02604005208010296
+     },
+     {
+      "id": "ast_ft",
+      "kind": "count",
+      "error": 0.05328024270003784,
+      "band": 0.05,
+      "ratio": 1.0656048540007568
+     },
+     {
+      "id": "ast_total",
+      "kind": "count",
+      "error": 0.005557826755191675,
+      "band": 0.05,
+      "ratio": 0.1111565351038335
+     },
+     {
+      "id": "tov",
+      "kind": "count",
+      "error": 0.03953740039132936,
+      "band": 0.05,
+      "ratio": 0.7907480078265872
+     },
+     {
+      "id": "stl",
+      "kind": "count",
+      "error": 0.12933304752572283,
+      "band": 0.05,
+      "ratio": 2.5866609505144567
+     },
+     {
+      "id": "blk",
+      "kind": "count",
+      "error": 0.2700153542443513,
+      "band": 0.05,
+      "ratio": 5.400307084887026
+     },
+     {
+      "id": "pf",
+      "kind": "count",
+      "error": 0.004262000897263141,
+      "band": 0.05,
+      "ratio": 0.08524001794526281
+     },
+     {
+      "id": "pfd",
+      "kind": "count",
+      "error": 0.005073635057470938,
+      "band": 0.05,
+      "ratio": 0.10147270114941875
+     },
+     {
+      "id": "fg_pct",
+      "kind": "rate",
+      "error": 0.0106866609957037,
+      "band": 0.03,
+      "ratio": 0.35622203319012335
+     },
+     {
+      "id": "two_pct",
+      "kind": "rate",
+      "error": 0.000600855192063654,
+      "band": 0.03,
+      "ratio": 0.020028506402121803
+     },
+     {
+      "id": "three_pct",
+      "kind": "rate",
+      "error": 0.047846262548565444,
+      "band": 0.03,
+      "ratio": 1.594875418285515
+     },
+     {
+      "id": "ft_pct",
+      "kind": "rate",
+      "error": 0.00575988166201713,
+      "band": 0.03,
+      "ratio": 0.19199605540057102
+     },
+     {
+      "id": "rim_pct",
+      "kind": "rate",
+      "error": 0.011915431146852451,
+      "band": 0.03,
+      "ratio": 0.39718103822841505
+     },
+     {
+      "id": "inside_pct",
+      "kind": "rate",
+      "error": 0.02693802052600236,
+      "band": 0.03,
+      "ratio": 0.8979340175334121
+     },
+     {
+      "id": "mid_pct",
+      "kind": "rate",
+      "error": 0.017919672660708486,
+      "band": 0.03,
+      "ratio": 0.5973224220236162
+     },
+     {
+      "id": "rim_share",
+      "kind": "share",
+      "error": 0.05700707136194455,
+      "band": 0.03,
+      "ratio": 1.9002357120648183
+     },
+     {
+      "id": "inside_share",
+      "kind": "share",
+      "error": 0.03506871541490908,
+      "band": 0.03,
+      "ratio": 1.1689571804969694
+     },
+     {
+      "id": "mid_share",
+      "kind": "share",
+      "error": 0.006410986506082919,
+      "band": 0.03,
+      "ratio": 0.213699550202764
+     },
+     {
+      "id": "three_share",
+      "kind": "share",
+      "error": 0.028349342453118376,
+      "band": 0.03,
+      "ratio": 0.9449780817706126
+     }
+    ],
+    "missing": [],
+    "violated": 12,
+    "n": 31,
+    "L": 1.0659264602562795
+   },
+   "eZ": 0.1268361157360549,
+   "outOfBand": [
+    {
+     "id": "fg2m",
+     "kind": "count",
+     "error": 0.05627535127338179,
+     "band": 0.05,
+     "short": "0.63 puntos relativos"
+    },
+    {
+     "id": "fg2a",
+     "kind": "count",
+     "error": 0.05542086567398208,
+     "band": 0.05,
+     "short": "0.54 puntos relativos"
+    },
+    {
+     "id": "fg3m",
+     "kind": "count",
+     "error": 0.17457160342717248,
+     "band": 0.05,
+     "short": "12.46 puntos relativos"
+    },
+    {
+     "id": "fg3a",
+     "kind": "count",
+     "error": 0.07081829847439614,
+     "band": 0.05,
+     "short": "2.08 puntos relativos"
+    },
+    {
+     "id": "ftm",
+     "kind": "count",
+     "error": 0.05649344045560878,
+     "band": 0.05,
+     "short": "0.65 puntos relativos"
+    },
+    {
+     "id": "fta",
+     "kind": "count",
+     "error": 0.0630384191401624,
+     "band": 0.05,
+     "short": "1.30 puntos relativos"
+    },
+    {
+     "id": "ast_ft",
+     "kind": "count",
+     "error": 0.05328024270003784,
+     "band": 0.05,
+     "short": "0.33 puntos relativos"
+    },
+    {
+     "id": "stl",
+     "kind": "count",
+     "error": 0.12933304752572283,
+     "band": 0.05,
+     "short": "7.93 puntos relativos"
+    },
+    {
+     "id": "blk",
+     "kind": "count",
+     "error": 0.2700153542443513,
+     "band": 0.05,
+     "short": "22.00 puntos relativos"
+    },
+    {
+     "id": "three_pct",
+     "kind": "rate",
+     "error": 0.047846262548565444,
+     "band": 0.03,
+     "short": "1.78 pp"
+    },
+    {
+     "id": "rim_share",
+     "kind": "share",
+     "error": 0.05700707136194455,
+     "band": 0.03,
+     "short": "2.70 pp"
+    },
+    {
+     "id": "inside_share",
+     "kind": "share",
+     "error": 0.03506871541490908,
+     "band": 0.03,
+     "short": "0.51 pp"
+    }
+   ],
+   "outOfBandComparable": [
+    {
+     "id": "fg2m",
+     "kind": "count",
+     "error": 0.05627535127338179,
+     "band": 0.05,
+     "short": "0.63 puntos relativos"
+    },
+    {
+     "id": "fg2a",
+     "kind": "count",
+     "error": 0.05542086567398208,
+     "band": 0.05,
+     "short": "0.54 puntos relativos"
+    },
+    {
+     "id": "fg3m",
+     "kind": "count",
+     "error": 0.17457160342717248,
+     "band": 0.05,
+     "short": "12.46 puntos relativos"
+    },
+    {
+     "id": "fg3a",
+     "kind": "count",
+     "error": 0.07081829847439614,
+     "band": 0.05,
+     "short": "2.08 puntos relativos"
+    },
+    {
+     "id": "ftm",
+     "kind": "count",
+     "error": 0.05649344045560878,
+     "band": 0.05,
+     "short": "0.65 puntos relativos"
+    },
+    {
+     "id": "fta",
+     "kind": "count",
+     "error": 0.0630384191401624,
+     "band": 0.05,
+     "short": "1.30 puntos relativos"
+    },
+    {
+     "id": "ast_ft",
+     "kind": "count",
+     "error": 0.05328024270003784,
+     "band": 0.05,
+     "short": "0.33 puntos relativos"
+    },
+    {
+     "id": "stl",
+     "kind": "count",
+     "error": 0.12933304752572283,
+     "band": 0.05,
+     "short": "7.93 puntos relativos"
+    },
+    {
+     "id": "blk",
+     "kind": "count",
+     "error": 0.2700153542443513,
+     "band": 0.05,
+     "short": "22.00 puntos relativos"
+    },
+    {
+     "id": "three_pct",
+     "kind": "rate",
+     "error": 0.047846262548565444,
+     "band": 0.03,
+     "short": "1.78 pp"
+    },
+    {
+     "id": "rim_share",
+     "kind": "share",
+     "error": 0.05700707136194455,
+     "band": 0.03,
+     "short": "2.70 pp"
+    },
+    {
+     "id": "inside_share",
+     "kind": "share",
+     "error": 0.03506871541490908,
+     "band": 0.03,
+     "short": "0.51 pp"
+    }
+   ],
+   "cases": 96,
+   "teamGames": 192
+  }
+ }
+}
