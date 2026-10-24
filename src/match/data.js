@@ -13,7 +13,9 @@ export const SLOTS = ['PG', 'SG', 'SF', 'PF', 'C'];
 export const ZONES = ['rim', 'inside', 'midrange', 'three'];
 // MOTOR-15: el motor deportivo cambia de identidad porque cambian sorteos y finales (liberación/resolución del tiro, interferencia condicionada, administración de incidencias y correcciones). Antes era 0.9.0-MOTOR09 desde MOTOR-09.
 // MOTOR-15B: cambio normativo acotado (RG-I03 administra la técnica de categoría 2 del último libre; numeración del art. 45). Anterior: beM-motor-0.15.0-MOTOR15. Ningún coeficiente cambia.
-export const ENGINE_VERSION = 'beM-motor-0.18.1-MOTOR18B';
+// SIM-MOTOR-04E: el detallado cambia de identidad porque cambia su trayectoria (frontera reloj/rebote/control: el reloj de posesión deja de limitar el rebote tras contacto con el aro, que reinicia a 14 s/24 s;
+// una instrucción de siguiente posesión se consume una sola vez) y su política de crédito de rebote (tapón). Referencia anterior: beM-motor-0.18.1-MOTOR18B.
+export const ENGINE_VERSION = 'beM-motor-0.18.2-SIM04E';
 export const INPUT_SCHEMA = 'beM-match-input/7'; // MOTOR-18: conocimiento por jugador y datos de aprendizaje; una entrada /6 se lee (legacy-neutral) sin conocimiento
 export const INPUT_SCHEMA_MOTOR17B = 'beM-match-input/6';
 export const EXPORT_SCHEMA = 'beM-match-export/10';

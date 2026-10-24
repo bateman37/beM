@@ -27,8 +27,11 @@ export function shotClockAfterDefensiveStoppage(shotClockTenths, rules) {
   return Math.max(shotClockTenths, toTenths(rules.frontcourtResetSeconds));
 }
 
-// Rebote ofensivo tras contacto con el aro: 14 s si quedaban menos; si no, continúa.
-export const shotClockAfterRingContact = shotClockAfterDefensiveStoppage;
+// SIM-MOTOR-04E (art. 29 de las Reglas Oficiales FIBA 2026 v1.1): tras el contacto del balón con el aro y un nuevo control, el reloj de posesión se reinicia a 14 s para el mismo ataque
+// (rebote ofensivo, con independencia del reloj previo) y a 24 s para el rival. Es distinto de la parada defensiva (`shotClockAfterDefensiveStoppage`: conserva el reloj si ya tiene 14 s o más).
+export function shotClockAfterRingContact(rules, sameTeamControls) {
+  return toTenths(sameTeamControls ? rules.frontcourtResetSeconds : rules.shotClockSeconds);
+}
 
 // Una acción solo se produce si ocurre estrictamente antes del límite (bocina o reloj de posesión).
 export function fitsBeforeLimit(durationTenths, limitTenths) { return durationTenths < limitTenths; }

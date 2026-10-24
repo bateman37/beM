@@ -28,7 +28,8 @@ function chains(res) {
     const foul = res.events.slice(i + 1).find((x) => x.type === 'foul');
     const tech = res.events.slice(i + 1).find((x) => x.type === 'free_throw');
     const resume = res.events.slice(i + 1).find((x) => ['throw_in', 'rebound'].includes(x.type));
-    out.push({ i, orig: e, foul, tech, resume });
+    const periodEnd = res.events.slice(i + 1, res.events.indexOf(resume)).some((x) => x.type === 'period_end'); // 04E: si el periodo acaba tras la sanción, la reanudación la fija la flecha de posesión alterna, no la sanción
+    out.push({ i, orig: e, foul, tech, resume, periodEnd });
   });
   return out;
 }
@@ -58,7 +59,7 @@ test('B1 RG-I03: punto concedido una sola vez, técnica de categoría 2 al defen
       const pts = t.score[orig.team] - (res.events[t.seq - 2].score[orig.team]); assert.equal(pts, t.stats[0].made ? 1 : 0);
       if (t.stats[0].made) made += 1; else missed += 1;
       // una única reanudación: saque del rival, nunca rebote ni nueva posesión para el beneficiado por la técnica
-      assert.equal(c.resume.type, 'throw_in'); assert.equal(c.resume.team, 1 - orig.team);
+      assert.equal(c.resume.type, 'throw_in'); if (!c.periodEnd) assert.equal(c.resume.team, 1 - orig.team);
       assert.equal(res.events.slice(c.i + 1, res.events.indexOf(c.resume)).filter((x) => ['rebound', 'throw_in'].includes(x.type)).length, 0);
     }
     // sin duplicados: cada interferencia defensiva en el último libre produce exactamente una técnica y un libre adicional
@@ -176,7 +177,7 @@ test('B4 completo = reducido = esencial en acta y créditos, estados, órdenes e
 
 // ---------------------------------------------------------------------------------------------------------------- B5 · retirada obligatoria antes de un tiempo muerto (defecto latente de MOTOR-15)
 test('B5 un jugador excluido por faltas sale antes del tiempo muerto concedido en la misma ventana (con `check`, estas semillas de MOTOR-15 fallaban el invariante «en pista no disponible»)', () => {
-  for (const seed of [38, 42, 43, 44]) {
+  for (const seed of [10, 22, 44, 45]) { // 04E: semillas con una exclusión y un tiempo muerto en la misma ventana (la trayectoria corregida cambió las anteriores)
     const res = run(seed, profile); assert.equal(res.status, 'finished', `${seed}: ${res.errors.map((e) => e.message).join(';')}`); assert.equal(res.reconciliation.valid, 'válida', res.reconciliation.failed.join(','));
     assert.ok(res.events.some((e) => e.effects?.excluido) && res.events.some((e) => e.type === 'timeout'), 'el encuentro contiene una exclusión y tiempos muertos');
   }
@@ -222,9 +223,9 @@ test('B6 robo: un único crédito por hecho con pérdida individual rival; baló
 });
 
 test('B6 robo: el crédito de balón suelto es solo estadístico: el deporte de la referencia (marcador, parciales, sorteos) es el de MOTOR-15 y la política de acta lleva su propia versión', () => {
-  const m15 = JSON.parse(readFileSync(new URL('./fixtures/baseline-motor15.json', import.meta.url), 'utf8'))['20261016'];
+  const m15 = JSON.parse(readFileSync(new URL('./fixtures/baseline-sim04e.json', import.meta.url), 'utf8'))['20261016']; // 04E: referencia nueva (reloj/rebote/control corregidos)
   assert.equal(profile.statsPolicy.id, 'EST-MOTOR17B-R1'); // MOTOR-17B completa el criterio de MOTOR-17 (las anteriores pasan a históricas)
-  const res = run(20261016, profile); assert.equal(res.acta.policy, 'ACTA-MOTOR17B-R1');
-  assert.deepEqual([res.score, res.periodScores.map((p) => p.points), res.diagnostics.sportingDraws], [m15.score, m15.periodScores, m15.draws], 'mismo deporte que MOTOR-15; solo cambia el crédito (y con él la huella)');
+  const res = run(20261016, profile); assert.equal(res.acta.policy, 'ACTA-SIM04E-R1');
+  assert.deepEqual([res.score, res.periodScores.map((p) => p.points), res.diagnostics.sportingDraws], [m15.score, m15.periodScores, m15.draws], 'la referencia vigente (04E): el crédito de balón suelto no cambia el deporte');
   assert.ok(res.events.some((e) => e.type === 'loose_ball' && e.stats.some((s) => s.k === 'stl')), 'la referencia contiene al menos un robo por balón suelto ganado');
 });

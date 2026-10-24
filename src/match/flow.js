@@ -703,7 +703,12 @@ P.settlePossession = function settlePossession(poss, r) {
 // Una unidad de posesión = una frontera de avance. Cada unidad es una resolución indivisible (o el arranque de la posesión);
 // entre unidades se pueden registrar órdenes. Mismo orden de sorteos y hechos que el antiguo bucle por posesión (MOTOR-01).
 P.possessionUnit = function possessionUnit() {
-  if (!this.poss || this.poss.done) this.startPossession(this.nextPoss);
+  if (!this.poss || this.poss.done) {
+    // SIM-MOTOR-04E (§5.3): una instrucción de siguiente posesión se consume una sola vez; si la posesión anterior se cerró sin una transición válida, no se reutiliza la antigua.
+    if (!this.nextPossFresh) throw new Error('siguiente posesión sin transición establecida: la instrucción anterior ya se consumió');
+    this.nextPossFresh = false;
+    this.startPossession(this.nextPoss);
+  }
   const poss = this.poss;
   this.activatePlanOrders(this.period, { entry: poss.units === 0 }); // disposición y roles solo entran en la entrada de posesión o en una reorganización
   this.activateCalls(poss);
@@ -796,7 +801,7 @@ P.finishPeriodStart = function finishPeriodStart() {
   else { team = this.arrow; this.arrow = 1 - this.arrow; }
   this.clockRunning = false;
   this.emit('period_start', { team, intent: { origen: period === 1 ? 'salto inicial' : 'posesión alterna (flecha)' }, effects: { flechaApunta: this.arrow } });
-  this.nextPoss = { team, entry: 'inbound', shotClock: toTenths(rules.shotClockSeconds), throwIn: { kind: 'center', origin: period === 1 ? 'salto inicial' : 'posesión alterna (flecha)' } };
+  this.nextPoss = { team, entry: 'inbound', shotClock: toTenths(rules.shotClockSeconds), throwIn: { kind: 'center', origin: period === 1 ? 'salto inicial' : 'posesión alterna (flecha)' } }; this.nextPossFresh = true;
   this.sampleStates('inicio'); // MOTOR-15 §9.2: estado propio al comenzar el periodo (tras la recuperación del intervalo)
   this.coachFrontier('inicio de periodo'); // MOTOR-08: frontera deportiva de revisión (inicio de periodo)
 };

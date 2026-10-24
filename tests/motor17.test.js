@@ -96,10 +96,10 @@ test('M17·5 sensibilidad: el tope de cada término se registra, la reconstrucci
 });
 
 // ------------------------------------------------------------------------------------------------------------------------ 6 · responsabilidad obsoleta tras un relevo en la posesión
-test('M17·6 ayuda tras relevo en la posesión: una responsabilidad de un atacante que ya salió no aborta el partido (hallado con la candidata C17-02, EQ09–EQ10, semilla 310000057)', async () => {
+test('M17·6 ayuda tras relevo en la posesión: una responsabilidad de un atacante que ya salió no aborta el partido (hallado con la candidata C17-02, EQ09–EQ10, semilla 310000057; en 04E la trayectoria corregida cambió la anterior y se usa 310000003, que pasa por la misma situación)', async () => {
   const { readFileSync } = await import('node:fs'); const { candidateProfile } = await import('../src/profiles/candidates.js');
   const cand = JSON.parse(readFileSync(new URL('../data/match/motor17-candidates.json', import.meta.url), 'utf8')).candidates.find((c) => c.id === 'C17-02'); const pr = candidateProfile(profile, cand);
-  const input = { schema: INPUT_SCHEMA, seed: 310000057, importance: 'ordinary', teams: [referenceTeam(pr, players, 'EQ09'), referenceTeam(pr, players, 'EQ10')] };
+  const input = { schema: INPUT_SCHEMA, seed: 310000003, importance: 'ordinary', teams: [referenceTeam(pr, players, 'EQ09'), referenceTeam(pr, players, 'EQ10')] };
   // situación del defecto: `poss.cur` conserva un atacante fuera de pista y la defensa es individual
   const m = createMatch(input, pr, { detail: 'minimal' }); let hit = null;
   while (!hit && m.step()) { const cur = m.poss && !m.poss.done ? m.poss.cur : null; if (cur && Object.keys(cur).some((att) => !m.ps[att].onCourt) && m.defRef(1 - m.poss.team).kind === 'individual') hit = { team: m.poss.team }; }

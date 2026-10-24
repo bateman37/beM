@@ -88,7 +88,7 @@ test('5. escenario: instancias sin colisión, guardar/recargar, export/import co
 
 test('6. lectores: cierres con fila colectiva conciliada, producción por 100 con mismas unidades e instrumentación sin efecto deportivo', () => {
   const res = runMatch(P.buildLabVariant(profile, players, 'LAB11-00', 'base').input, profile, { detail: 'full' });
-  const ref15 = JSON.parse(readFileSync(new URL('./fixtures/baseline-motor17b.json', import.meta.url), 'utf8'))['20261016']; // MOTOR-15: nueva referencia (la de MOTOR-14 era 83–103, 6.505 sorteos)
+  const ref15 = JSON.parse(readFileSync(new URL('./fixtures/baseline-sim04e.json', import.meta.url), 'utf8'))['20261016']; // MOTOR-15: nueva referencia (la de MOTOR-14 era 83–103, 6.505 sorteos)
   assert.deepEqual(res.score, ref15.score); assert.equal(res.diagnostics.sportingDraws, ref15.draws);
   const ix = analyze(res, { audience: 'public', team: 0 });
   for (const t of [0, 1]) { const c = ix.closures(t); assert.ok(c.reconciled); assert.equal(c.individual + c.collective.n, c.eligible); assert.ok(c.collective.n >= 0); }
@@ -106,7 +106,7 @@ test('6. lectores: cierres con fila colectiva conciliada, producción por 100 co
 });
 
 test('7. versiones: una fuente común y un export producido sin instrumentación sigue reproduciéndose', () => {
-  assert.equal(APP_VERSION, 'SIM-MOTOR-04D'); assert.match(appLine(), /SIM-MOTOR-04D.*SIM-MOTOR-04C.*SIM-MOTOR-04B.*SIM-MOTOR-04.*SIM-MOTOR-03.*SIM-MOTOR-02B.*beM-motor-0\.18\.1-MOTOR18B.*beM-match-export\/10/);
+  assert.equal(APP_VERSION, 'SIM-MOTOR-04E'); assert.match(appLine(), /SIM-MOTOR-04E.*SIM-MOTOR-04D.*SIM-MOTOR-04C.*SIM-MOTOR-04B.*SIM-MOTOR-04.*SIM-MOTOR-03.*SIM-MOTOR-02B.*beM-motor-0\.18\.2-SIM04E.*beM-match-export\/10/);
   assert.match(profile.effectiveId, /\+SEM-MOTOR11-20261017\+SEM-MOTOR12-20261017(\+SEM-MOTOR13-20261017)?(\+SEM-MOTOR14-20261017)?(\+SEM-MOTOR15-20261017)?(\+SEM-MOTOR15B-20261017)?(\+SEM-MOTOR17-20261018)?(\+SEM-MOTOR17B-20261021)?(\+SEM-MOTOR18-20261021)?(\+SEM-MOTOR18B-20261022)?$/);
   const html = readFileSync(new URL('../src/lab/index.html', import.meta.url), 'utf8'); assert.ok(!/MOTOR-0\d|MOTOR-10/.test(html), 'la cabecera estática no fija una versión propia');
   const res = runMatch(P.buildLabVariant(profile, players, 'LAB11-00', 'base').input, profile, { detail: 'full' });

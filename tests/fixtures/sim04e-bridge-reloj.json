@@ -1,0 +1,253 @@
+{
+ "stage": "reloj",
+ "rows": [
+  {
+   "case_id": "VAL-EQ01-EQ03-R1",
+   "seed": 1565056149,
+   "score": [
+    87,
+    86
+   ],
+   "events": 500,
+   "draws": 8123,
+   "dyn_sha": "8833cb4e1a852475",
+   "draws_sha": "d0da5506f398f79c",
+   "false_expiry": 0,
+   "acta": [
+    {
+     "pts": 87,
+     "fga": 62,
+     "tov": 6,
+     "oreb": 13,
+     "dreb": 19,
+     "reb": 32
+    },
+    {
+     "pts": 86,
+     "fga": 60,
+     "tov": 5,
+     "oreb": 5,
+     "dreb": 20,
+     "reb": 25
+    }
+   ]
+  },
+  {
+   "case_id": "VAL-EQ01-EQ03-R2",
+   "seed": 1303514679,
+   "score": [
+    70,
+    77
+   ],
+   "events": 505,
+   "draws": 8044,
+   "dyn_sha": "5e851e511ae265c5",
+   "draws_sha": "ac852a8fd51106bd",
+   "false_expiry": 0,
+   "acta": [
+    {
+     "pts": 70,
+     "fga": 62,
+     "tov": 11,
+     "oreb": 11,
+     "dreb": 19,
+     "reb": 30
+    },
+    {
+     "pts": 77,
+     "fga": 51,
+     "tov": 11,
+     "oreb": 6,
+     "dreb": 22,
+     "reb": 28
+    }
+   ]
+  },
+  {
+   "case_id": "VAL-EQ03-EQ01-R1",
+   "seed": 3432111109,
+   "score": [
+    93,
+    83
+   ],
+   "events": 505,
+   "draws": 8056,
+   "dyn_sha": "3492f806d1b2c97d",
+   "draws_sha": "47eced5620167e86",
+   "false_expiry": 0,
+   "acta": [
+    {
+     "pts": 93,
+     "fga": 57,
+     "tov": 9,
+     "oreb": 2,
+     "dreb": 22,
+     "reb": 24
+    },
+    {
+     "pts": 83,
+     "fga": 65,
+     "tov": 12,
+     "oreb": 11,
+     "dreb": 19,
+     "reb": 30
+    }
+   ]
+  },
+  {
+   "case_id": "VAL-EQ03-EQ01-R2",
+   "seed": 617218305,
+   "score": [
+    90,
+    72
+   ],
+   "events": 538,
+   "draws": 8511,
+   "dyn_sha": "f008016ed7221bba",
+   "draws_sha": "e6fe8835d5b66119",
+   "false_expiry": 0,
+   "acta": [
+    {
+     "pts": 90,
+     "fga": 54,
+     "tov": 7,
+     "oreb": 4,
+     "dreb": 22,
+     "reb": 26
+    },
+    {
+     "pts": 72,
+     "fga": 63,
+     "tov": 11,
+     "oreb": 12,
+     "dreb": 17,
+     "reb": 29
+    }
+   ]
+  },
+  {
+   "case_id": "VAL-EQ03-EQ05-R1",
+   "seed": 1523030788,
+   "score": [
+    90,
+    67
+   ],
+   "events": 495,
+   "draws": 8065,
+   "dyn_sha": "e07e08d790ee1762",
+   "draws_sha": "b62a7a730fc5611a",
+   "false_expiry": 0,
+   "acta": [
+    {
+     "pts": 90,
+     "fga": 60,
+     "tov": 5,
+     "oreb": 8,
+     "dreb": 27,
+     "reb": 35
+    },
+    {
+     "pts": 67,
+     "fga": 57,
+     "tov": 7,
+     "oreb": 4,
+     "dreb": 17,
+     "reb": 21
+    }
+   ]
+  },
+  {
+   "case_id": "VAL-EQ03-EQ05-R2",
+   "seed": 2246639058,
+   "score": [
+    73,
+    58
+   ],
+   "events": 528,
+   "draws": 8291,
+   "dyn_sha": "457c137930799e2a",
+   "draws_sha": "ff828ef85f5464d6",
+   "false_expiry": 0,
+   "acta": [
+    {
+     "pts": 73,
+     "fga": 61,
+     "tov": 10,
+     "oreb": 12,
+     "dreb": 25,
+     "reb": 37
+    },
+    {
+     "pts": 58,
+     "fga": 57,
+     "tov": 14,
+     "oreb": 11,
+     "dreb": 22,
+     "reb": 33
+    }
+   ]
+  },
+  {
+   "case_id": "VAL-EQ05-EQ03-R1",
+   "seed": 425472989,
+   "score": [
+    68,
+    73
+   ],
+   "events": 511,
+   "draws": 8164,
+   "dyn_sha": "4bb6273c5b4ed1c8",
+   "draws_sha": "729e856570d3fb0d",
+   "false_expiry": 0,
+   "acta": [
+    {
+     "pts": 68,
+     "fga": 62,
+     "tov": 9,
+     "oreb": 11,
+     "dreb": 25,
+     "reb": 36
+    },
+    {
+     "pts": 73,
+     "fga": 57,
+     "tov": 7,
+     "oreb": 7,
+     "dreb": 25,
+     "reb": 32
+    }
+   ]
+  },
+  {
+   "case_id": "VAL-EQ05-EQ03-R2",
+   "seed": 1619656295,
+   "score": [
+    77,
+    69
+   ],
+   "events": 519,
+   "draws": 8074,
+   "dyn_sha": "567372ce2f72eac3",
+   "draws_sha": "7307221483609d38",
+   "false_expiry": 0,
+   "acta": [
+    {
+     "pts": 77,
+     "fga": 59,
+     "tov": 4,
+     "oreb": 9,
+     "dreb": 23,
+     "reb": 32
+    },
+    {
+     "pts": 69,
+     "fga": 59,
+     "tov": 5,
+     "oreb": 7,
+     "dreb": 25,
+     "reb": 32
+    }
+   ]
+  }
+ ]
+}

@@ -23,8 +23,9 @@ export const SIM_PROFILE_ID_04C = `${SIM_BASE_PROFILE_ID}+${SIM_EXTENSION_ID}+${
 export const SIM_PROFILE_ID_04B = `${SIM_BASE_PROFILE_ID}+${SIM_EXTENSION_ID}+${SIM04_EXTENSION_ID}+${SIM04B_EXTENSION_ID}`;
 export const SIM_PROFILE_ID_04 = `${SIM_BASE_PROFILE_ID}+${SIM_EXTENSION_ID}+${SIM04_EXTENSION_ID}`;
 export const SIM_PROFILE_ID_03 = `${SIM_BASE_PROFILE_ID}+${SIM_EXTENSION_ID}`;
-export const SIM_VERSION = '0.3.3-SIMMOTOR04D';
+export const SIM_VERSION = '0.3.4-SIMMOTOR04E';
 // Revisiones anteriores (referencia de lectura; NO se continúan): 04 cambia el futuro de un partido en curso (rebote colectivo, bloqueador sorteado, presión con familiaridad) y el formato del estado.
+export const SIM_VERSION_04D = '0.3.3-SIMMOTOR04D';
 export const SIM_VERSION_04C = '0.3.2-SIMMOTOR04C';
 export const SIM_VERSION_04B = '0.3.1-SIMMOTOR04B';
 export const SIM_VERSION_04 = '0.3.0-SIMMOTOR04';
@@ -33,10 +34,10 @@ export const SIM_VERSION_02 = '0.2.0-SIMMOTOR02';
 // Matriz de compatibilidad de lectura (C03-03, C04): un guardado se continúa solo si su revisión SIM y su formato de resultado figuran aquí; compartir el número de `schema` no basta.
 // Los guardados de 02/02B/03 se RECHAZAN con explicación (SIM_SNAPSHOT_REJECTED): su futuro cambia con 04 y no puede demostrarse la semántica exacta.
 export const SIM_SNAPSHOT_COMPAT = { schemas: ['beM-sim-snapshot/2'], simVersions: [SIM_VERSION], resultSchemas: ['beM-sim-match/3'] };
-export const SIM_SNAPSHOT_REJECTED = { simVersions: [SIM_VERSION_04C, SIM_VERSION_04B, SIM_VERSION_04, SIM_VERSION_02B, SIM_VERSION_02], reason: 'SIM-MOTOR-04D añade seis filas SIM y un perfil con extensión nueva (la huella del perfil de un guardado de 04C no las contiene), por lo que no puede demostrarse la continuación exacta de un guardado de 04C; SIM-MOTOR-04C cambia el futuro de un partido en curso (tras un rebote ofensivo decide una rama, inmediata o reinicio organizado, y añade desplazamientos de calidad y conversión de la zona inside; 04B cambió la fatiga de la rotación y la conservación de ventaja tras recepción; 04 cambió rebote colectivo, bloqueador sorteado y familiaridad de presión) y no puede demostrarse la continuación exacta de un guardado anterior. El archivo se conserva intacto; no se implanta un resolutor histórico.' };
-export const SIM_COVERAGE_ID = 'COV-SIM04D-R1';
-export const SIM_STATS_POLICY_ID = 'EST-SIM04-R1';
-export const SIM_RECON_POLICY_ID = 'RECON-SIM04D-R1';
+export const SIM_SNAPSHOT_REJECTED = { simVersions: [SIM_VERSION_04D, SIM_VERSION_04C, SIM_VERSION_04B, SIM_VERSION_04, SIM_VERSION_02B, SIM_VERSION_02], reason: 'SIM-MOTOR-04E añade el crédito colectivo de rebote tras tapón fuera (un hecho `reb` nuevo por cada tapón fuera, con su política común) y cambia la política de acta y la conciliación, por lo que no puede demostrarse la continuación exacta de un guardado de 04D; SIM-MOTOR-04D añade seis filas SIM y un perfil con extensión nueva (la huella del perfil de un guardado de 04C no las contiene), por lo que no puede demostrarse la continuación exacta de un guardado de 04C; SIM-MOTOR-04C cambia el futuro de un partido en curso (tras un rebote ofensivo decide una rama, inmediata o reinicio organizado, y añade desplazamientos de calidad y conversión de la zona inside; 04B cambió la fatiga de la rotación y la conservación de ventaja tras recepción; 04 cambió rebote colectivo, bloqueador sorteado y familiaridad de presión) y no puede demostrarse la continuación exacta de un guardado anterior. El archivo se conserva intacto; no se implanta un resolutor histórico.' };
+export const SIM_COVERAGE_ID = 'COV-SIM04E-R1';
+export const SIM_STATS_POLICY_ID = 'EST-SIM04E-R1'; // SIM-MOTOR-04E: crédito de rebote común (REBCRED-SIM04E-R1); anterior EST-SIM04-R1
+export const SIM_RECON_POLICY_ID = 'RECON-SIM04E-R1';
 export const SIM_MASTER_SEED = 20261022;
 export const SIM04_MASTER_SEED = 20261023;
 export const SIM04B_MASTER_SEED = 20261023;

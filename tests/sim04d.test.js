@@ -33,7 +33,7 @@ test('S04D-01 neutralidad: con las seis filas nuevas neutrales (por defecto o ex
     ['final', 'EQ03', 'EQ04', 7, '2ba9552ed4c5904c', 5328], ['final', 'EQ01', 'EQ02', 11, '5222bd4a401f4b4b', 5223], ['final', 'EQ05', 'EQ09', 31, '9d24f589adfbd0f9', 5421]];
   for (const [which, a, b, seed, digest, draws] of gold) for (const c of [ctxWith(which === 'final' ? FINAL04C : []), ctxWith([...(which === 'final' ? FINAL04C : []), ...NEUTRAL6])]) { const m = play(inputOf(seed, a, b), c); assert.equal(fp(m), digest, `${which} ${a}-${b}: huella de 04C`); assert.equal(m.rng.draws, draws, `${which} ${a}-${b}: mismos sorteos`); }
   for (const r of NEUTRAL6) { const row = ctx.sp.index.get(r.path); assert.equal(row.value, r.value, `${r.path} neutral`); assert.ok(row.unit && row.effect && row.origin === 'SEM-SIM04D', `${r.path} declara unidad, origen y efecto`); }
-  assert.equal(SIM_VERSION, '0.3.3-SIMMOTOR04D');
+  assert.equal(SIM_VERSION, '0.3.4-SIMMOTOR04E');
 });
 
 // ---------------------------------------------------------------------------------------------------------------------------------- 2 · atribución putback / ficha

@@ -157,7 +157,7 @@ test('S04B-05 elegibilidad del pase final: tabla derivada del catálogo; sin asi
   // la asistencia no se sortea después de ver el resultado: el pasador existe ANTES de resolver el tiro (también en los fallos)
   const mm = play(inputOf(12, 'EQ01', 'EQ02'), c9); const missedWithPasser = mm.events.filter((e) => e.ty === 'shot' && !e.made && e.passer != null).length; assert.ok(missedWithPasser > 0, 'hay entregas en tiros fallados: el pase no depende del acierto');
   // exposición e identidad: la versión y el perfil de 04B son los nuevos
-  assert.equal(SIM_VERSION, '0.3.3-SIMMOTOR04D'); assert.match(SIM_PROFILE_ID, /SEM-SIM04B-20261023\+SEM-SIM04C-20261024\+SEM-SIM04D-20261024$/);
+  assert.equal(SIM_VERSION, '0.3.4-SIMMOTOR04E'); assert.match(SIM_PROFILE_ID, /SEM-SIM04B-20261023\+SEM-SIM04C-20261024\+SEM-SIM04D-20261024$/);
 });
 
 // ---------------------------------------------------------------------------------------------------------------------------------- compatibilidad con 04

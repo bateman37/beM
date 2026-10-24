@@ -143,5 +143,5 @@ test('S01-10 el modelo no llama al detallado y la referencia detallada permanece
   const { readFileSync, readdirSync } = await import('node:fs'); const files = readdirSync(new URL('../src/sim/', import.meta.url)).filter((f) => f.endsWith('.js'));
   for (const f of files) { const src = readFileSync(new URL(`../src/sim/${f}`, import.meta.url), 'utf8'); assert.ok(!/from '\.\.\/match\/(core|flow|actions|defense|plays|states|coach|memory|orders|throwin|rotation|spontaneous|familiarity|availability|incident-admin|correction-admin)\.js'/.test(src), `${f} no importa el resolutor detallado`); assert.ok(!/createMatch|runMatch|MatchCore/.test(src.replace(/\/\/.*$/gm, '')), `${f} no ejecuta el detallado`); }
   const { buildMatchInput, runMatch } = await import('../src/match/index.js'); const res = runMatch(buildMatchInput(profile, players, { seed: 20261016 }), profile, { detail: 'full' });
-  assert.deepEqual(res.score, [83, 98]); assert.equal(res.diagnostics.sportingDraws, 6684);
+  const ref = JSON.parse(readFileSync(new URL('./fixtures/baseline-sim04e.json', import.meta.url), 'utf8'))['20261016']; assert.deepEqual(res.score, ref.score); assert.equal(res.diagnostics.sportingDraws, ref.draws); // 04E: referencia nueva (la histórica de 04D era 83–98, 6.684)
 });

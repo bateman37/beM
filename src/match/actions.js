@@ -791,8 +791,16 @@ P.defenseReboundParticipants = function defenseReboundParticipants(t, n) {
 };
 
 // ---------------------------------------------------------------- rebote
+// SIM-MOTOR-04E: contexto de contacto con el aro del fallo. `true`: la liberación fue a tiempo y el balón alcanzó el aro (el reloj de posesión deja de limitar; solo cuenta el reloj de juego);
+// `false`: sin aro, rige el reloj de posesión (violación aplicable); `null`: no registrado (se trata como sin aro, sin conceder el reinicio). Procede de `shots.{zona}.ordinaryMissContactsRing`; un tapón no hereda este valor.
+P.missRingContext = function missRingContext(zone) {
+  const v = this.profile.shots[zone]?.ordinaryMissContactsRing;
+  return v === true ? true : v === false ? false : null;
+};
+
 P.afterMiss = function afterMiss(ex, zone) {
   const rb = this.profile.rebound;
+  const ring = this.missRingContext(zone);
   const ft = zone === 'freeThrow';
   const offT = ex.team; const defT = 1 - offT;
   const offSlots = ft ? rb.liveLastFreeThrowOffenseSlots : rb.offenseParticipantSlots;
@@ -816,10 +824,13 @@ P.afterMiss = function afterMiss(ex, zone) {
     for (const [side, ids] of [['ataque', offP], ['defensa', defP]]) for (const id of ids) this.reboundRecipeNote('rebote.fuerza', side, id, rb.strength);
   }
   const spec = { dist: this.profile.durationSeconds.rebound, factor: 1, tag: 'rebote', load: 'rebound' };
-  const plan = this.planDuration(spec, 'rebound', 'rebote');
+  // Con contacto en el aro, la operación de rebote solo está limitada por el reloj de juego: el reloj de posesión anterior al lanzamiento ya no rige (se reinicia con el nuevo control).
+  if (ring === true) this.limit = () => this.clock;
+  let plan; try { plan = this.planDuration(spec, 'rebound', 'rebote'); } finally { if (ring === true) delete this.limit; }
   if (plan.expired) {
-    // bocina: no hay continuación viva ni rebote inventado
-    const t = this.consume(this.limit(), 'rebound');
+    if (ring !== true) return this.expire(ex, 'rebote'); // sin aro: bocina o violación del reloj de posesión, con su propia reanudación
+    // bocina real: queda menos de lo que cabe un rebote; no hay continuación viva ni rebote inventado
+    const t = this.consume(this.clock, 'rebound');
     this.emit('expiry', { team: offT, t, intent: { origen: 'tiro fallado', motivo: 'bocina sin continuación viva' }, effects: { fin: 'periodo' } });
     this.cover('fallo con bocina sin rebote');
     return { end: 'periodEnd' };
@@ -837,7 +848,7 @@ P.afterMiss = function afterMiss(ex, zone) {
   this.cover(offReb ? 'rebote ofensivo' : 'rebote defensivo');
   this.emit('rebound', { t, team: offT, intent: { origen: ft ? 'último libre fallado' : `tiro fallado ${zone}` }, participants: { captor, candidatos: cands }, stats: this.reboundStats(ex, ft ? 'freeThrowLast' : 'field', { team, player: captor }, missEvent), effects: { ofensivo: offReb, pRebOfensivo: round(pRO, 5), contactoAro: true, encargos: this.commitTrace(commit) } });
   if (!offReb) { this.endPossession('live', { team: offT, origin: 'rebote', carrier: captor, deficit: commit.deficit }); return { end: 'dreb' }; }
-  this.shotClock = shotClockAfterRingContact(this.shotClock, this.profile.rules);
+  this.shotClock = shotClockAfterRingContact(this.profile.rules, true); // 14 s para el mismo ataque tras contacto con el aro
   this.poss.advanced = true; this.poss.disorganized = true;
   this.poss.oreb = { captor };
   this.clockRunning = true;
@@ -871,4 +882,5 @@ P.endPossession = function endPossession(kind, info) {
     case 'live': this.nextPoss = { team: opp, entry: 'live', origin: info.origin, carrier: info.carrier, deficit: info.deficit ?? 0, shotClock: toTenths(rules.shotClockSeconds) }; this.clockRunning = true; break;
     default: throw new Error(`fin de posesión desconocido ${kind}`);
   }
+  this.nextPossFresh = true; // SIM-MOTOR-04E: transición válida establecida por esta frontera (se consume una sola vez)
 };

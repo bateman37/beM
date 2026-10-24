@@ -466,7 +466,7 @@ test('10. órdenes y datos de saques: export/reproducción dentro de la versión
   ]);
   assert.ok(orders.every((o) => o.state !== 'rechazada'), orders.map((o) => o.reason).join('; '));
   const res = buildResult(m); integrity(res);
-  assert.equal(res.schema, EXPORT_SCHEMA); assert.equal(res.meta.engineVersion, ENGINE_VERSION); assert.match(EXPORT_SCHEMA, /export\/(5|6|7|8|9|10)$/); assert.match(ENGINE_VERSION, /MOTOR(0[6789]|15|17|18)/); // el contrato de la versión vigente lo fija motor07.test.js
+  assert.equal(res.schema, EXPORT_SCHEMA); assert.equal(res.meta.engineVersion, ENGINE_VERSION); assert.match(EXPORT_SCHEMA, /export\/(5|6|7|8|9|10)$/); assert.match(ENGINE_VERSION, /(MOTOR(0[6789]|15|17|18)|SIM04E)/); // el contrato de la versión vigente lo fija motor07.test.js
   assert.ok(res.diagnostics.opportunities.length > 100 && res.diagnostics.throwInChains.length > 20, 'se exportan oportunidades y cadenas de saque');
   assert.ok(res.events.some((e) => e.type === 'throw_in' && e.intent.respuestaDefensiva === 'DSaqB03') || res.events.some((e) => e.intent?.respuestaDefensiva === 'DSaqB03'));
   const file = JSON.parse(JSON.stringify(res));

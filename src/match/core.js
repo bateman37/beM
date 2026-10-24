@@ -64,7 +64,7 @@ export class MatchCore {
     this.score = [0, 0]; this.periodScores = [];
     this.teamFouls = [{}, {}];
     this.arrow = null;
-    this.poss = null; this.nextPoss = null; this.possSeq = 0; this.eventSeq = 0; this.possLog = []; this.seriesSeq = 0; // MOTOR-09: registro de posesiones beM (inicio, cierre y causa)
+    this.poss = null; this.nextPoss = null; this.nextPossFresh = false; this.possSeq = 0; this.eventSeq = 0; this.possLog = []; this.seriesSeq = 0; // MOTOR-09: registro de posesiones beM (inicio, cierre y causa)
     this.events = []; this.calcBuf = []; this.status = 'created'; this.errors = [];
     this.coverageObserved = {};
     this.oppLog = []; this.throwChains = []; this.chainSeq = 0; // MOTOR-06: decisiones/oportunidades y cadenas de saque (diagnóstico; solo datos calculados)
